@@ -60,9 +60,8 @@ class BioBlendImporterGalaxyInterface(object):
         self._user_gi = user_gi
 
     def import_workflow(self, workflow, **kwds):
-        workflow_str = json.dumps(workflow, indent=4)
         return self._user_gi.workflows.import_workflow_json(
-            workflow_str,
+            workflow,
             **kwds
         )
 
