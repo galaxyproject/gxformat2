@@ -2,7 +2,7 @@
 Format 2 workflow code.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.0.dev0"
 
 PROJECT_NAME = "gxformat2"
 PROJECT_OWNER = PROJECT_USERAME = "jmchilton"

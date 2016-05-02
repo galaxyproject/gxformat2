@@ -124,6 +124,3 @@ release: release-local push-release release-brew ## package, review, and upload 
 
 add-history: ## Reformat HISTORY.rst with data from Github's API
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py $(ITEM)
-
-update-extern: ## update external artifacts copied locally
-	sh scripts/update_extern.sh
