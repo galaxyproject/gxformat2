@@ -5,6 +5,8 @@ coverage
 
 # For dev
 sphinx
+sphinx_rtd_theme
+recommonmark
 
 # Used to check readme.
 readme
