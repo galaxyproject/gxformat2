@@ -1,6 +1,4 @@
-""" This module defines the public interface or entry point for the
-Format 2 workflow code.
-"""
+"""The public interface or entry point for the Format 2 workflow code."""
 
 __version__ = "0.1.0.dev0"
 
@@ -10,9 +8,8 @@ PROJECT_AUTHOR = 'Galaxy Project and Community'
 PROJECT_EMAIL = 'jmchilton@gmail.com'
 PROJECT_URL = "https://github.com/jmchilton/gxformat2"
 
-
-from .main import convert_and_import_workflow
-from .interface import ImporterGalaxyInterface
+from .main import convert_and_import_workflow  # NOQA
+from .interface import ImporterGalaxyInterface  # NOQA
 
 
 __all__ = [
