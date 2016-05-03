@@ -1,4 +1,4 @@
-"""Functionality for converting a format 2 workflow into format 1 and loading into Galaxy."""
+"""Functionality for converting a Format 2 workflow into a standard Galaxy workflow."""
 from __future__ import print_function
 
 from collections import OrderedDict
@@ -31,13 +31,13 @@ RUN_ACTIONS_TO_STEPS = {
 
 
 def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory):
-    """Load a workflow into Galaxy from supplied stream."""
+    """Convert a Format 2 workflow into standard Galaxy format from supplied stream."""
     as_python = yaml.load(has_yaml)
     return python_to_workflow(as_python, galaxy_interface, workflow_directory)
 
 
 def python_to_workflow(as_python, galaxy_interface, workflow_directory):
-    """Load a workflow into Galaxy from supplied dictionary."""
+    """Convert a Format 2 workflow into standard Galaxy format from supplied dictionary."""
     if workflow_directory is None:
         workflow_directory = os.path.abspath(".")
 
