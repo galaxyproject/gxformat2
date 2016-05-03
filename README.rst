@@ -1,15 +1,15 @@
 
 .. image:: https://readthedocs.org/projects/pip/badge/?version=latest
-   :target: https://galaxy-lib.readthedocs.org
+   :target: https://gxformat2.readthedocs.org
 
-.. image:: https://badge.fury.io/py/planemo.svg
-   :target: https://pypi.python.org/pypi/galaxy-lib/
+.. image:: https://badge.fury.io/py/gxformat2.svg
+   :target: https://pypi.python.org/pypi/gxformat2/
 
-.. image:: https://travis-ci.org/galaxyproject/galaxy-lib.png?branch=master
-   :target: https://travis-ci.org/galaxyproject/galaxy-lib
+.. image:: https://travis-ci.org/jmchilton/gxformat2.png?branch=master
+   :target: https://travis-ci.org/jmchilton/gxformat2
 
-.. image:: https://coveralls.io/repos/galaxyproject/galaxy-lib/badge.svg?branch=master
-   :target: https://coveralls.io/r/galaxyproject/galaxy-lib?branch=master
+.. image:: https://coveralls.io/repos/jmchilton/gxformat2/badge.svg?branch=master
+   :target: https://coveralls.io/r/jmchilton/gxformat2?branch=master
 
 
 This package defines a high-level Galaxy_ workflow description termed "Format
