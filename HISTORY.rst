@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.1.1.dev0
+0.1.1 (2016-08-15)
 ---------------------
 
 * Fix one Python 3 incompatibility.
