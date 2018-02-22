@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.2.0.dev0
+0.2.0 (2018-02-21)
 ---------------------
 
 * Bring in latest Galaxy updates - Python 3 fixes, safe YAML usage, and more PJA implemented.
