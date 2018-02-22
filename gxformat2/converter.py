@@ -1,11 +1,11 @@
 """Functionality for converting a Format 2 workflow into a standard Galaxy workflow."""
 from __future__ import print_function
 
-from collections import OrderedDict
 import json
 import os
 import sys
 import uuid
+from collections import OrderedDict
 
 import yaml
 
@@ -32,7 +32,7 @@ RUN_ACTIONS_TO_STEPS = {
 
 def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory):
     """Convert a Format 2 workflow into standard Galaxy format from supplied stream."""
-    as_python = yaml.load(has_yaml)
+    as_python = yaml.safe_load(has_yaml)
     return python_to_workflow(as_python, galaxy_interface, workflow_directory)
 
 
@@ -109,7 +109,7 @@ def _python_to_workflow(as_python, conversion_context):
                 run_action_path = run_action["@import"]
                 runnable_path = os.path.join(conversion_context.workflow_directory, run_action_path)
                 with open(runnable_path, "r") as f:
-                    runnable_description = yaml.load(f)
+                    runnable_description = yaml.safe_load(f)
                     run_action = runnable_description
 
             run_class = run_action["class"]
@@ -326,7 +326,7 @@ def transform_tool(context, step):
             return {"__class__": "RuntimeValue"}
         if isinstance(value, dict):
             new_values = {}
-            for k, v in value.iteritems():
+            for k, v in value.items():
                 new_key = _join_prefix(key, k)
                 new_values[k] = replace_links(v, new_key)
             return new_values
@@ -349,7 +349,7 @@ def transform_tool(context, step):
         step_state = step["state"]
         step_state = replace_links(step_state)
 
-        for key, value in step_state.iteritems():
+        for key, value in step_state.items():
             tool_state[key] = json.dumps(value)
         del step["state"]
 
@@ -387,6 +387,28 @@ def transform_tool(context, step):
                     "DeleteIntermediatesAction",
                     name,
                     arguments,
+                )
+                post_job_actions[action_name] = action
+
+            add_tags = output.get("add_tags", [])
+            if add_tags:
+                action_name = "TagDatasetAction%s" % name
+                arguments = dict(tags=",".join(add_tags))
+                action = _action(
+                    "TagDatasetAction",
+                    name,
+                    arguments
+                )
+                post_job_actions[action_name] = action
+
+            remove_tags = output.get("remove_tags", [])
+            if remove_tags:
+                action_name = "RemoveTagDatasetAction%s" % name
+                arguments = dict(tags=",".join(remove_tags))
+                action = _action(
+                    "RemoveTagDatasetAction",
+                    name,
+                    arguments
                 )
                 post_job_actions[action_name] = action
 
@@ -470,7 +492,7 @@ def _populate_input_connections(context, step, connect):
     input_connections = step["input_connections"]
     is_subworkflow_step = step.get("type") == "subworkflow"
 
-    for key, values in connect.iteritems():
+    for key, values in connect.items():
         input_connection_value = []
         if not isinstance(values, list):
             values = [values]
@@ -512,7 +534,7 @@ def main(argv):
 if __name__ == "__main__":
     main(sys.argv)
 
-__all__ = [
+__all__ = (
     'yaml_to_workflow',
     'python_to_workflow',
-]
+)

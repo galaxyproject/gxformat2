@@ -12,7 +12,7 @@ from .main import convert_and_import_workflow  # NOQA
 from .interface import ImporterGalaxyInterface  # NOQA
 
 
-__all__ = [
+__all__ = (
     'convert_and_import_workflow',
     'ImporterGalaxyInterface',
-]
+)
