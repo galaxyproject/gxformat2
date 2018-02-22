@@ -9,7 +9,7 @@ History
 0.2.0.dev0
 ---------------------
 
-    
+* Bring in latest Galaxy updates - Python 3 fixes, safe YAML usage, and more PJA implemented.
 
 ---------------------
 0.1.1 (2016-08-15)
