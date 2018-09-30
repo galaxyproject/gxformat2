@@ -8,7 +8,7 @@ from .interface import BioBlendImporterGalaxyInterface
 
 
 def convert_and_import_workflow(has_workflow, **kwds):
-    """Function is main entry for conversion and import of Format 2 workflows."""
+    """Conversion and import Format 2 workflows into a target Galaxy instance."""
     galaxy_interface = kwds.get("galaxy_interface", None)
     if galaxy_interface is None:
         galaxy_interface = BioBlendImporterGalaxyInterface(**kwds)
@@ -25,14 +25,26 @@ def convert_and_import_workflow(has_workflow, **kwds):
     if workflow_directory is not None:
         workflow_directory = os.path.abspath(workflow_directory)
 
-    if isinstance(has_workflow, dict):
-        workflow = python_to_workflow(has_workflow, galaxy_interface, workflow_directory)
+    convert = kwds.get("convert", True)
+    if convert:
+        if isinstance(has_workflow, dict):
+            workflow = python_to_workflow(has_workflow, galaxy_interface, workflow_directory)
+        else:
+            workflow = yaml_to_workflow(has_workflow, galaxy_interface, workflow_directory)
     else:
-        workflow = yaml_to_workflow(has_workflow, galaxy_interface, workflow_directory)
+        workflow = has_workflow
+        if not isinstance(workflow, dict):
+            workflow = yaml.safe_load(workflow)
 
+    name = kwds.get("name", None)
+    if name is not None:
+        workflow["name"] = name
     publish = kwds.get("publish", False)
     exact_tools = kwds.get("exact_tools", False)
-    import_kwds = {}
+    fill_defaults = kwds.get("fill_defaults", True)
+    import_kwds = {
+        "fill_defaults": fill_defaults
+    }
     if publish:
         import_kwds["publish"] = True
     if exact_tools:
