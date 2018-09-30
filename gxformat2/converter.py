@@ -1,11 +1,11 @@
 """Functionality for converting a Format 2 workflow into a standard Galaxy workflow."""
 from __future__ import print_function
 
+from collections import OrderedDict
 import json
 import os
 import sys
 import uuid
-from collections import OrderedDict
 
 import yaml
 
@@ -36,7 +36,7 @@ def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory):
     return python_to_workflow(as_python, galaxy_interface, workflow_directory)
 
 
-def python_to_workflow(as_python, galaxy_interface, workflow_directory):
+def python_to_workflow(as_python, galaxy_interface, workflow_directory=None):
     """Convert a Format 2 workflow into standard Galaxy format from supplied dictionary."""
     if workflow_directory is None:
         workflow_directory = os.path.abspath(".")
@@ -58,6 +58,9 @@ def _python_to_workflow(as_python, conversion_context):
 
     if as_python["class"] != "GalaxyWorkflow":
         raise Exception("This is not a not a valid Galaxy workflow definition, 'class' must be 'GalaxyWorkflow'.")
+
+    # .ga files don't have this, drop it so it isn't interpreted as a format 2 workflow.
+    as_python.pop("class")
 
     _ensure_defaults(as_python, {
         "a_galaxy_workflow": "true",
@@ -133,7 +136,7 @@ def _python_to_workflow(as_python, conversion_context):
         if "label" in output and "id" in output:
             raise Exception("label and id are aliases for outputs, may only define one")
         if "label" not in output and "id" not in output:
-            raise Exception("Output must define a label.")
+            label = ""
 
         raw_label = output.pop("label", None)
         raw_id = output.pop("id", None)
@@ -290,6 +293,10 @@ def transform_subworkflow(context, step):
     _populate_tool_state(step, tool_state)
 
 
+def _runtime_value():
+    return {"__class__": "RuntimeValue"}
+
+
 def transform_tool(context, step):
     if "tool_id" not in step:
         raise Exception("Tool steps must define a tool_id.")
@@ -323,7 +330,7 @@ def transform_tool(context, step):
             # value dedicated to this purpose (e.g. a ficitious
             # {"__class__": "ConnectedValue"}) that could be further
             # validated by Galaxy.
-            return {"__class__": "RuntimeValue"}
+            return _runtime_value()
         if isinstance(value, dict):
             new_values = {}
             for k, v in value.items():
@@ -345,13 +352,16 @@ def transform_tool(context, step):
         else:
             return value
 
-    if "state" in step:
-        step_state = step["state"]
+    runtime_inputs = step.get("runtime_inputs", [])
+
+    if "state" in step or runtime_inputs:
+        step_state = step.pop("state", {})
         step_state = replace_links(step_state)
 
         for key, value in step_state.items():
             tool_state[key] = json.dumps(value)
-        del step["state"]
+        for runtime_input in runtime_inputs:
+            tool_state[runtime_input] = json.dumps(_runtime_value())
 
     # Fill in input connections
     _populate_input_connections(context, step, connect)
@@ -484,6 +494,21 @@ def _init_connect_dict(step):
 
     connect = step["connect"]
     del step["connect"]
+
+    # handle CWL-style in dict connections.
+    if "in" in step:
+        step_in = step["in"]
+        print(step)
+        assert isinstance(step_in, dict)
+        for key, value in step_in.items():
+            # TODO: this can be a list right?
+            if isinstance(value, dict):
+                value = value["source"]
+            value = value.replace("/", "#", 1)
+            connect[key] = [value]
+
+        del step['in']
+
     return connect
 
 

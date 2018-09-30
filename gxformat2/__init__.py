@@ -8,11 +8,16 @@ PROJECT_AUTHOR = 'Galaxy Project and Community'
 PROJECT_EMAIL = 'jmchilton@gmail.com'
 PROJECT_URL = "https://github.com/jmchilton/gxformat2"
 
-from .main import convert_and_import_workflow  # NOQA
+
+from .converter import python_to_workflow  # NOQA
+from .export import from_galaxy_native  # NOQA
 from .interface import ImporterGalaxyInterface  # NOQA
+from .main import convert_and_import_workflow  # NOQA
 
 
 __all__ = (
     'convert_and_import_workflow',
+    'from_galaxy_native',
     'ImporterGalaxyInterface',
+    'python_to_workflow',
 )
