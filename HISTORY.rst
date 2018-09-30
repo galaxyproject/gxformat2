@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.3.0.dev0
+0.3.0 (2018-09-30)
 ---------------------
 
 * More cwl style inputs, initial work on conversion from native workflows, various small fixes and tweaks.
