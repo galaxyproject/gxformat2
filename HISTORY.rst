@@ -9,7 +9,7 @@ History
 0.3.0.dev0
 ---------------------
 
-    
+* More cwl style inputs, initial work on conversion from native workflows, various small fixes and tweaks.
 
 ---------------------
 0.2.0 (2018-02-21)
