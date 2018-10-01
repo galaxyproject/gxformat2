@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.6.0.dev0
+0.6.0 (2018-10-01)
 ---------------------
 
 * Various fixes, allow id map style workflow input definitions.
