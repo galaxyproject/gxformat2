@@ -52,7 +52,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         label = step.get("label")
         label_map[str(key)] = label
 
-    inputs = []
+    inputs = OrderedDict()
     outputs = OrderedDict()
     steps = []
 
@@ -65,14 +65,19 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
 
         module_type = step.get("type")
         if module_type in ['data_input', 'data_collection_input', 'parameter_input']:
-            input_dict = {
-                'id': step['label']
-            }
+            step_id = step["label"]  # TODO: auto-label
+            input_dict = {}
             if module_type == 'data_collection_input':
                 input_dict['type'] = 'collection'
-            _copy_annotation(step, input_dict)
+            elif module_type == 'data_input':
+                input_dict['type'] = 'data'
             # TODO: handle parameter_input types
-            inputs.append(input_dict)
+            _copy_annotation(step, input_dict)
+            # If we are only copying property - use the CWL-style short-hand
+            if len(input_dict) == 1:
+                inputs[step_id] = input_dict["type"]
+            else:
+                inputs[step_id] = input_dict
             continue
 
         if module_type == "pause":

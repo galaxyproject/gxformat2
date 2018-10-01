@@ -164,6 +164,7 @@ def _python_to_workflow(as_python, conversion_context):
 
 def convert_inputs_to_steps(inputs, steps):
     new_steps = []
+    inputs = _convert_dict_to_id_list_if_needed(inputs)
     for input_def_raw in inputs:
         input_def = input_def_raw.copy()
 
