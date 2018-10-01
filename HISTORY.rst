@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.4.0.dev0
+0.3.3 (2018-10-01)
 ---------------------
 
-    
+* Fixes for exporting PJA when exporting workflows from native .ga to format 2.
 
 ---------------------
 0.3.2 (2018-10-01)
