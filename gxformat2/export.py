@@ -26,6 +26,12 @@ def _ordered_dump(data, stream=None, Dumper=yaml.SafeDumper, **kwds):
     return yaml.dump(data, stream, OrderedDumper, **kwds)
 
 
+def _copy_annotation(from_native_step, to_format2_step):
+    annotation = from_native_step.get("annotation", "")
+    if annotation:
+        to_format2_step["doc"] = annotation
+
+
 def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=False):
     """Convert native .ga workflow definition to a format2 workflow.
 
@@ -33,7 +39,8 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
     """
     data = OrderedDict()
     data['class'] = 'GalaxyWorkflow'
-    for top_level_key in ['annotation', 'tags', 'uuid']:
+    _copy_annotation(native_workflow_dict, data)
+    for top_level_key in ['tags', 'uuid']:
         value = native_workflow_dict.get(top_level_key)
         if value:
             data[top_level_key] = value
@@ -63,13 +70,15 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             }
             if module_type == 'data_collection_input':
                 input_dict['type'] = 'collection'
+            _copy_annotation(step, input_dict)
             # TODO: handle parameter_input types
             inputs.append(input_dict)
             continue
 
         if module_type == "pause":
             step_dict = OrderedDict()
-            optional_props = ['label', 'annotation']
+            optional_props = ['label']
+            _copy_annotation(step, step_dict)
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
             step_dict["type"] = "pause"
@@ -79,6 +88,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         if module_type == 'subworkflow':
             step_dict = OrderedDict()
             optional_props = ['label', 'annotation']
+            _copy_annotation(step, step_dict)
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
             _convert_post_job_actions(step, step_dict)

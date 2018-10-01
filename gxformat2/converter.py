@@ -65,10 +65,10 @@ def _python_to_workflow(as_python, conversion_context):
     _ensure_defaults(as_python, {
         "a_galaxy_workflow": "true",
         "format-version": "0.1",
-        "annotation": "",
         "name": "Workflow",
         "uuid": str(uuid.uuid4()),
     })
+    _populate_annotation(as_python)
 
     steps = as_python["steps"]
 
@@ -225,10 +225,7 @@ def transform_parameter_input(context, step):
 
 def transform_input(context, step, default_name):
     default_name = step.get("label", default_name)
-    _ensure_defaults(step, {
-        "annotation": "",
-    })
-
+    _populate_annotation(step)
     _ensure_inputs_connections(step)
 
     if "inputs" not in step:
@@ -256,9 +253,7 @@ def transform_input(context, step, default_name):
 
 def transform_pause(context, step, default_name="Pause for dataset review"):
     default_name = step.get("label", default_name)
-    _ensure_defaults(step, {
-        "annotation": "",
-    })
+    _populate_annotation(step)
 
     _ensure_inputs_connections(step)
 
@@ -284,9 +279,7 @@ def transform_pause(context, step, default_name="Pause for dataset review"):
 
 
 def transform_subworkflow(context, step):
-    _ensure_defaults(step, {
-        "annotation": "",
-    })
+    _populate_annotation(step)
 
     _ensure_inputs_connections(step)
 
@@ -307,12 +300,12 @@ def transform_tool(context, step):
         raise Exception("Tool steps must define a tool_id.")
 
     _ensure_defaults(step, {
-        "annotation": "",
         "name": step['tool_id'],
         "post_job_actions": {},
         "tool_version": None,
     })
     post_job_actions = step["post_job_actions"]
+    _populate_annotation(step)
 
     tool_state = {
         # TODO: Galaxy should not require tool state actually specify a __page__.
@@ -542,6 +535,14 @@ def _populate_input_connections(context, step, connect):
         if key == "$step":
             key = "__NO_INPUT_OUTPUT_NAME__"
         input_connections[key] = input_connection_value
+
+
+def _populate_annotation(step):
+    if "annotation" not in step and "doc" in step:
+        annotation = step.pop("doc")
+        step["annotation"] = annotation
+    elif "annotation" not in step:
+        step["annotation"] = ""
 
 
 def _ensure_inputs_connections(step):
