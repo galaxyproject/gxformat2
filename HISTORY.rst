@@ -9,7 +9,7 @@ History
 0.6.0.dev0
 ---------------------
 
-    
+* Various fixes, allow id map style workflow input definitions.
 
 ---------------------
 0.5.0 (2018-10-01)
