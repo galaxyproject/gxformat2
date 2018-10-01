@@ -91,7 +91,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
 
         if module_type == 'subworkflow':
             step_dict = OrderedDict()
-            optional_props = ['label', 'annotation']
+            optional_props = ['label']
             _copy_annotation(step, step_dict)
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
@@ -106,9 +106,10 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             raise NotImplementedError("Unhandled module type %s" % module_type)
 
         step_dict = OrderedDict()
-        optional_props = ['label', 'annotation', 'tool_shed_repository']
+        optional_props = ['label', 'tool_shed_repository']
         required_props = ['tool_id', 'tool_version']
         _copy_properties(step, step_dict, optional_props, required_props)
+        _copy_annotation(step, step_dict)
 
         tool_state = json.loads(step['tool_state'])
         tool_state.pop("__page__")
