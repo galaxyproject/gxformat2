@@ -130,14 +130,53 @@ def _convert_input_connections(from_native_step, to_format2_step, label_map):
 
 
 def _convert_post_job_actions(from_native_step, to_format2_step):
+
+    def _ensure_output_def(key):
+        if "outputs" not in to_format2_step:
+            to_format2_step["outputs"] = {}
+        outputs_dict = to_format2_step["outputs"]
+        if key not in outputs_dict:
+            outputs_dict[key] = {}
+        return outputs_dict[key]
+
     if "post_job_actions" in from_native_step:
         post_job_actions = from_native_step["post_job_actions"].copy()
-        for key, value in post_job_actions.items():
-            if isinstance(value, dict) and "action_arguments" in value:
-                action_arguments = value["action_arguments"]
-                print(action_arguments)
-                print(type(action_arguments))
-        to_format2_step["post_job_actions"] = post_job_actions
+        to_remove_keys = []
+
+        for post_job_action_key, post_job_action_value in post_job_actions.items():
+            action_type = post_job_action_value["action_type"]
+            output_name = post_job_action_value.get("output_name")
+            action_args = post_job_action_value.get("action_arguments", {})
+
+            handled = True
+            if action_type == "RenameDatasetAction":
+                output_dict = _ensure_output_def(output_name)
+                output_dict["rename"] = action_args["newname"]
+                handled = True
+            elif action_type == "HideDatasetAction":
+                output_dict = _ensure_output_def(output_name)
+                output_dict["hide"] = True
+                handled = True
+            elif action_type == "DeleteIntermediatesAction":
+                output_dict = _ensure_output_def(output_name)
+                output_dict["delete_intermediate_datasets"] = True
+            elif action_type == "TagDatasetAction":
+                output_dict = _ensure_output_def(output_name)
+                output_dict["add_tags"] = action_args["tags"].split(",")
+            elif action_type == "RemoveTagDatasetAction":
+                output_dict = _ensure_output_def(output_name)
+                output_dict["add_tags"] = action_args["tags"].split(",")
+            else:
+                handled = False
+
+            if handled:
+                to_remove_keys.append(post_job_action_key)
+
+        for to_remove in to_remove_keys:
+            del post_job_actions[to_remove]
+
+        if post_job_actions:
+            to_format2_step["post_job_actions"] = post_job_actions
 
 
 def _to_source(has_output_name, label_map, output_id=None):
