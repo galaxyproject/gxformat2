@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.3.2.dev0
+0.3.2 (2018-10-01)
 ---------------------
 
 * Fixes for exporting workflow outputs from native .ga to format 2, support for modern map style output definitions like CWL 1.0.
