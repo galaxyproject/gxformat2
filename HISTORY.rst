@@ -9,10 +9,8 @@ History
 0.5.0.dev0
 ---------------------
 
-    
-
 ---------------------
-0.3.3 (2018-10-01)
+0.4.0 (2018-10-01)
 ---------------------
 
 * Fixes for exporting PJA when exporting workflows from native .ga to format 2.
