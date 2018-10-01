@@ -54,40 +54,31 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             inputs.append(input_dict)
             continue
 
+        if module_type == 'subworkflow':
+            step_dict = OrderedDict()
+            optional_props = ['label', 'annotation']
+            _copy_properties(step, step_dict, optional_props=optional_props)
+            _convert_input_connections(step, step_dict, label_map)
+            subworkflow_native_dict = step["subworkflow"]
+            subworkflow = from_galaxy_native(subworkflow_native_dict, tool_interface=tool_interface, json_wrapper=False)
+            step_dict["run"] = subworkflow
+            steps.append(step_dict)
+            continue
+
         if module_type != 'tool':
             raise NotImplementedError("Unhandled module type %s" % module_type)
 
         step_dict = OrderedDict()
         optional_props = ['label', 'annotation', 'tool_shed_repository']
         required_props = ['tool_id', 'tool_version']
-        for prop in optional_props:
-            value = step.get(prop)
-            if value:
-                step_dict[prop] = value
-        for prop in required_props:
-            value = step.get(prop)
-            step_dict[prop] = value
+        _copy_properties(step, step_dict, optional_props, required_props)
 
         tool_state = json.loads(step['tool_state'])
         tool_state.pop("__page__")
         tool_state.pop("__rerun_remap_job_id__")
         step_dict['tool_state'] = tool_state
 
-        in_dict = {}
-        input_connections = step['input_connections']
-        for input_name, input_def in input_connections.items():
-            output_id = str(input_def['id'])
-            output_name = input_def['output_name']
-            output_label = label_map.get(output_id) or output_id
-            if output_name == "output":
-                source = output_label
-            else:
-                source = "%s/%s" % (output_label, output_name)
-            in_dict[input_name] = {
-                "source": source
-            }
-
-        step_dict["in"] = in_dict
+        _convert_input_connections(step, step_dict, label_map)
         steps.append(step_dict)
 
     data['inputs'] = inputs
@@ -99,3 +90,30 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         }
 
     return data
+
+
+def _copy_properties(from_native_step, to_format2_step, optional_props=[], required_props=[]):
+    for prop in optional_props:
+        value = from_native_step.get(prop)
+        if value:
+            to_format2_step[prop] = value
+    for prop in required_props:
+        value = from_native_step.get(prop)
+        to_format2_step[prop] = value
+
+
+def _convert_input_connections(from_native_step, to_format2_step, label_map):
+    in_dict = {}
+    input_connections = from_native_step['input_connections']
+    for input_name, input_def in input_connections.items():
+        output_id = str(input_def['id'])
+        output_name = input_def['output_name']
+        output_label = label_map.get(output_id) or output_id
+        if output_name == "output":
+            source = output_label
+        else:
+            source = "%s/%s" % (output_label, output_name)
+        in_dict[input_name] = {
+            "source": source
+        }
+    to_format2_step["in"] = in_dict
