@@ -129,9 +129,12 @@ def _python_to_workflow(as_python, conversion_context):
         step["type"] = step_type
         eval("transform_%s" % step_type)(conversion_context, step)
 
-    for output in as_python.get("outputs", []):
+    outputs = as_python.get("outputs", [])
+    outputs = _convert_dict_to_id_list_if_needed(outputs)
+
+    for output in outputs:
         assert isinstance(output, dict), "Output definition must be dictionary"
-        assert "source" in output, "Output definition must specify source"
+        assert "source" in output or "outputSource" in output, "Output definition must specify source"
 
         if "label" in output and "id" in output:
             raise Exception("label and id are aliases for outputs, may only define one")
@@ -142,7 +145,9 @@ def _python_to_workflow(as_python, conversion_context):
         raw_id = output.pop("id", None)
         label = raw_label or raw_id
 
-        source = output["source"]
+        source = output.get("source")
+        if source is None:
+            source = output.get("outputSource").replace("/", "#")
         id, output_name = conversion_context.step_output(source)
         step = steps[str(id)]
         if "workflow_output" not in step:
@@ -552,6 +557,18 @@ def _ensure_defaults(in_dict, defaults):
 
 def _populate_tool_state(step, tool_state):
     step["tool_state"] = json.dumps(tool_state)
+
+
+def _convert_dict_to_id_list_if_needed(dict_or_list):
+    rval = dict_or_list
+    if isinstance(dict_or_list, dict):
+        rval = []
+        for key, value in dict_or_list.items():
+            if not isinstance(value, dict):
+                value = {"type": value}
+            value["id"] = key
+            rval.append(value)
+    return rval
 
 
 def main(argv):

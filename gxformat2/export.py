@@ -39,10 +39,16 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         label_map[str(key)] = label
 
     inputs = []
+    outputs = OrderedDict()
     steps = []
 
     # For each step, rebuild the form and encode the state
     for step in native_steps.values():
+        for workflow_output in step.get("workflow_outputs", []):
+            source = _to_source(workflow_output, label_map, output_id=step["id"])
+            output_id = workflow_output["label"]
+            outputs[output_id] = {"outputSource": source}
+
         module_type = step.get("type")
         if module_type in ['data_input', 'data_collection_input', 'parameter_input']:
             input_dict = {
@@ -82,6 +88,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         steps.append(step_dict)
 
     data['inputs'] = inputs
+    data['outputs'] = outputs
     data['steps'] = steps
 
     if json_wrapper:
@@ -106,14 +113,20 @@ def _convert_input_connections(from_native_step, to_format2_step, label_map):
     in_dict = {}
     input_connections = from_native_step['input_connections']
     for input_name, input_def in input_connections.items():
-        output_id = str(input_def['id'])
-        output_name = input_def['output_name']
-        output_label = label_map.get(output_id) or output_id
-        if output_name == "output":
-            source = output_label
-        else:
-            source = "%s/%s" % (output_label, output_name)
+        source = _to_source(input_def, label_map)
         in_dict[input_name] = {
             "source": source
         }
     to_format2_step["in"] = in_dict
+
+
+def _to_source(has_output_name, label_map, output_id=None):
+    output_id = output_id or has_output_name['id']
+    output_id = str(output_id)
+    output_name = has_output_name['output_name']
+    output_label = label_map.get(output_id) or output_id
+    if output_name == "output":
+        source = output_label
+    else:
+        source = "%s/%s" % (output_label, output_name)
+    return source
