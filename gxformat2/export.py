@@ -67,6 +67,15 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             inputs.append(input_dict)
             continue
 
+        if module_type == "pause":
+            step_dict = OrderedDict()
+            optional_props = ['label', 'annotation']
+            _copy_properties(step, step_dict, optional_props=optional_props)
+            _convert_input_connections(step, step_dict, label_map)
+            step_dict["type"] = "pause"
+            steps.append(step_dict)
+            continue
+
         if module_type == 'subworkflow':
             step_dict = OrderedDict()
             optional_props = ['label', 'annotation']
