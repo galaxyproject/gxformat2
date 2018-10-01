@@ -352,8 +352,8 @@ def transform_tool(context, step):
         else:
             return value
 
+    # TODO: handle runtime inputs and state together.
     runtime_inputs = step.get("runtime_inputs", [])
-
     if "state" in step or runtime_inputs:
         step_state = step.pop("state", {})
         step_state = replace_links(step_state)
@@ -362,6 +362,8 @@ def transform_tool(context, step):
             tool_state[key] = json.dumps(value)
         for runtime_input in runtime_inputs:
             tool_state[runtime_input] = json.dumps(_runtime_value())
+    elif "tool_state" in step:
+        tool_state.update(step.get("tool_state"))
 
     # Fill in input connections
     _populate_input_connections(context, step, connect)
