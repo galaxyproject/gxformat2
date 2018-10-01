@@ -165,7 +165,7 @@ def _convert_post_job_actions(from_native_step, to_format2_step):
                 output_dict["add_tags"] = action_args["tags"].split(",")
             elif action_type == "RemoveTagDatasetAction":
                 output_dict = _ensure_output_def(output_name)
-                output_dict["add_tags"] = action_args["tags"].split(",")
+                output_dict["remove_tags"] = action_args["tags"].split(",")
             else:
                 handled = False
 
