@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.4.0.dev0
+0.3.1.dev0
 ---------------------
 
-    
+* Fixes for exporting subworkflows from native .ga to format 2.
 
 ---------------------
 0.3.0 (2018-09-30)
