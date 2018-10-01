@@ -5,6 +5,11 @@ import json
 
 import yaml
 
+try:
+    from galaxy.model.custom_types import MutationDict
+except ImportError:
+    MutationDict = None
+
 
 # copy-paste from configmanage.py
 def _ordered_dump(data, stream=None, Dumper=yaml.SafeDumper, **kwds):
@@ -16,6 +21,8 @@ def _ordered_dump(data, stream=None, Dumper=yaml.SafeDumper, **kwds):
             yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
             list(data.items()))
     OrderedDumper.add_representer(OrderedDict, _dict_representer)
+    if MutationDict is not None:
+        OrderedDumper.add_representer(MutationDict, _dict_representer)
     return yaml.dump(data, stream, OrderedDumper, **kwds)
 
 
@@ -65,6 +72,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             optional_props = ['label', 'annotation']
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
+            _convert_post_job_actions(step, step_dict)
             subworkflow_native_dict = step["subworkflow"]
             subworkflow = from_galaxy_native(subworkflow_native_dict, tool_interface=tool_interface, json_wrapper=False)
             step_dict["run"] = subworkflow
@@ -85,6 +93,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         step_dict['tool_state'] = tool_state
 
         _convert_input_connections(step, step_dict, label_map)
+        _convert_post_job_actions(step, step_dict)
         steps.append(step_dict)
 
     data['inputs'] = inputs
@@ -118,6 +127,17 @@ def _convert_input_connections(from_native_step, to_format2_step, label_map):
             "source": source
         }
     to_format2_step["in"] = in_dict
+
+
+def _convert_post_job_actions(from_native_step, to_format2_step):
+    if "post_job_actions" in from_native_step:
+        post_job_actions = from_native_step["post_job_actions"].copy()
+        for key, value in post_job_actions.items():
+            if isinstance(value, dict) and "action_arguments" in value:
+                action_arguments = value["action_arguments"]
+                print(action_arguments)
+                print(type(action_arguments))
+        to_format2_step["post_job_actions"] = post_job_actions
 
 
 def _to_source(has_output_name, label_map, output_id=None):
