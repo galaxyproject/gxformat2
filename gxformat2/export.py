@@ -11,7 +11,6 @@ except ImportError:
     MutationDict = None
 
 
-# copy-paste from configmanage.py
 def _ordered_dump(data, stream=None, Dumper=yaml.SafeDumper, **kwds):
     class OrderedDumper(Dumper):
         pass
