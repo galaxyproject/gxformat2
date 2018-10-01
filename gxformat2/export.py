@@ -147,6 +147,10 @@ def _convert_input_connections(from_native_step, to_format2_step, label_map):
     input_connections = from_native_step['input_connections']
     for input_name, input_def in input_connections.items():
         source = _to_source(input_def, label_map)
+        if input_name == "__NO_INPUT_OUTPUT_NAME__":
+            input_name = "$step"
+            assert source.endswith("/__NO_INPUT_OUTPUT_NAME__")
+            source = source[:-len("/__NO_INPUT_OUTPUT_NAME__")]
         in_dict[input_name] = {
             "source": source
         }
