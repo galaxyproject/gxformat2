@@ -9,6 +9,8 @@ History
 0.5.0.dev0
 ---------------------
 
+* More fixes for PJA, add the ``doc`` keyword to format 2 workflows to match CWL workflows. Map to and from native Galaxy workflows as annotations.
+
 ---------------------
 0.4.0 (2018-10-01)
 ---------------------
