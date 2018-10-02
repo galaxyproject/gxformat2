@@ -70,6 +70,9 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
                 input_dict['type'] = 'collection'
             elif module_type == 'data_input':
                 input_dict['type'] = 'data'
+            elif module_type == "parameter_input":
+                tool_state = _tool_state(step)
+                input_dict['type'] = tool_state.get("parameter_type")
             # TODO: handle parameter_input types
             _copy_annotation(step, input_dict)
             # If we are only copying property - use the CWL-style short-hand
@@ -111,7 +114,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         _copy_properties(step, step_dict, optional_props, required_props)
         _copy_annotation(step, step_dict)
 
-        tool_state = json.loads(step['tool_state'])
+        tool_state = _tool_state(step)
         tool_state.pop("__page__")
         tool_state.pop("__rerun_remap_job_id__")
         step_dict['tool_state'] = tool_state
@@ -130,6 +133,11 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         }
 
     return data
+
+
+def _tool_state(step):
+    tool_state = json.loads(step['tool_state'])
+    return tool_state
 
 
 def _copy_properties(from_native_step, to_format2_step, optional_props=[], required_props=[]):

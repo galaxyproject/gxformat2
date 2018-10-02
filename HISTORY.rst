@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.7.0.dev0
+0.6.1.dev0
 ---------------------
 
-    
+* Fix export of non-data parameters and implicit workflow connections.
 
 ---------------------
 0.6.0 (2018-10-01)
