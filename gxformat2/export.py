@@ -225,3 +225,8 @@ def _to_source(has_output_name, label_map, output_id=None):
     else:
         source = "%s/%s" % (output_label, output_name)
     return source
+
+
+__all__ = (
+    'from_galaxy_native',
+)
