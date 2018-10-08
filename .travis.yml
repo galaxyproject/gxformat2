@@ -16,11 +16,6 @@ install:
   - git config --global user.email "planemo_test@galaxyproject.org"
   - pip install tox coveralls
 
-matrix:
-  allow_failures:
-    - env: TOX_ENV=py34
-    - env: TOX_ENV=py27
-
 script: tox -e $TOX_ENV
 
 after_success:
