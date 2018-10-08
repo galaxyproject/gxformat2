@@ -1,4 +1,4 @@
-from gxformat2.converter import yaml_to_workflow
+from gxformat2.converter import ExportOptions, yaml_to_workflow
 from gxformat2.export import from_galaxy_native
 from gxformat2.interface import ImporterGalaxyInterface
 
@@ -140,23 +140,9 @@ $graph:
 """)
     assert_valid_native(as_dict_native)
 
-    as_dict_native = to_native("""
+    graph_with_subworkflow = """
 format-version: v2.0
 $graph:
-- id: main
-  class: GalaxyWorkflow
-  inputs:
-    outer_input: data
-  steps:
-    first_cat:
-      tool_id: cat1
-      in:
-        input1: outer_input
-    nested_workflow:
-      run: subworkflow1
-      in:
-        inner_input: first_cat/out_file1
-
 - id: subworkflow1
   class: GalaxyWorkflow
   inputs:
@@ -170,12 +156,36 @@ $graph:
         seed_source:
           seed_source_selector: set_seed
           seed: asdf
-""")
+
+- id: main
+  class: GalaxyWorkflow
+  inputs:
+    outer_input: data
+  steps:
+    first_cat:
+      tool_id: cat1
+      in:
+        input1: outer_input
+    nested_workflow:
+      run: '#subworkflow1'
+      in:
+        inner_input: first_cat/out_file1
+"""
+    as_dict_native = to_native(graph_with_subworkflow)
     assert_valid_native(as_dict_native)
+    assert "subworkflows" not in as_dict_native
+
     as_format_2 = from_native(as_dict_native)
     # no duplicated workflows so we don't expect $graph representation yet...
     assert as_format_2["class"] == "GalaxyWorkflow"
     assert as_format_2["steps"]["nested_workflow"]["run"]["class"] == "GalaxyWorkflow"
+
+    export_options = ExportOptions()
+    export_options.deduplicate_subworkflows = True
+    as_dict_native = to_native(graph_with_subworkflow, export_options=export_options)
+    assert_valid_native(as_dict_native)
+
+    assert "subworkflows" in as_dict_native
 
 
 def round_trip(has_yaml):
@@ -188,8 +198,8 @@ def from_native(native_as_dict):
     return from_galaxy_native(native_as_dict, None)
 
 
-def to_native(has_yaml):
-    return yaml_to_workflow(has_yaml, MockGalaxyInterface(), None)
+def to_native(has_yaml, **kwds):
+    return yaml_to_workflow(has_yaml, MockGalaxyInterface(), None, **kwds)
 
 
 def assert_valid_format2(as_dict_format2):
