@@ -49,9 +49,7 @@ def python_to_workflow(as_python, galaxy_interface, workflow_directory=None):
 
 
 def _python_to_workflow(as_python, conversion_context):
-
-    if not isinstance(as_python, dict):
-        raise Exception("This is not a not a valid Galaxy workflow definition.")
+    as_python = _preprocess_graphs(as_python, conversion_context)
 
     if "class" not in as_python:
         raise Exception("This is not a not a valid Galaxy workflow definition, must define a class.")
@@ -159,6 +157,27 @@ def _python_to_workflow(as_python, conversion_context):
             "label": label,
             "uuid": output.get("uuid", None)
         })
+
+    return as_python
+
+
+def _preprocess_graphs(as_python, conversion_context):
+    if not isinstance(as_python, dict):
+        raise Exception("This is not a not a valid Galaxy workflow definition.")
+
+    format_version = as_python.get("format-version", "v2.0")
+    assert format_version == "v2.0"
+
+    if "class" not in as_python and "$graph" in as_python:
+        for subworkflow in as_python["$graph"]:
+            if not isinstance(subworkflow, dict):
+                raise Exception("Malformed workflow content in $graph")
+            if "id" not in subworkflow:
+                raise Exception("No subworkflow ID found for entry in $graph.")
+            subworkflow_id = subworkflow["id"]
+            if subworkflow_id == "main":
+                as_python = subworkflow
+                break
 
     return as_python
 

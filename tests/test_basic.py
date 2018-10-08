@@ -96,6 +96,21 @@ steps:
     assert as_dict["steps"]["cat"]["position"]["top"] == 370
 
 
+def test_dollar_graph_handling():
+    as_dict_native = to_native("""
+format-version: v2.0
+$graph:
+- id: main
+  class: GalaxyWorkflow
+  steps:
+    - tool_id: multiple_versions
+      tool_version: "0.1"
+      state:
+        inttest: 0
+""")
+    assert_valid_native(as_dict_native)
+
+
 def round_trip(has_yaml):
     return from_native(to_native(has_yaml))
 
