@@ -2,12 +2,13 @@
 from __future__ import print_function
 
 from collections import OrderedDict
+import copy
 import json
 import os
 import sys
 import uuid
 
-import yaml
+from ._yaml import ordered_load
 
 
 STEP_TYPES = [
@@ -30,13 +31,19 @@ RUN_ACTIONS_TO_STEPS = {
 }
 
 
-def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory):
+class ImportOptions(object):
+
+    def __init__(self):
+        self.deduplicate_subworkflows = False
+
+
+def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory, import_options=None):
     """Convert a Format 2 workflow into standard Galaxy format from supplied stream."""
-    as_python = yaml.safe_load(has_yaml)
-    return python_to_workflow(as_python, galaxy_interface, workflow_directory)
+    as_python = ordered_load(has_yaml)
+    return python_to_workflow(as_python, galaxy_interface, workflow_directory, import_options=import_options)
 
 
-def python_to_workflow(as_python, galaxy_interface, workflow_directory=None):
+def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, import_options=None):
     """Convert a Format 2 workflow into standard Galaxy format from supplied dictionary."""
     if workflow_directory is None:
         workflow_directory = os.path.abspath(".")
@@ -44,14 +51,24 @@ def python_to_workflow(as_python, galaxy_interface, workflow_directory=None):
     conversion_context = ConversionContext(
         galaxy_interface,
         workflow_directory,
+        import_options,
     )
-    return _python_to_workflow(as_python, conversion_context)
+    as_python = _preprocess_graphs(as_python, conversion_context)
+    subworkflows = None
+    if conversion_context.import_options.deduplicate_subworkflows:
+        # TODO: import only required workflows...
+        # TODO: dag sort these...
+        subworkflows = OrderedDict()
+        for graph_id, subworkflow_content in conversion_context.graph_ids.items():
+            subworkflow_conversion_context = conversion_context.get_subworkflow_conversion_context_graph("#" + graph_id)
+            subworkflows[graph_id] = _python_to_workflow(copy.deepcopy(subworkflow_content), subworkflow_conversion_context)
+    converted = _python_to_workflow(as_python, conversion_context)
+    if subworkflows is not None:
+        converted["subworkflows"] = subworkflows
+    return converted
 
 
 def _python_to_workflow(as_python, conversion_context):
-
-    if not isinstance(as_python, dict):
-        raise Exception("This is not a not a valid Galaxy workflow definition.")
 
     if "class" not in as_python:
         raise Exception("This is not a not a valid Galaxy workflow definition, must define a class.")
@@ -71,6 +88,7 @@ def _python_to_workflow(as_python, conversion_context):
     _populate_annotation(as_python)
 
     steps = as_python["steps"]
+    steps = _convert_dict_to_id_list_if_needed(steps, add_label=True)
 
     # If an inputs section is defined, build steps for each
     # and add to steps array.
@@ -105,20 +123,15 @@ def _python_to_workflow(as_python, conversion_context):
             if step_type is not None:
                 raise Exception("Steps specified as run actions cannot specify a type.")
             run_action = step.get("run")
-            if "@import" in run_action:
-                if len(run_action) > 1:
-                    raise Exception("@import must be only key if present.")
+            run_action = conversion_context.get_runnable_description(run_action)
+            if isinstance(run_action, dict):
+                run_class = run_action["class"]
+                run_to_step_function = eval(RUN_ACTIONS_TO_STEPS[run_class])
 
-                run_action_path = run_action["@import"]
-                runnable_path = os.path.join(conversion_context.workflow_directory, run_action_path)
-                with open(runnable_path, "r") as f:
-                    runnable_description = yaml.safe_load(f)
-                    run_action = runnable_description
-
-            run_class = run_action["class"]
-            run_to_step_function = eval(RUN_ACTIONS_TO_STEPS[run_class])
-
-            run_to_step_function(conversion_context, step, run_action)
+                run_to_step_function(conversion_context, step, run_action)
+            else:
+                step["content_id"] = run_action
+                step["type"] = "subworkflow"
             del step["run"]
 
     for step in steps.values():
@@ -158,6 +171,28 @@ def _python_to_workflow(as_python, conversion_context):
             "label": label,
             "uuid": output.get("uuid", None)
         })
+
+    return as_python
+
+
+def _preprocess_graphs(as_python, conversion_context):
+    if not isinstance(as_python, dict):
+        raise Exception("This is not a not a valid Galaxy workflow definition.")
+
+    format_version = as_python.get("format-version", "v2.0")
+    assert format_version == "v2.0"
+
+    if "class" not in as_python and "$graph" in as_python:
+        for subworkflow in as_python["$graph"]:
+            if not isinstance(subworkflow, dict):
+                raise Exception("Malformed workflow content in $graph")
+            if "id" not in subworkflow:
+                raise Exception("No subworkflow ID found for entry in $graph.")
+            subworkflow_id = subworkflow["id"]
+            if subworkflow_id == "main":
+                as_python = subworkflow
+
+            conversion_context.register_runnable(subworkflow)
 
     return as_python
 
@@ -203,13 +238,19 @@ def convert_inputs_to_steps(inputs, steps):
 
 
 def run_workflow_to_step(conversion_context, step, run_action):
-    subworkflow_conversion_context = conversion_context.get_subworkflow_conversion_context(step)
-
     step["type"] = "subworkflow"
-    step["subworkflow"] = _python_to_workflow(
-        run_action,
-        subworkflow_conversion_context,
-    )
+    if conversion_context.import_options.deduplicate_subworkflows and _is_graph_id_reference(run_action):
+        step["content_id"] = run_action
+    else:
+        subworkflow_conversion_context = conversion_context.get_subworkflow_conversion_context(step)
+        step["subworkflow"] = _python_to_workflow(
+            copy.deepcopy(run_action),
+            subworkflow_conversion_context,
+        )
+
+
+def _is_graph_id_reference(run_action):
+    return run_action and not isinstance(run_action, dict)
 
 
 def transform_data_input(context, step):
@@ -436,13 +477,11 @@ def run_tool_to_step(conversion_context, step, run_action):
     step["tool_hash"] = tool_description["tool_hash"]
 
 
-class ConversionContext(object):
+class BaseConversionContext(object):
 
-    def __init__(self, galaxy_interface, workflow_directory):
+    def __init__(self):
         self.labels = {}
         self.subworkflow_conversion_contexts = {}
-        self.galaxy_interface = galaxy_interface
-        self.workflow_directory = workflow_directory
 
     def step_id(self, label_or_id):
         if label_or_id in self.labels:
@@ -459,14 +498,89 @@ class ConversionContext(object):
         return id, value_parts[1]
 
     def get_subworkflow_conversion_context(self, step):
-        step_id = step["id"]
+        # TODO: sometimes this method takes format2 steps and some times converted native ones
+        # (for input connections) - redo this so the type signature is stronger.
+        step_id = step.get("id")
+        run_action = step.get("run")
+        if self.import_options.deduplicate_subworkflows and _is_graph_id_reference(run_action):
+            subworkflow_conversion_context = self.get_subworkflow_conversion_context_graph(run_action)
+            return subworkflow_conversion_context
+        if "content_id" in step:
+            subworkflow_conversion_context = self.get_subworkflow_conversion_context_graph(step["content_id"])
+            return subworkflow_conversion_context
+
         if step_id not in self.subworkflow_conversion_contexts:
-            subworkflow_conversion_context = ConversionContext(
-                self.galaxy_interface,
-                self.workflow_directory,
+
+            subworkflow_conversion_context = SubworkflowConversionContext(
+                self
             )
             self.subworkflow_conversion_contexts[step_id] = subworkflow_conversion_context
         return self.subworkflow_conversion_contexts[step_id]
+
+    def get_runnable_description(self, run_action):
+        if "@import" in run_action:
+            if len(run_action) > 1:
+                raise Exception("@import must be only key if present.")
+
+            run_action_path = run_action["@import"]
+            runnable_path = os.path.join(self.workflow_directory, run_action_path)
+            with open(runnable_path, "r") as f:
+                runnable_description = ordered_load(f)
+                run_action = runnable_description
+
+        if not self.import_options.deduplicate_subworkflows and _is_graph_id_reference(run_action):
+            run_action = self.graph_ids[run_action[1:]]
+
+        return run_action
+
+
+class ConversionContext(BaseConversionContext):
+
+    def __init__(self, galaxy_interface, workflow_directory, import_options=None):
+        super(ConversionContext, self).__init__()
+        self.import_options = import_options or ImportOptions()
+        self.graph_ids = OrderedDict()
+        self.graph_id_subworkflow_conversion_contexts = {}
+        self.workflow_directory = workflow_directory
+        self.galaxy_interface = galaxy_interface
+
+    def register_runnable(self, run_action):
+        assert "id" in run_action
+        self.graph_ids[run_action["id"]] = run_action
+
+    def get_subworkflow_conversion_context_graph(self, graph_id):
+        if graph_id not in self.graph_id_subworkflow_conversion_contexts:
+            subworkflow_conversion_context = SubworkflowConversionContext(
+                self
+            )
+            self.graph_id_subworkflow_conversion_contexts[graph_id] = subworkflow_conversion_context
+        return self.graph_id_subworkflow_conversion_contexts[graph_id]
+
+
+class SubworkflowConversionContext(BaseConversionContext):
+
+    def __init__(self, parent_context):
+        super(SubworkflowConversionContext, self).__init__()
+        self.parent_context = parent_context
+
+    @property
+    def graph_ids(self):
+        return self.parent_context.graph_ids
+
+    @property
+    def workflow_directory(self):
+        return self.parent_context.workflow_directory
+
+    @property
+    def import_options(self):
+        return self.parent_context.import_options
+
+    @property
+    def galaxy_interface(self):
+        return self.parent_context.galaxy_interface
+
+    def get_subworkflow_conversion_context_graph(self, graph_id):
+        return self.parent_context.get_subworkflow_conversion_context_graph(graph_id)
 
 
 def _action(type, name, arguments={}):
@@ -499,7 +613,6 @@ def _init_connect_dict(step):
     # handle CWL-style in dict connections.
     if "in" in step:
         step_in = step["in"]
-        print(step)
         assert isinstance(step_in, dict)
         for key, value in step_in.items():
             # TODO: this can be a list right?
@@ -561,7 +674,7 @@ def _populate_tool_state(step, tool_state):
     step["tool_state"] = json.dumps(tool_state)
 
 
-def _convert_dict_to_id_list_if_needed(dict_or_list):
+def _convert_dict_to_id_list_if_needed(dict_or_list, add_label=False):
     rval = dict_or_list
     if isinstance(dict_or_list, dict):
         rval = []
@@ -569,6 +682,8 @@ def _convert_dict_to_id_list_if_needed(dict_or_list):
             if not isinstance(value, dict):
                 value = {"type": value}
             value["id"] = key
+            if add_label:
+                value["label"] = key
             rval.append(value)
     return rval
 
