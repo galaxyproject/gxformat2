@@ -145,15 +145,18 @@ def _copy_properties(from_native_step, to_format2_step, optional_props=[], requi
 def _convert_input_connections(from_native_step, to_format2_step, label_map):
     in_dict = {}
     input_connections = from_native_step['input_connections']
-    for input_name, input_def in input_connections.items():
-        source = _to_source(input_def, label_map)
-        if input_name == "__NO_INPUT_OUTPUT_NAME__":
-            input_name = "$step"
-            assert source.endswith("/__NO_INPUT_OUTPUT_NAME__")
-            source = source[:-len("/__NO_INPUT_OUTPUT_NAME__")]
-        in_dict[input_name] = {
-            "source": source
-        }
+    for input_name, input_defs in input_connections.items():
+        if not isinstance(input_defs, list):
+            input_defs = [input_defs]
+        for input_def in input_defs:
+            source = _to_source(input_def, label_map)
+            if input_name == "__NO_INPUT_OUTPUT_NAME__":
+                input_name = "$step"
+                assert source.endswith("/__NO_INPUT_OUTPUT_NAME__")
+                source = source[:-len("/__NO_INPUT_OUTPUT_NAME__")]
+            in_dict[input_name] = {
+                "source": source
+            }
     to_format2_step["in"] = in_dict
 
 

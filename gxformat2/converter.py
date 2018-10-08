@@ -500,7 +500,6 @@ def _init_connect_dict(step):
     # handle CWL-style in dict connections.
     if "in" in step:
         step_in = step["in"]
-        print(step)
         assert isinstance(step_in, dict)
         for key, value in step_in.items():
             # TODO: this can be a list right?
