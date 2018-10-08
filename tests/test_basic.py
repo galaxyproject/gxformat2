@@ -140,6 +140,43 @@ $graph:
 """)
     assert_valid_native(as_dict_native)
 
+    as_dict_native = to_native("""
+format-version: v2.0
+$graph:
+- id: main
+  class: GalaxyWorkflow
+  inputs:
+    outer_input: data
+  steps:
+    first_cat:
+      tool_id: cat1
+      in:
+        input1: outer_input
+    nested_workflow:
+      run: subworkflow1
+      in:
+        inner_input: first_cat/out_file1
+
+- id: subworkflow1
+  class: GalaxyWorkflow
+  inputs:
+    inner_input: data
+  steps:
+    - tool_id: random_lines1
+      state:
+        num_lines: 1
+        input:
+          $link: inner_input
+        seed_source:
+          seed_source_selector: set_seed
+          seed: asdf
+""")
+    assert_valid_native(as_dict_native)
+    as_format_2 = from_native(as_dict_native)
+    # no duplicated workflows so we don't expect $graph representation yet...
+    assert as_format_2["class"] == "GalaxyWorkflow"
+    assert as_format_2["steps"]["nested_workflow"]["run"]["class"] == "GalaxyWorkflow"
+
 
 def round_trip(has_yaml):
     as_native = to_native(has_yaml)

@@ -104,16 +104,7 @@ def _python_to_workflow(as_python, conversion_context):
             if step_type is not None:
                 raise Exception("Steps specified as run actions cannot specify a type.")
             run_action = step.get("run")
-            if "@import" in run_action:
-                if len(run_action) > 1:
-                    raise Exception("@import must be only key if present.")
-
-                run_action_path = run_action["@import"]
-                runnable_path = os.path.join(conversion_context.workflow_directory, run_action_path)
-                with open(runnable_path, "r") as f:
-                    runnable_description = ordered_load(f)
-                    run_action = runnable_description
-
+            run_action = conversion_context.get_runnable_description(run_action)
             run_class = run_action["class"]
             run_to_step_function = eval(RUN_ACTIONS_TO_STEPS[run_class])
 
@@ -177,7 +168,8 @@ def _preprocess_graphs(as_python, conversion_context):
             subworkflow_id = subworkflow["id"]
             if subworkflow_id == "main":
                 as_python = subworkflow
-                break
+
+            conversion_context.register_runnable(subworkflow)
 
     return as_python
 
@@ -463,6 +455,7 @@ class ConversionContext(object):
         self.subworkflow_conversion_contexts = {}
         self.galaxy_interface = galaxy_interface
         self.workflow_directory = workflow_directory
+        self.graph_ids = {}
 
     def step_id(self, label_or_id):
         if label_or_id in self.labels:
@@ -487,6 +480,26 @@ class ConversionContext(object):
             )
             self.subworkflow_conversion_contexts[step_id] = subworkflow_conversion_context
         return self.subworkflow_conversion_contexts[step_id]
+
+    def get_runnable_description(self, run_action):
+        if "@import" in run_action:
+            if len(run_action) > 1:
+                raise Exception("@import must be only key if present.")
+
+            run_action_path = run_action["@import"]
+            runnable_path = os.path.join(self.workflow_directory, run_action_path)
+            with open(runnable_path, "r") as f:
+                runnable_description = ordered_load(f)
+                run_action = runnable_description
+
+        if not isinstance(run_action, dict):
+            run_action = self.graph_ids[run_action]
+
+        return run_action
+
+    def register_runnable(self, run_action):
+        assert "id" in run_action
+        self.graph_ids[run_action["id"]] = run_action
 
 
 def _action(type, name, arguments={}):
