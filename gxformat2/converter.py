@@ -31,19 +31,19 @@ RUN_ACTIONS_TO_STEPS = {
 }
 
 
-class ExportOptions(object):
+class ImportOptions(object):
 
     def __init__(self):
         self.deduplicate_subworkflows = False
 
 
-def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory, export_options=None):
+def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory, import_options=None):
     """Convert a Format 2 workflow into standard Galaxy format from supplied stream."""
     as_python = ordered_load(has_yaml)
-    return python_to_workflow(as_python, galaxy_interface, workflow_directory, export_options=export_options)
+    return python_to_workflow(as_python, galaxy_interface, workflow_directory, import_options=import_options)
 
 
-def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, export_options=None):
+def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, import_options=None):
     """Convert a Format 2 workflow into standard Galaxy format from supplied dictionary."""
     if workflow_directory is None:
         workflow_directory = os.path.abspath(".")
@@ -51,11 +51,11 @@ def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, exp
     conversion_context = ConversionContext(
         galaxy_interface,
         workflow_directory,
-        export_options,
+        import_options,
     )
     as_python = _preprocess_graphs(as_python, conversion_context)
     subworkflows = None
-    if conversion_context.export_options.deduplicate_subworkflows:
+    if conversion_context.import_options.deduplicate_subworkflows:
         # TODO: import only required workflows...
         # TODO: dag sort these...
         subworkflows = OrderedDict()
@@ -239,7 +239,7 @@ def convert_inputs_to_steps(inputs, steps):
 
 def run_workflow_to_step(conversion_context, step, run_action):
     step["type"] = "subworkflow"
-    if conversion_context.export_options.deduplicate_subworkflows and _is_graph_id_reference(run_action):
+    if conversion_context.import_options.deduplicate_subworkflows and _is_graph_id_reference(run_action):
         step["content_id"] = run_action
     else:
         subworkflow_conversion_context = conversion_context.get_subworkflow_conversion_context(step)
@@ -502,7 +502,7 @@ class BaseConversionContext(object):
         # (for input connections) - redo this so the type signature is stronger.
         step_id = step.get("id")
         run_action = step.get("run")
-        if self.export_options.deduplicate_subworkflows and _is_graph_id_reference(run_action):
+        if self.import_options.deduplicate_subworkflows and _is_graph_id_reference(run_action):
             subworkflow_conversion_context = self.get_subworkflow_conversion_context_graph(run_action)
             return subworkflow_conversion_context
         if "content_id" in step:
@@ -528,7 +528,7 @@ class BaseConversionContext(object):
                 runnable_description = ordered_load(f)
                 run_action = runnable_description
 
-        if not self.export_options.deduplicate_subworkflows and _is_graph_id_reference(run_action):
+        if not self.import_options.deduplicate_subworkflows and _is_graph_id_reference(run_action):
             run_action = self.graph_ids[run_action[1:]]
 
         return run_action
@@ -536,9 +536,9 @@ class BaseConversionContext(object):
 
 class ConversionContext(BaseConversionContext):
 
-    def __init__(self, galaxy_interface, workflow_directory, export_options=None):
+    def __init__(self, galaxy_interface, workflow_directory, import_options=None):
         super(ConversionContext, self).__init__()
-        self.export_options = export_options or ExportOptions()
+        self.import_options = import_options or ImportOptions()
         self.graph_ids = OrderedDict()
         self.graph_id_subworkflow_conversion_contexts = {}
         self.workflow_directory = workflow_directory
@@ -572,8 +572,8 @@ class SubworkflowConversionContext(BaseConversionContext):
         return self.parent_context.workflow_directory
 
     @property
-    def export_options(self):
-        return self.parent_context.export_options
+    def import_options(self):
+        return self.parent_context.import_options
 
     @property
     def galaxy_interface(self):

@@ -1,4 +1,4 @@
-from gxformat2.converter import ExportOptions, yaml_to_workflow
+from gxformat2.converter import ImportOptions, yaml_to_workflow
 from gxformat2.export import from_galaxy_native
 from gxformat2.interface import ImporterGalaxyInterface
 
@@ -180,9 +180,9 @@ $graph:
     assert as_format_2["class"] == "GalaxyWorkflow"
     assert as_format_2["steps"]["nested_workflow"]["run"]["class"] == "GalaxyWorkflow"
 
-    export_options = ExportOptions()
-    export_options.deduplicate_subworkflows = True
-    as_dict_native = to_native(graph_with_subworkflow, export_options=export_options)
+    import_options = ImportOptions()
+    import_options.deduplicate_subworkflows = True
+    as_dict_native = to_native(graph_with_subworkflow, import_options=import_options)
     assert_valid_native(as_dict_native)
 
     assert "subworkflows" in as_dict_native
