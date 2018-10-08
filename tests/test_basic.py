@@ -15,7 +15,7 @@ steps:
     assert_valid_native(as_dict_native)
     assert len(as_dict_native["steps"]) == 1
 
-    as_dict_format2 = from_galaxy_native(as_dict_native, None)
+    as_dict_format2 = from_galaxy_native(as_dict_native)
     assert_valid_format2(as_dict_format2)
     steps = as_dict_format2["steps"]
     # Step doesn't have a label - so it is serialized as a list.
@@ -45,10 +45,39 @@ steps:
     tool_step = native_steps["1"]
     assert tool_step["label"] == "type_source"
 
-    as_dict_format2 = from_galaxy_native(as_dict_native, None)
+    as_dict_format2 = from_native(as_dict_native)
     assert_valid_format2(as_dict_format2)
     steps = as_dict_format2["steps"]
     assert isinstance(steps, dict)
+
+
+def test_docs():
+    as_dict = round_trip("""
+class: GalaxyWorkflow
+doc: |
+  Simple workflow that no-op cats a file and then selects 10 random lines.
+inputs:
+  the_input:
+    type: File
+    doc: input doc
+steps:
+  cat:
+    tool_id: cat1
+    doc: cat doc
+    in:
+      input1: the_input
+""")
+    assert as_dict["doc"] == "Simple workflow that no-op cats a file and then selects 10 random lines.\n"
+    assert as_dict["inputs"]["the_input"]["doc"] == "input doc"
+    assert as_dict["steps"]["cat"]["doc"] == "cat doc"
+
+
+def round_trip(has_yaml):
+    return from_native(to_native(has_yaml))
+
+
+def from_native(native_as_dict):
+    return from_galaxy_native(native_as_dict, None)
 
 
 def to_native(has_yaml):
