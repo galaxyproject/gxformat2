@@ -186,6 +186,7 @@ $graph:
     assert_valid_native(as_dict_native)
 
     assert "subworkflows" in as_dict_native
+    assert len(as_dict_native["subworkflows"]) == 1
 
 
 def round_trip(has_yaml):

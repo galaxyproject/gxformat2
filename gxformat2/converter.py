@@ -60,6 +60,8 @@ def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, imp
         # TODO: dag sort these...
         subworkflows = OrderedDict()
         for graph_id, subworkflow_content in conversion_context.graph_ids.items():
+            if graph_id == "main":
+                continue
             subworkflow_conversion_context = conversion_context.get_subworkflow_conversion_context_graph("#" + graph_id)
             subworkflows[graph_id] = _python_to_workflow(copy.deepcopy(subworkflow_content), subworkflow_conversion_context)
     converted = _python_to_workflow(as_python, conversion_context)
