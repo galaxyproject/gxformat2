@@ -9,7 +9,12 @@ History
 0.7.0.dev0
 ---------------------
 
-    
+* Add some basic test cases.
+* Allow ID-map style listing of steps.
+* Ordered load (in addition to existing dump functionality) or ordering of steps in ID-map style variant works.
+* Allow CWL-style $graph defs that can define multiple workflows in a single file.
+* Initial work on de-duplicating subworkflow definitions on import.
+* Fix position handling while exporting workflow.
 
 ---------------------
 0.6.1 (2018-10-01)
