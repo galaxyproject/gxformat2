@@ -115,8 +115,8 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         _copy_annotation(step, step_dict)
 
         tool_state = _tool_state(step)
-        tool_state.pop("__page__")
-        tool_state.pop("__rerun_remap_job_id__")
+        tool_state.pop("__page__", None)
+        tool_state.pop("__rerun_remap_job_id__", None)
         step_dict['tool_state'] = tool_state
 
         _convert_input_connections(step, step_dict, label_map)
