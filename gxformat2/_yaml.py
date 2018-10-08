@@ -1,3 +1,4 @@
+"""YAML loading utilities for gxformat2."""
 from collections import OrderedDict
 
 try:
@@ -8,6 +9,7 @@ import yaml
 
 
 def ordered_load(stream, Loader=yaml.SafeLoader, **kwds):
+    """Safe and ordered load of YAML from stream."""
     class OrderedLoader(Loader):
         pass
 
@@ -23,6 +25,7 @@ def ordered_load(stream, Loader=yaml.SafeLoader, **kwds):
 
 
 def ordered_dump(data, stream=None, Dumper=yaml.SafeDumper, **kwds):
+    """Safe and ordered dump of YAML to stream."""
     class OrderedDumper(Dumper):
         pass
 
