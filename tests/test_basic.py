@@ -96,6 +96,36 @@ steps:
     assert as_dict["steps"]["cat"]["position"]["top"] == 370
 
 
+def test_subworkflow_round_trip():
+    as_dict = round_trip("""
+class: GalaxyWorkflow
+inputs:
+  outer_input: data
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: outer_input
+  nested_workflow:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner_input: data
+      steps:
+        - tool_id: random_lines1
+          state:
+            num_lines: 1
+            input:
+              $link: inner_input
+            seed_source:
+              seed_source_selector: set_seed
+              seed: asdf
+    in:
+      inner_input: first_cat/out_file1
+""")
+    assert as_dict["steps"]["nested_workflow"]["run"]["class"] == "GalaxyWorkflow"
+
+
 def test_dollar_graph_handling():
     as_dict_native = to_native("""
 format-version: v2.0
@@ -112,7 +142,9 @@ $graph:
 
 
 def round_trip(has_yaml):
-    return from_native(to_native(has_yaml))
+    as_native = to_native(has_yaml)
+    assert_valid_native(as_native)
+    return from_native(as_native)
 
 
 def from_native(native_as_dict):
@@ -137,7 +169,7 @@ def assert_valid_native(as_dict_native):
         assert key == str(step_count)
         step_count += 1
         assert "type" in value
-        assert value["type"] in ["data_input", "data_collection_input", "tool"]
+        assert value["type"] in ["data_input", "data_collection_input", "tool", "subworkflow"]
 
 
 class MockGalaxyInterface(ImporterGalaxyInterface):
