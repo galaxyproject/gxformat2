@@ -7,7 +7,7 @@ import os
 import sys
 import uuid
 
-import yaml
+from ._yaml import ordered_load
 
 
 STEP_TYPES = [
@@ -32,7 +32,7 @@ RUN_ACTIONS_TO_STEPS = {
 
 def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory):
     """Convert a Format 2 workflow into standard Galaxy format from supplied stream."""
-    as_python = yaml.safe_load(has_yaml)
+    as_python = ordered_load(has_yaml)
     return python_to_workflow(as_python, galaxy_interface, workflow_directory)
 
 
@@ -71,6 +71,7 @@ def _python_to_workflow(as_python, conversion_context):
     _populate_annotation(as_python)
 
     steps = as_python["steps"]
+    steps = _convert_dict_to_id_list_if_needed(steps, add_label=True)
 
     # If an inputs section is defined, build steps for each
     # and add to steps array.
@@ -112,7 +113,7 @@ def _python_to_workflow(as_python, conversion_context):
                 run_action_path = run_action["@import"]
                 runnable_path = os.path.join(conversion_context.workflow_directory, run_action_path)
                 with open(runnable_path, "r") as f:
-                    runnable_description = yaml.safe_load(f)
+                    runnable_description = ordered_load(f)
                     run_action = runnable_description
 
             run_class = run_action["class"]
@@ -561,7 +562,7 @@ def _populate_tool_state(step, tool_state):
     step["tool_state"] = json.dumps(tool_state)
 
 
-def _convert_dict_to_id_list_if_needed(dict_or_list):
+def _convert_dict_to_id_list_if_needed(dict_or_list, add_label=False):
     rval = dict_or_list
     if isinstance(dict_or_list, dict):
         rval = []
@@ -569,6 +570,8 @@ def _convert_dict_to_id_list_if_needed(dict_or_list):
             if not isinstance(value, dict):
                 value = {"type": value}
             value["id"] = key
+            if add_label:
+                value["label"] = key
             rval.append(value)
     return rval
 

@@ -3,26 +3,7 @@
 from collections import OrderedDict
 import json
 
-import yaml
-
-try:
-    from galaxy.model.custom_types import MutationDict
-except ImportError:
-    MutationDict = None
-
-
-def _ordered_dump(data, stream=None, Dumper=yaml.SafeDumper, **kwds):
-    class OrderedDumper(Dumper):
-        pass
-
-    def _dict_representer(dumper, data):
-        return dumper.represent_mapping(
-            yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
-            list(data.items()))
-    OrderedDumper.add_representer(OrderedDict, _dict_representer)
-    if MutationDict is not None:
-        OrderedDumper.add_representer(MutationDict, _dict_representer)
-    return yaml.dump(data, stream, OrderedDumper, **kwds)
+from ._yaml import ordered_dump
 
 
 def _copy_annotation(from_native_step, to_format2_step):
@@ -47,8 +28,11 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
     native_steps = native_workflow_dict.get("steps")
 
     label_map = {}
+    all_labeled = True
     for key, step in native_steps.items():
         label = step.get("label")
+        if not label:
+            all_labeled = False
         label_map[str(key)] = label
 
     inputs = OrderedDict()
@@ -125,11 +109,19 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
 
     data['inputs'] = inputs
     data['outputs'] = outputs
-    data['steps'] = steps
+
+    if all_labeled:
+        steps_dict = OrderedDict()
+        for step in steps:
+            label = step.pop("label")
+            steps_dict[label] = step
+        data['steps'] = steps_dict
+    else:
+        data['steps'] = steps
 
     if json_wrapper:
         return {
-            "yaml_content": _ordered_dump(data)
+            "yaml_content": ordered_dump(data)
         }
 
     return data
