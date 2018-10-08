@@ -6,10 +6,13 @@ import json
 from ._yaml import ordered_dump
 
 
-def _copy_annotation(from_native_step, to_format2_step):
+def _copy_common_properties(from_native_step, to_format2_step):
     annotation = from_native_step.get("annotation", "")
     if annotation:
         to_format2_step["doc"] = annotation
+    position = from_native_step.get("position", None)
+    if position:
+        to_format2_step["position"] = position
 
 
 def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=False):
@@ -19,7 +22,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
     """
     data = OrderedDict()
     data['class'] = 'GalaxyWorkflow'
-    _copy_annotation(native_workflow_dict, data)
+    _copy_common_properties(native_workflow_dict, data)
     for top_level_key in ['tags', 'uuid']:
         value = native_workflow_dict.get(top_level_key)
         if value:
@@ -58,7 +61,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
                 tool_state = _tool_state(step)
                 input_dict['type'] = tool_state.get("parameter_type")
             # TODO: handle parameter_input types
-            _copy_annotation(step, input_dict)
+            _copy_common_properties(step, input_dict)
             # If we are only copying property - use the CWL-style short-hand
             if len(input_dict) == 1:
                 inputs[step_id] = input_dict["type"]
@@ -69,7 +72,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         if module_type == "pause":
             step_dict = OrderedDict()
             optional_props = ['label']
-            _copy_annotation(step, step_dict)
+            _copy_common_properties(step, step_dict)
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
             step_dict["type"] = "pause"
@@ -79,7 +82,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         if module_type == 'subworkflow':
             step_dict = OrderedDict()
             optional_props = ['label']
-            _copy_annotation(step, step_dict)
+            _copy_common_properties(step, step_dict)
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
             _convert_post_job_actions(step, step_dict)
@@ -96,7 +99,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         optional_props = ['label', 'tool_shed_repository']
         required_props = ['tool_id', 'tool_version']
         _copy_properties(step, step_dict, optional_props, required_props)
-        _copy_annotation(step, step_dict)
+        _copy_common_properties(step, step_dict)
 
         tool_state = _tool_state(step)
         tool_state.pop("__page__", None)

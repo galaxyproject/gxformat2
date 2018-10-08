@@ -51,7 +51,7 @@ steps:
     assert isinstance(steps, dict)
 
 
-def test_docs():
+def test_docs_round_trip():
     as_dict = round_trip("""
 class: GalaxyWorkflow
 doc: |
@@ -70,6 +70,30 @@ steps:
     assert as_dict["doc"] == "Simple workflow that no-op cats a file and then selects 10 random lines.\n"
     assert as_dict["inputs"]["the_input"]["doc"] == "input doc"
     assert as_dict["steps"]["cat"]["doc"] == "cat doc"
+
+
+def test_position_round_trip():
+    as_dict = round_trip("""
+class: GalaxyWorkflow
+inputs:
+  the_input:
+    type: data
+    position:
+      left: 30
+      top: 70
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: the_input
+    position:
+      left: 130
+      top: 370
+""")
+    assert as_dict["inputs"]["the_input"]["position"]["left"] == 30
+    assert as_dict["inputs"]["the_input"]["position"]["top"] == 70
+    assert as_dict["steps"]["cat"]["position"]["left"] == 130
+    assert as_dict["steps"]["cat"]["position"]["top"] == 370
 
 
 def round_trip(has_yaml):
