@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.7.1.dev0
+0.7.1 (2018-10-09)
 ---------------------
 
 * Various small fixes for changes in 0.7.1.
