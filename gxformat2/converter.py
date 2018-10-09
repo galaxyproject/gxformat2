@@ -45,6 +45,9 @@ def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory, import_opti
 
 def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, import_options=None):
     """Convert a Format 2 workflow into standard Galaxy format from supplied dictionary."""
+    if "yaml_content" in as_python:
+        as_python = ordered_load(as_python["yaml_content"])
+
     if workflow_directory is None:
         workflow_directory = os.path.abspath(".")
 
@@ -683,9 +686,10 @@ def _convert_dict_to_id_list_if_needed(dict_or_list, add_label=False):
         for key, value in dict_or_list.items():
             if not isinstance(value, dict):
                 value = {"type": value}
-            value["id"] = key
             if add_label:
                 value["label"] = key
+            else:
+                value["id"] = key
             rval.append(value)
     return rval
 

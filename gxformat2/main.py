@@ -1,10 +1,9 @@
 """Module containing :func:`convert_and_import_workflow`."""
 import os
 
-import yaml
-
 from .converter import python_to_workflow, yaml_to_workflow
 from .interface import BioBlendImporterGalaxyInterface
+from ._yaml import ordered_load
 
 
 def convert_and_import_workflow(has_workflow, **kwds):
@@ -20,12 +19,15 @@ def convert_and_import_workflow(has_workflow, **kwds):
         if workflow_directory is None:
             workflow_directory = os.path.dirname(has_workflow)
         with open(workflow_path, "r") as f:
-            has_workflow = yaml.safe_load(f)
+            has_workflow = ordered_load(f)
 
     if workflow_directory is not None:
         workflow_directory = os.path.abspath(workflow_directory)
 
     convert = kwds.get("convert", True)
+    raw_yaml = kwds.get("raw_yaml", False)
+    if raw_yaml and convert:
+        raise Exception("Incompatible options selected.")
     if convert:
         if isinstance(has_workflow, dict):
             workflow = python_to_workflow(has_workflow, galaxy_interface, workflow_directory)
@@ -33,8 +35,10 @@ def convert_and_import_workflow(has_workflow, **kwds):
             workflow = yaml_to_workflow(has_workflow, galaxy_interface, workflow_directory)
     else:
         workflow = has_workflow
-        if not isinstance(workflow, dict):
-            workflow = yaml.safe_load(workflow)
+        if not isinstance(workflow, dict) and not raw_yaml:
+            workflow = ordered_load(workflow)
+        else:
+            workflow = {"yaml_content": workflow}
 
     name = kwds.get("name", None)
     if name is not None:
