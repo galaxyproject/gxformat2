@@ -146,7 +146,7 @@ def _copy_properties(from_native_step, to_format2_step, optional_props=[], requi
 
 
 def _convert_input_connections(from_native_step, to_format2_step, label_map):
-    in_dict = {}
+    in_dict = from_native_step.get("in", {}).copy()
     input_connections = from_native_step['input_connections']
     for input_name, input_defs in input_connections.items():
         if not isinstance(input_defs, list):

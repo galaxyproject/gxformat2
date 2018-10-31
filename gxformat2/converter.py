@@ -620,14 +620,24 @@ def _init_connect_dict(step):
     if "in" in step:
         step_in = step["in"]
         assert isinstance(step_in, dict)
+        connection_keys = set()
         for key, value in step_in.items():
             # TODO: this can be a list right?
-            if isinstance(value, dict):
+            if isinstance(value, dict) and 'source' in value:
                 value = value["source"]
+            elif isinstance(value, dict) and 'default' in value:
+                continue
+            elif isinstance(value, dict):
+                raise KeyError('step input must define either source or default %s' % value)
             value = value.replace("/", "#", 1)
             connect[key] = [value]
+            connection_keys.add(key)
 
-        del step['in']
+        for key in connection_keys:
+            del step_in[key]
+
+        if len(step_in) == 0:
+            del step['in']
 
     return connect
 
