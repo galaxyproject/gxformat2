@@ -9,7 +9,7 @@ History
 0.8.0.dev0
 ---------------------
 
-    
+* Implement experimental CWL-style step defaults (see Galaxy PR #6850).
 
 ---------------------
 0.7.1 (2018-10-09)
