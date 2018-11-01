@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.8.0.dev0
+0.8.0 (2018-11-01)
 ---------------------
 
 * Implement experimental CWL-style step defaults (see Galaxy PR #6850).
