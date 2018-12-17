@@ -214,7 +214,7 @@ def _convert_post_job_actions(from_native_step, to_format2_step):
 
 
 def _to_source(has_output_name, label_map, output_id=None):
-    output_id = output_id or has_output_name['id']
+    output_id = output_id if output_id is not None else has_output_name['id']
     output_id = str(output_id)
     output_name = has_output_name['output_name']
     output_label = label_map.get(output_id) or output_id
