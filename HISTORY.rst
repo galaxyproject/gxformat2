@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.8.1.dev0
+0.8.1 (2019-03-11)
 ---------------------
 
 * Implement change datatype PJA.
