@@ -194,6 +194,10 @@ def _convert_post_job_actions(from_native_step, to_format2_step):
             elif action_type == "DeleteIntermediatesAction":
                 output_dict = _ensure_output_def(output_name)
                 output_dict["delete_intermediate_datasets"] = True
+            elif action_type == "ChangeDatatypeAction":
+                output_dict = _ensure_output_def(output_name)
+                output_dict['change_datatype'] = action_args
+                handled = True
             elif action_type == "TagDatasetAction":
                 output_dict = _ensure_output_def(output_name)
                 output_dict["add_tags"] = action_args["tags"].split(",")

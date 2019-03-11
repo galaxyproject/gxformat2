@@ -31,6 +31,43 @@ RUN_ACTIONS_TO_STEPS = {
     'GalaxyTool': 'run_tool_to_step',
 }
 
+POST_JOB_ACTIONS = {
+    'hide': {
+        'action_class': "HideDatasetAction",
+        'default': False,
+        'arguments': lambda x: x,
+    },
+    'rename': {
+        'action_class': 'RenameDatasetAction',
+        'default': {},
+        'arguments': lambda x: {'newname': x},
+    },
+    'delete_intermediate_datasets': {
+        'action_class': 'DeleteIntermediatesAction',
+        'default': False,
+        'arguments': lambda x: x,
+    },
+    'change_datatype': {
+        'action_class': 'ChangeDatatypeAction',
+        'default': {},
+        'arguments': lambda x: {'newtype': x},
+    },
+    'add_tags': {
+        'action_class': 'TagDatasetAction',
+        'default': [],
+        'arguments': lambda x: {'tags': ",".join(x)},
+    },
+    'remove_tags': {
+        'action_class': 'RemoveTagDatasetAction',
+        'default': [],
+        'arguments': lambda x: {'tags': ",".join(x)},
+    },
+}
+
+
+def rename_arg(argument):
+    return argument
+
 
 class ImportOptions(object):
 
@@ -419,56 +456,17 @@ def transform_tool(context, step):
     # Handle outputs.
     if "outputs" in step:
         for name, output in step.get("outputs", {}).items():
-            if output.get("hide", False):
-                action_name = "HideDatasetAction%s" % name
-                action = _action(
-                    "HideDatasetAction",
-                    name,
-                )
-                post_job_actions[action_name] = action
-
-            if output.get("rename", None):
-                new_name = output.get("rename")
-                action_name = "RenameDatasetAction%s" % name
-                arguments = dict(newname=new_name)
-                action = _action(
-                    "RenameDatasetAction",
-                    name,
-                    arguments,
-                )
-                post_job_actions[action_name] = action
-
-            if output.get("delete_intermediate_datasets", None):
-                action_name = "DeleteIntermediatesAction%s" % name
-                arguments = dict()
-                action = _action(
-                    "DeleteIntermediatesAction",
-                    name,
-                    arguments,
-                )
-                post_job_actions[action_name] = action
-
-            add_tags = output.get("add_tags", [])
-            if add_tags:
-                action_name = "TagDatasetAction%s" % name
-                arguments = dict(tags=",".join(add_tags))
-                action = _action(
-                    "TagDatasetAction",
-                    name,
-                    arguments
-                )
-                post_job_actions[action_name] = action
-
-            remove_tags = output.get("remove_tags", [])
-            if remove_tags:
-                action_name = "RemoveTagDatasetAction%s" % name
-                arguments = dict(tags=",".join(remove_tags))
-                action = _action(
-                    "RemoveTagDatasetAction",
-                    name,
-                    arguments
-                )
-                post_job_actions[action_name] = action
+            for action_key, action_dict in POST_JOB_ACTIONS.items():
+                action_argument = output.get(action_key, action_dict['default'])
+                if action_argument:
+                    action_class = action_dict['action_class']
+                    action_name = action_class + name
+                    action = _action(
+                        action_class,
+                        name,
+                        arguments=action_dict['arguments'](action_argument)
+                    )
+                    post_job_actions[action_name] = action
 
         del step["outputs"]
 
