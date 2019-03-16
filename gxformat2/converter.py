@@ -478,7 +478,8 @@ def run_tool_to_step(conversion_context, step, run_action):
     step["type"] = "tool"
     step["tool_id"] = tool_description["tool_id"]
     step["tool_version"] = tool_description["tool_version"]
-    step["tool_hash"] = tool_description["tool_hash"]
+    step["tool_hash"] = tool_description.get("tool_hash")
+    step["tool_uuid"] = tool_description.get("uuid")
 
 
 class BaseConversionContext(object):
