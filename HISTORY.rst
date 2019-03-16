@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.8.2.dev0
+0.8.2 (2019-03-16)
 ---------------------
 
 * Allow another API return option for experimental tool creation API.

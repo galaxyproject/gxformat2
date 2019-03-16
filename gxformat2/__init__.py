@@ -1,6 +1,6 @@
 """The public interface or entry point for the Format 2 workflow code."""
 
-__version__ = '0.8.2.dev0'
+__version__ = '0.8.2'
 
 PROJECT_NAME = "gxformat2"
 PROJECT_OWNER = PROJECT_USERAME = "jmchilton"
