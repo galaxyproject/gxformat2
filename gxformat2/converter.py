@@ -52,6 +52,11 @@ POST_JOB_ACTIONS = {
         'default': {},
         'arguments': lambda x: {'newtype': x},
     },
+    'set_columns': {
+        'action_class': 'ColumnSetAction',
+        'default': {},
+        'arguments': lambda x: x,
+    },
     'add_tags': {
         'action_class': 'TagDatasetAction',
         'default': [],

@@ -204,6 +204,9 @@ def _convert_post_job_actions(from_native_step, to_format2_step):
             elif action_type == "RemoveTagDatasetAction":
                 output_dict = _ensure_output_def(output_name)
                 output_dict["remove_tags"] = action_args["tags"].split(",")
+            elif action_type == "ColumnSetAction":
+                output_dict = _ensure_output_def(output_name)
+                output_dict["set_columns"] = action_args
             else:
                 handled = False
 
