@@ -334,7 +334,7 @@ def transform_input(context, step, default_name):
     tool_state = {
         "name": name
     }
-    for attrib in ["collection_type", "parameter_type", "optional", "default_value"]:
+    for attrib in ["collection_type", "parameter_type", "optional", "default"]:
         if attrib in step:
             tool_state[attrib] = step[attrib]
 
