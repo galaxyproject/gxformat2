@@ -9,7 +9,7 @@ History
 0.9.0.dev0
 ---------------------
 
-    
+* Implement default values in gxformat2.
 
 ---------------------
 0.8.4 (2019-06-24)
