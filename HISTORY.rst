@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.9.0.dev0
+0.9.0 (2019-07-08)
 ---------------------
 
 * Implement default values in gxformat2.
