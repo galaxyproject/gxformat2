@@ -268,7 +268,7 @@ def convert_inputs_to_steps(inputs, steps):
             step_type = "data_input"
         elif input_type in ["collection", "data_collection", "data_collection_input"]:
             step_type = "data_collection_input"
-        elif input_type in ["text", "integer", "float", "color", "boolean"]:
+        elif input_type in ["text", "integer", "float", "color", "boolean", "select"]:
             step_type = "parameter_input"
             input_def["parameter_type"] = input_type
         else:
