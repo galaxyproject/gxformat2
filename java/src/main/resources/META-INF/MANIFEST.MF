@@ -1,0 +1,2 @@
+Manifest-Version: 1.0
+Main-Class: org.galaxyproject.gxformat2.v19_09.utils.Validator

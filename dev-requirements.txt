@@ -1,3 +1,6 @@
+# Optional dependencies
+schema-salad
+
 # For testing
 tox
 nose

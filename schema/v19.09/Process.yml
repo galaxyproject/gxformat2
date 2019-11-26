@@ -1,0 +1,103 @@
+# Subset of CWL's process, can't use process as is because of types not implemented.
+saladVersion: v1.1
+$base: "https://w3id.org/cwl/cwl#"
+
+$namespaces:
+  cwl: "https://w3id.org/cwl/cwl#"
+  sld: "https://w3id.org/cwl/salad#"
+  rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+
+$graph:
+
+- name: Labeled
+  type: record
+  abstract: true
+  fields:
+    - name: label
+      type:
+        - "null"
+        - string
+      jsonldPredicate: "rdfs:label"
+      doc: "A short, human-readable label of this object."
+
+- name: Identified
+  type: record
+  abstract: true
+  fields:
+    - name: id
+      type: string?
+      jsonldPredicate: "@id"
+      doc: "The unique identifier for this object."
+
+- name: Parameter
+  type: record
+  extends: [sld:Documented, Identified]  # Dropped FieldBase.
+  abstract: true
+  doc: |
+    Define an input or output parameter to a process.
+
+- name: InputParameter
+  type: record
+  abstract: true
+  extends: [Parameter]  # , InputFormat, LoadContents]
+  fields:
+    - name: default
+      type: Any?
+      jsonldPredicate:
+        _id: sld:default
+        noLinkCheck: true
+      doc: |
+        The default value to use for this parameter if the parameter is missing
+        from the input object, or if the value of the parameter in the input
+        object is `null`.  Default values are applied before evaluating expressions
+        (e.g. dependent `valueFrom` fields).
+
+
+- name: OutputParameter
+  type: record
+  extends: [Parameter]
+  abstract: true
+
+- type: record
+  name: Process
+  extends: [Identified, Labeled, sld:Documented]
+  abstract: true
+  doc: |
+
+    The base executable type in CWL is the `Process` object defined by the
+    document.  Note that the `Process` object is abstract and cannot be
+    directly executed.
+
+  fields:
+    - name: inputs
+      type:
+        type: array
+        items: InputParameter
+      jsonldPredicate:
+        _id: "cwl:inputs"
+        mapSubject: id
+        mapPredicate: type
+      doc: |
+        Defines the input parameters of the process.  The process is ready to
+        run when all required input parameters are associated with concrete
+        values.  Input parameters include a schema for each parameter which is
+        used to validate the input object.  It may also be used to build a user
+        interface for constructing the input object.
+
+        When accepting an input object, all input parameters must have a value.
+        If an input parameter is missing from the input object, it must be
+        assigned a value of `null` (or the value of `default` for that
+        parameter, if provided) for the purposes of validation and evaluation
+        of expressions.
+
+    - name: outputs
+      type:
+        type: array
+        items: OutputParameter
+      jsonldPredicate:
+        _id: "cwl:outputs"
+        mapSubject: id
+        mapPredicate: type
+      doc: |
+        Defines the parameters representing the output of the process.  May be
+        used to generate and/or validate the output object.

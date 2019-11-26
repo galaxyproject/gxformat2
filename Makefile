@@ -55,7 +55,7 @@ flake8: ## check style using flake8 for current Python (faster than lint)
 	$(IN_VENV) flake8 --max-complexity 11 $(SOURCE_DIR)  $(TEST_DIR)
 
 lint: ## check style using tox and flake8 for Python 2 and Python 3
-	$(IN_VENV) tox -e py27-lint && tox -e py34-lint
+	$(IN_VENV) tox -e py27-lint && tox -e py35-lint
 
 lint-readme: ## check README formatting for PyPI
 	$(IN_VENV) python setup.py check -r -s

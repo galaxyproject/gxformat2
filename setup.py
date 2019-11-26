@@ -32,6 +32,7 @@ TEST_DIR = 'tests'
 PROJECT_DESCRIPTION = 'Galaxy Workflow Format 2 Descriptions'
 PACKAGES = [
     'gxformat2',
+    'gxformat2.schema',
 ]
 ENTRY_POINTS = '''
 '''

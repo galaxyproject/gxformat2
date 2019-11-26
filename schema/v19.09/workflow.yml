@@ -1,0 +1,237 @@
+saladVersion: v1.1
+$base: "https://galaxyproject.org/gxformat2/v19_09#"
+
+$namespaces:
+  gxformat2: "https://galaxyproject.org/gxformat2/v19_09#"
+  gxformat2common: "https://galaxyproject.org/gxformat2/gxformat2common#"
+  cwl: "https://w3id.org/cwl/cwl#"
+  sld: "https://w3id.org/cwl/salad#"
+  rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+
+$graph:
+- name: "WorkflowDoc"
+  type: documentation
+  doc:
+    - |
+      # Galaxy Workflow Format 2 Description
+      
+      The traditional Galaxy workflow description (.ga) is not meant to be concise and is neither readily human readable or human writable.
+      Format 2 addresses all three of these limitations while also converging (where it makes sense without sacrificing these other goals)
+      with the workflow description with that used by the Common Workflow Language.
+
+      This standard is in active development and a moving target in many ways, but we will try to keep what is ingestible by Galaxy
+      backward-compatible going forward.
+
+- $import: "../common/metaschema/metaschema_base.yml"
+- $import: "./Process.yml"  # trimmed down version of cwl's Process.yml
+- $import: "../common/common.yml"
+
+- name: GalaxyType
+  type: enum
+  extends: "sld:PrimitiveType"
+  symbols:
+    - File
+    - data
+    - collection
+  doc:
+    - "Extends primitive types with the native Galaxy concepts such datasets and collections."
+    - "File: an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future"
+    - "data: a Galaxy dataset"
+    - "collection: a Galaxy dataset collection"
+
+- name: WorkflowStepType
+  type: enum
+  symbols:
+    - tool
+    - subworkflow
+    - pause
+  doc:
+    - | 
+        Module types used by Galaxy steps. Galaxy's native format allows additional types such as data_input, data_input_collection, and parameter_type
+        but these should be represented as ``inputs`` in Format2.
+    - "tool: Run a tool."
+    - "subworkflow: Run a subworkflow."
+    - "pause: Pause computation on this branch of workflow until user allows it to continue."
+
+- name: WorkflowInputParameter
+  type: record
+  extends: cwl:InputParameter
+  docParent: "#GalaxyWorkflow"
+  fields:
+    - name: type
+      type: GalaxyType?
+      default: data
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Specify valid types of data that may be assigned to this parameter.
+
+- name: WorkflowOutputParameter
+  type: record
+  extends: cwl:OutputParameter
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    Describe an output parameter of a workflow.  The parameter must be
+    connected to one parameter defined in the workflow that
+    will provide the value of the output parameter. It is legal to
+    connect a WorkflowInputParameter to a WorkflowOutputParameter.
+  fields:
+    - name: outputSource
+      doc: |
+        Specifies workflow parameter that supply the value of to
+        the output parameter.
+      # Steps don't reference outputs in gxformat2 (yet anyway).
+      # Can we just link the step if before the /
+      #jsonldPredicate:
+      #  "_id": "gxformat2:outputSource"
+      #  "_type": "@id"
+      #  refScope: 0
+      type:
+        - string?
+    - name: type
+      type: GalaxyType?
+      default: data
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Specify valid types of data that may be assigned to this parameter.
+
+- name: WorkflowStep
+  type: record
+  extends: [cwl:Identified, cwl:Labeled, sld:Documented, gxformat2common:HasStepPosition, gxformat2common:ReferencesTool]
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    Workflow step.
+  fields:
+    - name: in
+      type:  WorkflowStepInput[]?
+      jsonldPredicate:
+        _id: "gxformat2:in"
+        mapSubject: id
+        mapPredicate: source
+      doc: |
+        Defines the input parameters of the workflow step.  The process is ready to
+        run when all required input parameters are associated with concrete
+        values.  Input parameters include a schema for each parameter which is
+        used to validate the input object.  It may also be used build a user
+        interface for constructing the input object.
+    - name: out
+      type:
+        - type: array
+          items: [string, WorkflowStepOutput]
+        - "null"
+      jsonldPredicate:
+        _id: "gxformat2:out"
+        _type: "@id"
+        identity: true
+      doc: |
+        Defines the parameters representing the output of the process.  May be
+        used to generate and/or validate the output object.
+    - name: state
+      type: Any?
+      doc: |
+        Structured tool state.
+    - name: type
+      type: WorkflowStepType?
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      default: tool
+      doc: |
+        Workflow step module's type (defaults to 'tool').
+    - name: run
+      type: 
+        - "null"
+        - GalaxyWorkflow
+      jsonldPredicate:
+        _id: "cwl:run"
+        _type: "@id"
+        subscope: run
+      doc: |
+        Specifies a subworkflow to run.
+
+- name: Sink
+  type: record
+  abstract: true
+  fields:
+    - name: source
+      doc: |
+        Specifies one or more workflow parameters that will provide input to
+        the underlying step parameter.
+      jsonldPredicate:
+        "_id": "cwl:source"
+        "_type": "@id"
+        refScope: 2
+      type:
+        - string?
+        - string[]?
+
+- type: record
+  name: WorkflowStepInput
+  extends: [cwl:Identified, Sink, cwl:Labeled]
+  docParent: "#WorkflowStep"
+  doc: |
+    TODO:
+
+  fields:
+    - name: default
+      type: ["null", Any]
+      doc: |
+        The default value for this parameter to use if either there is no
+        `source` field, or the value produced by the `source` is `null`.  The
+        default must be applied prior to scattering or evaluating `valueFrom`.
+      jsonldPredicate:
+        _id: "sld:default"
+        noLinkCheck: true
+
+- type: record
+  name: WorkflowStepOutput
+  docParent: "#WorkflowStep"
+  extends: cwl:Identified
+  doc: |
+    Associate an output parameter of the underlying process with a workflow
+    parameter.  The workflow parameter (given in the `id` field) be may be used
+    as a `source` to connect with input parameters of other workflow steps, or
+    with an output parameter of the process.
+
+    A unique identifier for this workflow output parameter.  This is
+    the identifier to use in the `source` field of `WorkflowStepInput`
+    to connect the output value to downstream parameters.
+
+
+- name: GalaxyWorkflow
+  type: record
+  extends: cwl:Process
+  specialize:
+    - specializeFrom: cwl:InputParameter
+      specializeTo: WorkflowInputParameter
+    - specializeFrom: cwl:OutputParameter
+      specializeTo: WorkflowOutputParameter
+  documentRoot: true
+  doc: This is documentation for a workflow!
+  fields:
+    - name: name
+      type: string?
+      jsonldPredicate: "@id"  #  will this bite me?
+      doc: |
+        The name of the workflow.
+    - name: "class"
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      type: string
+    - name: steps
+      doc: {$include: ../common/steps_description.txt}
+      type:
+        - type: array
+          items: "#WorkflowStep"
+      jsonldPredicate:
+          mapSubject: id
