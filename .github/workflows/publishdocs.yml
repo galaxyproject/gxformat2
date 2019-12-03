@@ -1,0 +1,23 @@
+name: Publish gxformat2 Docs
+
+on:
+  push:	
+    branches:	
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt -r dev-requirements.txt
+    - name: Build docs.
+      run: |
+        bash build_schema.sh
