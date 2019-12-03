@@ -283,7 +283,11 @@ class _ArrayLoader(_Loader):
                 else:
                     r.append(lf)
             except ValidationException as e:
-                errors.append(e.with_sourceline(SourceLine(doc, i, str)))
+                errors.append(ValidationException(
+                    str(e),
+                    SourceLine(doc, i, str),
+                    [e]
+                ))
         if errors:
             raise ValidationException("", None, errors)
         return r
