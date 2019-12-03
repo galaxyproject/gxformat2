@@ -1,0 +1,473 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://jamestaylor.org/galaxy-bootstrap/galaxy_bootstrap.css">
+    <script>
+    // Picture element HTML5 shiv
+    document.createElement( "picture" );
+    </script>
+    <script src="https://cdn.rawgit.com/scottjehl/picturefill/3.0.2/dist/picturefill.min.js"
+        integrity="sha384-ZJsVW8YHHxQHJ+SJDncpN90d0EfAhPP+yA94n+EhSRzhcxfo84yMnNk+v37RGlWR"
+        crossorigin="anonymous" async></script>
+    <title>Galaxy Workflow Format 2 Description</title>
+    <style>
+    :target {
+      padding-top: 61px;
+      margin-top: -61px;
+    }
+    body {
+      padding-top: 61px;
+    }
+    .tocnav ol {
+      list-style: none
+    }
+    pre {
+      margin-left: 2em;
+      margin-right: 2em;
+    }
+    .section a {
+      visibility: hidden;
+    }
+    .section:hover a {
+      visibility: visible;
+      color: rgb(201, 201, 201);
+    }
+    .responsive-table-header {
+      text-align: left;
+      padding: 8px;
+      vertical-align: top;
+      font-weight: bold;
+      border-top-color: rgb(221, 221, 221);
+      border-top-style: solid;
+      border-top-width: 1px;
+      background-color: #f9f9f9
+    }
+    .responsive-table > .responsive-table-row {
+      text-align: left;
+      padding: 8px;
+      vertical-align: top;
+      border-top-color: rgb(221, 221, 221);
+      border-top-style: solid;
+      border-top-width: 1px;
+    }
+    @media (min-width: 0px), print {
+      .description-header {
+        display: none;
+      }
+      .description-col {
+        margin-top: 1em;
+        margin-left: 1.5em;
+      }
+    }
+    @media (min-width: 1170px) {
+      .description-header {
+        display: inline;
+      }
+      .description-col {
+        margin-top: 0px;
+        margin-left: 0px;
+      }
+    }
+    .responsive-table-row:nth-of-type(odd) {
+       background-color: #f9f9f9
+    }
+    </style>
+    </head>
+    <body>
+    
+      <nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
+        <div class="container">
+          <div class="navbar-header">
+            <a class="navbar-brand" href="None"><img src="icon.png" /></a>
+    
+          </div>
+        </div>
+      </nav>
+    
+    <div class="container">
+    
+    <div class="row">
+    
+    <div class="col-md-12" role="main" id="main"><h1 id="Galaxy_Workflow_Format_2_Description" class="section">Galaxy Workflow Format 2 Description <a href="#Galaxy_Workflow_Format_2_Description">&sect;</a></h1><p>The traditional Galaxy workflow description (.ga) is not meant to be concise and is neither readily human readable or human writable.
+Format 2 addresses all three of these limitations while also converging (where it makes sense without sacrificing these other goals)
+with the workflow description with that used by the Common Workflow Language.</p>
+<p>This standard is in active development and a moving target in many ways, but we will try to keep what is ingestible by Galaxy
+backward-compatible going forward.</p>
+<h1 id="GalaxyWorkflow" class="section">GalaxyWorkflow <a href="#GalaxyWorkflow">&sect;</a></h1><p>This is documentation for a workflow!</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>inputs</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#WorkflowInputParameter">WorkflowInputParameter</a>&gt; | <br><a href='#map'>map</a>&lt;<code>id</code>,&nbsp;<code>type</code> | <a href="#WorkflowInputParameter">WorkflowInputParameter</a>&gt</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Defines the input parameters of the process.  The process is ready to
+run when all required input parameters are associated with concrete
+values.  Input parameters include a schema for each parameter which is
+used to validate the input object.  It may also be used to build a user
+interface for constructing the input object.</p>
+<p>When accepting an input object, all input parameters must have a value.
+If an input parameter is missing from the input object, it must be
+assigned a value of <code>null</code> (or the value of <code>default</code> for that
+parameter, if provided) for the purposes of validation and evaluation
+of expressions.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>outputs</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#WorkflowOutputParameter">WorkflowOutputParameter</a>&gt; | <br><a href='#map'>map</a>&lt;<code>id</code>,&nbsp;<code>type</code> | <a href="#WorkflowOutputParameter">WorkflowOutputParameter</a>&gt</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Defines the parameters representing the output of the process.  May be
+used to generate and/or validate the output object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>class</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>steps</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#WorkflowStep">WorkflowStep</a>&gt; | <br><a href='#map'>map</a>&lt;<code>id</code>,&nbsp;<a href="#WorkflowStep">WorkflowStep</a>&gt</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The individual steps that make up the workflow. Each step is executed when all of its
+input data links are fulfilled.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A short, human-readable label of this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>doc</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A documentation string for this object, or an array of strings which should be concatenated.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The name of the workflow.</p>
+</div>
+</div></div><h2 id="WorkflowInputParameter" class="section">WorkflowInputParameter <a href="#WorkflowInputParameter">&sect;</a></h2><h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>doc</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A documentation string for this object, or an array of strings which should be concatenated.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>default</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The default value to use for this parameter if the parameter is missing
+from the input object, or if the value of the parameter in the input
+object is <code>null</code>.  Default values are applied before evaluating expressions
+(e.g. dependent <code>valueFrom</code> fields).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#GalaxyType">GalaxyType</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specify valid types of data that may be assigned to this parameter.</p>
+</div>
+</div></div><h3 id="Any" class="section">Any <a href="#Any">&sect;</a></h3><p>The <strong>Any</strong> type validates for any non-null value.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Any</code></td><td></td></tr></table><h3 id="GalaxyType" class="section">GalaxyType <a href="#GalaxyType">&sect;</a></h3><p>Extends primitive types with the native Galaxy concepts such datasets and collections.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> 32-bit signed integer</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> Unicode character sequence</td></tr><tr><td><code>File</code></td><td> an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future</td></tr><tr><td><code>data</code></td><td> a Galaxy dataset</td></tr><tr><td><code>collection</code></td><td> a Galaxy dataset collection</td></tr></table><h2 id="WorkflowOutputParameter" class="section">WorkflowOutputParameter <a href="#WorkflowOutputParameter">&sect;</a></h2><p>Describe an output parameter of a workflow.  The parameter must be
+connected to one parameter defined in the workflow that
+will provide the value of the output parameter. It is legal to
+connect a WorkflowInputParameter to a WorkflowOutputParameter.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>doc</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A documentation string for this object, or an array of strings which should be concatenated.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>outputSource</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specifies workflow parameter that supply the value of to
+the output parameter.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#GalaxyType">GalaxyType</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specify valid types of data that may be assigned to this parameter.</p>
+</div>
+</div></div><h2 id="WorkflowStep" class="section">WorkflowStep <a href="#WorkflowStep">&sect;</a></h2><p>Workflow step.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>out</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&nbsp;|&nbsp;<a href="#WorkflowStepOutput">WorkflowStepOutput</a>&gt; | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Defines the parameters representing the output of the process.  May be
+used to generate and/or validate the output object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A short, human-readable label of this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>doc</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A documentation string for this object, or an array of strings which should be concatenated.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tool_id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The tool ID used to run this step of the workflow (e.g. 'cat1' or 'toolshed.g2.bx.psu.edu/repos/nml/collapse_collections/collapse_dataset/4.0').</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tool_shed_repository</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#ToolShedRepository">ToolShedRepository</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The Galaxy Tool Shed repository that should be installed in order to use this tool.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tool_version</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The tool version corresponding used to run this step of the workflow. For tool shed installed tools, the ID generally uniquely specifies a version
+and this field is optional.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>in</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#WorkflowStepInput">WorkflowStepInput</a>&gt; | <br><a href='#map'>map</a>&lt;<code>id</code>,&nbsp;<code>source</code> | <a href="#WorkflowStepInput">WorkflowStepInput</a>&gt</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Defines the input parameters of the workflow step.  The process is ready to
+run when all required input parameters are associated with concrete
+values.  Input parameters include a schema for each parameter which is
+used to validate the input object.  It may also be used build a user
+interface for constructing the input object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>state</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Structured tool state.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#WorkflowStepType">WorkflowStepType</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Workflow step module's type (defaults to 'tool').</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>run</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#GalaxyWorkflow">GalaxyWorkflow</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specifies a subworkflow to run.</p>
+</div>
+</div></div><h3 id="WorkflowStepInput" class="section">WorkflowStepInput <a href="#WorkflowStepInput">&sect;</a></h3><p>TODO:</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>source</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specifies one or more workflow parameters that will provide input to
+the underlying step parameter.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A short, human-readable label of this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>default</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The default value for this parameter to use if either there is no
+<code>source</code> field, or the value produced by the <code>source</code> is <code>null</code>.  The
+default must be applied prior to scattering or evaluating <code>valueFrom</code>.</p>
+</div>
+</div></div><h3 id="WorkflowStepOutput" class="section">WorkflowStepOutput <a href="#WorkflowStepOutput">&sect;</a></h3><p>Associate an output parameter of the underlying process with a workflow
+parameter.  The workflow parameter (given in the <code>id</code> field) be may be used
+as a <code>source</code> to connect with input parameters of other workflow steps, or
+with an output parameter of the process.</p>
+<p>A unique identifier for this workflow output parameter.  This is
+the identifier to use in the <code>source</code> field of <code>WorkflowStepInput</code>
+to connect the output value to downstream parameters.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div></div><h3 id="StepPosition" class="section">StepPosition <a href="#StepPosition">&sect;</a></h3><p>This field specifies the location of the step's node when rendered in the workflow editor.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>top</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Relative vertical position of the step's node when rendered in the workflow editor.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>left</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Relative horizontal position of the step's node when rendered in the workflow editor.</p>
+</div>
+</div></div><h3 id="ToolShedRepository" class="section">ToolShedRepository <a href="#ToolShedRepository">&sect;</a></h3><h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>changeset_revision</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The revision of the tool shed repository this tool can be found in.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The name of the tool shed repository this tool can be found in.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>owner</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The owner of the tool shed repository this tool can be found in.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tool_shed</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The URI of the tool shed containing the repository this tool can be found in - typically this should be toolshed.g2.bx.psu.edu.</p>
+</div>
+</div></div><h3 id="WorkflowStepType" class="section">WorkflowStepType <a href="#WorkflowStepType">&sect;</a></h3><p>Module types used by Galaxy steps. Galaxy's native format allows additional types such as data_input, data_input_collection, and parameter_type
+but these should be represented as <code>inputs</code> in Format2.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>tool</code></td><td> Run a tool.</td></tr><tr><td><code>subworkflow</code></td><td> Run a subworkflow.</td></tr><tr><td><code>pause</code></td><td> Pause computation on this branch of workflow until user allows it to continue.</td></tr></table></div>
+    </div>
+    </div>
+    </body>
+    </html>
