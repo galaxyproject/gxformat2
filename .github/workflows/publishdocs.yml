@@ -1,10 +1,8 @@
 name: Publish gxformat2 Docs
-
 on:
   push:	
     branches:	
       - master
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
