@@ -1,0 +1,65 @@
+saladVersion: v1.1
+$base: "https://galaxyproject.org/gxformat2/gxformat2common#"
+
+$graph:
+
+- name: HasStepPosition
+  type: record
+  abstract: true
+  fields:
+    - name: position
+      type: StepPosition?
+
+- name: StepPosition
+  type: record
+  doc: This field specifies the location of the step's node when rendered in the workflow editor.
+  fields:
+    - name: top
+      type: float
+      default: 0.0
+      doc: |
+        Relative vertical position of the step's node when rendered in the workflow editor.
+    - name: left
+      type: float
+      default: 0.0
+      doc: |
+        Relative horizontal position of the step's node when rendered in the workflow editor.
+
+- name: ReferencesTool
+  type: record
+  abstract: true
+  fields:
+    - name: tool_id
+      type: string?
+      doc: |
+        The tool ID used to run this step of the workflow (e.g. 'cat1' or 'toolshed.g2.bx.psu.edu/repos/nml/collapse_collections/collapse_dataset/4.0').
+    - name: tool_shed_repository
+      type: ToolShedRepository?
+      doc: |
+        The Galaxy Tool Shed repository that should be installed in order to use this tool.
+    - name: tool_version
+      type: string?
+      doc: |
+        The tool version corresponding used to run this step of the workflow. For tool shed installed tools, the ID generally uniquely specifies a version
+        and this field is optional.
+
+- name: ToolShedRepository
+  type: record
+  fields:
+    - name: changeset_revision
+      type: string
+      doc: |
+        The revision of the tool shed repository this tool can be found in.
+    - name: name
+      type: string
+      jsonldPredicate: "@id"  #  will this bite me?
+      doc: |
+        The name of the tool shed repository this tool can be found in.
+    - name: owner
+      type: string
+      doc: |
+        The owner of the tool shed repository this tool can be found in.
+    - name: tool_shed
+      type: string
+      doc: |
+        The URI of the tool shed containing the repository this tool can be found in - typically this should be toolshed.g2.bx.psu.edu.
