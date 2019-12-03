@@ -22,4 +22,4 @@ jobs:
         pip install https://github.com/jmchilton/schema_salad/archive/java_codegen_iter.zip
     - name: Build docs.
       run: |
-        bash build_schema.sh
+        SKIP_JAVA=1 bash build_schema.sh
