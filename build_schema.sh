@@ -5,15 +5,19 @@ set -e
 
 PROJECT_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SKIP_JAVA=${SKIP_JAVA:-0}
+DIST_DIRECTORY="${PROJECT_DIRECTORY}/dist/schema"
+rm -rf "${DIST_DIRECTORY}"
+mkdir "${DIST_DIRECTORY}"
+cp schema/*png "${DIST_DIRECTORY}"
 
 # Requires schema-salad-doc that recognizes --brandstyle and --brandinverse
-for schema in "v19.09";
+for schema in "v19_09";
 do
     cd schema/"$schema";
     python_schema_name=${schema//./_}
     schema-salad-tool --codegen python workflow.yml > "${PROJECT_DIRECTORY}/gxformat2/schema/${python_schema_name}.py"
 
-    out="../${schema}.html"
+    out="${DIST_DIRECTORY}/${schema}.html"
     schema-salad-doc \
         --brandstyle '<link rel="stylesheet" href="https://jamestaylor.org/galaxy-bootstrap/galaxy_bootstrap.css">' \
         --brandinverse \
