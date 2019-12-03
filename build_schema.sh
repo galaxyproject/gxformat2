@@ -7,7 +7,7 @@ PROJECT_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && p
 SKIP_JAVA=${SKIP_JAVA:-0}
 DIST_DIRECTORY="${PROJECT_DIRECTORY}/dist/schema"
 rm -rf "${DIST_DIRECTORY}"
-mkdir "${DIST_DIRECTORY}"
+mkdir -p "${DIST_DIRECTORY}"
 cp schema/*png "${DIST_DIRECTORY}"
 
 # Requires schema-salad-doc that recognizes --brandstyle and --brandinverse
