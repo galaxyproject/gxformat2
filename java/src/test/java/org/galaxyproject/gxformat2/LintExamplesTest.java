@@ -8,7 +8,7 @@ public class LintExamplesTest {
   @Test
   public void testLinting() throws Exception {
     final File examplesDirectory = new File("../tests/examples");
-    assert examplesDirectory.exists();
+    assert examplesDirectory.exists() : "test examples directory doesn't exist";
     assert examplesDirectory.isDirectory();
     for (final File file : examplesDirectory.listFiles()) {
       final String path = file.getAbsolutePath();
