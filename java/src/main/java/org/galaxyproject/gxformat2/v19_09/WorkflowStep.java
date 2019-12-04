@@ -139,4 +139,9 @@ public interface WorkflowStep
    * </BLOCKQUOTE>
    */
   java.util.Optional<GalaxyWorkflow> getRun();
+  /**
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStep/runtime_inputs</I><br>
+   */
+  java.util.Optional<java.util.List<Object>> getRuntime_inputs();
 }

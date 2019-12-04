@@ -3,14 +3,14 @@ package org.galaxyproject.gxformat2.v19_09.utils;
 import org.galaxyproject.gxformat2.v19_09.*;
 
 public class LoaderInstances {
-  public static Loader<Integer> IntegerInstance = new PrimitiveLoader<Integer>(Integer.class);
-  public static Loader<Boolean> BooleanInstance = new PrimitiveLoader<Boolean>(Boolean.class);
   public static Loader<String> StringInstance = new PrimitiveLoader<String>(String.class);
-  public static Loader<Object> AnyInstance = new AnyLoader();
+  public static Loader<Integer> IntegerInstance = new PrimitiveLoader<Integer>(Integer.class);
   public static Loader<Long> LongInstance = new PrimitiveLoader<Long>(Long.class);
   public static Loader<Float> FloatInstance = new PrimitiveLoader<Float>(Float.class);
-  public static Loader<Object> NullInstance = new NullLoader();
   public static Loader<Double> DoubleInstance = new PrimitiveLoader<Double>(Double.class);
+  public static Loader<Boolean> BooleanInstance = new PrimitiveLoader<Boolean>(Boolean.class);
+  public static Loader<Object> NullInstance = new NullLoader();
+  public static Loader<Object> AnyInstance = new AnyLoader();
   public static Loader<org.galaxyproject.gxformat2.v19_09.Documented> Documented =
       new RecordLoader<org.galaxyproject.gxformat2.v19_09.Documented>(
           org.galaxyproject.gxformat2.v19_09.Documented.class);
@@ -197,6 +197,8 @@ public class LoaderInstances {
   public static Loader<java.util.Optional<GalaxyWorkflow>>
       uri_optional_GalaxyWorkflow_False_False_None =
           new UriLoader(optional_GalaxyWorkflow, false, false, null);
+  public static Loader<java.util.Optional<java.util.List<Object>>>
+      optional_array_of_StringInstance = new OptionalLoader(array_of_StringInstance);
   public static Loader<Object>
       uri_union_of_NullInstance_or_StringInstance_or_array_of_StringInstance_False_False_2 =
           new UriLoader(
@@ -209,10 +211,6 @@ public class LoaderInstances {
       new IdMapLoader(array_of_WorkflowStep, "id", "None");
   public static Loader<java.util.List<GalaxyWorkflow>> array_of_GalaxyWorkflow =
       new ArrayLoader(GalaxyWorkflow);
-  public static Loader<
-          org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-              org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>>
-      one_or_array_of_GalaxyWorkflow =
-          new OneOrListOfLoader<org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>(
-              GalaxyWorkflow, array_of_GalaxyWorkflow);
+  public static Loader<Object> union_of_GalaxyWorkflow_or_array_of_GalaxyWorkflow =
+      new UnionLoader(new Loader[] {GalaxyWorkflow, array_of_GalaxyWorkflow});
 }
