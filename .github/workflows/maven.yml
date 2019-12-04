@@ -1,0 +1,27 @@
+name: Java CI
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt -r dev-requirements.txt
+    - name: Run Python tests to generate workflow examples.
+      run: |
+        pytest tests/test_lint.py
+    - name: Set up JDK
+      uses: actions/setup-java@v1
+      with:
+        java-version: 11.0.x
+    - name: Run Java maven (mvn) tests for generated workflow examples.
+      run: |
+        cd java
+        mvn -B test --file pom.xml
