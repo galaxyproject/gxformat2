@@ -14,11 +14,11 @@ public class LintContext {
 
   LintContext() {}
 
-  boolean getFoundErrors() {
+  public boolean getFoundErrors() {
     return this.foundErrors;
   }
 
-  boolean getFoundWarns() {
+  public boolean getFoundWarns() {
     return this.foundWarns;
   }
 
@@ -31,22 +31,30 @@ public class LintContext {
   }
 
   void error(String message, Object... args) {
+    this.foundErrors = true;
     this.errorMessages.add(String.format(message, args));
   }
 
   void warn(String message, Object... args) {
+    this.foundWarns = true;
     this.warnMessages.add(String.format(message, args));
   }
 
-  void printMessages() {
+  public List<String> collectMessages() {
+    final List<String> messages = new ArrayList<String>();
     for (final String message : this.errorMessages) {
-      this.foundErrors = true;
-      System.out.print(".. ERROR " + message);
+      messages.add(".. ERROR " + message);
     }
 
     for (final String message : this.warnMessages) {
-      this.foundWarns = true;
-      System.out.print(".. WARNING " + message);
+      messages.add(".. WARNING " + message);
+    }
+    return messages;
+  }
+
+  public void printMessages() {
+    for (final String message : this.collectMessages()) {
+      System.out.print(message);
     }
   }
 }
