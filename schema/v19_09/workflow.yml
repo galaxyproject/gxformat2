@@ -134,11 +134,14 @@ $graph:
         - "null"
       jsonldPredicate:
         _id: "gxformat2:out"
-        _type: "@id"
-        identity: true
+        mapSubject: id
+        mapPredicate: source
       doc: |
         Defines the parameters representing the output of the process.  May be
         used to generate and/or validate the output object.
+
+        This can also be called 'outputs' for legacy reasons - but the resulting
+        workflow document is not a valid instance of this schema.
     - name: state
       type: Any?
       doc: |
@@ -216,7 +219,30 @@ $graph:
     A unique identifier for this workflow output parameter.  This is
     the identifier to use in the `source` field of `WorkflowStepInput`
     to connect the output value to downstream parameters.
-
+  fields:
+    rename:
+      type: string?
+    hide:
+      type: boolean?
+    delete_intermediate_datasets:
+      type: boolean?
+    change_datatype:
+      type: string?
+    set_columns:
+      type:
+        - "null"
+        - type: array
+          items: string
+    add_tags:
+      type:
+        - "null"
+        - type: array
+          items: string
+    remove_tags:
+      type:
+        - "null"
+        - type: array
+          items: string
 
 - name: GalaxyWorkflow
   type: record

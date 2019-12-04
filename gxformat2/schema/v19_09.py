@@ -1851,7 +1851,7 @@ Workflow step.
         if 'out' in _doc:
             try:
                 out = load_field(_doc.get(
-                    'out'), uri_union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type_True_False_None, baseuri, loadingOptions)
+                    'out'), idmap_out_union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type, baseuri, loadingOptions)
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
@@ -2017,14 +2017,11 @@ Workflow step.
                 relative_uris=relative_uris)
 
         if self.out is not None:
-            u = save_relative_uri(
+            r['out'] = save(
                 self.out,
-                self.id,
-                True,
-                None,
-                relative_uris)
-            if u:
-                r['out'] = u
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
 
         if self.state is not None:
             r['state'] = save(
@@ -2258,6 +2255,13 @@ to connect the output value to downstream parameters.
     def __init__(
         self,
         id,  # type: Any
+        add_tags,  # type: Any
+        change_datatype,  # type: Any
+        delete_intermediate_datasets,  # type: Any
+        hide,  # type: Any
+        remove_tags,  # type: Any
+        rename,  # type: Any
+        set_columns,  # type: Any
         extension_fields=None,  # type: Optional[Dict[Text, Any]]
         loadingOptions=None  # type: Optional[LoadingOptions]
     ):  # type: (...) -> None
@@ -2271,6 +2275,13 @@ to connect the output value to downstream parameters.
         else:
             self.loadingOptions = LoadingOptions()
         self.id = id
+        self.add_tags = add_tags
+        self.change_datatype = change_datatype
+        self.delete_intermediate_datasets = delete_intermediate_datasets
+        self.hide = hide
+        self.remove_tags = remove_tags
+        self.rename = rename
+        self.set_columns = set_columns
 
     @classmethod
     def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
@@ -2302,6 +2313,104 @@ to connect the output value to downstream parameters.
             else:
                 id = "_:" + str(uuid.uuid4())
         baseuri = id
+        if 'add_tags' in _doc:
+            try:
+                add_tags = load_field(_doc.get(
+                    'add_tags'), union_of_None_type_or_array_of_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `add_tags` field is not valid because:",
+                        SourceLine(_doc, 'add_tags', str),
+                        [e]
+                    )
+                )
+        else:
+            add_tags = None
+        if 'change_datatype' in _doc:
+            try:
+                change_datatype = load_field(_doc.get(
+                    'change_datatype'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `change_datatype` field is not valid because:",
+                        SourceLine(_doc, 'change_datatype', str),
+                        [e]
+                    )
+                )
+        else:
+            change_datatype = None
+        if 'delete_intermediate_datasets' in _doc:
+            try:
+                delete_intermediate_datasets = load_field(_doc.get(
+                    'delete_intermediate_datasets'), union_of_None_type_or_booltype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `delete_intermediate_datasets` field is not valid because:",
+                        SourceLine(_doc, 'delete_intermediate_datasets', str),
+                        [e]
+                    )
+                )
+        else:
+            delete_intermediate_datasets = None
+        if 'hide' in _doc:
+            try:
+                hide = load_field(_doc.get(
+                    'hide'), union_of_None_type_or_booltype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `hide` field is not valid because:",
+                        SourceLine(_doc, 'hide', str),
+                        [e]
+                    )
+                )
+        else:
+            hide = None
+        if 'remove_tags' in _doc:
+            try:
+                remove_tags = load_field(_doc.get(
+                    'remove_tags'), union_of_None_type_or_array_of_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `remove_tags` field is not valid because:",
+                        SourceLine(_doc, 'remove_tags', str),
+                        [e]
+                    )
+                )
+        else:
+            remove_tags = None
+        if 'rename' in _doc:
+            try:
+                rename = load_field(_doc.get(
+                    'rename'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `rename` field is not valid because:",
+                        SourceLine(_doc, 'rename', str),
+                        [e]
+                    )
+                )
+        else:
+            rename = None
+        if 'set_columns' in _doc:
+            try:
+                set_columns = load_field(_doc.get(
+                    'set_columns'), union_of_None_type_or_array_of_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `set_columns` field is not valid because:",
+                        SourceLine(_doc, 'set_columns', str),
+                        [e]
+                    )
+                )
+        else:
+            set_columns = None
 
         extension_fields = yaml.comments.CommentedMap()
         for k in _doc.keys():
@@ -2316,7 +2425,7 @@ to connect the output value to downstream parameters.
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `%s`, expected one of: `id`" % (k),
+                            "invalid field `%s`, expected one of: `id`, `add_tags`, `change_datatype`, `delete_intermediate_datasets`, `hide`, `remove_tags`, `rename`, `set_columns`" % (k),
                             SourceLine(_doc, k, str)
                         )
                     )
@@ -2326,7 +2435,7 @@ to connect the output value to downstream parameters.
             raise ValidationException("Trying 'WorkflowStepOutput'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
-        return cls(id, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(id, add_tags, change_datatype, delete_intermediate_datasets, hide, remove_tags, rename, set_columns, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, Text, bool) -> Dict[Text, Any]
@@ -2344,12 +2453,61 @@ to connect the output value to downstream parameters.
             if u:
                 r['id'] = u
 
+        if self.add_tags is not None:
+            r['add_tags'] = save(
+                self.add_tags,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
+        if self.change_datatype is not None:
+            r['change_datatype'] = save(
+                self.change_datatype,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
+        if self.delete_intermediate_datasets is not None:
+            r['delete_intermediate_datasets'] = save(
+                self.delete_intermediate_datasets,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
+        if self.hide is not None:
+            r['hide'] = save(
+                self.hide,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
+        if self.remove_tags is not None:
+            r['remove_tags'] = save(
+                self.remove_tags,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
+        if self.rename is not None:
+            r['rename'] = save(
+                self.rename,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
+        if self.set_columns is not None:
+            r['set_columns'] = save(
+                self.set_columns,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
         if top and self.loadingOptions.namespaces:
             r["$namespaces"] = self.loadingOptions.namespaces
 
         return r
 
-    attrs = frozenset(['id'])
+    attrs = frozenset(['id', 'add_tags', 'change_datatype', 'delete_intermediate_datasets', 'hide', 'remove_tags', 'rename', 'set_columns'])
 
 
 class GalaxyWorkflow(Process):
@@ -2727,13 +2885,14 @@ idmap_in__union_of_None_type_or_array_of_WorkflowStepInputLoader = _IdMapLoader(
 union_of_strtype_or_WorkflowStepOutputLoader = _UnionLoader((strtype, WorkflowStepOutputLoader,))
 array_of_union_of_strtype_or_WorkflowStepOutputLoader = _ArrayLoader(union_of_strtype_or_WorkflowStepOutputLoader)
 union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type = _UnionLoader((array_of_union_of_strtype_or_WorkflowStepOutputLoader, None_type,))
-uri_union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type_True_False_None = _URILoader(union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type, True, False, None)
+idmap_out_union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type = _IdMapLoader(union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type, 'id', 'source')
 union_of_None_type_or_WorkflowStepTypeLoader = _UnionLoader((None_type, WorkflowStepTypeLoader,))
 typedsl_union_of_None_type_or_WorkflowStepTypeLoader_2 = _TypeDSLLoader(union_of_None_type_or_WorkflowStepTypeLoader, 2)
 union_of_None_type_or_GalaxyWorkflowLoader = _UnionLoader((None_type, GalaxyWorkflowLoader,))
 uri_union_of_None_type_or_GalaxyWorkflowLoader_False_False_None = _URILoader(union_of_None_type_or_GalaxyWorkflowLoader, False, False, None)
 union_of_None_type_or_array_of_strtype = _UnionLoader((None_type, array_of_strtype,))
 uri_union_of_None_type_or_strtype_or_array_of_strtype_False_False_2 = _URILoader(union_of_None_type_or_strtype_or_array_of_strtype, False, False, 2)
+union_of_None_type_or_booltype = _UnionLoader((None_type, booltype,))
 array_of_WorkflowInputParameterLoader = _ArrayLoader(WorkflowInputParameterLoader)
 idmap_inputs_array_of_WorkflowInputParameterLoader = _IdMapLoader(array_of_WorkflowInputParameterLoader, 'id', 'type')
 array_of_WorkflowOutputParameterLoader = _ArrayLoader(WorkflowOutputParameterLoader)

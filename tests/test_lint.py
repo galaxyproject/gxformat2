@@ -149,6 +149,28 @@ steps:
         seed: asdf
 """
 
+PJA_1 = """
+class: GalaxyWorkflow
+inputs:
+  input1: data
+outputs:
+  out1:
+    outputSource: second_cat/out_file1
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: input1
+    out:
+       out_file1:
+         hide: true
+         rename: "the new value"
+  second_cat:
+    tool_id: cat1
+    in:
+      input1: first_cat/out_file1
+"""
+
 
 def setup_module(module):
     # Setup an examples directory with examples we want to correspond to what exit codes,
@@ -240,6 +262,13 @@ def setup_module(module):
     invalid_format2_runtime_inputs_type = _deep_copy(green_format2_runtime_inputs)
     invalid_format2_runtime_inputs_type['steps']['random']['runtime_inputs'][0] = 5
     _dump_with_exit_code(invalid_format2_runtime_inputs_type, 2, "format2_runtime_inputs_invalid_type")
+
+    green_format2_pja = ordered_load(PJA_1)
+    _dump_with_exit_code(green_format2_runtime_inputs, 0, "format2_pja1")
+
+    invalid_format2_pja_hide_type = _deep_copy(green_format2_pja)
+    invalid_format2_pja_hide_type['steps']['first_cat']['out']['out_file1']['hide'] = "moocow"
+    _dump_with_exit_code(invalid_format2_pja_hide_type, 2, "format2_pja_hide_invalid_type")
 
 
 def test_lint_ga_basic():

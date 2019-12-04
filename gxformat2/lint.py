@@ -62,7 +62,6 @@ def lint_ga(lint_context, workflow_dict, path=None):
         for workflow_output in workflow_outputs:
             found_outputs = True
 
-            print(workflow_output)
             if not workflow_output.get("label"):
                 found_output_without_label = True
 

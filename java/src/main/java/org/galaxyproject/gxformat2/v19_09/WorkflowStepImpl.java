@@ -175,7 +175,10 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
    * <BLOCKQUOTE>
    *
    * Defines the parameters representing the output of the process. May be used to generate and/or
-   * validate the output object. *
+   * validate the output object.
+   *
+   * <p>This can also be called 'outputs' for legacy reasons - but the resulting workflow document
+   * is not a valid instance of this schema. *
    *
    * </BLOCKQUOTE>
    */
@@ -428,7 +431,7 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
       try {
         out =
             LoaderInstances
-                .uri_optional_array_of_union_of_StringInstance_or_WorkflowStepOutput_True_False_None
+                .idmap_out_optional_array_of_union_of_StringInstance_or_WorkflowStepOutput
                 .loadField(__doc.get("out"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         out = null; // won't be used but prevents compiler from complaining.

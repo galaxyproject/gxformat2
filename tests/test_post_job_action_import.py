@@ -1,9 +1,10 @@
 import json
 from collections import OrderedDict
 
+import pytest
+
 from gxformat2.converter import (
     POST_JOB_ACTIONS,
-
 )
 from gxformat2._yaml import ordered_dump
 
@@ -14,7 +15,7 @@ from .test_basic import (
 )
 
 
-WORKFLOW_PJA_TEMPLATE = """
+WORKFLOW_PJA_TEMPLATE_1905_FORMAT = """
 class: GalaxyWorkflow
 doc: |
   Workflow with post job actions.
@@ -34,7 +35,28 @@ steps:
 """
 
 
-def test_post_job_action_to_native():
+WORKFLOW_PJA_TEMPLATE_1909_FORMAT = """
+class: GalaxyWorkflow
+doc: |
+  Workflow with post job actions.
+inputs:
+  the_input:
+    type: File
+    doc: input doc
+steps:
+  cat:
+    tool_id: cat1
+    doc: cat doc
+    in:
+      input1: the_input
+    out:
+      out_file1:
+        {action}: {action_value}
+"""
+
+
+@pytest.mark.parametrize("wf_template", [WORKFLOW_PJA_TEMPLATE_1905_FORMAT, WORKFLOW_PJA_TEMPLATE_1909_FORMAT])
+def test_post_job_action_to_native(wf_template):
     for action_key in POST_JOB_ACTIONS:
         default_value = POST_JOB_ACTIONS[action_key]['default']
         expected_value = None
@@ -50,7 +72,7 @@ def test_post_job_action_to_native():
         elif isinstance(default_value, bool):
             action_value = 'true'
             expected_value = True
-        workflow_yaml = WORKFLOW_PJA_TEMPLATE.format(action=action_key, action_value=action_value)
+        workflow_yaml = wf_template.format(action=action_key, action_value=action_value)
         native = to_native(workflow_yaml)
         pja_class = POST_JOB_ACTIONS[action_key]['action_class']
         expected_pja = {pja_class + 'out_file1': OrderedDict([
