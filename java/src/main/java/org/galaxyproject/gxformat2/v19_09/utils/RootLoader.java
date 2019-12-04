@@ -8,102 +8,73 @@ import java.nio.file.Paths;
 import java.util.Map;
 
 public class RootLoader {
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(
-          final Map<String, Object> doc,
-          final String baseUri_,
-          final LoadingOptions loadingOptions_) {
+  public static Object loadDocument(
+      final Map<String, Object> doc, final String baseUri_, final LoadingOptions loadingOptions_) {
     final String baseUri = ensureBaseUri(baseUri_);
     LoadingOptions loadingOptions = loadingOptions_;
     if (loadingOptions == null) {
       loadingOptions = new LoadingOptionsBuilder().build();
     }
-    return LoaderInstances.one_or_array_of_GalaxyWorkflow.documentLoad(
+    return LoaderInstances.union_of_GalaxyWorkflow_or_array_of_GalaxyWorkflow.documentLoad(
         doc, baseUri, loadingOptions);
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final Map<String, Object> doc, final String baseUri) {
+  public static Object loadDocument(final Map<String, Object> doc, final String baseUri) {
     return loadDocument(doc, baseUri, null);
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final Map<String, Object> doc) {
+  public static Object loadDocument(final Map<String, Object> doc) {
     return loadDocument(doc, ensureBaseUri(null));
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final Path path) {
+  public static Object loadDocument(final Path path) {
     return loadDocument(readPath(path));
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final Path path, String baseUri) {
+  public static Object loadDocument(final Path path, String baseUri) {
     return loadDocument(readPath(path), baseUri);
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final Path path, LoadingOptions loadingOptions) {
+  public static Object loadDocument(final Path path, LoadingOptions loadingOptions) {
     return loadDocument(readPath(path), loadingOptions);
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final Path path, String baseUri, LoadingOptions loadingOptions) {
+  public static Object loadDocument(
+      final Path path, String baseUri, LoadingOptions loadingOptions) {
     return loadDocument(readPath(path), baseUri, loadingOptions);
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final File file) {
+  public static Object loadDocument(final File file) {
     return loadDocument(file.toPath());
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final File file, String baseUri) {
+  public static Object loadDocument(final File file, String baseUri) {
     return loadDocument(file.toPath(), baseUri);
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final File file, LoadingOptions loadingOptions) {
+  public static Object loadDocument(final File file, LoadingOptions loadingOptions) {
     return loadDocument(file.toPath(), loadingOptions);
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final File file, String baseUri, LoadingOptions loadingOptions) {
+  public static Object loadDocument(
+      final File file, String baseUri, LoadingOptions loadingOptions) {
     return loadDocument(file.toPath(), baseUri, loadingOptions);
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final String doc) {
+  public static Object loadDocument(final String doc) {
     return loadDocument(doc, ensureBaseUri(null));
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final String doc, final LoadingOptions loadingOptions) {
+  public static Object loadDocument(final String doc, final LoadingOptions loadingOptions) {
     return loadDocument(doc, ensureBaseUri(null), loadingOptions);
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final String doc, final String uri) {
+  public static Object loadDocument(final String doc, final String uri) {
     return loadDocument(doc, uri, null);
   }
 
-  public static org.galaxyproject.gxformat2.v19_09.utils.OneOrListOf<
-          org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>
-      loadDocument(final String doc, final String uri_, final LoadingOptions loadingOptions_) {
+  public static Object loadDocument(
+      final String doc, final String uri_, final LoadingOptions loadingOptions_) {
     final String uri = ensureBaseUri(uri_);
     LoadingOptions loadingOptions = loadingOptions_;
     if (loadingOptions == null) {

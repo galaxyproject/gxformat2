@@ -125,6 +125,31 @@ steps:
 """
 
 
+RUNTIME_INPUTS = """
+class: GalaxyWorkflow
+inputs:
+  input1: data
+outputs:
+  out1:
+    outputSource: random/out_file1
+steps:
+  the_pause:
+    type: pause
+    in:
+      input: input1
+  random:
+    tool_id: random_lines1
+    runtime_inputs:
+      - num_lines
+    state:
+      input:
+        $link: the_pause
+      seed_source:
+        seed_source_selector: set_seed
+        seed: asdf
+"""
+
+
 def setup_module(module):
     # Setup an examples directory with examples we want to correspond to what exit codes,
     # do this so we can run same tests in Java.
@@ -197,6 +222,9 @@ def setup_module(module):
     invalid_native_nested = _deep_copy(green_native_nested)
     del invalid_native_nested["steps"]['2']['subworkflow']['steps']
     _dump_with_exit_code(invalid_native_nested, 2, "native_nested_no_steps")
+
+    green_runtime_inputs = ordered_load(RUNTIME_INPUTS)
+    _dump_with_exit_code(green_runtime_inputs, 0, "format2_runtime_inputs")
 
 
 def test_lint_ga_basic():

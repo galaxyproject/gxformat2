@@ -1677,6 +1677,7 @@ Workflow step.
         state,  # type: Any
         type,  # type: Any
         run,  # type: Any
+        runtime_inputs,  # type: Any
         extension_fields=None,  # type: Optional[Dict[Text, Any]]
         loadingOptions=None  # type: Optional[LoadingOptions]
     ):  # type: (...) -> None
@@ -1701,6 +1702,7 @@ Workflow step.
         self.state = state
         self.type = type
         self.run = run
+        self.runtime_inputs = runtime_inputs
 
     @classmethod
     def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
@@ -1886,6 +1888,20 @@ Workflow step.
                 )
         else:
             run = None
+        if 'runtime_inputs' in _doc:
+            try:
+                runtime_inputs = load_field(_doc.get(
+                    'runtime_inputs'), union_of_None_type_or_array_of_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                errors.append(
+                    ValidationException(
+                        "the `runtime_inputs` field is not valid because:",
+                        SourceLine(_doc, 'runtime_inputs', str),
+                        [e]
+                    )
+                )
+        else:
+            runtime_inputs = None
 
         extension_fields = yaml.comments.CommentedMap()
         for k in _doc.keys():
@@ -1900,7 +1916,7 @@ Workflow step.
                 else:
                     errors.append(
                         ValidationException(
-                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `position`, `tool_id`, `tool_shed_repository`, `tool_version`, `in`, `out`, `state`, `type`, `run`" % (k),
+                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `position`, `tool_id`, `tool_shed_repository`, `tool_version`, `in`, `out`, `state`, `type`, `run`, `runtime_inputs`" % (k),
                             SourceLine(_doc, k, str)
                         )
                     )
@@ -1910,7 +1926,7 @@ Workflow step.
             raise ValidationException("Trying 'WorkflowStep'", None, errors)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
-        return cls(id, label, doc, position, tool_id, tool_shed_repository, tool_version, in_, out, state, type, run, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(id, label, doc, position, tool_id, tool_shed_repository, tool_version, in_, out, state, type, run, runtime_inputs, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, Text, bool) -> Dict[Text, Any]
@@ -2011,12 +2027,19 @@ Workflow step.
             if u:
                 r['run'] = u
 
+        if self.runtime_inputs is not None:
+            r['runtime_inputs'] = save(
+                self.runtime_inputs,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
         if top and self.loadingOptions.namespaces:
             r["$namespaces"] = self.loadingOptions.namespaces
 
         return r
 
-    attrs = frozenset([u'id', u'label', u'doc', u'position', u'tool_id', u'tool_shed_repository', u'tool_version', u'in', u'out', u'state', u'type', u'run'])
+    attrs = frozenset(['id', 'label', 'doc', 'position', 'tool_id', 'tool_shed_repository', 'tool_version', 'in', 'out', 'state', 'type', 'run', 'runtime_inputs'])
 
 
 class Sink(Savable):
@@ -2683,6 +2706,7 @@ union_of_None_type_or_WorkflowStepTypeLoader = _UnionLoader((None_type, Workflow
 typedsl_union_of_None_type_or_WorkflowStepTypeLoader_2 = _TypeDSLLoader(union_of_None_type_or_WorkflowStepTypeLoader, 2)
 union_of_None_type_or_GalaxyWorkflowLoader = _UnionLoader((None_type, GalaxyWorkflowLoader,))
 uri_union_of_None_type_or_GalaxyWorkflowLoader_False_False_None = _URILoader(union_of_None_type_or_GalaxyWorkflowLoader, False, False, None)
+union_of_None_type_or_array_of_strtype = _UnionLoader((None_type, array_of_strtype,))
 uri_union_of_None_type_or_strtype_or_array_of_strtype_False_False_2 = _URILoader(union_of_None_type_or_strtype_or_array_of_strtype, False, False, 2)
 array_of_WorkflowInputParameterLoader = _ArrayLoader(WorkflowInputParameterLoader)
 idmap_inputs_array_of_WorkflowInputParameterLoader = _IdMapLoader(array_of_WorkflowInputParameterLoader, 'id', 'type')

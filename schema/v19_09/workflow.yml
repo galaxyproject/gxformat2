@@ -157,6 +157,11 @@ $graph:
         subscope: run
       doc: |
         Specifies a subworkflow to run.
+    - name: runtime_inputs
+      type:
+        - "null"
+        - type: array
+          items: string
 
 - name: Sink
   type: record

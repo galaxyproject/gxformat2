@@ -205,6 +205,16 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     return this.run;
   }
 
+  private java.util.Optional<java.util.List<Object>> runtime_inputs;
+
+  /**
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStep/runtime_inputs</I><br>
+   */
+  public java.util.Optional<java.util.List<Object>> getRuntime_inputs() {
+    return this.runtime_inputs;
+  }
+
   /**
    * Used by {@link org.galaxyproject.gxformat2.v19_09.utils.RootLoader} to construct instances of
    * WorkflowStepImpl.
@@ -438,6 +448,22 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     } else {
       run = null;
     }
+    java.util.Optional<java.util.List<Object>> runtime_inputs;
+
+    if (__doc.containsKey("runtime_inputs")) {
+      try {
+        runtime_inputs =
+            LoaderInstances.optional_array_of_StringInstance.loadField(
+                __doc.get("runtime_inputs"), __baseUri, __loadingOptions);
+      } catch (ValidationException e) {
+        runtime_inputs = null; // won't be used but prevents compiler from complaining.
+        final String __message = "the `runtime_inputs` field is not valid because:";
+        __errors.add(new ValidationException(__message, e));
+      }
+
+    } else {
+      runtime_inputs = null;
+    }
     if (!__errors.isEmpty()) {
       throw new ValidationException("Trying 'RecordField'", __errors);
     }
@@ -453,5 +479,6 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     this.state = (java.util.Optional<Object>) state;
     this.type = (java.util.Optional<WorkflowStepType>) type;
     this.run = (java.util.Optional<GalaxyWorkflow>) run;
+    this.runtime_inputs = (java.util.Optional<java.util.List<Object>>) runtime_inputs;
   }
 }
