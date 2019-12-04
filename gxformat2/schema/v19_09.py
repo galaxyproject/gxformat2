@@ -283,11 +283,7 @@ class _ArrayLoader(_Loader):
                 else:
                     r.append(lf)
             except ValidationException as e:
-                errors.append(ValidationException(
-                    str(e),
-                    SourceLine(doc, i, str),
-                    [e]
-                ))
+                errors.append(e.with_sourceline(SourceLine(doc, i, str)))
         if errors:
             raise ValidationException("", None, errors)
         return r
@@ -619,7 +615,7 @@ A field of a record.
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
 
         if name is None:
             if docRoot is not None:
@@ -632,7 +628,7 @@ A field of a record.
                 doc = load_field(_doc.get(
                     'doc'), union_of_None_type_or_strtype_or_array_of_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `doc` field is not valid because:",
                         SourceLine(_doc, 'doc', str),
@@ -645,7 +641,7 @@ A field of a record.
             type = load_field(_doc.get(
                 'type'), typedsl_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_2, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `type` field is not valid because:",
                     SourceLine(_doc, 'type', str),
@@ -664,7 +660,7 @@ A field of a record.
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
                             "invalid field `%s`, expected one of: `doc`, `name`, `type`" % (k),
                             SourceLine(_doc, k, str)
@@ -672,8 +668,8 @@ A field of a record.
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'RecordField'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'RecordField'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
         return cls(doc, type, extension_fields=extension_fields, loadingOptions=loadingOptions)
@@ -703,7 +699,7 @@ A field of a record.
 
         return r
 
-    attrs = frozenset([u'doc', u'name', u'type'])
+    attrs = frozenset(['doc', 'name', 'type'])
 
 
 class RecordSchema(Savable):
@@ -734,13 +730,13 @@ class RecordSchema(Savable):
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
         if 'fields' in _doc:
             try:
                 fields = load_field(_doc.get(
                     'fields'), idmap_fields_union_of_None_type_or_array_of_RecordFieldLoader, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `fields` field is not valid because:",
                         SourceLine(_doc, 'fields', str),
@@ -753,7 +749,7 @@ class RecordSchema(Savable):
             type = load_field(_doc.get(
                 'type'), typedsl_enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader_2, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `type` field is not valid because:",
                     SourceLine(_doc, 'type', str),
@@ -772,7 +768,7 @@ class RecordSchema(Savable):
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
                             "invalid field `%s`, expected one of: `fields`, `type`" % (k),
                             SourceLine(_doc, k, str)
@@ -780,8 +776,8 @@ class RecordSchema(Savable):
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'RecordSchema'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'RecordSchema'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
         return cls(fields, type, extension_fields=extension_fields, loadingOptions=loadingOptions)
@@ -811,7 +807,7 @@ class RecordSchema(Savable):
 
         return r
 
-    attrs = frozenset([u'fields', u'type'])
+    attrs = frozenset(['fields', 'type'])
 
 
 class EnumSchema(Savable):
@@ -846,12 +842,12 @@ Define an enumerated type.
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
         try:
             symbols = load_field(_doc.get(
                 'symbols'), uri_array_of_strtype_True_False_None, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `symbols` field is not valid because:",
                     SourceLine(_doc, 'symbols', str),
@@ -862,7 +858,7 @@ Define an enumerated type.
             type = load_field(_doc.get(
                 'type'), typedsl_enum_d961d79c225752b9fadb617367615ab176b47d77Loader_2, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `type` field is not valid because:",
                     SourceLine(_doc, 'type', str),
@@ -881,7 +877,7 @@ Define an enumerated type.
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
                             "invalid field `%s`, expected one of: `symbols`, `type`" % (k),
                             SourceLine(_doc, k, str)
@@ -889,8 +885,8 @@ Define an enumerated type.
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'EnumSchema'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'EnumSchema'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
         return cls(symbols, type, extension_fields=extension_fields, loadingOptions=loadingOptions)
@@ -923,7 +919,7 @@ Define an enumerated type.
 
         return r
 
-    attrs = frozenset([u'symbols', u'type'])
+    attrs = frozenset(['symbols', 'type'])
 
 
 class ArraySchema(Savable):
@@ -954,12 +950,12 @@ class ArraySchema(Savable):
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
         try:
             items = load_field(_doc.get(
                 'items'), uri_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_False_True_2, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `items` field is not valid because:",
                     SourceLine(_doc, 'items', str),
@@ -970,7 +966,7 @@ class ArraySchema(Savable):
             type = load_field(_doc.get(
                 'type'), typedsl_enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader_2, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `type` field is not valid because:",
                     SourceLine(_doc, 'type', str),
@@ -989,7 +985,7 @@ class ArraySchema(Savable):
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
                             "invalid field `%s`, expected one of: `items`, `type`" % (k),
                             SourceLine(_doc, k, str)
@@ -997,8 +993,8 @@ class ArraySchema(Savable):
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'ArraySchema'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'ArraySchema'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
         return cls(items, type, extension_fields=extension_fields, loadingOptions=loadingOptions)
@@ -1031,7 +1027,7 @@ class ArraySchema(Savable):
 
         return r
 
-    attrs = frozenset([u'items', u'type'])
+    attrs = frozenset(['items', 'type'])
 
 
 class Labeled(Savable):
@@ -1066,6 +1062,10 @@ document.  Note that the `Process` object is abstract and cannot be
 directly executed.
 
     """
+    pass
+
+
+class HasStepErrors(Savable):
     pass
 
 
@@ -1104,12 +1104,12 @@ This field specifies the location of the step's node when rendered in the workfl
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
         try:
             top = load_field(_doc.get(
                 'top'), floattype, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `top` field is not valid because:",
                     SourceLine(_doc, 'top', str),
@@ -1120,7 +1120,7 @@ This field specifies the location of the step's node when rendered in the workfl
             left = load_field(_doc.get(
                 'left'), floattype, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `left` field is not valid because:",
                     SourceLine(_doc, 'left', str),
@@ -1139,7 +1139,7 @@ This field specifies the location of the step's node when rendered in the workfl
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
                             "invalid field `%s`, expected one of: `top`, `left`" % (k),
                             SourceLine(_doc, k, str)
@@ -1147,8 +1147,8 @@ This field specifies the location of the step's node when rendered in the workfl
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'StepPosition'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'StepPosition'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
         return cls(top, left, extension_fields=extension_fields, loadingOptions=loadingOptions)
@@ -1178,7 +1178,7 @@ This field specifies the location of the step's node when rendered in the workfl
 
         return r
 
-    attrs = frozenset([u'top', u'left'])
+    attrs = frozenset(['top', 'left'])
 
 
 class ReferencesTool(Savable):
@@ -1215,7 +1215,7 @@ class ToolShedRepository(Savable):
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
 
         if name is None:
             if docRoot is not None:
@@ -1227,7 +1227,7 @@ class ToolShedRepository(Savable):
             changeset_revision = load_field(_doc.get(
                 'changeset_revision'), strtype, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `changeset_revision` field is not valid because:",
                     SourceLine(_doc, 'changeset_revision', str),
@@ -1238,7 +1238,7 @@ class ToolShedRepository(Savable):
             owner = load_field(_doc.get(
                 'owner'), strtype, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `owner` field is not valid because:",
                     SourceLine(_doc, 'owner', str),
@@ -1249,7 +1249,7 @@ class ToolShedRepository(Savable):
             tool_shed = load_field(_doc.get(
                 'tool_shed'), strtype, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `tool_shed` field is not valid because:",
                     SourceLine(_doc, 'tool_shed', str),
@@ -1268,7 +1268,7 @@ class ToolShedRepository(Savable):
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
                             "invalid field `%s`, expected one of: `changeset_revision`, `name`, `owner`, `tool_shed`" % (k),
                             SourceLine(_doc, k, str)
@@ -1276,8 +1276,8 @@ class ToolShedRepository(Savable):
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'ToolShedRepository'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'ToolShedRepository'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
         return cls(changeset_revision, owner, tool_shed, extension_fields=extension_fields, loadingOptions=loadingOptions)
@@ -1314,7 +1314,7 @@ class ToolShedRepository(Savable):
 
         return r
 
-    attrs = frozenset([u'changeset_revision', u'name', u'owner', u'tool_shed'])
+    attrs = frozenset(['changeset_revision', 'name', 'owner', 'tool_shed'])
 
 
 class WorkflowInputParameter(InputParameter):
@@ -1349,13 +1349,13 @@ class WorkflowInputParameter(InputParameter):
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
         if 'id' in _doc:
             try:
                 id = load_field(_doc.get(
                     'id'), uri_union_of_None_type_or_strtype_True_False_None, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `id` field is not valid because:",
                         SourceLine(_doc, 'id', str),
@@ -1376,7 +1376,7 @@ class WorkflowInputParameter(InputParameter):
                 doc = load_field(_doc.get(
                     'doc'), union_of_None_type_or_strtype_or_array_of_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `doc` field is not valid because:",
                         SourceLine(_doc, 'doc', str),
@@ -1390,7 +1390,7 @@ class WorkflowInputParameter(InputParameter):
                 default = load_field(_doc.get(
                     'default'), union_of_None_type_or_Any_type, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `default` field is not valid because:",
                         SourceLine(_doc, 'default', str),
@@ -1404,7 +1404,7 @@ class WorkflowInputParameter(InputParameter):
                 type = load_field(_doc.get(
                     'type'), typedsl_union_of_None_type_or_GalaxyTypeLoader_2, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `type` field is not valid because:",
                         SourceLine(_doc, 'type', str),
@@ -1425,7 +1425,7 @@ class WorkflowInputParameter(InputParameter):
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
                             "invalid field `%s`, expected one of: `doc`, `id`, `default`, `type`" % (k),
                             SourceLine(_doc, k, str)
@@ -1433,8 +1433,8 @@ class WorkflowInputParameter(InputParameter):
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'WorkflowInputParameter'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'WorkflowInputParameter'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
         return cls(doc, id, default, type, extension_fields=extension_fields, loadingOptions=loadingOptions)
@@ -1481,7 +1481,7 @@ class WorkflowInputParameter(InputParameter):
 
         return r
 
-    attrs = frozenset([u'doc', u'id', u'default', u'type'])
+    attrs = frozenset(['doc', 'id', 'default', 'type'])
 
 
 class WorkflowOutputParameter(OutputParameter):
@@ -1523,13 +1523,13 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
         if 'id' in _doc:
             try:
                 id = load_field(_doc.get(
                     'id'), uri_union_of_None_type_or_strtype_True_False_None, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `id` field is not valid because:",
                         SourceLine(_doc, 'id', str),
@@ -1550,7 +1550,7 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
                 doc = load_field(_doc.get(
                     'doc'), union_of_None_type_or_strtype_or_array_of_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `doc` field is not valid because:",
                         SourceLine(_doc, 'doc', str),
@@ -1564,7 +1564,7 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
                 outputSource = load_field(_doc.get(
                     'outputSource'), union_of_None_type_or_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `outputSource` field is not valid because:",
                         SourceLine(_doc, 'outputSource', str),
@@ -1578,7 +1578,7 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
                 type = load_field(_doc.get(
                     'type'), typedsl_union_of_None_type_or_GalaxyTypeLoader_2, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `type` field is not valid because:",
                         SourceLine(_doc, 'type', str),
@@ -1599,7 +1599,7 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
                             "invalid field `%s`, expected one of: `doc`, `id`, `outputSource`, `type`" % (k),
                             SourceLine(_doc, k, str)
@@ -1607,8 +1607,8 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'WorkflowOutputParameter'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'WorkflowOutputParameter'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
         return cls(doc, id, outputSource, type, extension_fields=extension_fields, loadingOptions=loadingOptions)
@@ -1655,10 +1655,10 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
 
         return r
 
-    attrs = frozenset([u'doc', u'id', u'outputSource', u'type'])
+    attrs = frozenset(['doc', 'id', 'outputSource', 'type'])
 
 
-class WorkflowStep(Identified, Labeled, Documented, HasStepPosition, ReferencesTool):
+class WorkflowStep(Identified, Labeled, Documented, HasStepPosition, ReferencesTool, HasStepErrors):
     """
 Workflow step.
 
@@ -1672,6 +1672,7 @@ Workflow step.
         tool_id,  # type: Any
         tool_shed_repository,  # type: Any
         tool_version,  # type: Any
+        errors,  # type: Any
         in_,  # type: Any
         out,  # type: Any
         state,  # type: Any
@@ -1697,6 +1698,7 @@ Workflow step.
         self.tool_id = tool_id
         self.tool_shed_repository = tool_shed_repository
         self.tool_version = tool_version
+        self.errors = errors
         self.in_ = in_
         self.out = out
         self.state = state
@@ -1712,13 +1714,13 @@ Workflow step.
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
         if 'id' in _doc:
             try:
                 id = load_field(_doc.get(
                     'id'), uri_union_of_None_type_or_strtype_True_False_None, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `id` field is not valid because:",
                         SourceLine(_doc, 'id', str),
@@ -1739,7 +1741,7 @@ Workflow step.
                 label = load_field(_doc.get(
                     'label'), union_of_None_type_or_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `label` field is not valid because:",
                         SourceLine(_doc, 'label', str),
@@ -1753,7 +1755,7 @@ Workflow step.
                 doc = load_field(_doc.get(
                     'doc'), union_of_None_type_or_strtype_or_array_of_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `doc` field is not valid because:",
                         SourceLine(_doc, 'doc', str),
@@ -1767,7 +1769,7 @@ Workflow step.
                 position = load_field(_doc.get(
                     'position'), union_of_None_type_or_StepPositionLoader, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `position` field is not valid because:",
                         SourceLine(_doc, 'position', str),
@@ -1781,7 +1783,7 @@ Workflow step.
                 tool_id = load_field(_doc.get(
                     'tool_id'), union_of_None_type_or_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `tool_id` field is not valid because:",
                         SourceLine(_doc, 'tool_id', str),
@@ -1795,7 +1797,7 @@ Workflow step.
                 tool_shed_repository = load_field(_doc.get(
                     'tool_shed_repository'), union_of_None_type_or_ToolShedRepositoryLoader, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `tool_shed_repository` field is not valid because:",
                         SourceLine(_doc, 'tool_shed_repository', str),
@@ -1809,7 +1811,7 @@ Workflow step.
                 tool_version = load_field(_doc.get(
                     'tool_version'), union_of_None_type_or_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `tool_version` field is not valid because:",
                         SourceLine(_doc, 'tool_version', str),
@@ -1818,12 +1820,26 @@ Workflow step.
                 )
         else:
             tool_version = None
+        if 'errors' in _doc:
+            try:
+                errors = load_field(_doc.get(
+                    'errors'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `errors` field is not valid because:",
+                        SourceLine(_doc, 'errors', str),
+                        [e]
+                    )
+                )
+        else:
+            errors = None
         if 'in' in _doc:
             try:
                 in_ = load_field(_doc.get(
                     'in'), idmap_in__union_of_None_type_or_array_of_WorkflowStepInputLoader, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `in` field is not valid because:",
                         SourceLine(_doc, 'in', str),
@@ -1837,7 +1853,7 @@ Workflow step.
                 out = load_field(_doc.get(
                     'out'), uri_union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type_True_False_None, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `out` field is not valid because:",
                         SourceLine(_doc, 'out', str),
@@ -1851,7 +1867,7 @@ Workflow step.
                 state = load_field(_doc.get(
                     'state'), union_of_None_type_or_Any_type, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `state` field is not valid because:",
                         SourceLine(_doc, 'state', str),
@@ -1865,7 +1881,7 @@ Workflow step.
                 type = load_field(_doc.get(
                     'type'), typedsl_union_of_None_type_or_WorkflowStepTypeLoader_2, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `type` field is not valid because:",
                         SourceLine(_doc, 'type', str),
@@ -1879,7 +1895,7 @@ Workflow step.
                 run = load_field(_doc.get(
                     'run'), uri_union_of_None_type_or_GalaxyWorkflowLoader_False_False_None, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `run` field is not valid because:",
                         SourceLine(_doc, 'run', str),
@@ -1893,7 +1909,7 @@ Workflow step.
                 runtime_inputs = load_field(_doc.get(
                     'runtime_inputs'), union_of_None_type_or_array_of_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `runtime_inputs` field is not valid because:",
                         SourceLine(_doc, 'runtime_inputs', str),
@@ -1914,19 +1930,19 @@ Workflow step.
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
-                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `position`, `tool_id`, `tool_shed_repository`, `tool_version`, `in`, `out`, `state`, `type`, `run`, `runtime_inputs`" % (k),
+                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `position`, `tool_id`, `tool_shed_repository`, `tool_version`, `errors`, `in`, `out`, `state`, `type`, `run`, `runtime_inputs`" % (k),
                             SourceLine(_doc, k, str)
                         )
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'WorkflowStep'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'WorkflowStep'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
-        return cls(id, label, doc, position, tool_id, tool_shed_repository, tool_version, in_, out, state, type, run, runtime_inputs, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(id, label, doc, position, tool_id, tool_shed_repository, tool_version, errors, in_, out, state, type, run, runtime_inputs, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, Text, bool) -> Dict[Text, Any]
@@ -1986,6 +2002,13 @@ Workflow step.
                 base_url=self.id,
                 relative_uris=relative_uris)
 
+        if self.errors is not None:
+            r['errors'] = save(
+                self.errors,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
         if self.in_ is not None:
             r['in'] = save(
                 self.in_,
@@ -2039,7 +2062,7 @@ Workflow step.
 
         return r
 
-    attrs = frozenset(['id', 'label', 'doc', 'position', 'tool_id', 'tool_shed_repository', 'tool_version', 'in', 'out', 'state', 'type', 'run', 'runtime_inputs'])
+    attrs = frozenset(['id', 'label', 'doc', 'position', 'tool_id', 'tool_shed_repository', 'tool_version', 'errors', 'in', 'out', 'state', 'type', 'run', 'runtime_inputs'])
 
 
 class Sink(Savable):
@@ -2082,13 +2105,13 @@ TODO:
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
         if 'id' in _doc:
             try:
                 id = load_field(_doc.get(
                     'id'), uri_union_of_None_type_or_strtype_True_False_None, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `id` field is not valid because:",
                         SourceLine(_doc, 'id', str),
@@ -2109,7 +2132,7 @@ TODO:
                 source = load_field(_doc.get(
                     'source'), uri_union_of_None_type_or_strtype_or_array_of_strtype_False_False_2, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `source` field is not valid because:",
                         SourceLine(_doc, 'source', str),
@@ -2123,7 +2146,7 @@ TODO:
                 label = load_field(_doc.get(
                     'label'), union_of_None_type_or_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `label` field is not valid because:",
                         SourceLine(_doc, 'label', str),
@@ -2137,7 +2160,7 @@ TODO:
                 default = load_field(_doc.get(
                     'default'), union_of_None_type_or_Any_type, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `default` field is not valid because:",
                         SourceLine(_doc, 'default', str),
@@ -2158,7 +2181,7 @@ TODO:
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
                             "invalid field `%s`, expected one of: `id`, `source`, `label`, `default`" % (k),
                             SourceLine(_doc, k, str)
@@ -2166,8 +2189,8 @@ TODO:
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'WorkflowStepInput'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'WorkflowStepInput'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
         return cls(id, source, label, default, extension_fields=extension_fields, loadingOptions=loadingOptions)
@@ -2217,7 +2240,7 @@ TODO:
 
         return r
 
-    attrs = frozenset([u'id', u'source', u'label', u'default'])
+    attrs = frozenset(['id', 'source', 'label', 'default'])
 
 
 class WorkflowStepOutput(Identified):
@@ -2257,13 +2280,13 @@ to connect the output value to downstream parameters.
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
         if 'id' in _doc:
             try:
                 id = load_field(_doc.get(
                     'id'), uri_union_of_None_type_or_strtype_True_False_None, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `id` field is not valid because:",
                         SourceLine(_doc, 'id', str),
@@ -2291,7 +2314,7 @@ to connect the output value to downstream parameters.
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
                             "invalid field `%s`, expected one of: `id`" % (k),
                             SourceLine(_doc, k, str)
@@ -2299,8 +2322,8 @@ to connect the output value to downstream parameters.
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'WorkflowStepOutput'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'WorkflowStepOutput'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
         return cls(id, extension_fields=extension_fields, loadingOptions=loadingOptions)
@@ -2326,7 +2349,7 @@ to connect the output value to downstream parameters.
 
         return r
 
-    attrs = frozenset([u'id'])
+    attrs = frozenset(['id'])
 
 
 class GalaxyWorkflow(Process):
@@ -2369,7 +2392,7 @@ This is documentation for a workflow!
         if hasattr(doc, 'lc'):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
-        errors = []
+        _errors__ = []
 
         if _doc.get('class') != 'GalaxyWorkflow':
             raise ValidationException("Not a GalaxyWorkflow")
@@ -2379,7 +2402,7 @@ This is documentation for a workflow!
                 id = load_field(_doc.get(
                     'id'), uri_union_of_None_type_or_strtype_True_False_None, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `id` field is not valid because:",
                         SourceLine(_doc, 'id', str),
@@ -2400,7 +2423,7 @@ This is documentation for a workflow!
                 label = load_field(_doc.get(
                     'label'), union_of_None_type_or_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `label` field is not valid because:",
                         SourceLine(_doc, 'label', str),
@@ -2414,7 +2437,7 @@ This is documentation for a workflow!
                 doc = load_field(_doc.get(
                     'doc'), union_of_None_type_or_strtype_or_array_of_strtype, baseuri, loadingOptions)
             except ValidationException as e:
-                errors.append(
+                _errors__.append(
                     ValidationException(
                         "the `doc` field is not valid because:",
                         SourceLine(_doc, 'doc', str),
@@ -2427,7 +2450,7 @@ This is documentation for a workflow!
             inputs = load_field(_doc.get(
                 'inputs'), idmap_inputs_array_of_WorkflowInputParameterLoader, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `inputs` field is not valid because:",
                     SourceLine(_doc, 'inputs', str),
@@ -2438,7 +2461,7 @@ This is documentation for a workflow!
             outputs = load_field(_doc.get(
                 'outputs'), idmap_outputs_array_of_WorkflowOutputParameterLoader, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `outputs` field is not valid because:",
                     SourceLine(_doc, 'outputs', str),
@@ -2449,7 +2472,7 @@ This is documentation for a workflow!
             steps = load_field(_doc.get(
                 'steps'), idmap_steps_union_of_array_of_WorkflowStepLoader, baseuri, loadingOptions)
         except ValidationException as e:
-            errors.append(
+            _errors__.append(
                 ValidationException(
                     "the `steps` field is not valid because:",
                     SourceLine(_doc, 'steps', str),
@@ -2468,7 +2491,7 @@ This is documentation for a workflow!
                                     vocab_term=False)
                     extension_fields[ex] = _doc[k]
                 else:
-                    errors.append(
+                    _errors__.append(
                         ValidationException(
                             "invalid field `%s`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `name`, `class`, `steps`" % (k),
                             SourceLine(_doc, k, str)
@@ -2476,8 +2499,8 @@ This is documentation for a workflow!
                     )
                     break
 
-        if errors:
-            raise ValidationException("Trying 'GalaxyWorkflow'", None, errors)
+        if _errors__:
+            raise ValidationException("Trying 'GalaxyWorkflow'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
         return cls(id, label, doc, inputs, outputs, steps, extension_fields=extension_fields, loadingOptions=loadingOptions)
@@ -2540,7 +2563,7 @@ This is documentation for a workflow!
 
         return r
 
-    attrs = frozenset([u'id', u'label', u'doc', u'inputs', u'outputs', u'name', u'class', u'steps'])
+    attrs = frozenset(['id', 'label', 'doc', 'inputs', 'outputs', 'name', 'class', 'steps'])
 
 
 _vocab = {
@@ -2551,6 +2574,7 @@ _vocab = {
     "File": "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/File",
     "GalaxyType": "https://galaxyproject.org/gxformat2/v19_09#GalaxyType",
     "GalaxyWorkflow": "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow",
+    "HasStepErrors": "https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors",
     "HasStepPosition": "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition",
     "Identified": "https://w3id.org/cwl/cwl#Identified",
     "InputParameter": "https://w3id.org/cwl/cwl#InputParameter",
@@ -2595,6 +2619,7 @@ _rvocab = {
     "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/File": "File",
     "https://galaxyproject.org/gxformat2/v19_09#GalaxyType": "GalaxyType",
     "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow": "GalaxyWorkflow",
+    "https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors": "HasStepErrors",
     "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition": "HasStepPosition",
     "https://w3id.org/cwl/cwl#Identified": "Identified",
     "https://w3id.org/cwl/cwl#InputParameter": "InputParameter",
@@ -2632,12 +2657,12 @@ _rvocab = {
     "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/tool": "tool",
 }
 
-inttype = _PrimitiveLoader(int)
-booltype = _PrimitiveLoader(bool)
 strtype = _PrimitiveLoader((str, text_type))
-Any_type = _AnyLoader()
+inttype = _PrimitiveLoader(int)
 floattype = _PrimitiveLoader(float)
+booltype = _PrimitiveLoader(bool)
 None_type = _PrimitiveLoader(type(None))
+Any_type = _AnyLoader()
 DocumentedLoader = _RecordLoader(Documented)
 PrimitiveTypeLoader = _EnumLoader(("null", "boolean", "int", "long", "float", "double", "string",))
 AnyLoader = _EnumLoader(("Any",))
@@ -2651,6 +2676,7 @@ ParameterLoader = _RecordLoader(Parameter)
 InputParameterLoader = _RecordLoader(InputParameter)
 OutputParameterLoader = _RecordLoader(OutputParameter)
 ProcessLoader = _RecordLoader(Process)
+HasStepErrorsLoader = _RecordLoader(HasStepErrors)
 HasStepPositionLoader = _RecordLoader(HasStepPosition)
 StepPositionLoader = _RecordLoader(StepPosition)
 ReferencesToolLoader = _RecordLoader(ReferencesTool)

@@ -1,5 +1,6 @@
 package org.galaxyproject.gxformat2;
 
+import java.util.HashMap;
 import java.util.Map;
 
 class LintUtils {
@@ -47,5 +48,21 @@ class LintUtils {
       lintContext.error("expected value [%s] with key [%s] to be %s", key, value, hasValue);
     }
     return (T) value;
+  }
+
+  static void lintStepErrors(LintContext lintContext, Map<String, Object> step) {
+    final String errors = ensureKeyIfPresent(lintContext, step, "errors", null, String.class);
+    if (errors != null) {
+      lintContext.warn("tool step contains error indicated during Galaxy export - " + errors);
+    }
+  }
+
+  static Map<String, Object> stepMap(LintContext lintContext, Map<String, Object> workflow) {
+    Map<String, Object> steps =
+        (Map<String, Object>) LintUtils.ensureKey(lintContext, workflow, "steps", Map.class, null);
+    if (steps == null) {
+      steps = new HashMap<String, Object>();
+    }
+    return steps;
   }
 }

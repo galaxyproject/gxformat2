@@ -126,6 +126,29 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     return this.tool_version;
   }
 
+  private java.util.Optional<String> errors;
+
+  /**
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors/errors</I><br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * During Galaxy export there may be some problem validating the tool state, tool used, etc.. that
+   * will be indicated by this field. The Galaxy user should be warned of these problems before the
+   * workflow can be used in Galaxy.
+   *
+   * <p>This field should not be used in human written Galaxy workflow files.
+   *
+   * <p>A typical problem is the referenced tool is not installed, this can be fixed by installed
+   * the tool and re-saving the workflow and then re-exporting it. *
+   *
+   * </BLOCKQUOTE>
+   */
+  public java.util.Optional<String> getErrors() {
+    return this.errors;
+  }
+
   private java.util.Optional<java.util.List<Object>> in;
 
   /**
@@ -367,6 +390,22 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     } else {
       tool_version = null;
     }
+    java.util.Optional<String> errors;
+
+    if (__doc.containsKey("errors")) {
+      try {
+        errors =
+            LoaderInstances.optional_StringInstance.loadField(
+                __doc.get("errors"), __baseUri, __loadingOptions);
+      } catch (ValidationException e) {
+        errors = null; // won't be used but prevents compiler from complaining.
+        final String __message = "the `errors` field is not valid because:";
+        __errors.add(new ValidationException(__message, e));
+      }
+
+    } else {
+      errors = null;
+    }
     java.util.Optional<java.util.List<Object>> in;
 
     if (__doc.containsKey("in")) {
@@ -474,6 +513,7 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     this.tool_id = (java.util.Optional<String>) tool_id;
     this.tool_shed_repository = (java.util.Optional<ToolShedRepository>) tool_shed_repository;
     this.tool_version = (java.util.Optional<String>) tool_version;
+    this.errors = (java.util.Optional<String>) errors;
     this.in = (java.util.Optional<java.util.List<Object>>) in;
     this.out = (java.util.Optional<java.util.List<Object>>) out;
     this.state = (java.util.Optional<Object>) state;

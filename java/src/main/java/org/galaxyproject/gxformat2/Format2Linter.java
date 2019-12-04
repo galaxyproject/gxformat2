@@ -11,5 +11,13 @@ public class Format2Linter implements GalaxyWorkflowLinter {
     } catch (ValidationException e) {
       lintContext.error("Validation failed " + e.toString());
     }
+    final Map<String, Object> steps = LintUtils.stepMap(lintContext, workflow);
+    for (Map.Entry<String, Object> stepEntry : steps.entrySet()) {
+      if (!(stepEntry.getValue() instanceof Map)) {
+        continue;
+      }
+      Map<String, Object> step = (Map<String, Object>) stepEntry.getValue();
+      LintUtils.lintStepErrors(lintContext, step);
+    }
   }
 }

@@ -181,6 +181,14 @@ def setup_module(module):
     del invalid_format2_no_steps_dict["steps"]
     _dump_with_exit_code(invalid_format2_no_steps_dict, 2, "format2_no_steps")
 
+    red_format2_step_errors = _deep_copy(green_format2)
+    red_format2_step_errors["steps"]["cat"]["errors"] = "Tool is not installed."
+    _dump_with_exit_code(red_format2_step_errors, 1, "format2_step_errors")
+
+    red_native_step_errors = _deep_copy(green_native)
+    red_native_step_errors["steps"]["1"]["errors"] = "Tool is not installed."
+    _dump_with_exit_code(red_native_step_errors, 1, "native_step_errors")
+
     red_ga_no_outputs = _deep_copy(green_native)
     red_ga_no_outputs_steps = red_ga_no_outputs.get("steps")
     for step in red_ga_no_outputs_steps.values():
@@ -192,7 +200,7 @@ def setup_module(module):
     for step in red_ga_no_output_labels_steps.values():
         for workflow_output in step.get("workflow_outputs", []):
             workflow_output["label"] = None
-    _dump_with_exit_code(red_ga_no_outputs, 1, "native_no_output_labels")
+    _dump_with_exit_code(red_ga_no_output_labels, 1, "native_no_output_labels")
 
     # gotta call this a format error to implement Process in schema...
     red_format2_no_outputs = _deep_copy(green_format2)
@@ -236,6 +244,19 @@ def setup_module(module):
 
 def test_lint_ga_basic():
     assert main(["lint", os.path.join(TEST_PATH, "wf3-shed-tools-raw.ga")]) == 1  # no outputs
+
+
+def test_lint_ga_unicycler():
+    assert main(["lint", os.path.join(TEST_PATH, "unicycler.ga")]) == 0
+
+
+def test_lint_ga_unicycler_missing_tools():
+    # only difference is one missing tool.
+    assert main(["lint", os.path.join(TEST_PATH, "unicycler-hacked-no-tool.ga")]) == 1
+
+
+def test_lint_ga_unicycler():
+    assert main(["lint", os.path.join(TEST_PATH, "ecoli-comparison.ga")]) == 1  # no outputs
 
 
 def test_lint_examples():

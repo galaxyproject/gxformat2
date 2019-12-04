@@ -104,7 +104,13 @@ $graph:
 
 - name: WorkflowStep
   type: record
-  extends: [cwl:Identified, cwl:Labeled, sld:Documented, gxformat2common:HasStepPosition, gxformat2common:ReferencesTool]
+  extends: 
+    - cwl:Identified
+    - cwl:Labeled
+    - sld:Documented
+    - gxformat2common:HasStepPosition
+    - gxformat2common:ReferencesTool
+    - gxformat2common:HasStepErrors
   docParent: "#GalaxyWorkflow"
   doc: |
     Workflow step.

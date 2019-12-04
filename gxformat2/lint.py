@@ -39,6 +39,12 @@ def ensure_key_has_value(lint_context, has_keys, key, value, has_class=None, has
     return value
 
 
+def _lint_step_errors(lint_context, step):
+    step_errors = step.get("errors")
+    if step_errors is not None:
+        lint_context.warn("tool step contains error indicated during Galaxy export - %s" % step_errors)
+
+
 def lint_ga(lint_context, workflow_dict, path=None):
     """Lint a native/legacy style Galaxy workflow and populate the corresponding LintContext."""
     ensure_key(lint_context, workflow_dict, "format-version", has_value="0.1")
@@ -65,6 +71,8 @@ def lint_ga(lint_context, workflow_dict, path=None):
             subworkflow = ensure_key(lint_context, step, "subworkflow", has_class=dict)
             lint_ga(lint_context, subworkflow)
 
+        _lint_step_errors(lint_context, step)
+
     if not found_outputs:
         lint_context.warn(LINT_FAILED_NO_OUTPUTS)
 
@@ -80,6 +88,10 @@ def lint_format2(lint_context, workflow_dict, path=None):
         load_document("file://" + os.path.normpath(path))
     except SchemaSaladException as e:
         lint_context.error("Validation failed " + str(e))
+
+    steps = ensure_key_if_present(lint_context, workflow_dict, 'steps', default={}, has_class=dict)
+    for key, step in steps.items():
+        _lint_step_errors(lint_context, step)
 
 
 def main(argv):

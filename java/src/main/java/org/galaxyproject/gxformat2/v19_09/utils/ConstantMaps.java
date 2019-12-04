@@ -15,6 +15,7 @@ public class ConstantMaps {
     vocab.put("File", "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/File");
     vocab.put("GalaxyType", "https://galaxyproject.org/gxformat2/v19_09#GalaxyType");
     vocab.put("GalaxyWorkflow", "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow");
+    vocab.put("HasStepErrors", "https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors");
     vocab.put(
         "HasStepPosition", "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition");
     vocab.put("Identified", "https://w3id.org/cwl/cwl#Identified");
@@ -68,6 +69,8 @@ public class ConstantMaps {
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#GalaxyType/File", "File");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#GalaxyType", "GalaxyType");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow", "GalaxyWorkflow");
+    rvocab.put(
+        "https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors", "HasStepErrors");
     rvocab.put(
         "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition", "HasStepPosition");
     rvocab.put("https://w3id.org/cwl/cwl#Identified", "Identified");

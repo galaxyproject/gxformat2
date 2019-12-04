@@ -46,6 +46,9 @@ public class LoaderInstances {
   public static Loader<org.galaxyproject.gxformat2.v19_09.Process> Process =
       new RecordLoader<org.galaxyproject.gxformat2.v19_09.Process>(
           org.galaxyproject.gxformat2.v19_09.Process.class);
+  public static Loader<org.galaxyproject.gxformat2.v19_09.HasStepErrors> HasStepErrors =
+      new RecordLoader<org.galaxyproject.gxformat2.v19_09.HasStepErrors>(
+          org.galaxyproject.gxformat2.v19_09.HasStepErrors.class);
   public static Loader<org.galaxyproject.gxformat2.v19_09.HasStepPosition> HasStepPosition =
       new RecordLoader<org.galaxyproject.gxformat2.v19_09.HasStepPosition>(
           org.galaxyproject.gxformat2.v19_09.HasStepPosition.class);
