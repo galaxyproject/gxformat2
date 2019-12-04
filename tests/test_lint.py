@@ -223,8 +223,15 @@ def setup_module(module):
     del invalid_native_nested["steps"]['2']['subworkflow']['steps']
     _dump_with_exit_code(invalid_native_nested, 2, "native_nested_no_steps")
 
-    green_runtime_inputs = ordered_load(RUNTIME_INPUTS)
-    _dump_with_exit_code(green_runtime_inputs, 0, "format2_runtime_inputs")
+    green_format2_runtime_inputs = ordered_load(RUNTIME_INPUTS)
+    _dump_with_exit_code(green_format2_runtime_inputs, 0, "format2_runtime_inputs")
+    green_native_runtime_inputs = to_native(RUNTIME_INPUTS)
+    _dump_with_exit_code(green_native_runtime_inputs, 0, "native_runtime_inputs")
+
+    green_format2_runtime_inputs = ordered_load(RUNTIME_INPUTS)
+    invalid_format2_runtime_inputs_type = _deep_copy(green_format2_runtime_inputs)
+    invalid_format2_runtime_inputs_type['steps']['random']['runtime_inputs'][0] = 5
+    _dump_with_exit_code(invalid_format2_runtime_inputs_type, 2, "format2_runtime_inputs_invalid_type")
 
 
 def test_lint_ga_basic():
