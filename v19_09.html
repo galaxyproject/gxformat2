@@ -317,6 +317,18 @@ and this field is optional.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>errors</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>During Galaxy export there may be some problem validating the tool state, tool used, etc..
+that will be indicated by this field. The Galaxy user should be warned of these problems before
+the workflow can be used in Galaxy.</p>
+<p>This field should not be used in human written Galaxy workflow files.</p>
+<p>A typical problem is the referenced tool is not installed, this can be fixed by installed the tool
+and re-saving the workflow and then re-exporting it.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>in</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3">array&lt;<a href="#WorkflowStepInput">WorkflowStepInput</a>&gt; | <br><a href='#map'>map</a>&lt;<code>id</code>,&nbsp;<code>source</code> | <a href="#WorkflowStepInput">WorkflowStepInput</a>&gt</div>
