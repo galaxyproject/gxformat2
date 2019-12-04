@@ -3,7 +3,7 @@ schema-salad
 
 # For testing
 tox
-nose
+pytest
 coverage
 
 # For dev
@@ -21,5 +21,3 @@ flake8
 # For release
 wheel
 twine
-
-nose
