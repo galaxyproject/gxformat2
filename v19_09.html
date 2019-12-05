@@ -96,7 +96,14 @@ Format 2 addresses all three of these limitations while also converging (where i
 with the workflow description with that used by the Common Workflow Language.</p>
 <p>This standard is in active development and a moving target in many ways, but we will try to keep what is ingestible by Galaxy
 backward-compatible going forward.</p>
-<h1 id="GalaxyWorkflow" class="section">GalaxyWorkflow <a href="#GalaxyWorkflow">&sect;</a></h1><p>This is documentation for a workflow!</p>
+<h1 id="GalaxyWorkflow" class="section">GalaxyWorkflow <a href="#GalaxyWorkflow">&sect;</a></h1><p>A Galaxy workflow description. This record corresponds to the description of a workflow that should be executable
+on a Galaxy server that includes the contained tool definitions.</p>
+<p>The workflows API or the user interface of Galaxy instances that are of version 19.09 or newer should be able to
+import a document defining this record.</p>
+<h3 id="A_note_about_<code>label</code>_field." class="section">A note about <code>label</code> field. <a href="#A_note_about_<code>label</code>_field.">&sect;</a></h3><p>This is the name of the workflow in the Galaxy user interface. This is the mechanism that
+users will primarily identify the workflow using. Legacy support - this may also be called 'name' and Galaxy will
+consume the workflow document fine and treat this attribute correctly - however in order to validate against this
+workflow definition schema the attribute should be called <code>label</code>.</p>
 <h3>Fields</h3>
 <div class="responsive-table">
 <div class="row responsive-table-header">
@@ -162,13 +169,6 @@ input data links are fulfilled.</p>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
 <div class="col-xs-12 col-lg-6 description-col"><p>A documentation string for this object, or an array of strings which should be concatenated.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>name</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>The name of the workflow.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
