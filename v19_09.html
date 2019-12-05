@@ -170,6 +170,13 @@ input data links are fulfilled.</p>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>The name of the workflow.</p>
 </div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>report</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Report">Report</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Workflow invocation report template.</p>
+</div>
 </div></div><h2 id="WorkflowInputParameter" class="section">WorkflowInputParameter <a href="#WorkflowInputParameter">&sect;</a></h2><h3>Fields</h3>
 <div class="responsive-table">
 <div class="row responsive-table-header">
@@ -262,9 +269,11 @@ the output parameter.</p>
 <div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>out</code></div>
 <div class="col-xs-2 col-lg-1">required</div>
-<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&nbsp;|&nbsp;<a href="#WorkflowStepOutput">WorkflowStepOutput</a>&gt; | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&nbsp;|&nbsp;<a href="#WorkflowStepOutput">WorkflowStepOutput</a>&gt; | <br><a href='#map'>map</a>&lt;<code>id</code>,&nbsp;<code>source</code> | <a href="#PrimitiveType">string</a> | <a href="#WorkflowStepOutput">WorkflowStepOutput</a>&gt | <a href="#PrimitiveType">null</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Defines the parameters representing the output of the process.  May be
 used to generate and/or validate the output object.</p>
+<p>This can also be called 'outputs' for legacy reasons - but the resulting
+workflow document is not a valid instance of this schema.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -425,6 +434,48 @@ to connect the output value to downstream parameters.</p>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
 </div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>add_tags</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>change_datatype</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>delete_intermediate_datasets</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>hide</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>remove_tags</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>rename</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>set_columns</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
 </div></div><h3 id="StepPosition" class="section">StepPosition <a href="#StepPosition">&sect;</a></h3><p>This field specifies the location of the step's node when rendered in the workflow editor.</p>
 <h3>Fields</h3>
 <div class="responsive-table">
@@ -484,7 +535,23 @@ to connect the output value to downstream parameters.</p>
 </div>
 </div></div><h3 id="WorkflowStepType" class="section">WorkflowStepType <a href="#WorkflowStepType">&sect;</a></h3><p>Module types used by Galaxy steps. Galaxy's native format allows additional types such as data_input, data_input_collection, and parameter_type
 but these should be represented as <code>inputs</code> in Format2.</p>
-<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>tool</code></td><td> Run a tool.</td></tr><tr><td><code>subworkflow</code></td><td> Run a subworkflow.</td></tr><tr><td><code>pause</code></td><td> Pause computation on this branch of workflow until user allows it to continue.</td></tr></table></div>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>tool</code></td><td> Run a tool.</td></tr><tr><td><code>subworkflow</code></td><td> Run a subworkflow.</td></tr><tr><td><code>pause</code></td><td> Pause computation on this branch of workflow until user allows it to continue.</td></tr></table><h2 id="Report" class="section">Report <a href="#Report">&sect;</a></h2><p>Definition of an invocation report for this workflow. Currently the only
+field is 'markdown'.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>markdown</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Galaxy flavored Markdown to define an invocation report.</p>
+</div>
+</div></div></div>
     </div>
     </div>
     </body>
