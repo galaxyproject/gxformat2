@@ -264,13 +264,29 @@ $graph:
     - specializeFrom: cwl:OutputParameter
       specializeTo: WorkflowOutputParameter
   documentRoot: true
-  doc: This is documentation for a workflow!
+  doc: |
+    A Galaxy workflow description. This record corresponds to the description of a workflow that should be executable
+    on a Galaxy server that includes the contained tool definitions.
+
+    The workflows API or the user interface of Galaxy instances that are of version 19.09 or newer should be able to
+    import a document defining this record.
+
+    ## A note about `label` field.
+
+    This is the name of the workflow in the Galaxy user interface. This is the mechanism that
+    users will primarily identify the workflow using. Legacy support - this may also be called 'name' and Galaxy will
+    consume the workflow document fine and treat this attribute correctly - however in order to validate against this
+    workflow definition schema the attribute should be called `label`.
   fields:
-    - name: name
-      type: string?
-      jsonldPredicate: "@id"  #  will this bite me?
-      doc: |
-        The name of the workflow.
+    # I can't find a way to override the documentation of label, even though I contextual.
+    # - name: label
+    #  type:
+    #    - "null"
+    #    - string
+    #  jsonldPredicate: "rdfs:label"
+    #  doc: {$include: ../common/workflow_label_description.txt}
+    #  # Legacy support - this may also be called 'name' and Galaxy will consume the workflow fine and treat this
+    #  # attribute correctly - however in order to validate against this schema the attribute should be called label.
     - name: "class"
       jsonldPredicate:
         "_id": "@type"

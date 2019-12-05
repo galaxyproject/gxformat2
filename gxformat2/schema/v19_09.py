@@ -2602,7 +2602,19 @@ to connect the output value to downstream parameters.
 
 class GalaxyWorkflow(Process):
     """
-This is documentation for a workflow!
+A Galaxy workflow description. This record corresponds to the description of a workflow that should be executable
+on a Galaxy server that includes the contained tool definitions.
+
+The workflows API or the user interface of Galaxy instances that are of version 19.09 or newer should be able to
+import a document defining this record.
+
+## A note about `label` field.
+
+This is the name of the workflow in the Galaxy user interface. This is the mechanism that
+users will primarily identify the workflow using. Legacy support - this may also be called 'name' and Galaxy will
+consume the workflow document fine and treat this attribute correctly - however in order to validate against this
+workflow definition schema the attribute should be called `label`.
+
     """
     def __init__(
         self,
@@ -2757,7 +2769,7 @@ This is documentation for a workflow!
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `name`, `class`, `steps`, `report`" % (k),
+                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `class`, `steps`, `report`" % (k),
                             SourceLine(_doc, k, str)
                         )
                     )
@@ -2780,7 +2792,7 @@ This is documentation for a workflow!
         if self.id is not None:
             u = save_relative_uri(
                 self.id,
-                self.name,
+                base_url,
                 True,
                 None,
                 relative_uris)
@@ -2791,42 +2803,42 @@ This is documentation for a workflow!
             r['label'] = save(
                 self.label,
                 top=False,
-                base_url=self.name,
+                base_url=self.id,
                 relative_uris=relative_uris)
 
         if self.doc is not None:
             r['doc'] = save(
                 self.doc,
                 top=False,
-                base_url=self.name,
+                base_url=self.id,
                 relative_uris=relative_uris)
 
         if self.inputs is not None:
             r['inputs'] = save(
                 self.inputs,
                 top=False,
-                base_url=self.name,
+                base_url=self.id,
                 relative_uris=relative_uris)
 
         if self.outputs is not None:
             r['outputs'] = save(
                 self.outputs,
                 top=False,
-                base_url=self.name,
+                base_url=self.id,
                 relative_uris=relative_uris)
 
         if self.steps is not None:
             r['steps'] = save(
                 self.steps,
                 top=False,
-                base_url=self.name,
+                base_url=self.id,
                 relative_uris=relative_uris)
 
         if self.report is not None:
             r['report'] = save(
                 self.report,
                 top=False,
-                base_url=self.name,
+                base_url=self.id,
                 relative_uris=relative_uris)
 
         if top and self.loadingOptions.namespaces:
@@ -2834,7 +2846,7 @@ This is documentation for a workflow!
 
         return r
 
-    attrs = frozenset(['id', 'label', 'doc', 'inputs', 'outputs', 'name', 'class', 'steps', 'report'])
+    attrs = frozenset(['id', 'label', 'doc', 'inputs', 'outputs', 'class', 'steps', 'report'])
 
 
 _vocab = {

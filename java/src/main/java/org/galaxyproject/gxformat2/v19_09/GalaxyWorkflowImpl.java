@@ -12,7 +12,19 @@ import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
  *
  * <BLOCKQUOTE>
  *
- * This is documentation for a workflow!
+ * A Galaxy workflow description. This record corresponds to the description of a workflow that
+ * should be executable on a Galaxy server that includes the contained tool definitions.
+ *
+ * <p>The workflows API or the user interface of Galaxy instances that are of version 19.09 or newer
+ * should be able to import a document defining this record.
+ *
+ * <p>## A note about `label` field.
+ *
+ * <p>This is the name of the workflow in the Galaxy user interface. This is the mechanism that
+ * users will primarily identify the workflow using. Legacy support - this may also be called 'name'
+ * and Galaxy will consume the workflow document fine and treat this attribute correctly - however
+ * in order to validate against this workflow definition schema the attribute should be called
+ * `label`.
  *
  * </BLOCKQUOTE>
  */
