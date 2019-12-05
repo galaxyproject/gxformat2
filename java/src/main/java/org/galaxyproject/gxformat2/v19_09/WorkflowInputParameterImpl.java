@@ -61,6 +61,16 @@ public class WorkflowInputParameterImpl extends SavableImpl implements WorkflowI
     return this.default_;
   }
 
+  private java.util.Optional<StepPosition> position;
+
+  /**
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition/position</I><br>
+   */
+  public java.util.Optional<StepPosition> getPosition() {
+    return this.position;
+  }
+
   private java.util.Optional<GalaxyType> type;
 
   /**
@@ -164,6 +174,22 @@ public class WorkflowInputParameterImpl extends SavableImpl implements WorkflowI
     } else {
       default_ = null;
     }
+    java.util.Optional<StepPosition> position;
+
+    if (__doc.containsKey("position")) {
+      try {
+        position =
+            LoaderInstances.optional_StepPosition.loadField(
+                __doc.get("position"), __baseUri, __loadingOptions);
+      } catch (ValidationException e) {
+        position = null; // won't be used but prevents compiler from complaining.
+        final String __message = "the `position` field is not valid because:";
+        __errors.add(new ValidationException(__message, e));
+      }
+
+    } else {
+      position = null;
+    }
     java.util.Optional<GalaxyType> type;
 
     if (__doc.containsKey("type")) {
@@ -186,6 +212,7 @@ public class WorkflowInputParameterImpl extends SavableImpl implements WorkflowI
     this.doc = (Object) doc;
     this.id = (java.util.Optional<String>) id;
     this.default_ = (java.util.Optional<Object>) default_;
+    this.position = (java.util.Optional<StepPosition>) position;
     this.type = (java.util.Optional<GalaxyType>) type;
   }
 }

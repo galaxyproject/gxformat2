@@ -24,7 +24,7 @@ import org.galaxyproject.gxformat2.v19_09.utils.Savable;
  *
  * </BLOCKQUOTE>
  */
-public interface GalaxyWorkflow extends Process, Savable {
+public interface GalaxyWorkflow extends Process, HasUUID, Savable {
   /**
    * Getter for property <I>https://w3id.org/cwl/cwl#Identified/id</I><br>
    *
@@ -84,6 +84,16 @@ public interface GalaxyWorkflow extends Process, Savable {
    * </BLOCKQUOTE>
    */
   java.util.List<Object> getOutputs();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/gxformat2common#HasUUID/uuid</I><br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * UUID uniquely representing this element. *
+   *
+   * </BLOCKQUOTE>
+   */
+  java.util.Optional<String> getUuid();
   /**
    * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/class</I><br>
    */

@@ -7,7 +7,7 @@ import org.galaxyproject.gxformat2.v19_09.utils.Savable;
  * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowInputParameter</I><br>
  * This interface is implemented by {@link WorkflowInputParameterImpl}<br>
  */
-public interface WorkflowInputParameter extends InputParameter, Savable {
+public interface WorkflowInputParameter extends InputParameter, HasStepPosition, Savable {
   /**
    * Getter for property <I>https://w3id.org/cwl/cwl#Identified/id</I><br>
    *
@@ -40,6 +40,11 @@ public interface WorkflowInputParameter extends InputParameter, Savable {
    * </BLOCKQUOTE>
    */
   java.util.Optional<Object> getDefault();
+  /**
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition/position</I><br>
+   */
+  java.util.Optional<StepPosition> getPosition();
   /**
    * Getter for property <I>https://w3id.org/cwl/salad#type</I><br>
    *

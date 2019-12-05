@@ -116,6 +116,21 @@ public class GalaxyWorkflowImpl extends SavableImpl implements GalaxyWorkflow {
     return this.outputs;
   }
 
+  private java.util.Optional<String> uuid;
+
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/gxformat2common#HasUUID/uuid</I><br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * UUID uniquely representing this element. *
+   *
+   * </BLOCKQUOTE>
+   */
+  public java.util.Optional<String> getUuid() {
+    return this.uuid;
+  }
+
   private String class_;
 
   /**
@@ -264,6 +279,22 @@ public class GalaxyWorkflowImpl extends SavableImpl implements GalaxyWorkflow {
       final String __message = "the `outputs` field is not valid because:";
       __errors.add(new ValidationException(__message, e));
     }
+    java.util.Optional<String> uuid;
+
+    if (__doc.containsKey("uuid")) {
+      try {
+        uuid =
+            LoaderInstances.optional_StringInstance.loadField(
+                __doc.get("uuid"), __baseUri, __loadingOptions);
+      } catch (ValidationException e) {
+        uuid = null; // won't be used but prevents compiler from complaining.
+        final String __message = "the `uuid` field is not valid because:";
+        __errors.add(new ValidationException(__message, e));
+      }
+
+    } else {
+      uuid = null;
+    }
     String class_;
     try {
       class_ =
@@ -308,6 +339,7 @@ public class GalaxyWorkflowImpl extends SavableImpl implements GalaxyWorkflow {
     this.doc = (Object) doc;
     this.inputs = (java.util.List<Object>) inputs;
     this.outputs = (java.util.List<Object>) outputs;
+    this.uuid = (java.util.Optional<String>) uuid;
     this.class_ = (String) class_;
     this.steps = (java.util.List<Object>) steps;
     this.report = (java.util.Optional<Report>) report;

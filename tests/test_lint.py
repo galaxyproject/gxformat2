@@ -6,6 +6,7 @@ from gxformat2.lint import main
 from ._helpers import (
     assert_valid_native,
     copy_without_workflow_output_labels,
+    round_trip,
     TEST_PATH,
     to_native,
 )
@@ -321,6 +322,13 @@ def setup_module(module):
     invalid_native_report_missing_markdown = _deep_copy(green_native_report)
     del invalid_native_report_missing_markdown["report"]["markdown"]
     _dump_with_exit_code(invalid_native_report_missing_markdown, 2, "native_report_missing_markdown")
+
+    # ensure that round tripping all green format2 workflows still lint green.
+    for file_name in os.listdir(TEST_EXAMPLES):
+        if file_name.startswith("0_format2") and "roundtrip" not in file_name:
+            roundtrip_contents = round_trip(open(os.path.join(TEST_EXAMPLES, file_name), "r").read())
+            base = os.path.splitext(file_name)[0][len("0_"):]
+            _dump_with_exit_code(roundtrip_contents, 0, base + "_roundtrip")
 
 
 def test_lint_ga_basic():

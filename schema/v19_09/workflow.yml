@@ -55,7 +55,9 @@ $graph:
 
 - name: WorkflowInputParameter
   type: record
-  extends: cwl:InputParameter
+  extends:
+    - cwl:InputParameter
+    - gxformat2common:HasStepPosition
   docParent: "#GalaxyWorkflow"
   fields:
     - name: type
@@ -104,16 +106,31 @@ $graph:
 
 - name: WorkflowStep
   type: record
-  extends: 
+  extends:
     - cwl:Identified
     - cwl:Labeled
     - sld:Documented
     - gxformat2common:HasStepPosition
     - gxformat2common:ReferencesTool
     - gxformat2common:HasStepErrors
+    - gxformat2common:HasUUID
   docParent: "#GalaxyWorkflow"
   doc: |
-    Workflow step.
+    This represents a non-input step a Galaxy Workflow.
+
+    # A note about `state` and `tool_state` fields.
+
+    Only one or the other should be specified. These are two ways to represent the "state"
+    of a tool at this workflow step. Both are essentially maps from parameter names to
+    parameter values.
+
+    `tool_state` is much more low-level and expects a flat dictionary with each value a JSON
+    dump. Nested tool structures such as conditionals and repeats should have all their values
+    in the JSON dumped string. In general `tool_state` may be present in workflows exported from
+    Galaxy but shouldn't be written by humans.
+
+    `state` can contained a typed map. Repeat values can be represented as YAML arrays. An alternative
+    to representing `state` this way is defining inputs with default values.
   fields:
     - name: in
       type:  WorkflowStepInput[]?
@@ -146,6 +163,16 @@ $graph:
       type: Any?
       doc: |
         Structured tool state.
+      jsonldPredicate:
+        _id: "gxformat2:state"
+        noLinkCheck: true
+    - name: tool_state
+      type: Any?
+      jsonldPredicate:
+        _id: "gxformat2:tool_state"
+        noLinkCheck: true
+      doc: |
+        Unstructured tool state.
     - name: type
       type: WorkflowStepType?
       jsonldPredicate:
@@ -257,7 +284,9 @@ $graph:
 
 - name: GalaxyWorkflow
   type: record
-  extends: cwl:Process
+  extends:
+    - cwl:Process
+    - gxformat2common:HasUUID
   specialize:
     - specializeFrom: cwl:InputParameter
       specializeTo: WorkflowInputParameter
