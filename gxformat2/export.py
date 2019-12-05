@@ -1,8 +1,9 @@
 """Functionality for converting a standard Galaxy workflow into a format 2 workflow."""
 
-from collections import OrderedDict
 import json
+from collections import OrderedDict
 
+from ._labels import Labels
 from ._yaml import ordered_dump
 
 
@@ -42,11 +43,13 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
     outputs = OrderedDict()
     steps = []
 
+    labels = Labels()
+
     # For each step, rebuild the form and encode the state
     for step in native_steps.values():
         for workflow_output in step.get("workflow_outputs", []):
             source = _to_source(workflow_output, label_map, output_id=step["id"])
-            output_id = workflow_output["label"]
+            output_id = labels.ensure_new_output_label(workflow_output.get("label"))
             outputs[output_id] = {"outputSource": source}
 
         module_type = step.get("type")

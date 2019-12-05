@@ -1,15 +1,17 @@
 import copy
-import json
 import os
-import tempfile
 
-from gxformat2.lint import main
 from gxformat2._yaml import ordered_dump, ordered_load
-from ._helpers import assert_valid_native, to_native
+from gxformat2.lint import main
+from ._helpers import (
+    assert_valid_native,
+    copy_without_workflow_output_labels,
+    TEST_PATH,
+    to_native,
+)
 
 _deep_copy = copy.deepcopy
 
-TEST_PATH = os.path.abspath(os.path.dirname(__file__))
 TEST_EXAMPLES = os.path.join(TEST_PATH, "examples")
 
 BASIC_WORKFLOW = """
@@ -204,6 +206,7 @@ report:
     This report is generated from markdown content in the workflow YAML/JSON.
 """
 
+
 def setup_module(module):
     # Setup an examples directory with examples we want to correspond to what exit codes,
     # do this so we can run same tests in Java.
@@ -249,11 +252,7 @@ def setup_module(module):
         step.pop("workflow_outputs", None)
     _dump_with_exit_code(red_ga_no_outputs, 1, "native_no_outputs")
 
-    red_ga_no_output_labels = _deep_copy(green_native)
-    red_ga_no_output_labels_steps = red_ga_no_output_labels.get("steps")
-    for step in red_ga_no_output_labels_steps.values():
-        for workflow_output in step.get("workflow_outputs", []):
-            workflow_output["label"] = None
+    red_ga_no_output_labels = copy_without_workflow_output_labels(green_native)
     _dump_with_exit_code(red_ga_no_output_labels, 1, "native_no_output_labels")
 
     # gotta call this a format error to implement Process in schema...
@@ -337,7 +336,7 @@ def test_lint_ga_unicycler_missing_tools():
     assert main(["lint", os.path.join(TEST_PATH, "unicycler-hacked-no-tool.ga")]) == 1
 
 
-def test_lint_ga_unicycler():
+def test_lint_ecoli_comparison():
     assert main(["lint", os.path.join(TEST_PATH, "ecoli-comparison.ga")]) == 1  # no outputs
 
 
