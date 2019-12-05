@@ -149,6 +149,60 @@ steps:
         seed: asdf
 """
 
+PJA_1 = """
+class: GalaxyWorkflow
+inputs:
+  input1: data
+outputs:
+  out1:
+    outputSource: second_cat/out_file1
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: input1
+    out:
+       out_file1:
+         hide: true
+         rename: "the new value"
+  second_cat:
+    tool_id: cat1
+    in:
+      input1: first_cat/out_file1
+"""
+
+WITH_REPORT = """
+class: GalaxyWorkflow
+name: My Cool Workflow
+inputs:
+  input_1: data
+  image_input: data
+  input_list: collection
+outputs:
+  output_1:
+    outputSource: first_cat/out_file1
+  output_image:
+    outputSource: image_cat/out_file1
+steps:
+  first_cat:
+    tool_id: cat
+    in:
+      input1: input_1
+  image_cat:
+    tool_id: cat
+    in:
+      input1: image_input
+  qc_step:
+    tool_id: qc_stdout
+    state:
+      quality: 9
+    in:
+      input: input_1
+report:
+  markdown: |
+    ## About This Report
+    This report is generated from markdown content in the workflow YAML/JSON.
+"""
 
 def setup_module(module):
     # Setup an examples directory with examples we want to correspond to what exit codes,
@@ -240,6 +294,34 @@ def setup_module(module):
     invalid_format2_runtime_inputs_type = _deep_copy(green_format2_runtime_inputs)
     invalid_format2_runtime_inputs_type['steps']['random']['runtime_inputs'][0] = 5
     _dump_with_exit_code(invalid_format2_runtime_inputs_type, 2, "format2_runtime_inputs_invalid_type")
+
+    green_format2_pja = ordered_load(PJA_1)
+    _dump_with_exit_code(green_format2_runtime_inputs, 0, "format2_pja1")
+
+    invalid_format2_pja_hide_type = _deep_copy(green_format2_pja)
+    invalid_format2_pja_hide_type['steps']['first_cat']['out']['out_file1']['hide'] = "moocow"
+    _dump_with_exit_code(invalid_format2_pja_hide_type, 2, "format2_pja_hide_invalid_type")
+
+    green_format2_report = ordered_load(WITH_REPORT)
+    _dump_with_exit_code(green_format2_runtime_inputs, 0, "format2_report")
+    green_native_report = to_native(WITH_REPORT)
+    _dump_with_exit_code(green_native_report, 0, "native_report")
+
+    invalid_format2_report_type = _deep_copy(green_format2_report)
+    invalid_format2_report_type["report"]["markdown"] = 5
+    _dump_with_exit_code(invalid_format2_report_type, 2, "format2_report_invalid_type")
+
+    invalid_native_report_type = _deep_copy(green_native_report)
+    invalid_native_report_type["report"]["markdown"] = 5
+    _dump_with_exit_code(invalid_native_report_type, 2, "native_report_invalid_type")
+
+    invalid_format2_report_missing_markdown = _deep_copy(green_format2_report)
+    del invalid_format2_report_missing_markdown["report"]["markdown"]
+    _dump_with_exit_code(invalid_format2_report_missing_markdown, 2, "format2_report_missing_markdown")
+
+    invalid_native_report_missing_markdown = _deep_copy(green_native_report)
+    del invalid_native_report_missing_markdown["report"]["markdown"]
+    _dump_with_exit_code(invalid_native_report_missing_markdown, 2, "native_report_missing_markdown")
 
 
 def test_lint_ga_basic():

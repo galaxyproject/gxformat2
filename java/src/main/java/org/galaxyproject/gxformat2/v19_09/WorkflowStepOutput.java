@@ -29,4 +29,40 @@ public interface WorkflowStepOutput extends Identified, Savable {
    * </BLOCKQUOTE>
    */
   java.util.Optional<String> getId();
+  /**
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/add_tags</I><br>
+   */
+  java.util.Optional<java.util.List<Object>> getAdd_tags();
+  /**
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/change_datatype</I><br>
+   */
+  java.util.Optional<String> getChange_datatype();
+  /**
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/delete_intermediate_datasets</I>
+   * <br>
+   */
+  java.util.Optional<Boolean> getDelete_intermediate_datasets();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/hide</I>
+   * <br>
+   */
+  java.util.Optional<Boolean> getHide();
+  /**
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/remove_tags</I><br>
+   */
+  java.util.Optional<java.util.List<Object>> getRemove_tags();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/rename</I>
+   * <br>
+   */
+  java.util.Optional<String> getRename();
+  /**
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/set_columns</I><br>
+   */
+  java.util.Optional<java.util.List<Object>> getSet_columns();
 }

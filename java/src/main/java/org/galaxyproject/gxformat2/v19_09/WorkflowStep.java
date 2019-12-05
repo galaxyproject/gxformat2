@@ -128,7 +128,10 @@ public interface WorkflowStep
    * <BLOCKQUOTE>
    *
    * Defines the parameters representing the output of the process. May be used to generate and/or
-   * validate the output object. *
+   * validate the output object.
+   *
+   * <p>This can also be called 'outputs' for legacy reasons - but the resulting workflow document
+   * is not a valid instance of this schema. *
    *
    * </BLOCKQUOTE>
    */

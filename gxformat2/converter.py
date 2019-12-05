@@ -459,21 +459,24 @@ def transform_tool(context, step):
     _populate_tool_state(step, tool_state)
 
     # Handle outputs.
-    if "outputs" in step:
-        for name, output in step.get("outputs", {}).items():
-            for action_key, action_dict in POST_JOB_ACTIONS.items():
-                action_argument = output.get(action_key, action_dict['default'])
-                if action_argument:
-                    action_class = action_dict['action_class']
-                    action_name = action_class + name
-                    action = _action(
-                        action_class,
-                        name,
-                        arguments=action_dict['arguments'](action_argument)
-                    )
-                    post_job_actions[action_name] = action
-
-        del step["outputs"]
+    out = step.pop("out", None)
+    if out is None:
+        # Handle LEGACY 19.XX outputs key.
+        out = step.pop("outputs", [])
+    out = _convert_dict_to_id_list_if_needed(out)
+    for output in out:
+        name = output["id"]
+        for action_key, action_dict in POST_JOB_ACTIONS.items():
+            action_argument = output.get(action_key, action_dict['default'])
+            if action_argument:
+                action_class = action_dict['action_class']
+                action_name = action_class + name
+                action = _action(
+                    action_class,
+                    name,
+                    arguments=action_dict['arguments'](action_argument)
+                )
+                post_job_actions[action_name] = action
 
 
 def run_tool_to_step(conversion_context, step, run_action):

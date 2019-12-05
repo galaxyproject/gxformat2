@@ -53,6 +53,13 @@ public class NativeLinter implements GalaxyWorkflowLinter {
       }
       LintUtils.lintStepErrors(lintContext, step);
     }
+    Map<String, Object> reportMap =
+        (Map<String, Object>)
+            LintUtils.ensureKeyIfPresent(
+                lintContext, workflow, "report", (Map<String, Object>) null, Map.class);
+    if (reportMap != null) {
+      LintUtils.ensureKey(lintContext, reportMap, "markdown", String.class, null);
+    }
     if (!foundOutputs) {
       lintContext.warn(LINT_FAILED_NO_OUTPUTS);
     }

@@ -80,6 +80,9 @@ public class LoaderInstances {
   public static Loader<org.galaxyproject.gxformat2.v19_09.WorkflowStepInput> WorkflowStepInput =
       new RecordLoader<org.galaxyproject.gxformat2.v19_09.WorkflowStepInput>(
           org.galaxyproject.gxformat2.v19_09.WorkflowStepInputImpl.class);
+  public static Loader<org.galaxyproject.gxformat2.v19_09.Report> Report =
+      new RecordLoader<org.galaxyproject.gxformat2.v19_09.Report>(
+          org.galaxyproject.gxformat2.v19_09.ReportImpl.class);
   public static Loader<org.galaxyproject.gxformat2.v19_09.WorkflowStepOutput> WorkflowStepOutput =
       new RecordLoader<org.galaxyproject.gxformat2.v19_09.WorkflowStepOutput>(
           org.galaxyproject.gxformat2.v19_09.WorkflowStepOutputImpl.class);
@@ -188,9 +191,9 @@ public class LoaderInstances {
       optional_array_of_union_of_StringInstance_or_WorkflowStepOutput =
           new OptionalLoader(array_of_union_of_StringInstance_or_WorkflowStepOutput);
   public static Loader<java.util.Optional<java.util.List<Object>>>
-      uri_optional_array_of_union_of_StringInstance_or_WorkflowStepOutput_True_False_None =
-          new UriLoader(
-              optional_array_of_union_of_StringInstance_or_WorkflowStepOutput, true, false, null);
+      idmap_out_optional_array_of_union_of_StringInstance_or_WorkflowStepOutput =
+          new IdMapLoader(
+              optional_array_of_union_of_StringInstance_or_WorkflowStepOutput, "id", "source");
   public static Loader<java.util.Optional<WorkflowStepType>> optional_WorkflowStepType =
       new OptionalLoader(WorkflowStepType);
   public static Loader<java.util.Optional<WorkflowStepType>> typedsl_optional_WorkflowStepType_2 =
@@ -206,12 +209,15 @@ public class LoaderInstances {
       uri_union_of_NullInstance_or_StringInstance_or_array_of_StringInstance_False_False_2 =
           new UriLoader(
               union_of_NullInstance_or_StringInstance_or_array_of_StringInstance, false, false, 2);
+  public static Loader<java.util.Optional<Boolean>> optional_BooleanInstance =
+      new OptionalLoader(BooleanInstance);
   public static Loader<String> uri_StringInstance_False_True_None =
       new UriLoader(StringInstance, false, true, null);
   public static Loader<java.util.List<WorkflowStep>> array_of_WorkflowStep =
       new ArrayLoader(WorkflowStep);
   public static Loader<java.util.List<Object>> idmap_steps_array_of_WorkflowStep =
       new IdMapLoader(array_of_WorkflowStep, "id", "None");
+  public static Loader<java.util.Optional<Report>> optional_Report = new OptionalLoader(Report);
   public static Loader<java.util.List<GalaxyWorkflow>> array_of_GalaxyWorkflow =
       new ArrayLoader(GalaxyWorkflow);
   public static Loader<Object> union_of_GalaxyWorkflow_or_array_of_GalaxyWorkflow =
