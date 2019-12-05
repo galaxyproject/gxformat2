@@ -2,6 +2,7 @@ import copy
 import os
 
 from gxformat2.converter import python_to_workflow, yaml_to_workflow
+from gxformat2.export import from_galaxy_native
 from gxformat2.interface import ImporterGalaxyInterface
 
 TEST_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -44,3 +45,13 @@ def native_workflow_outputs(native_as_dict):
     for step in steps.values():
         for workflow_output in step.get("workflow_outputs", []):
             yield workflow_output
+
+
+def round_trip(has_yaml):
+    as_native = to_native(has_yaml)
+    assert_valid_native(as_native)
+    return from_native(as_native)
+
+
+def from_native(native_as_dict):
+    return from_galaxy_native(native_as_dict, None)

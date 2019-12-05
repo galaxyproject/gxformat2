@@ -83,5 +83,5 @@ def test_post_job_action_to_native(wf_template):
         assert expected_pja == converted_pjas, "Expected:\n%s\nActual:\n%s'" % (expected_pja, converted_pjas)
         assert_valid_native(native)
         roundtrip_workflow = from_native(native)
-        out_def = roundtrip_workflow['steps']['cat']['outputs']['out_file1']
+        out_def = roundtrip_workflow['steps']['cat']['out']['out_file1']
         assert action_key in out_def, "%s not in %s" % (action_key, out_def)

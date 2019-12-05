@@ -24,6 +24,8 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
     data = OrderedDict()
     data['class'] = 'GalaxyWorkflow'
     _copy_common_properties(native_workflow_dict, data)
+    if "name" in native_workflow_dict:
+        data["label"] = native_workflow_dict.pop("name")
     for top_level_key in ['tags', 'uuid', 'report']:
         value = native_workflow_dict.get(top_level_key)
         if value:
@@ -169,9 +171,12 @@ def _convert_input_connections(from_native_step, to_format2_step, label_map):
 def _convert_post_job_actions(from_native_step, to_format2_step):
 
     def _ensure_output_def(key):
-        if "outputs" not in to_format2_step:
-            to_format2_step["outputs"] = {}
-        outputs_dict = to_format2_step["outputs"]
+        if "outputs" in to_format2_step:
+            to_format2_step["out"] = to_format2_step.pop("outputs")
+        elif "out" not in to_format2_step:
+            to_format2_step["out"] = {}
+
+        outputs_dict = to_format2_step["out"]
         if key not in outputs_dict:
             outputs_dict[key] = {}
         return outputs_dict[key]

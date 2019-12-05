@@ -6,7 +6,9 @@ from gxformat2.export import from_galaxy_native
 from ._helpers import (
     assert_valid_native,
     copy_without_workflow_output_labels,
+    from_native,
     native_workflow_outputs,
+    round_trip,
     TEST_PATH,
     to_native,
 )
@@ -236,16 +238,6 @@ def test_export_native_no_labels():
 
     assert after_step_count == before_step_count
     assert after_output_count == before_output_count, round_trip_unicycler
-
-
-def round_trip(has_yaml):
-    as_native = to_native(has_yaml)
-    assert_valid_native(as_native)
-    return from_native(as_native)
-
-
-def from_native(native_as_dict):
-    return from_galaxy_native(native_as_dict, None)
 
 
 def assert_valid_format2(as_dict_format2):
