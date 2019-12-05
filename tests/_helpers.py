@@ -24,7 +24,7 @@ def assert_valid_native(as_dict_native):
         assert key == str(step_count)
         step_count += 1
         assert "type" in value
-        assert value["type"] in ["data_input", "data_collection_input", "tool", "subworkflow"]
+        assert value["type"] in ["data_input", "data_collection_input", "tool", "subworkflow", "pause"]
 
 
 class MockGalaxyInterface(ImporterGalaxyInterface):

@@ -24,7 +24,7 @@ public interface StepPosition extends Savable {
    *
    * </BLOCKQUOTE>
    */
-  Float getTop();
+  Object getTop();
   /**
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/gxformat2common#StepPosition/left</I><br>
@@ -35,5 +35,5 @@ public interface StepPosition extends Savable {
    *
    * </BLOCKQUOTE>
    */
-  Float getLeft();
+  Object getLeft();
 }

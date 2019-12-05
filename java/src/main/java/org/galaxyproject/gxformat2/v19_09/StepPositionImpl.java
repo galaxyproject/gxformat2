@@ -20,7 +20,7 @@ public class StepPositionImpl extends SavableImpl implements StepPosition {
   private LoadingOptions loadingOptions_ = new LoadingOptionsBuilder().build();
   private java.util.Map<String, Object> extensionFields_ = new java.util.HashMap<String, Object>();
 
-  private Float top;
+  private Object top;
 
   /**
    * Getter for property <I>https://galaxyproject.org/gxformat2/gxformat2common#StepPosition/top</I>
@@ -32,11 +32,11 @@ public class StepPositionImpl extends SavableImpl implements StepPosition {
    *
    * </BLOCKQUOTE>
    */
-  public Float getTop() {
+  public Object getTop() {
     return this.top;
   }
 
-  private Float left;
+  private Object left;
 
   /**
    * Getter for property
@@ -48,7 +48,7 @@ public class StepPositionImpl extends SavableImpl implements StepPosition {
    *
    * </BLOCKQUOTE>
    */
-  public Float getLeft() {
+  public Object getLeft() {
     return this.left;
   }
 
@@ -83,18 +83,21 @@ public class StepPositionImpl extends SavableImpl implements StepPosition {
     if (__loadingOptions != null) {
       this.loadingOptions_ = __loadingOptions;
     }
-    Float top;
+    Object top;
     try {
-      top = LoaderInstances.FloatInstance.loadField(__doc.get("top"), __baseUri, __loadingOptions);
+      top =
+          LoaderInstances.union_of_FloatInstance_or_IntegerInstance.loadField(
+              __doc.get("top"), __baseUri, __loadingOptions);
     } catch (ValidationException e) {
       top = null; // won't be used but prevents compiler from complaining.
       final String __message = "the `top` field is not valid because:";
       __errors.add(new ValidationException(__message, e));
     }
-    Float left;
+    Object left;
     try {
       left =
-          LoaderInstances.FloatInstance.loadField(__doc.get("left"), __baseUri, __loadingOptions);
+          LoaderInstances.union_of_FloatInstance_or_IntegerInstance.loadField(
+              __doc.get("left"), __baseUri, __loadingOptions);
     } catch (ValidationException e) {
       left = null; // won't be used but prevents compiler from complaining.
       final String __message = "the `left` field is not valid because:";
@@ -103,7 +106,7 @@ public class StepPositionImpl extends SavableImpl implements StepPosition {
     if (!__errors.isEmpty()) {
       throw new ValidationException("Trying 'RecordField'", __errors);
     }
-    this.top = (Float) top;
-    this.left = (Float) left;
+    this.top = (Object) top;
+    this.left = (Object) left;
   }
 }

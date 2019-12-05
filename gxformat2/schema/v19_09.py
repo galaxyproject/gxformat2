@@ -6,7 +6,7 @@
 import copy
 import os
 import re
-import uuid  # pylint: disable=unused-import # noqa: F401
+import uuid as _uuid__ # pylint: disable=unused-import # noqa: F401
 from typing import (
     Any,
     Dict,
@@ -591,6 +591,7 @@ A field of a record.
     def __init__(
         self,
         doc,  # type: Any
+        name,  # type: Any
         type,  # type: Any
         extension_fields=None,  # type: Optional[Dict[Text, Any]]
         loadingOptions=None  # type: Optional[LoadingOptions]
@@ -605,6 +606,7 @@ A field of a record.
         else:
             self.loadingOptions = LoadingOptions()
         self.doc = doc
+        self.name = name
         self.type = type
 
     @classmethod
@@ -616,6 +618,20 @@ A field of a record.
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
         _errors__ = []
+        if 'name' in _doc:
+            try:
+                name = load_field(_doc.get(
+                    'name'), uri_strtype_True_False_None, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `name` field is not valid because:",
+                        SourceLine(_doc, 'name', str),
+                        [e]
+                    )
+                )
+        else:
+            name = None
 
         if name is None:
             if docRoot is not None:
@@ -672,13 +688,23 @@ A field of a record.
             raise ValidationException("Trying 'RecordField'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
-        return cls(doc, type, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(doc, name, type, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, Text, bool) -> Dict[Text, Any]
         r = yaml.comments.CommentedMap()  # type: Dict[Text, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+
+        if self.name is not None:
+            u = save_relative_uri(
+                self.name,
+                base_url,
+                True,
+                None,
+                relative_uris)
+            if u:
+                r['name'] = u
 
         if self.doc is not None:
             r['doc'] = save(
@@ -1065,6 +1091,10 @@ directly executed.
     pass
 
 
+class HasUUID(Savable):
+    pass
+
+
 class HasStepErrors(Savable):
     pass
 
@@ -1107,7 +1137,7 @@ This field specifies the location of the step's node when rendered in the workfl
         _errors__ = []
         try:
             top = load_field(_doc.get(
-                'top'), floattype, baseuri, loadingOptions)
+                'top'), union_of_floattype_or_inttype, baseuri, loadingOptions)
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
@@ -1118,7 +1148,7 @@ This field specifies the location of the step's node when rendered in the workfl
             )
         try:
             left = load_field(_doc.get(
-                'left'), floattype, baseuri, loadingOptions)
+                'left'), union_of_floattype_or_inttype, baseuri, loadingOptions)
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
@@ -1189,6 +1219,7 @@ class ToolShedRepository(Savable):
     def __init__(
         self,
         changeset_revision,  # type: Any
+        name,  # type: Any
         owner,  # type: Any
         tool_shed,  # type: Any
         extension_fields=None,  # type: Optional[Dict[Text, Any]]
@@ -1204,6 +1235,7 @@ class ToolShedRepository(Savable):
         else:
             self.loadingOptions = LoadingOptions()
         self.changeset_revision = changeset_revision
+        self.name = name
         self.owner = owner
         self.tool_shed = tool_shed
 
@@ -1216,6 +1248,20 @@ class ToolShedRepository(Savable):
             _doc.lc.data = doc.lc.data
             _doc.lc.filename = doc.lc.filename
         _errors__ = []
+        if 'name' in _doc:
+            try:
+                name = load_field(_doc.get(
+                    'name'), uri_strtype_True_False_None, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `name` field is not valid because:",
+                        SourceLine(_doc, 'name', str),
+                        [e]
+                    )
+                )
+        else:
+            name = None
 
         if name is None:
             if docRoot is not None:
@@ -1280,13 +1326,23 @@ class ToolShedRepository(Savable):
             raise ValidationException("Trying 'ToolShedRepository'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
-        return cls(changeset_revision, owner, tool_shed, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(changeset_revision, name, owner, tool_shed, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, Text, bool) -> Dict[Text, Any]
         r = yaml.comments.CommentedMap()  # type: Dict[Text, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+
+        if self.name is not None:
+            u = save_relative_uri(
+                self.name,
+                base_url,
+                True,
+                None,
+                relative_uris)
+            if u:
+                r['name'] = u
 
         if self.changeset_revision is not None:
             r['changeset_revision'] = save(
@@ -1317,12 +1373,13 @@ class ToolShedRepository(Savable):
     attrs = frozenset(['changeset_revision', 'name', 'owner', 'tool_shed'])
 
 
-class WorkflowInputParameter(InputParameter):
+class WorkflowInputParameter(InputParameter, HasStepPosition):
     def __init__(
         self,
         doc,  # type: Any
         id,  # type: Any
         default,  # type: Any
+        position,  # type: Any
         type,  # type: Any
         extension_fields=None,  # type: Optional[Dict[Text, Any]]
         loadingOptions=None  # type: Optional[LoadingOptions]
@@ -1339,6 +1396,7 @@ class WorkflowInputParameter(InputParameter):
         self.doc = doc
         self.id = id
         self.default = default
+        self.position = position
         self.type = type
 
     @classmethod
@@ -1369,7 +1427,7 @@ class WorkflowInputParameter(InputParameter):
             if docRoot is not None:
                 id = docRoot
             else:
-                id = "_:" + str(uuid.uuid4())
+                id = "_:" + str(_uuid__.uuid4())
         baseuri = id
         if 'doc' in _doc:
             try:
@@ -1399,6 +1457,20 @@ class WorkflowInputParameter(InputParameter):
                 )
         else:
             default = None
+        if 'position' in _doc:
+            try:
+                position = load_field(_doc.get(
+                    'position'), union_of_None_type_or_StepPositionLoader, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `position` field is not valid because:",
+                        SourceLine(_doc, 'position', str),
+                        [e]
+                    )
+                )
+        else:
+            position = None
         if 'type' in _doc:
             try:
                 type = load_field(_doc.get(
@@ -1427,7 +1499,7 @@ class WorkflowInputParameter(InputParameter):
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `%s`, expected one of: `doc`, `id`, `default`, `type`" % (k),
+                            "invalid field `%s`, expected one of: `doc`, `id`, `default`, `position`, `type`" % (k),
                             SourceLine(_doc, k, str)
                         )
                     )
@@ -1437,7 +1509,7 @@ class WorkflowInputParameter(InputParameter):
             raise ValidationException("Trying 'WorkflowInputParameter'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
-        return cls(doc, id, default, type, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(doc, id, default, position, type, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, Text, bool) -> Dict[Text, Any]
@@ -1469,6 +1541,13 @@ class WorkflowInputParameter(InputParameter):
                 base_url=self.id,
                 relative_uris=relative_uris)
 
+        if self.position is not None:
+            r['position'] = save(
+                self.position,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
         if self.type is not None:
             r['type'] = save(
                 self.type,
@@ -1481,7 +1560,7 @@ class WorkflowInputParameter(InputParameter):
 
         return r
 
-    attrs = frozenset(['doc', 'id', 'default', 'type'])
+    attrs = frozenset(['doc', 'id', 'default', 'position', 'type'])
 
 
 class WorkflowOutputParameter(OutputParameter):
@@ -1543,7 +1622,7 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
             if docRoot is not None:
                 id = docRoot
             else:
-                id = "_:" + str(uuid.uuid4())
+                id = "_:" + str(_uuid__.uuid4())
         baseuri = id
         if 'doc' in _doc:
             try:
@@ -1658,9 +1737,23 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
     attrs = frozenset(['doc', 'id', 'outputSource', 'type'])
 
 
-class WorkflowStep(Identified, Labeled, Documented, HasStepPosition, ReferencesTool, HasStepErrors):
+class WorkflowStep(Identified, Labeled, Documented, HasStepPosition, ReferencesTool, HasStepErrors, HasUUID):
     """
-Workflow step.
+This represents a non-input step a Galaxy Workflow.
+
+# A note about `state` and `tool_state` fields.
+
+Only one or the other should be specified. These are two ways to represent the "state"
+of a tool at this workflow step. Both are essentially maps from parameter names to
+parameter values.
+
+`tool_state` is much more low-level and expects a flat dictionary with each value a JSON
+dump. Nested tool structures such as conditionals and repeats should have all their values
+in the JSON dumped string. In general `tool_state` may be present in workflows exported from
+Galaxy but shouldn't be written by humans.
+
+`state` can contained a typed map. Repeat values can be represented as YAML arrays. An alternative
+to representing `state` this way is defining inputs with default values.
 
     """
     def __init__(
@@ -1673,9 +1766,11 @@ Workflow step.
         tool_shed_repository,  # type: Any
         tool_version,  # type: Any
         errors,  # type: Any
+        uuid,  # type: Any
         in_,  # type: Any
         out,  # type: Any
         state,  # type: Any
+        tool_state,  # type: Any
         type,  # type: Any
         run,  # type: Any
         runtime_inputs,  # type: Any
@@ -1699,9 +1794,11 @@ Workflow step.
         self.tool_shed_repository = tool_shed_repository
         self.tool_version = tool_version
         self.errors = errors
+        self.uuid = uuid
         self.in_ = in_
         self.out = out
         self.state = state
+        self.tool_state = tool_state
         self.type = type
         self.run = run
         self.runtime_inputs = runtime_inputs
@@ -1734,7 +1831,7 @@ Workflow step.
             if docRoot is not None:
                 id = docRoot
             else:
-                id = "_:" + str(uuid.uuid4())
+                id = "_:" + str(_uuid__.uuid4())
         baseuri = id
         if 'label' in _doc:
             try:
@@ -1834,6 +1931,20 @@ Workflow step.
                 )
         else:
             errors = None
+        if 'uuid' in _doc:
+            try:
+                uuid = load_field(_doc.get(
+                    'uuid'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `uuid` field is not valid because:",
+                        SourceLine(_doc, 'uuid', str),
+                        [e]
+                    )
+                )
+        else:
+            uuid = None
         if 'in' in _doc:
             try:
                 in_ = load_field(_doc.get(
@@ -1876,6 +1987,20 @@ Workflow step.
                 )
         else:
             state = None
+        if 'tool_state' in _doc:
+            try:
+                tool_state = load_field(_doc.get(
+                    'tool_state'), union_of_None_type_or_Any_type, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `tool_state` field is not valid because:",
+                        SourceLine(_doc, 'tool_state', str),
+                        [e]
+                    )
+                )
+        else:
+            tool_state = None
         if 'type' in _doc:
             try:
                 type = load_field(_doc.get(
@@ -1932,7 +2057,7 @@ Workflow step.
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `position`, `tool_id`, `tool_shed_repository`, `tool_version`, `errors`, `in`, `out`, `state`, `type`, `run`, `runtime_inputs`" % (k),
+                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `position`, `tool_id`, `tool_shed_repository`, `tool_version`, `errors`, `uuid`, `in`, `out`, `state`, `tool_state`, `type`, `run`, `runtime_inputs`" % (k),
                             SourceLine(_doc, k, str)
                         )
                     )
@@ -1942,7 +2067,7 @@ Workflow step.
             raise ValidationException("Trying 'WorkflowStep'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
-        return cls(id, label, doc, position, tool_id, tool_shed_repository, tool_version, errors, in_, out, state, type, run, runtime_inputs, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(id, label, doc, position, tool_id, tool_shed_repository, tool_version, errors, uuid, in_, out, state, tool_state, type, run, runtime_inputs, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, Text, bool) -> Dict[Text, Any]
@@ -2009,6 +2134,13 @@ Workflow step.
                 base_url=self.id,
                 relative_uris=relative_uris)
 
+        if self.uuid is not None:
+            r['uuid'] = save(
+                self.uuid,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
         if self.in_ is not None:
             r['in'] = save(
                 self.in_,
@@ -2026,6 +2158,13 @@ Workflow step.
         if self.state is not None:
             r['state'] = save(
                 self.state,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
+        if self.tool_state is not None:
+            r['tool_state'] = save(
+                self.tool_state,
                 top=False,
                 base_url=self.id,
                 relative_uris=relative_uris)
@@ -2059,7 +2198,7 @@ Workflow step.
 
         return r
 
-    attrs = frozenset(['id', 'label', 'doc', 'position', 'tool_id', 'tool_shed_repository', 'tool_version', 'errors', 'in', 'out', 'state', 'type', 'run', 'runtime_inputs'])
+    attrs = frozenset(['id', 'label', 'doc', 'position', 'tool_id', 'tool_shed_repository', 'tool_version', 'errors', 'uuid', 'in', 'out', 'state', 'tool_state', 'type', 'run', 'runtime_inputs'])
 
 
 class Sink(Savable):
@@ -2122,7 +2261,7 @@ TODO:
             if docRoot is not None:
                 id = docRoot
             else:
-                id = "_:" + str(uuid.uuid4())
+                id = "_:" + str(_uuid__.uuid4())
         baseuri = id
         if 'source' in _doc:
             try:
@@ -2401,7 +2540,7 @@ to connect the output value to downstream parameters.
             if docRoot is not None:
                 id = docRoot
             else:
-                id = "_:" + str(uuid.uuid4())
+                id = "_:" + str(_uuid__.uuid4())
         baseuri = id
         if 'add_tags' in _doc:
             try:
@@ -2600,7 +2739,7 @@ to connect the output value to downstream parameters.
     attrs = frozenset(['id', 'add_tags', 'change_datatype', 'delete_intermediate_datasets', 'hide', 'remove_tags', 'rename', 'set_columns'])
 
 
-class GalaxyWorkflow(Process):
+class GalaxyWorkflow(Process, HasUUID):
     """
 A Galaxy workflow description. This record corresponds to the description of a workflow that should be executable
 on a Galaxy server that includes the contained tool definitions.
@@ -2623,6 +2762,7 @@ workflow definition schema the attribute should be called `label`.
         doc,  # type: Any
         inputs,  # type: Any
         outputs,  # type: Any
+        uuid,  # type: Any
         steps,  # type: Any
         report,  # type: Any
         extension_fields=None,  # type: Optional[Dict[Text, Any]]
@@ -2642,6 +2782,7 @@ workflow definition schema the attribute should be called `label`.
         self.doc = doc
         self.inputs = inputs
         self.outputs = outputs
+        self.uuid = uuid
         self.class_ = "GalaxyWorkflow"
         self.steps = steps
         self.report = report
@@ -2678,7 +2819,7 @@ workflow definition schema the attribute should be called `label`.
             if docRoot is not None:
                 id = docRoot
             else:
-                id = "_:" + str(uuid.uuid4())
+                id = "_:" + str(_uuid__.uuid4())
         baseuri = id
         if 'label' in _doc:
             try:
@@ -2730,6 +2871,20 @@ workflow definition schema the attribute should be called `label`.
                     [e]
                 )
             )
+        if 'uuid' in _doc:
+            try:
+                uuid = load_field(_doc.get(
+                    'uuid'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `uuid` field is not valid because:",
+                        SourceLine(_doc, 'uuid', str),
+                        [e]
+                    )
+                )
+        else:
+            uuid = None
         try:
             steps = load_field(_doc.get(
                 'steps'), idmap_steps_union_of_array_of_WorkflowStepLoader, baseuri, loadingOptions)
@@ -2769,7 +2924,7 @@ workflow definition schema the attribute should be called `label`.
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `class`, `steps`, `report`" % (k),
+                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `uuid`, `class`, `steps`, `report`" % (k),
                             SourceLine(_doc, k, str)
                         )
                     )
@@ -2779,7 +2934,7 @@ workflow definition schema the attribute should be called `label`.
             raise ValidationException("Trying 'GalaxyWorkflow'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
-        return cls(id, label, doc, inputs, outputs, steps, report, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(id, label, doc, inputs, outputs, uuid, steps, report, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, Text, bool) -> Dict[Text, Any]
@@ -2827,6 +2982,13 @@ workflow definition schema the attribute should be called `label`.
                 base_url=self.id,
                 relative_uris=relative_uris)
 
+        if self.uuid is not None:
+            r['uuid'] = save(
+                self.uuid,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
         if self.steps is not None:
             r['steps'] = save(
                 self.steps,
@@ -2846,7 +3008,7 @@ workflow definition schema the attribute should be called `label`.
 
         return r
 
-    attrs = frozenset(['id', 'label', 'doc', 'inputs', 'outputs', 'class', 'steps', 'report'])
+    attrs = frozenset(['id', 'label', 'doc', 'inputs', 'outputs', 'uuid', 'class', 'steps', 'report'])
 
 
 _vocab = {
@@ -2859,6 +3021,7 @@ _vocab = {
     "GalaxyWorkflow": "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow",
     "HasStepErrors": "https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors",
     "HasStepPosition": "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition",
+    "HasUUID": "https://galaxyproject.org/gxformat2/gxformat2common#HasUUID",
     "Identified": "https://w3id.org/cwl/cwl#Identified",
     "InputParameter": "https://w3id.org/cwl/cwl#InputParameter",
     "Labeled": "https://w3id.org/cwl/cwl#Labeled",
@@ -2905,6 +3068,7 @@ _rvocab = {
     "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow": "GalaxyWorkflow",
     "https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors": "HasStepErrors",
     "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition": "HasStepPosition",
+    "https://galaxyproject.org/gxformat2/gxformat2common#HasUUID": "HasUUID",
     "https://w3id.org/cwl/cwl#Identified": "Identified",
     "https://w3id.org/cwl/cwl#InputParameter": "InputParameter",
     "https://w3id.org/cwl/cwl#Labeled": "Labeled",
@@ -2961,6 +3125,7 @@ ParameterLoader = _RecordLoader(Parameter)
 InputParameterLoader = _RecordLoader(InputParameter)
 OutputParameterLoader = _RecordLoader(OutputParameter)
 ProcessLoader = _RecordLoader(Process)
+HasUUIDLoader = _RecordLoader(HasUUID)
 HasStepErrorsLoader = _RecordLoader(HasStepErrors)
 HasStepPositionLoader = _RecordLoader(HasStepPosition)
 StepPositionLoader = _RecordLoader(StepPosition)
@@ -3004,6 +3169,7 @@ union_of_WorkflowOutputParameterLoader = _UnionLoader((WorkflowOutputParameterLo
 array_of_union_of_WorkflowOutputParameterLoader = _ArrayLoader(union_of_WorkflowOutputParameterLoader)
 idmap_outputs_array_of_union_of_WorkflowOutputParameterLoader = _IdMapLoader(array_of_union_of_WorkflowOutputParameterLoader, 'id', 'type')
 union_of_None_type_or_StepPositionLoader = _UnionLoader((None_type, StepPositionLoader,))
+union_of_floattype_or_inttype = _UnionLoader((floattype, inttype,))
 union_of_None_type_or_ToolShedRepositoryLoader = _UnionLoader((None_type, ToolShedRepositoryLoader,))
 union_of_None_type_or_GalaxyTypeLoader = _UnionLoader((None_type, GalaxyTypeLoader,))
 typedsl_union_of_None_type_or_GalaxyTypeLoader_2 = _TypeDSLLoader(union_of_None_type_or_GalaxyTypeLoader, 2)

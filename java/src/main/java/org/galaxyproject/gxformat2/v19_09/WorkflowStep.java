@@ -8,7 +8,20 @@ import org.galaxyproject.gxformat2.v19_09.utils.Savable;
  *
  * <BLOCKQUOTE>
  *
- * Workflow step.
+ * This represents a non-input step a Galaxy Workflow.
+ *
+ * <p># A note about `state` and `tool_state` fields.
+ *
+ * <p>Only one or the other should be specified. These are two ways to represent the "state" of a
+ * tool at this workflow step. Both are essentially maps from parameter names to parameter values.
+ *
+ * <p>`tool_state` is much more low-level and expects a flat dictionary with each value a JSON dump.
+ * Nested tool structures such as conditionals and repeats should have all their values in the JSON
+ * dumped string. In general `tool_state` may be present in workflows exported from Galaxy but
+ * shouldn't be written by humans.
+ *
+ * <p>`state` can contained a typed map. Repeat values can be represented as YAML arrays. An
+ * alternative to representing `state` this way is defining inputs with default values.
  *
  * </BLOCKQUOTE>
  */
@@ -19,6 +32,7 @@ public interface WorkflowStep
         HasStepPosition,
         ReferencesTool,
         HasStepErrors,
+        HasUUID,
         Savable {
   /**
    * Getter for property <I>https://w3id.org/cwl/cwl#Identified/id</I><br>
@@ -110,6 +124,16 @@ public interface WorkflowStep
    */
   java.util.Optional<String> getErrors();
   /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/gxformat2common#HasUUID/uuid</I><br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * UUID uniquely representing this element. *
+   *
+   * </BLOCKQUOTE>
+   */
+  java.util.Optional<String> getUuid();
+  /**
    * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#in</I><br>
    *
    * <BLOCKQUOTE>
@@ -137,7 +161,7 @@ public interface WorkflowStep
    */
   java.util.Optional<java.util.List<Object>> getOut();
   /**
-   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStep/state</I><br>
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#state</I><br>
    *
    * <BLOCKQUOTE>
    *
@@ -146,6 +170,16 @@ public interface WorkflowStep
    * </BLOCKQUOTE>
    */
   java.util.Optional<Object> getState();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#tool_state</I><br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * Unstructured tool state. *
+   *
+   * </BLOCKQUOTE>
+   */
+  java.util.Optional<Object> getTool_state();
   /**
    * Getter for property <I>https://w3id.org/cwl/salad#type</I><br>
    *

@@ -18,6 +18,7 @@ public class ConstantMaps {
     vocab.put("HasStepErrors", "https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors");
     vocab.put(
         "HasStepPosition", "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition");
+    vocab.put("HasUUID", "https://galaxyproject.org/gxformat2/gxformat2common#HasUUID");
     vocab.put("Identified", "https://w3id.org/cwl/cwl#Identified");
     vocab.put("InputParameter", "https://w3id.org/cwl/cwl#InputParameter");
     vocab.put("Labeled", "https://w3id.org/cwl/cwl#Labeled");
@@ -74,6 +75,7 @@ public class ConstantMaps {
         "https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors", "HasStepErrors");
     rvocab.put(
         "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition", "HasStepPosition");
+    rvocab.put("https://galaxyproject.org/gxformat2/gxformat2common#HasUUID", "HasUUID");
     rvocab.put("https://w3id.org/cwl/cwl#Identified", "Identified");
     rvocab.put("https://w3id.org/cwl/cwl#InputParameter", "InputParameter");
     rvocab.put("https://w3id.org/cwl/cwl#Labeled", "Labeled");

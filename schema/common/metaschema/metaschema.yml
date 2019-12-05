@@ -54,7 +54,7 @@ $graph:
        validate each field of the object.
     4. For fields with a list of types (type union), go through each
        type in the list and recursively validate the type.  For the
-       field to be valid, at least one type in the union must be valid.
+       field to be valid, at least one type in t  he union must be valid.
     5. Missing fields are considered `null`.  To validate, the allowed types
        for the field must include `null`
     6. Primitive types are null, boolean, int, long, float, double,

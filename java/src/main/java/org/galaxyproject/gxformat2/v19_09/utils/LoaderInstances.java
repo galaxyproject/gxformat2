@@ -46,6 +46,9 @@ public class LoaderInstances {
   public static Loader<org.galaxyproject.gxformat2.v19_09.Process> Process =
       new RecordLoader<org.galaxyproject.gxformat2.v19_09.Process>(
           org.galaxyproject.gxformat2.v19_09.Process.class);
+  public static Loader<org.galaxyproject.gxformat2.v19_09.HasUUID> HasUUID =
+      new RecordLoader<org.galaxyproject.gxformat2.v19_09.HasUUID>(
+          org.galaxyproject.gxformat2.v19_09.HasUUID.class);
   public static Loader<org.galaxyproject.gxformat2.v19_09.HasStepErrors> HasStepErrors =
       new RecordLoader<org.galaxyproject.gxformat2.v19_09.HasStepErrors>(
           org.galaxyproject.gxformat2.v19_09.HasStepErrors.class);
@@ -169,6 +172,8 @@ public class LoaderInstances {
       new IdMapLoader(array_of_WorkflowOutputParameter, "id", "type");
   public static Loader<java.util.Optional<StepPosition>> optional_StepPosition =
       new OptionalLoader(StepPosition);
+  public static Loader<Object> union_of_FloatInstance_or_IntegerInstance =
+      new UnionLoader(new Loader[] {FloatInstance, IntegerInstance});
   public static Loader<java.util.Optional<ToolShedRepository>> optional_ToolShedRepository =
       new OptionalLoader(ToolShedRepository);
   public static Loader<java.util.Optional<GalaxyType>> optional_GalaxyType =

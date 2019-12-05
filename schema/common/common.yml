@@ -3,6 +3,15 @@ $base: "https://galaxyproject.org/gxformat2/gxformat2common#"
 
 $graph:
 
+- name: HasUUID
+  type: record
+  abstract: true
+  fields:
+    - name: uuid
+      type: string?
+      doc: |
+        UUID uniquely representing this element.
+
 - name: HasStepErrors
   type: record
   abstract: true
@@ -31,12 +40,16 @@ $graph:
   doc: This field specifies the location of the step's node when rendered in the workflow editor.
   fields:
     - name: top
-      type: float
+      type:
+        - float
+        - int
       default: 0.0
       doc: |
         Relative vertical position of the step's node when rendered in the workflow editor.
     - name: left
-      type: float
+      type:
+        - float
+        - int
       default: 0.0
       doc: |
         Relative horizontal position of the step's node when rendered in the workflow editor.
