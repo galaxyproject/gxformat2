@@ -72,6 +72,24 @@ steps:
     assert as_dict["steps"]["cat"]["doc"] == "cat doc"
 
 
+def test_reports_round_trip():
+    as_dict = round_trip("""
+class: GalaxyWorkflow
+inputs:
+  the_input:
+    type: File
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: the_input
+report:
+  markdown: |
+    My cool Markdown!
+""")
+    assert as_dict["report"]["markdown"] == "My cool Markdown!\n"
+
+
 def test_position_round_trip():
     as_dict = round_trip("""
 class: GalaxyWorkflow

@@ -207,6 +207,17 @@ $graph:
         noLinkCheck: true
 
 - type: record
+  name: Report
+  doc: |
+    Definition of an invocation report for this workflow. Currently the only
+    field is 'markdown'.
+  fields:
+    - name: markdown
+      type: string
+      doc: |
+        Galaxy flavored Markdown to define an invocation report.
+
+- type: record
   name: WorkflowStepOutput
   docParent: "#WorkflowStep"
   extends: cwl:Identified
@@ -272,3 +283,6 @@ $graph:
           items: "#WorkflowStep"
       jsonldPredicate:
           mapSubject: id
+    - name: report
+      doc: Workflow invocation report template.
+      type: Report?

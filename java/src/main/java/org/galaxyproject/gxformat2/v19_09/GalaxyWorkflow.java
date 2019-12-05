@@ -87,4 +87,14 @@ public interface GalaxyWorkflow extends Process, Savable {
    * </BLOCKQUOTE>
    */
   java.util.List<Object> getSteps();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/report</I><br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * Workflow invocation report template. *
+   *
+   * </BLOCKQUOTE>
+   */
+  java.util.Optional<Report> getReport();
 }

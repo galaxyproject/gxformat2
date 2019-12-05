@@ -2240,6 +2240,96 @@ TODO:
     attrs = frozenset(['id', 'source', 'label', 'default'])
 
 
+class Report(Savable):
+    """
+Definition of an invocation report for this workflow. Currently the only
+field is 'markdown'.
+
+    """
+    def __init__(
+        self,
+        markdown,  # type: Any
+        extension_fields=None,  # type: Optional[Dict[Text, Any]]
+        loadingOptions=None  # type: Optional[LoadingOptions]
+    ):  # type: (...) -> None
+
+        if extension_fields:
+            self.extension_fields = extension_fields
+        else:
+            self.extension_fields = yaml.comments.CommentedMap()
+        if loadingOptions:
+            self.loadingOptions = loadingOptions
+        else:
+            self.loadingOptions = LoadingOptions()
+        self.markdown = markdown
+
+    @classmethod
+    def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
+        # type: (Any, Text, LoadingOptions, Optional[Text]) -> Report
+
+        _doc = copy.copy(doc)
+        if hasattr(doc, 'lc'):
+            _doc.lc.data = doc.lc.data
+            _doc.lc.filename = doc.lc.filename
+        _errors__ = []
+        try:
+            markdown = load_field(_doc.get(
+                'markdown'), strtype, baseuri, loadingOptions)
+        except ValidationException as e:
+            _errors__.append(
+                ValidationException(
+                    "the `markdown` field is not valid because:",
+                    SourceLine(_doc, 'markdown', str),
+                    [e]
+                )
+            )
+
+        extension_fields = yaml.comments.CommentedMap()
+        for k in _doc.keys():
+            if k not in cls.attrs:
+                if ":" in k:
+                    ex = expand_url(k,
+                                    u"",
+                                    loadingOptions,
+                                    scoped_id=False,
+                                    vocab_term=False)
+                    extension_fields[ex] = _doc[k]
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "invalid field `%s`, expected one of: `markdown`" % (k),
+                            SourceLine(_doc, k, str)
+                        )
+                    )
+                    break
+
+        if _errors__:
+            raise ValidationException("Trying 'Report'", None, _errors__)
+        loadingOptions = copy.deepcopy(loadingOptions)
+        loadingOptions.original_doc = _doc
+        return cls(markdown, extension_fields=extension_fields, loadingOptions=loadingOptions)
+
+    def save(self, top=False, base_url="", relative_uris=True):
+        # type: (bool, Text, bool) -> Dict[Text, Any]
+        r = yaml.comments.CommentedMap()  # type: Dict[Text, Any]
+        for ef in self.extension_fields:
+            r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+
+        if self.markdown is not None:
+            r['markdown'] = save(
+                self.markdown,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if top and self.loadingOptions.namespaces:
+            r["$namespaces"] = self.loadingOptions.namespaces
+
+        return r
+
+    attrs = frozenset(['markdown'])
+
+
 class WorkflowStepOutput(Identified):
     """
 Associate an output parameter of the underlying process with a workflow
@@ -2522,6 +2612,7 @@ This is documentation for a workflow!
         inputs,  # type: Any
         outputs,  # type: Any
         steps,  # type: Any
+        report,  # type: Any
         extension_fields=None,  # type: Optional[Dict[Text, Any]]
         loadingOptions=None  # type: Optional[LoadingOptions]
     ):  # type: (...) -> None
@@ -2541,6 +2632,7 @@ This is documentation for a workflow!
         self.outputs = outputs
         self.class_ = "GalaxyWorkflow"
         self.steps = steps
+        self.report = report
 
     @classmethod
     def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
@@ -2637,6 +2729,20 @@ This is documentation for a workflow!
                     [e]
                 )
             )
+        if 'report' in _doc:
+            try:
+                report = load_field(_doc.get(
+                    'report'), union_of_None_type_or_ReportLoader, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `report` field is not valid because:",
+                        SourceLine(_doc, 'report', str),
+                        [e]
+                    )
+                )
+        else:
+            report = None
 
         extension_fields = yaml.comments.CommentedMap()
         for k in _doc.keys():
@@ -2651,7 +2757,7 @@ This is documentation for a workflow!
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `name`, `class`, `steps`" % (k),
+                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `name`, `class`, `steps`, `report`" % (k),
                             SourceLine(_doc, k, str)
                         )
                     )
@@ -2661,7 +2767,7 @@ This is documentation for a workflow!
             raise ValidationException("Trying 'GalaxyWorkflow'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
-        return cls(id, label, doc, inputs, outputs, steps, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(id, label, doc, inputs, outputs, steps, report, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, Text, bool) -> Dict[Text, Any]
@@ -2716,12 +2822,19 @@ This is documentation for a workflow!
                 base_url=self.name,
                 relative_uris=relative_uris)
 
+        if self.report is not None:
+            r['report'] = save(
+                self.report,
+                top=False,
+                base_url=self.name,
+                relative_uris=relative_uris)
+
         if top and self.loadingOptions.namespaces:
             r["$namespaces"] = self.loadingOptions.namespaces
 
         return r
 
-    attrs = frozenset(['id', 'label', 'doc', 'inputs', 'outputs', 'name', 'class', 'steps'])
+    attrs = frozenset(['id', 'label', 'doc', 'inputs', 'outputs', 'name', 'class', 'steps', 'report'])
 
 
 _vocab = {
@@ -2744,6 +2857,7 @@ _vocab = {
     "RecordField": "https://w3id.org/cwl/salad#RecordField",
     "RecordSchema": "https://w3id.org/cwl/salad#RecordSchema",
     "ReferencesTool": "https://galaxyproject.org/gxformat2/gxformat2common#ReferencesTool",
+    "Report": "https://galaxyproject.org/gxformat2/v19_09#Report",
     "Sink": "https://galaxyproject.org/gxformat2/v19_09#Sink",
     "StepPosition": "https://galaxyproject.org/gxformat2/gxformat2common#StepPosition",
     "ToolShedRepository": "https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository",
@@ -2789,6 +2903,7 @@ _rvocab = {
     "https://w3id.org/cwl/salad#RecordField": "RecordField",
     "https://w3id.org/cwl/salad#RecordSchema": "RecordSchema",
     "https://galaxyproject.org/gxformat2/gxformat2common#ReferencesTool": "ReferencesTool",
+    "https://galaxyproject.org/gxformat2/v19_09#Report": "Report",
     "https://galaxyproject.org/gxformat2/v19_09#Sink": "Sink",
     "https://galaxyproject.org/gxformat2/gxformat2common#StepPosition": "StepPosition",
     "https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository": "ToolShedRepository",
@@ -2846,6 +2961,7 @@ WorkflowOutputParameterLoader = _RecordLoader(WorkflowOutputParameter)
 WorkflowStepLoader = _RecordLoader(WorkflowStep)
 SinkLoader = _RecordLoader(Sink)
 WorkflowStepInputLoader = _RecordLoader(WorkflowStepInput)
+ReportLoader = _RecordLoader(Report)
 WorkflowStepOutputLoader = _RecordLoader(WorkflowStepOutput)
 GalaxyWorkflowLoader = _RecordLoader(GalaxyWorkflow)
 array_of_strtype = _ArrayLoader(strtype)
@@ -2901,6 +3017,7 @@ uri_strtype_False_True_None = _URILoader(strtype, False, True, None)
 array_of_WorkflowStepLoader = _ArrayLoader(WorkflowStepLoader)
 union_of_array_of_WorkflowStepLoader = _UnionLoader((array_of_WorkflowStepLoader,))
 idmap_steps_union_of_array_of_WorkflowStepLoader = _IdMapLoader(union_of_array_of_WorkflowStepLoader, 'id', 'None')
+union_of_None_type_or_ReportLoader = _UnionLoader((None_type, ReportLoader,))
 union_of_GalaxyWorkflowLoader = _UnionLoader((GalaxyWorkflowLoader,))
 array_of_union_of_GalaxyWorkflowLoader = _ArrayLoader(union_of_GalaxyWorkflowLoader)
 union_of_GalaxyWorkflowLoader_or_array_of_union_of_GalaxyWorkflowLoader = _UnionLoader((GalaxyWorkflowLoader, array_of_union_of_GalaxyWorkflowLoader,))

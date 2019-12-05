@@ -72,6 +72,10 @@ def lint_ga(lint_context, workflow_dict, path=None):
 
         _lint_step_errors(lint_context, step)
 
+    report_dict = ensure_key_if_present(lint_context, workflow_dict, "report", default=None, has_class=dict)
+    if report_dict is not None:
+        ensure_key(lint_context, report_dict, "markdown", has_class=str)
+
     if not found_outputs:
         lint_context.warn(LINT_FAILED_NO_OUTPUTS)
 

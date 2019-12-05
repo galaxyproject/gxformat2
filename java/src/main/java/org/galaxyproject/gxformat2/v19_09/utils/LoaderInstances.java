@@ -80,6 +80,9 @@ public class LoaderInstances {
   public static Loader<org.galaxyproject.gxformat2.v19_09.WorkflowStepInput> WorkflowStepInput =
       new RecordLoader<org.galaxyproject.gxformat2.v19_09.WorkflowStepInput>(
           org.galaxyproject.gxformat2.v19_09.WorkflowStepInputImpl.class);
+  public static Loader<org.galaxyproject.gxformat2.v19_09.Report> Report =
+      new RecordLoader<org.galaxyproject.gxformat2.v19_09.Report>(
+          org.galaxyproject.gxformat2.v19_09.ReportImpl.class);
   public static Loader<org.galaxyproject.gxformat2.v19_09.WorkflowStepOutput> WorkflowStepOutput =
       new RecordLoader<org.galaxyproject.gxformat2.v19_09.WorkflowStepOutput>(
           org.galaxyproject.gxformat2.v19_09.WorkflowStepOutputImpl.class);
@@ -214,6 +217,7 @@ public class LoaderInstances {
       new ArrayLoader(WorkflowStep);
   public static Loader<java.util.List<Object>> idmap_steps_array_of_WorkflowStep =
       new IdMapLoader(array_of_WorkflowStep, "id", "None");
+  public static Loader<java.util.Optional<Report>> optional_Report = new OptionalLoader(Report);
   public static Loader<java.util.List<GalaxyWorkflow>> array_of_GalaxyWorkflow =
       new ArrayLoader(GalaxyWorkflow);
   public static Loader<Object> union_of_GalaxyWorkflow_or_array_of_GalaxyWorkflow =
