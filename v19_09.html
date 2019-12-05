@@ -172,6 +172,13 @@ input data links are fulfilled.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>uuid</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>UUID uniquely representing this element.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>report</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#Report">Report</a></div>
@@ -210,13 +217,41 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 </div>
 </div>
 <div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>type</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#GalaxyType">GalaxyType</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Specify valid types of data that may be assigned to this parameter.</p>
 </div>
 </div></div><h3 id="Any" class="section">Any <a href="#Any">&sect;</a></h3><p>The <strong>Any</strong> type validates for any non-null value.</p>
-<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Any</code></td><td></td></tr></table><h3 id="GalaxyType" class="section">GalaxyType <a href="#GalaxyType">&sect;</a></h3><p>Extends primitive types with the native Galaxy concepts such datasets and collections.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Any</code></td><td></td></tr></table><h3 id="StepPosition" class="section">StepPosition <a href="#StepPosition">&sect;</a></h3><p>This field specifies the location of the step's node when rendered in the workflow editor.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>top</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Relative vertical position of the step's node when rendered in the workflow editor.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>left</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Relative horizontal position of the step's node when rendered in the workflow editor.</p>
+</div>
+</div></div><h3 id="GalaxyType" class="section">GalaxyType <a href="#GalaxyType">&sect;</a></h3><p>Extends primitive types with the native Galaxy concepts such datasets and collections.</p>
 <h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> 32-bit signed integer</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> Unicode character sequence</td></tr><tr><td><code>File</code></td><td> an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future</td></tr><tr><td><code>data</code></td><td> a Galaxy dataset</td></tr><tr><td><code>collection</code></td><td> a Galaxy dataset collection</td></tr></table><h2 id="WorkflowOutputParameter" class="section">WorkflowOutputParameter <a href="#WorkflowOutputParameter">&sect;</a></h2><p>Describe an output parameter of a workflow.  The parameter must be
 connected to one parameter defined in the workflow that
 will provide the value of the output parameter. It is legal to
@@ -257,7 +292,16 @@ the output parameter.</p>
 <div class="col-xs-7 col-lg-3"><a href="#GalaxyType">GalaxyType</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Specify valid types of data that may be assigned to this parameter.</p>
 </div>
-</div></div><h2 id="WorkflowStep" class="section">WorkflowStep <a href="#WorkflowStep">&sect;</a></h2><p>Workflow step.</p>
+</div></div><h2 id="WorkflowStep" class="section">WorkflowStep <a href="#WorkflowStep">&sect;</a></h2><p>This represents a non-input step a Galaxy Workflow.</p>
+<h3 id="A_note_about_<code>state</code>_and_<code>tool_state</code>_fields." class="section">A note about <code>state</code> and <code>tool_state</code> fields. <a href="#A_note_about_<code>state</code>_and_<code>tool_state</code>_fields.">&sect;</a></h3><p>Only one or the other should be specified. These are two ways to represent the "state"
+of a tool at this workflow step. Both are essentially maps from parameter names to
+parameter values.</p>
+<p><code>tool_state</code> is much more low-level and expects a flat dictionary with each value a JSON
+dump. Nested tool structures such as conditionals and repeats should have all their values
+in the JSON dumped string. In general <code>tool_state</code> may be present in workflows exported from
+Galaxy but shouldn't be written by humans.</p>
+<p><code>state</code> can contained a typed map. Repeat values can be represented as YAML arrays. An alternative
+to representing <code>state</code> this way is defining inputs with default values.</p>
 <h3>Fields</h3>
 <div class="responsive-table">
 <div class="row responsive-table-header">
@@ -338,6 +382,13 @@ and re-saving the workflow and then re-exporting it.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>uuid</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>UUID uniquely representing this element.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>in</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3">array&lt;<a href="#WorkflowStepInput">WorkflowStepInput</a>&gt; | <br><a href='#map'>map</a>&lt;<code>id</code>,&nbsp;<code>source</code> | <a href="#WorkflowStepInput">WorkflowStepInput</a>&gt</div>
@@ -353,6 +404,13 @@ interface for constructing the input object.</p>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Structured tool state.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tool_state</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Unstructured tool state.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -476,28 +534,6 @@ to connect the output value to downstream parameters.</p>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
 <div class="col-xs-12 col-lg-6 description-col"></div>
-</div></div><h3 id="StepPosition" class="section">StepPosition <a href="#StepPosition">&sect;</a></h3><p>This field specifies the location of the step's node when rendered in the workflow editor.</p>
-<h3>Fields</h3>
-<div class="responsive-table">
-<div class="row responsive-table-header">
-<div class="col-xs-3 col-lg-2">field</div>
-<div class="col-xs-2 col-lg-1">required</div>
-<div class="col-xs-7 col-lg-3">type</div>
-<div class="col-xs-12 col-lg-6 description-header">description</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>top</code></div>
-<div class="col-xs-2 col-lg-1">required</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Relative vertical position of the step's node when rendered in the workflow editor.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>left</code></div>
-<div class="col-xs-2 col-lg-1">required</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Relative horizontal position of the step's node when rendered in the workflow editor.</p>
-</div>
 </div></div><h3 id="ToolShedRepository" class="section">ToolShedRepository <a href="#ToolShedRepository">&sect;</a></h3><h3>Fields</h3>
 <div class="responsive-table">
 <div class="row responsive-table-header">
