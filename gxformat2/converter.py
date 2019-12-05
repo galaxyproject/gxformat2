@@ -1,13 +1,14 @@
 """Functionality for converting a Format 2 workflow into a standard Galaxy workflow."""
 from __future__ import print_function
 
-from collections import OrderedDict
 import copy
 import json
 import os
 import sys
 import uuid
+from collections import OrderedDict
 
+from ._labels import Labels
 from ._yaml import ordered_load
 
 
@@ -205,20 +206,21 @@ def _python_to_workflow(as_python, conversion_context):
         raw_label = output.pop("label", None)
         raw_id = output.pop("id", None)
         label = raw_label or raw_id
-
+        if Labels.is_anonymous_output_label(label):
+            label = None
         source = output.get("source")
         if source is None:
             source = output.get("outputSource").replace("/", "#")
         id, output_name = conversion_context.step_output(source)
         step = steps[str(id)]
-        if "workflow_output" not in step:
-            step["workflow_outputs"] = []
-
-        step["workflow_outputs"].append({
+        workflow_output = {
             "output_name": output_name,
             "label": label,
             "uuid": output.get("uuid", None)
-        })
+        }
+        if "workflow_outputs" not in step:
+            step["workflow_outputs"] = []
+        step["workflow_outputs"].append(workflow_output)
 
     return as_python
 

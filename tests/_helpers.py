@@ -1,13 +1,17 @@
-from gxformat2.converter import yaml_to_workflow
+import copy
+import os
+
+from gxformat2.converter import python_to_workflow, yaml_to_workflow
 from gxformat2.interface import ImporterGalaxyInterface
 
-
-TEST_GOOD_WORKFLOW = """
-"""
+TEST_PATH = os.path.abspath(os.path.dirname(__file__))
 
 
 def to_native(has_yaml, **kwds):
-    return yaml_to_workflow(has_yaml, MockGalaxyInterface(), None, **kwds)
+    if isinstance(has_yaml, dict):
+        return python_to_workflow(has_yaml, MockGalaxyInterface(), None, **kwds)
+    else:
+        return yaml_to_workflow(has_yaml, MockGalaxyInterface(), None, **kwds)
 
 
 def assert_valid_native(as_dict_native):
@@ -26,3 +30,17 @@ class MockGalaxyInterface(ImporterGalaxyInterface):
 
     def import_workflow(self, workflow, **kwds):
         pass
+
+
+def copy_without_workflow_output_labels(native_as_dict):
+    native_without_labels =  copy.deepcopy(native_as_dict)
+    for workflow_output in native_workflow_outputs(native_without_labels):
+        workflow_output["label"] = None
+    return native_without_labels
+
+
+def native_workflow_outputs(native_as_dict):
+    steps = native_as_dict.get("steps")
+    for step in steps.values():
+        for workflow_output in step.get("workflow_outputs", []):
+            yield workflow_output

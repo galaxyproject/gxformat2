@@ -1,6 +1,14 @@
+import os
 from gxformat2.converter import ImportOptions
 from gxformat2.export import from_galaxy_native
-from ._helpers import to_native, assert_valid_native
+from gxformat2._yaml import ordered_load
+from ._helpers import (
+    assert_valid_native,
+    copy_without_workflow_output_labels,
+    native_workflow_outputs,
+    TEST_PATH,
+    to_native,
+)
 
 
 def test_import_export():
@@ -205,6 +213,28 @@ $graph:
 
     assert "subworkflows" in as_dict_native
     assert len(as_dict_native["subworkflows"]) == 1
+
+
+def test_export_native_no_labels():
+    # Ensure outputs don't get mapped to 'null' key and ensure 
+    native_unicycler = ordered_load(open(os.path.join(TEST_PATH, "unicycler.ga"), "r").read())
+    before_output_count = 0
+    for workflow_output in native_workflow_outputs(native_unicycler):
+        before_output_count += 1
+    before_step_count = len(native_unicycler["steps"])
+
+    unicycler_no_output_labels = copy_without_workflow_output_labels(native_unicycler)
+    as_format2 = from_native(unicycler_no_output_labels)
+    assert len(as_format2["outputs"]) == before_output_count
+    round_trip_unicycler = to_native(as_format2)
+
+    after_output_count = 0
+    for workflow_output in native_workflow_outputs(round_trip_unicycler):
+        after_output_count += 1
+    after_step_count = len(round_trip_unicycler["steps"])
+
+    assert after_step_count == before_step_count
+    assert after_output_count == before_output_count, round_trip_unicycler
 
 
 def round_trip(has_yaml):
