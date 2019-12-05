@@ -52,7 +52,6 @@ $graph:
         object is `null`.  Default values are applied before evaluating expressions
         (e.g. dependent `valueFrom` fields).
 
-
 - name: OutputParameter
   type: record
   extends: [Parameter]
