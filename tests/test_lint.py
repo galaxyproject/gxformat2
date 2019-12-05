@@ -1,8 +1,8 @@
 import copy
 import os
 
-from gxformat2.lint import main
 from gxformat2._yaml import ordered_dump, ordered_load
+from gxformat2.lint import main
 from ._helpers import (
     assert_valid_native,
     copy_without_workflow_output_labels,
@@ -205,6 +205,7 @@ report:
     ## About This Report
     This report is generated from markdown content in the workflow YAML/JSON.
 """
+
 
 def setup_module(module):
     # Setup an examples directory with examples we want to correspond to what exit codes,

@@ -6,12 +6,10 @@ import pytest
 from gxformat2.converter import (
     POST_JOB_ACTIONS,
 )
-from gxformat2._yaml import ordered_dump
-
 from .test_basic import (
+    assert_valid_native,
     from_native,
     to_native,
-    assert_valid_native,
 )
 
 
@@ -76,8 +74,8 @@ def test_post_job_action_to_native(wf_template):
         native = to_native(workflow_yaml)
         pja_class = POST_JOB_ACTIONS[action_key]['action_class']
         expected_pja = {pja_class + 'out_file1': OrderedDict([
-                ("output_name", "out_file1"), 
-                ("action_type", pja_class), 
+                ("output_name", "out_file1"),
+                ("action_type", pja_class),
                 ("action_arguments", expected_value or action_value),
         ])}
         expected_pja = json.dumps(expected_pja, sort_keys=True)

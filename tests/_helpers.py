@@ -33,7 +33,7 @@ class MockGalaxyInterface(ImporterGalaxyInterface):
 
 
 def copy_without_workflow_output_labels(native_as_dict):
-    native_without_labels =  copy.deepcopy(native_as_dict)
+    native_without_labels = copy.deepcopy(native_as_dict)
     for workflow_output in native_workflow_outputs(native_without_labels):
         workflow_output["label"] = None
     return native_without_labels
