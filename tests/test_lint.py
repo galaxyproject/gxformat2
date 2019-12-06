@@ -207,6 +207,29 @@ report:
     This report is generated from markdown content in the workflow YAML/JSON.
 """
 
+WORKFLOW_VOCAB_KEYS = """
+class: GalaxyWorkflow
+doc: |
+  Test state with keys that appear elsewhere in the salad vocab.
+inputs:
+  the_input:
+    type: File
+    doc: input doc
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    doc: cat doc
+    state:
+      type: 8
+      name: 9
+      class: NotGalaxyWorkflow
+    in:
+      input1: the_input
+"""
+
 
 def setup_module(module):
     # Setup an examples directory with examples we want to correspond to what exit codes,
@@ -322,6 +345,9 @@ def setup_module(module):
     invalid_native_report_missing_markdown = _deep_copy(green_native_report)
     del invalid_native_report_missing_markdown["report"]["markdown"]
     _dump_with_exit_code(invalid_native_report_missing_markdown, 2, "native_report_missing_markdown")
+
+    green_format2_vocab_keys = ordered_load(WORKFLOW_VOCAB_KEYS)
+    _dump_with_exit_code(green_format2_vocab_keys, 0, "format2_vocab_keys")
 
     # ensure that round tripping all green format2 workflows still lint green.
     for file_name in os.listdir(TEST_EXAMPLES):
