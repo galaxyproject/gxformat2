@@ -8,8 +8,12 @@ History
 ---------------------
 0.10.0.dev0
 ---------------------
-
     
+* Implement scheam, validation, linting (for Format 2 and .ga).
+* Handle new reports field in Galaxy 19.09 workflows.
+* Numerous fixes for conversiion to and from native workflows.
+* Numerous new test cases.
+* Implement Java project for valiating and linting both kinds of workflows.
 
 ---------------------
 0.9.0 (2019-07-08)
