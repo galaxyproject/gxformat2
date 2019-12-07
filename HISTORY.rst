@@ -6,10 +6,12 @@ History
 .. to_doc
 
 ---------------------
-0.11.0.dev0
+0.10.1.dev0
 ---------------------
 
-    
+* Bug fix to handle outputs without labels in Format 2 - they
+  don't validate per se but they are important for testing in the
+  Galaxy framework.
 
 ---------------------
 0.10.0 (2019-12-06)

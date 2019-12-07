@@ -1,12 +1,12 @@
 """The public interface or entry point for the Format 2 workflow code."""
 
-__version__ = '0.11.0.dev0'
+__version__ = '0.10.1.dev0'
 
 PROJECT_NAME = "gxformat2"
-PROJECT_OWNER = PROJECT_USERAME = "jmchilton"
+PROJECT_OWNER = PROJECT_USERAME = "galaxyproject"
 PROJECT_AUTHOR = 'Galaxy Project and Community'
 PROJECT_EMAIL = 'jmchilton@gmail.com'
-PROJECT_URL = "https://github.com/jmchilton/gxformat2"
+PROJECT_URL = "https://github.com/galaxyproject/gxformat2"
 
 
 from .converter import ImportOptions, python_to_workflow  # NOQA
