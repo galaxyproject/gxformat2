@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.10.1.dev0
+0.10.1 (2019-12-07)
 ---------------------
 
 * Bug fix to handle outputs without labels in Format 2 - they
