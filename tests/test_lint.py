@@ -338,6 +338,14 @@ def setup_module(module):
     invalid_native_report_type["report"]["markdown"] = 5
     _dump_with_exit_code(invalid_native_report_type, 2, "native_report_invalid_type")
 
+    invalid_format2_report_markdown = _deep_copy(green_format2_report)
+    invalid_format2_report_markdown["report"]["markdown"] += "\n```galaxy\ncow()\n```\n"
+    _dump_with_exit_code(invalid_format2_report_markdown, 2, "format2_report_invalid_markdown")
+
+    invalid_native_report_markdown = _deep_copy(green_native_report)
+    invalid_native_report_markdown["report"]["markdown"] += "\n```galaxy\ncow()\n```\n"
+    _dump_with_exit_code(invalid_native_report_markdown, 2, "native_report_invalid_markdown")
+
     invalid_format2_report_missing_markdown = _deep_copy(green_format2_report)
     del invalid_format2_report_missing_markdown["report"]["markdown"]
     _dump_with_exit_code(invalid_format2_report_missing_markdown, 2, "format2_report_missing_markdown")

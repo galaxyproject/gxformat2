@@ -4,6 +4,7 @@ import sys
 
 from gxformat2._yaml import ordered_load
 from gxformat2.linting import LintContext
+from gxformat2.markdown_parse import validate_galaxy_markdown
 
 EXIT_CODE_SUCCESS = 0
 EXIT_CODE_LINT_FAILED = 1
@@ -72,10 +73,7 @@ def lint_ga(lint_context, workflow_dict, path=None):
 
         _lint_step_errors(lint_context, step)
 
-    report_dict = ensure_key_if_present(lint_context, workflow_dict, "report", default=None, has_class=dict)
-    if report_dict is not None:
-        ensure_key(lint_context, report_dict, "markdown", has_class=str)
-
+    _validate_report(lint_context, workflow_dict)
     if not found_outputs:
         lint_context.warn(LINT_FAILED_NO_OUTPUTS)
 
@@ -95,6 +93,19 @@ def lint_format2(lint_context, workflow_dict, path=None):
     steps = ensure_key_if_present(lint_context, workflow_dict, 'steps', default={}, has_class=dict)
     for key, step in steps.items():
         _lint_step_errors(lint_context, step)
+
+    _validate_report(lint_context, workflow_dict)
+
+
+def _validate_report(lint_context, workflow_dict):
+    report_dict = ensure_key_if_present(lint_context, workflow_dict, "report", default=None, has_class=dict)
+    if report_dict is not None:
+        markdown = ensure_key(lint_context, report_dict, "markdown", has_class=str)
+        if isinstance(markdown, str):
+            try:
+                validate_galaxy_markdown(markdown)
+            except ValueError as e:
+                lint_context.error("Report markdown validation failed [%s]" % e)
 
 
 def main(argv):
