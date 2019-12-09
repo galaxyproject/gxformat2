@@ -78,7 +78,7 @@ steps:
     state:
       num_lines: 1
       input:
-        $link: apply#output
+        $link: apply/output
       seed_source:
         seed_source_selector: set_seed
         seed: asdf

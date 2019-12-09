@@ -3,6 +3,7 @@ from __future__ import print_function
 
 import copy
 import json
+import logging
 import os
 import sys
 import uuid
@@ -11,7 +12,8 @@ from collections import OrderedDict
 from ._labels import Labels
 from ._yaml import ordered_load
 
-
+# source: step#output and $link: step#output instead of outputSource: step/output and $link: step/output
+SUPPORT_LEGACY_CONNECTIONS = os.environ.get("GXFORMAT2_SUPPORT_LEGACY_CONNECTIONS") == "1"
 STEP_TYPES = [
     "subworkflow",
     "data_input",
@@ -70,9 +72,20 @@ POST_JOB_ACTIONS = {
     },
 }
 
+log = logging.getLogger(__name__)
+
 
 def rename_arg(argument):
     return argument
+
+
+def clean_connection(value):
+    if value and "#" in value and SUPPORT_LEGACY_CONNECTIONS:
+        # Hope these are just used by Galaxy testing workflows and such, and not in production workflows.
+        log.warn("Legacy workflow syntax for connections [%s] will not be supported in the future" % value)
+        value = value.replace("#", "/", 1)
+    else:
+        return value
 
 
 class ImportOptions(object):
@@ -208,9 +221,9 @@ def _python_to_workflow(as_python, conversion_context):
         label = raw_label or raw_id
         if Labels.is_anonymous_output_label(label):
             label = None
-        source = output.get("source")
-        if source is None:
-            source = output.get("outputSource").replace("/", "#")
+        source = clean_connection(output.get("outputSource"))
+        if source is None and SUPPORT_LEGACY_CONNECTIONS:
+            source = output.get("source").replace("#", "/", 1)
         id, output_name = conversion_context.step_output(source)
         step = steps[str(id)]
         workflow_output = {
@@ -409,7 +422,9 @@ def transform_tool(context, step):
     def append_link(key, value):
         if key not in connect:
             connect[key] = []
-        connect[key].append(value["$link"])
+        assert "$link" in value
+        link_value = value["$link"]
+        connect[key].append(clean_connection(link_value))
 
     def replace_links(value, key=""):
         if _is_link(value):
@@ -506,7 +521,7 @@ class BaseConversionContext(object):
         return int(id)
 
     def step_output(self, value):
-        value_parts = str(value).split("#")
+        value_parts = str(value).split("/")
         if len(value_parts) == 1:
             value_parts.append("output")
         id = self.step_id(value_parts[0])
@@ -638,7 +653,6 @@ def _init_connect_dict(step):
                 continue
             elif isinstance(value, dict):
                 raise KeyError('step input must define either source or default %s' % value)
-            value = value.replace("/", "#", 1)
             connect[key] = [value]
             connection_keys.add(key)
 
@@ -663,7 +677,7 @@ def _populate_input_connections(context, step, connect):
         for value in values:
             if not isinstance(value, dict):
                 if key == "$step":
-                    value += "#__NO_INPUT_OUTPUT_NAME__"
+                    value += "/__NO_INPUT_OUTPUT_NAME__"
                 id, output_name = context.step_output(value)
                 value = {"id": id, "output_name": output_name}
                 if is_subworkflow_step:
