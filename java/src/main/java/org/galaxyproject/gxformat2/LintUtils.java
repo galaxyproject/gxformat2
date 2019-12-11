@@ -39,7 +39,7 @@ class LintUtils {
       Object value,
       Class<T> hasClass,
       Object hasValue) {
-    if (!hasClass.isInstance(value)) {
+    if (value != null && !hasClass.isInstance(value)) {
       lintContext.error(
           "expected value [%s] with key [%s] to be of class %s", key, value, hasClass);
       return null;

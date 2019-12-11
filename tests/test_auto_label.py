@@ -20,7 +20,7 @@ steps:
       inputs:
         - id: inner_input
       outputs:
-        - source: 1#out_file1
+        - outputSource: 1/out_file1
       steps:
         random:
           tool_id: random_lines1
@@ -37,10 +37,10 @@ steps:
     tool_id: cat1
     state:
       input1:
-        $link: nested_workflow#1:out_file1
+        $link: nested_workflow/1:out_file1
       queries:
         - input2:
-            $link: nested_workflow#1:out_file1
+            $link: nested_workflow/1:out_file1
 """
 
 NESTED_WORKFLOW_AUTO_LABELS_NEWER_SYNTAX = """

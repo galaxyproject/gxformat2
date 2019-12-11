@@ -78,7 +78,7 @@ steps:
     state:
       num_lines: 1
       input:
-        $link: apply#output
+        $link: apply/output
       seed_source:
         seed_source_selector: set_seed
         seed: asdf
@@ -239,6 +239,11 @@ def setup_module(module):
     green_native = to_native(BASIC_WORKFLOW)
     assert_valid_native(green_native)
     _dump_with_exit_code(green_native, 0, "basic_native")
+
+    green_explicit_errors_null = _deep_copy(green_native)
+    for step, step_def in green_explicit_errors_null["steps"].items():
+        step_def["errors"] = None
+    _dump_with_exit_code(green_explicit_errors_null, 0, "basic_native_explicit_no_errors")
 
     invalid_format2_no_format_dict = _deep_copy(green_format2)
     del invalid_format2_no_format_dict["class"]

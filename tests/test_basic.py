@@ -218,6 +218,39 @@ $graph:
     assert len(as_dict_native["subworkflows"]) == 1
 
 
+def test_step_connections():
+    wf_with_step_connections = round_trip("""
+class: GalaxyWorkflow
+inputs:
+  test_input: data
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: test_input
+  the_pause:
+    type: pause
+    in:
+      input: first_cat/out_file1
+  second_cat:
+    tool_id: cat1
+    in:
+      input1: the_pause
+  third_cat:
+    tool_id: random_lines1
+    in:
+      $step: second_cat
+    state:
+      num_lines: 1
+      input:
+        $link: test_input
+      seed_source:
+        seed_source_selector: set_seed
+        seed: asdf
+""")
+    assert wf_with_step_connections["steps"]["third_cat"]["in"]["$step"]["source"] == "second_cat"
+
+
 def test_export_native_no_labels():
     # Ensure outputs don't get mapped to 'null' key and ensure
     native_unicycler = ordered_load(open(os.path.join(TEST_PATH, "unicycler.ga"), "r").read())
