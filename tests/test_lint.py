@@ -240,6 +240,11 @@ def setup_module(module):
     assert_valid_native(green_native)
     _dump_with_exit_code(green_native, 0, "basic_native")
 
+    green_explicit_errors_null = _deep_copy(green_native)
+    for step, step_def in green_explicit_errors_null["steps"].items():
+        step_def["errors"] = None
+    _dump_with_exit_code(green_explicit_errors_null, 0, "basic_native_explicit_no_errors")
+
     invalid_format2_no_format_dict = _deep_copy(green_format2)
     del invalid_format2_no_format_dict["class"]
     _dump_with_exit_code(invalid_format2_no_format_dict, 2, "format2_no_class")

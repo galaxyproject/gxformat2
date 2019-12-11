@@ -54,7 +54,7 @@ public class LintContext {
 
   public void printMessages() {
     for (final String message : this.collectMessages()) {
-      System.out.print(message);
+      System.out.println(message);
     }
   }
 }
