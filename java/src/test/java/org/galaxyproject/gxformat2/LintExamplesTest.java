@@ -7,10 +7,7 @@ public class LintExamplesTest {
 
   @Test
   public void testLinting() throws Exception {
-    final File examplesDirectory = new File("../tests/examples");
-    assert examplesDirectory.exists() : "test examples directory doesn't exist";
-    assert examplesDirectory.isDirectory();
-    for (final File file : examplesDirectory.listFiles()) {
+    for (final File file : TestUtils.getExamples("lint")) {
       final String path = file.getAbsolutePath();
       // HACK: Java linter doesn't handle Markdown parsing yet?
       if (path.indexOf("markdown") >= 0) {

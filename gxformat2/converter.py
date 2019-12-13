@@ -130,6 +130,23 @@ def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, imp
     return converted
 
 
+# move to a utils file?
+def steps_as_list(format2_workflow, add_label=True):
+    """Return steps as a list, converting ID map to list representation if needed."""
+    steps = format2_workflow["steps"]
+    steps = _convert_dict_to_id_list_if_needed(steps, add_label=True)
+    return steps
+
+
+def ensure_step_position(step, order_index):
+    """Ensure step contains a position definition."""
+    if "position" not in step:
+        step["position"] = {
+            "left": 10 * order_index,
+            "top": 10 * order_index
+        }
+
+
 def _python_to_workflow(as_python, conversion_context):
 
     if "class" not in as_python:
@@ -149,14 +166,9 @@ def _python_to_workflow(as_python, conversion_context):
     })
     _populate_annotation(as_python)
 
-    steps = as_python["steps"]
-    steps = _convert_dict_to_id_list_if_needed(steps, add_label=True)
+    steps = steps_as_list(as_python)
 
-    # If an inputs section is defined, build steps for each
-    # and add to steps array.
-    if "inputs" in as_python:
-        inputs = as_python["inputs"]
-        convert_inputs_to_steps(inputs, steps)
+    convert_inputs_to_steps(as_python, steps)
 
     if isinstance(steps, list):
         steps_as_dict = OrderedDict()
@@ -169,12 +181,8 @@ def _python_to_workflow(as_python, conversion_context):
                 label = step["label"]
                 conversion_context.labels[label] = i
 
-            if "position" not in step:
-                # TODO: this really should be optional in Galaxy API.
-                step["position"] = {
-                    "left": 10 * i,
-                    "top": 10 * i
-                }
+            # TODO: this really should be optional in Galaxy API.
+            ensure_step_position(step, i)
 
         as_python["steps"] = steps_as_dict
         steps = steps_as_dict
@@ -260,7 +268,12 @@ def _preprocess_graphs(as_python, conversion_context):
     return as_python
 
 
-def convert_inputs_to_steps(inputs, steps):
+def convert_inputs_to_steps(workflow_dict, steps):
+    """Convert workflow inputs to a steps in array - like in native Galaxy."""
+    if "inputs" not in workflow_dict:
+        return
+
+    inputs = workflow_dict["inputs"]
     new_steps = []
     inputs = _convert_dict_to_id_list_if_needed(inputs)
     for input_def_raw in inputs:

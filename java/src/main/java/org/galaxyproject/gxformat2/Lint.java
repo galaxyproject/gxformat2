@@ -1,10 +1,6 @@
 package org.galaxyproject.gxformat2;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
-import org.yaml.snakeyaml.Yaml;
 
 public class Lint {
   public static int EXIT_CODE_SUCCESS = 0;
@@ -31,10 +27,7 @@ public class Lint {
   }
 
   public static int lint(final String[] args) throws Exception {
-    final Path path = Paths.get(args[0]);
-    final String workflowContents = new String(Files.readAllBytes(path), "UTF8");
-    final Yaml yaml = new Yaml();
-    final Map<String, Object> object = (Map<String, Object>) yaml.load(workflowContents);
+    final Map<String, Object> object = (Map<String, Object>) IoUtils.readYamlFromPath(args[0]);
     final LintContext lintContext = lint(object);
     lintContext.printMessages();
     int exitCode;
