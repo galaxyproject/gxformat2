@@ -35,6 +35,9 @@ PACKAGES = [
     'gxformat2.schema',
 ]
 ENTRY_POINTS = '''
+     [console_scripts]
+     gxwf-lint=gxformat2.lint:main
+     gxwf-viz=gxformat2.cytoscape:main
 '''
 PACKAGE_DATA = {
     # Be sure to update MANIFEST.in for source dist.

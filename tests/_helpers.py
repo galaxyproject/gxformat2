@@ -6,6 +6,7 @@ from gxformat2.export import from_galaxy_native
 from gxformat2.interface import ImporterGalaxyInterface
 
 TEST_PATH = os.path.abspath(os.path.dirname(__file__))
+TEST_INTEROP_EXAMPLES = os.environ.get("GXFORMAT2_INTEROP_EXAMPLES", os.path.join(TEST_PATH, "examples"))
 
 
 def to_native(has_yaml, **kwds):

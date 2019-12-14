@@ -7,13 +7,14 @@ from ._helpers import (
     assert_valid_native,
     copy_without_workflow_output_labels,
     round_trip,
+    TEST_INTEROP_EXAMPLES,
     TEST_PATH,
     to_native,
 )
 
 _deep_copy = copy.deepcopy
 
-TEST_EXAMPLES = os.path.join(TEST_PATH, "examples")
+TEST_LINT_EXAMPLES = os.path.join(TEST_INTEROP_EXAMPLES, "lint")
 
 BASIC_WORKFLOW = """
 class: GalaxyWorkflow
@@ -176,7 +177,7 @@ steps:
 
 WITH_REPORT = """
 class: GalaxyWorkflow
-name: My Cool Workflow
+label: My Cool Workflow
 inputs:
   input_1: data
   image_input: data
@@ -331,7 +332,7 @@ def setup_module(module):
     _dump_with_exit_code(invalid_format2_pja_hide_type, 2, "format2_pja_hide_invalid_type")
 
     green_format2_report = ordered_load(WITH_REPORT)
-    _dump_with_exit_code(green_format2_runtime_inputs, 0, "format2_report")
+    _dump_with_exit_code(green_format2_report, 0, "format2_report")
     green_native_report = to_native(WITH_REPORT)
     _dump_with_exit_code(green_native_report, 0, "native_report")
 
@@ -363,9 +364,9 @@ def setup_module(module):
     _dump_with_exit_code(green_format2_vocab_keys, 0, "format2_vocab_keys")
 
     # ensure that round tripping all green format2 workflows still lint green.
-    for file_name in os.listdir(TEST_EXAMPLES):
+    for file_name in os.listdir(TEST_LINT_EXAMPLES):
         if file_name.startswith("0_format2") and "roundtrip" not in file_name:
-            roundtrip_contents = round_trip(open(os.path.join(TEST_EXAMPLES, file_name), "r").read())
+            roundtrip_contents = round_trip(open(os.path.join(TEST_LINT_EXAMPLES, file_name), "r").read())
             base = os.path.splitext(file_name)[0][len("0_"):]
             _dump_with_exit_code(roundtrip_contents, 0, base + "_roundtrip")
 
@@ -388,8 +389,8 @@ def test_lint_ecoli_comparison():
 
 
 def test_lint_examples():
-    for file_name in os.listdir(TEST_EXAMPLES):
-        file_path = os.path.join(TEST_EXAMPLES, file_name)
+    for file_name in os.listdir(TEST_LINT_EXAMPLES):
+        file_path = os.path.join(TEST_LINT_EXAMPLES, file_name)
         expected_exit_code = int(file_name[0])
         actual_exit_code = main(["lint", file_path])
         if actual_exit_code != expected_exit_code:
@@ -399,8 +400,8 @@ def test_lint_examples():
 
 
 def _dump_with_exit_code(as_dict, exit_code, description):
-    if not os.path.exists(TEST_EXAMPLES):
-        os.makedirs(TEST_EXAMPLES)
-    with open(os.path.join(TEST_EXAMPLES, "%d_%s.yml" % (exit_code, description)), "w") as fd:
+    if not os.path.exists(TEST_LINT_EXAMPLES):
+        os.makedirs(TEST_LINT_EXAMPLES)
+    with open(os.path.join(TEST_LINT_EXAMPLES, "%d_%s.yml" % (exit_code, description)), "w") as fd:
         ordered_dump(as_dict, fd)
         fd.flush()

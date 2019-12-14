@@ -42,3 +42,4 @@ docs/_build
 .venv
 
 java/target
+java/.idea

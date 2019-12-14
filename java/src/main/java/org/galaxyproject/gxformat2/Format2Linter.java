@@ -16,7 +16,7 @@ public class Format2Linter implements GalaxyWorkflowLinter {
       if (!(stepEntry.getValue() instanceof Map)) {
         continue;
       }
-      Map<String, Object> step = (Map<String, Object>) stepEntry.getValue();
+      final Map<String, Object> step = (Map<String, Object>) stepEntry.getValue();
       LintUtils.lintStepErrors(lintContext, step);
     }
   }
