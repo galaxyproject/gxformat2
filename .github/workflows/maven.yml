@@ -16,7 +16,7 @@ jobs:
         pip install -r requirements.txt -r dev-requirements.txt
     - name: Run Python tests to generate workflow examples.
       run: |
-        pytest tests/test_lint.py
+        pytest tests/test_lint.py tests/test_cytoscape.py
     - name: Set up JDK
       uses: actions/setup-java@v1
       with:

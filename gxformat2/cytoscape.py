@@ -11,6 +11,7 @@ from gxformat2.converter import convert_inputs_to_steps, ensure_step_position, s
 from gxformat2.export import from_galaxy_native
 
 CYTOSCAPE_JS_TEMPLATE = pkg_resources.resource_filename(__name__, 'cytoscape.html')
+MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
 
 
 def main(argv=None):
@@ -40,8 +41,8 @@ def main(argv=None):
             classes.append("input")
 
         tool_id = step.get("tool_id")
-        if tool_id and tool_id.startswith("toolshed.g2.bx.psu.edu/repos/"):
-            tool_id = tool_id[len("toolshed.g2.bx.psu.edu/repos/"):]
+        if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
+            tool_id = tool_id[len(MAIN_TS_PREFIX):]
         label = step.get("id") or step.get("label") or ("tool:%s" % tool_id) or str(i)
         ensure_step_position(step, i)
         node_position = dict(x=int(step["position"]["left"]), y=int(step["position"]["top"]))

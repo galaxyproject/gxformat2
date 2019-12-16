@@ -41,5 +41,7 @@ docs/_build
 
 .venv
 
+tests/examples
+
 java/target
 java/.idea
