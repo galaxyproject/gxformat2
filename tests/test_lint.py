@@ -379,9 +379,23 @@ def test_lint_ga_unicycler():
     assert main(["lint", os.path.join(TEST_PATH, "unicycler.ga")]) == 0
 
 
+def test_lint_ga_unicycler_training():
+    # no tags, fails linting
+    assert main(["lint", "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler.ga")]) == 1
+    # correct tag passes linting
+    assert main(["lint", "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 0
+    # incorrect tag, fails linting
+    assert main(["lint", "--training-topic", "mapping", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 1
+
+
 def test_lint_ga_unicycler_missing_tools():
     # only difference is one missing tool.
     assert main(["lint", os.path.join(TEST_PATH, "unicycler-hacked-no-tool.ga")]) == 1
+
+
+def test_lint_ga_unicycler_ts_tools():
+    # only difference is testoolshed tool.
+    assert main(["lint", os.path.join(TEST_PATH, "unicycler-hacked-testtoolshed.ga")]) == 1
 
 
 def test_lint_ecoli_comparison():

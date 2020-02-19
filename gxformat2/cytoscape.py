@@ -6,9 +6,9 @@ import sys
 
 import pkg_resources
 
+from gxformat2._scripts import ensure_format2
 from gxformat2._yaml import ordered_load
 from gxformat2.converter import convert_inputs_to_steps, ensure_step_position, steps_as_list
-from gxformat2.export import from_galaxy_native
 
 CYTOSCAPE_JS_TEMPLATE = pkg_resources.resource_filename(__name__, 'cytoscape.html')
 MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
@@ -23,9 +23,7 @@ def main(argv=None):
     with open(workflow_path, "r") as f:
         workflow_dict = ordered_load(f)
 
-    if workflow_dict.get("a_galaxy_workflow") == "true":
-        workflow_dict = from_galaxy_native(workflow_dict)
-
+    workflow_dict = ensure_format2(workflow_dict)
     elements = []
 
     steps = steps_as_list(workflow_dict)

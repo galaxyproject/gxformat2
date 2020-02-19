@@ -5,14 +5,16 @@ Largely derived in large part from galaxy.tool_util.lint.
 LEVEL_ALL = "all"
 LEVEL_WARN = "warn"
 LEVEL_ERROR = "error"
+DEFAULT_TRAINING_LINT = None
 
 
 class LintContext(object):
     """Track running status (state) of linting."""
 
-    def __init__(self, level=LEVEL_WARN):
+    def __init__(self, level=LEVEL_WARN, training_topic=DEFAULT_TRAINING_LINT):
         """Create LintContext with specified 'level' (currently unused)."""
         self.level = level
+        self.training_topic = training_topic
         self.found_errors = False
         self.found_warns = False
 
