@@ -9,7 +9,12 @@ History
 0.11.0.dev0
 ---------------------
 
-    
+* Validate Galaxy Markdown in workflow reports as part of linting.
+* Improved null handling in native ga workflow linting.
+* Enhancements to workflow linting from Python. Lint for lack of documentation,
+  tools using the test toolshed, and implement special linting for training
+  material workflows to ensure a tag matches the workflow topic.
+* Add gxwf-viz script that produces a cytoscape visualization of a workflow.
 
 ---------------------
 0.10.1 (2019-12-07)
