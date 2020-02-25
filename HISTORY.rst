@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.11.0.dev0
+0.11.0 (2020-02-25)
 ---------------------
 
 * Validate Galaxy Markdown in workflow reports as part of linting.
