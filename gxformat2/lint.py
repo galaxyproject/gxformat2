@@ -139,8 +139,10 @@ def _lint_training(lint_context, workflow_dict):
         lint_context.warn("Empty workflow documentation (annotation or doc element)")
 
 
-def main(argv):
+def main(argv=None):
     """Script entry point for linting workflows."""
+    if argv is None:
+        argv = sys.argv
     args = _parser().parse_args(argv[1:])
     path = args.path
     with open(path, "r") as f:
@@ -172,7 +174,7 @@ def _parser():
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())
 
 
 __all__ = ('main', 'lint_format2', 'lint_ga')
