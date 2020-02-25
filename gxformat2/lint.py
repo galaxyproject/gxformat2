@@ -1,7 +1,9 @@
 """Workflow linting entry point - main script."""
+import argparse
 import os
 import sys
 
+from gxformat2._scripts import ensure_format2
 from gxformat2._yaml import ordered_load
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
@@ -72,6 +74,7 @@ def lint_ga(lint_context, workflow_dict, path=None):
             lint_ga(lint_context, subworkflow)
 
         _lint_step_errors(lint_context, step)
+        _lint_tool_if_present(lint_context, step)
 
     _validate_report(lint_context, workflow_dict)
     if not found_outputs:
@@ -79,6 +82,8 @@ def lint_ga(lint_context, workflow_dict, path=None):
 
     if found_output_without_label:
         lint_context.warn(LINT_FAILED_OUTPUT_NO_LABEL)
+
+    _lint_training(lint_context, workflow_dict)
 
 
 def lint_format2(lint_context, workflow_dict, path=None):
@@ -93,8 +98,16 @@ def lint_format2(lint_context, workflow_dict, path=None):
     steps = ensure_key_if_present(lint_context, workflow_dict, 'steps', default={}, has_class=dict)
     for key, step in steps.items():
         _lint_step_errors(lint_context, step)
+        _lint_tool_if_present(lint_context, step)
 
     _validate_report(lint_context, workflow_dict)
+    _lint_training(lint_context, workflow_dict)
+
+
+def _lint_tool_if_present(lint_context, step_dict):
+    tool_id = step_dict.get('tool_id')
+    if tool_id and 'testtoolshed' in tool_id:
+        lint_context.warn('Step references a tool from the test tool shed, this should be replaced with a production tool')
 
 
 def _validate_report(lint_context, workflow_dict):
@@ -108,9 +121,28 @@ def _validate_report(lint_context, workflow_dict):
                 lint_context.error("Report markdown validation failed [%s]" % e)
 
 
+def _lint_training(lint_context, workflow_dict):
+    if lint_context.training_topic is None:
+        return
+
+    if "tags" not in workflow_dict:
+        lint_context.warn("Missing tag(s).")
+    else:
+        tags = workflow_dict["tags"]
+        if lint_context.training_topic not in tags:
+            lint_context.warn("Missing expected training topic (%s) as workflow tag." % lint_context.training_topic)
+    # Move up into individual lints - all workflows should have docs.
+    format2_dict = ensure_format2(workflow_dict)
+    if "doc" not in format2_dict:
+        lint_context.warn("Missing workflow documentation (annotation or doc element)")
+    elif not format2_dict["doc"]:
+        lint_context.warn("Empty workflow documentation (annotation or doc element)")
+
+
 def main(argv):
     """Script entry point for linting workflows."""
-    path = argv[1]
+    args = _parser().parse_args(argv[1:])
+    path = args.path
     with open(path, "r") as f:
         try:
             workflow_dict = ordered_load(f)
@@ -118,7 +150,7 @@ def main(argv):
             return EXIT_CODE_FILE_PARSE_FAILED
     workflow_class = workflow_dict.get("class")
     lint_func = lint_format2 if workflow_class == "GalaxyWorkflow" else lint_ga
-    lint_context = LintContext()
+    lint_context = LintContext(training_topic=args.training_topic)
     lint_func(lint_context, workflow_dict, path=path)
     lint_context.print_messages()
     if lint_context.found_errors:
@@ -127,6 +159,16 @@ def main(argv):
         return EXIT_CODE_LINT_FAILED
     else:
         return EXIT_CODE_SUCCESS
+
+
+def _parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--training-topic",
+                        required=False,
+                        help='If this is a training workflow, specify a training topic.')
+    parser.add_argument('path', metavar='PATH', type=str,
+                        help='workflow path')
+    return parser
 
 
 if __name__ == "__main__":
