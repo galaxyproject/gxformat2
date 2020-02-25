@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.12.0.dev0
+0.11.1.dev0
 ---------------------
 
-    
+* Bug fix for gxwf-lint invocation from setup.py installed script.
 
 ---------------------
 0.11.0 (2020-02-25)
