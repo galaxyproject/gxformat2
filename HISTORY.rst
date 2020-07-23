@@ -6,10 +6,11 @@ History
 .. to_doc
 
 ---------------------
-0.12.0.dev0
+0.11.2.dev0
 ---------------------
 
-    
+* Rework cytoscape and helpers for reuse from Planemo.
+* Rev markdown validator for and from latest Galaxy changes.
 
 ---------------------
 0.11.1 (2020-02-25)
