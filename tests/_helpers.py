@@ -1,7 +1,7 @@
 import copy
 import os
 
-from gxformat2.converter import python_to_workflow, yaml_to_workflow
+from gxformat2.converter import python_to_workflow, STEP_TYPES, yaml_to_workflow
 from gxformat2.export import from_galaxy_native
 from gxformat2.interface import ImporterGalaxyInterface
 
@@ -25,7 +25,7 @@ def assert_valid_native(as_dict_native):
         assert key == str(step_count)
         step_count += 1
         assert "type" in value
-        assert value["type"] in ["data_input", "data_collection_input", "tool", "subworkflow", "pause"]
+        assert value["type"] in STEP_TYPES
 
 
 class MockGalaxyInterface(ImporterGalaxyInterface):

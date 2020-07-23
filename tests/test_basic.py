@@ -273,6 +273,107 @@ def test_export_native_no_labels():
     assert after_output_count == before_output_count, round_trip_unicycler
 
 
+def test_optional_inputs():
+    as_dict = round_trip("""
+class: GalaxyWorkflow
+inputs:
+  the_input:
+    type: File
+    optional: true
+steps:
+  cat:
+    tool_id: cat_optional
+    in:
+      input1: the_input
+""")
+    print(as_dict["inputs"])
+    assert as_dict["inputs"]["the_input"]["optional"]
+
+
+def test_input_formats_single():
+    as_dict = round_trip("""
+class: GalaxyWorkflow
+inputs:
+  the_input:
+    type: File
+    optional: true
+    format: txt
+steps:
+  cat:
+    tool_id: cat_optional
+    in:
+      input1: the_input
+""")
+    assert as_dict["inputs"]["the_input"]["format"] == "txt"
+
+
+def test_input_formats_multi():
+    as_dict = round_trip("""
+class: GalaxyWorkflow
+inputs:
+  the_input:
+    type: File
+    optional: true
+    format:
+      - txt
+      - fasta
+steps:
+  cat:
+    tool_id: cat_optional
+    in:
+      input1: the_input
+""")
+    assert as_dict["inputs"]["the_input"]["format"][0] == "txt"
+    assert as_dict["inputs"]["the_input"]["format"][1] == "fasta"
+
+
+def test_input_default():
+    as_dict = round_trip("""
+class: GalaxyWorkflow
+inputs:
+  data_input: data
+  int_input:
+    type: integer
+    default: 3
+steps:
+  random:
+    tool_id: random_lines1
+    in:
+      input: data_input
+      num_lines: int_input
+    state:
+      seed_source:
+        seed_source_selector: set_seed
+        seed: asdf
+""")
+    assert as_dict["inputs"]["int_input"]["default"] == 3
+
+
+def test_simple_restrictions():
+    as_dict = round_trip("""
+class: GalaxyWorkflow
+inputs:
+  data_input: data
+  text_input:
+    type: text
+    restrictions:
+      - abc
+      - def
+      - ghi
+steps:
+  random:
+    tool_id: random_lines1
+    in:
+      input: data_input
+      'seed_source|seed': text_input
+    state:
+      num_lines: 1
+      seed_source:
+        seed_source_selector: set_seed
+""")
+    assert as_dict["inputs"]["text_input"]["restrictions"] == ['abc', 'def', 'ghi']
+
+
 def assert_valid_format2(as_dict_format2):
     assert as_dict_format2["class"] == "GalaxyWorkflow"
     assert "steps" in as_dict_format2
