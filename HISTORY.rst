@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.11.3.dev0
+0.11.3 (2020-07-23)
 ---------------------
 
 * Bug fixes for exporting newer input concepts from native to Format 2.
