@@ -6,29 +6,21 @@ import sys
 
 import pkg_resources
 
-from gxformat2._scripts import ensure_format2
-from gxformat2._yaml import ordered_load
-from gxformat2.converter import convert_inputs_to_steps, ensure_step_position, steps_as_list
+from gxformat2.converter import ensure_step_position
+from gxformat2.normalize import steps_normalized
 
 CYTOSCAPE_JS_TEMPLATE = pkg_resources.resource_filename(__name__, 'cytoscape.html')
 MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
 
 
-def main(argv=None):
-    """Entry point for building Cytoscape visualizations of Galaxy workflows."""
-    if argv is None:
-        argv = sys.argv[1:]
+def to_cytoscape(workflow_path, output_path=None):
+    """Produce cytoscape output for supplied workflow path."""
+    if output_path is None:
+        output_path, _ = os.path.splitext(workflow_path)
+        output_path += ".html"
 
-    workflow_path = argv[0]
-    with open(workflow_path, "r") as f:
-        workflow_dict = ordered_load(f)
-
-    workflow_dict = ensure_format2(workflow_dict)
+    steps = steps_normalized(workflow_path=workflow_path)
     elements = []
-
-    steps = steps_as_list(workflow_dict)
-    convert_inputs_to_steps(workflow_dict, steps)
-
     for i, step in enumerate(steps):
         step_id = step.get("id") or step.get("label") or str(i)
         step_type = step.get("type") or 'tool'
@@ -71,12 +63,6 @@ def main(argv=None):
             edge_data = {"id": edge_id, "source": from_step, "target": step_id, "input": key, "output": output}
             elements.append({"group": "edges", "data": edge_data})
 
-    if len(argv) > 1:
-        output_path = argv[1]
-    else:
-        output_path, _ = os.path.splitext(workflow_path)
-        output_path += ".html"
-
     if output_path.endswith(".html"):
         with open(CYTOSCAPE_JS_TEMPLATE, "r") as f:
             template = f.read()
@@ -86,6 +72,18 @@ def main(argv=None):
     else:
         with open(output_path, "w") as f:
             json.dump(elements, f)
+
+
+def main(argv=None):
+    """Entry point for building Cytoscape visualizations of Galaxy workflows."""
+    if argv is None:
+        argv = sys.argv[1:]
+
+    workflow_path = argv[0]
+    if len(argv) > 1:
+        output_path = argv[1]
+
+    to_cytoscape(workflow_path, output_path)
 
 
 if __name__ == "__main__":
