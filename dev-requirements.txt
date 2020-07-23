@@ -1,5 +1,5 @@
 # Optional dependencies
-schema-salad
+schema-salad<5
 
 # For testing
 tox
