@@ -58,14 +58,19 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         if module_type in ['data_input', 'data_collection_input', 'parameter_input']:
             step_id = step["label"]  # TODO: auto-label
             input_dict = {}
+            tool_state = _tool_state(step)
             if module_type == 'data_collection_input':
                 input_dict['type'] = 'collection'
             elif module_type == 'data_input':
                 input_dict['type'] = 'data'
-            elif module_type == "parameter_input":
                 tool_state = _tool_state(step)
+            elif module_type == "parameter_input":
                 input_dict['type'] = tool_state.get("parameter_type")
-            # TODO: handle parameter_input types
+
+            for tool_state_key in ['optional', 'format', 'default', 'restrictions', 'suggestions', 'restrictOnConnections']:
+                if tool_state_key in tool_state:
+                    input_dict[tool_state_key] = tool_state[tool_state_key]
+
             _copy_common_properties(step, input_dict)
             # If we are only copying property - use the CWL-style short-hand
             if len(input_dict) == 1:

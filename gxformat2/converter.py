@@ -273,7 +273,7 @@ def convert_inputs_to_steps(workflow_dict, steps):
     if "inputs" not in workflow_dict:
         return
 
-    inputs = workflow_dict["inputs"]
+    inputs = workflow_dict.pop("inputs", [])
     new_steps = []
     inputs = _convert_dict_to_id_list_if_needed(inputs)
     for input_def_raw in inputs:
@@ -362,7 +362,7 @@ def transform_input(context, step, default_name):
     tool_state = {
         "name": name
     }
-    for attrib in ["collection_type", "parameter_type", "optional", "default"]:
+    for attrib in ["collection_type", "parameter_type", "optional", "default", "format", "restrictions", "restrictOnConnections", "suggestions"]:
         if attrib in step:
             tool_state[attrib] = step[attrib]
 
