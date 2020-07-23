@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.11.2.dev0
+0.11.2 (2020-07-22)
 ---------------------
 
 * Rework cytoscape and helpers for reuse from Planemo.
