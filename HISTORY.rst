@@ -6,10 +6,11 @@ History
 .. to_doc
 
 ---------------------
-0.12.0.dev0
+0.11.3.dev0
 ---------------------
 
-    
+* Bug fixes for exporting newer input concepts from native to Format 2.
+* Added abstraction for uniform access to workflow inputs accross formats.
 
 ---------------------
 0.11.2 (2020-07-22)
