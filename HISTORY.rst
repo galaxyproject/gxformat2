@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.11.4.dev0
+0.11.4 (2020-07-27)
 ---------------------
 
 * Added abstraction for uniform access to workflow outputs across formats.
