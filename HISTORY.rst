@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.12.0.dev0
+0.12.0 (2020-07-27)
 ---------------------
 
 * Drop support for Python 2 - to support next bullet.
