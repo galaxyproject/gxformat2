@@ -147,6 +147,12 @@ def ensure_step_position(step, order_index):
         }
 
 
+def _outputs_as_list(as_python):
+    outputs = as_python.get("outputs", [])
+    outputs = _convert_dict_to_id_list_if_needed(outputs)
+    return outputs
+
+
 def _python_to_workflow(as_python, conversion_context):
 
     if "class" not in as_python:
