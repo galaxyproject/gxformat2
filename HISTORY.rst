@@ -6,9 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.11.5.dev0
+0.12.0.dev0
 ---------------------
 
+* Drop support for Python 2 - to support next bullet.
 * Update schema parser for recent changes to schema salad.
 
 ---------------------
