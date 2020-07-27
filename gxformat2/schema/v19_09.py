@@ -26,7 +26,7 @@ from typing_extensions import Text  # pylint: disable=unused-import
 
 from ruamel import yaml
 from ruamel.yaml.comments import CommentedMap
-from schema_salad.ref_resolver import Fetcher
+from schema_salad.fetcher import Fetcher
 from schema_salad.sourceline import SourceLine, add_lc_filename
 from schema_salad.exceptions import SchemaSaladException, ValidationException
 
@@ -73,7 +73,7 @@ class LoadingOptions(object):
             import requests
             from cachecontrol.wrapper import CacheControl
             from cachecontrol.caches import FileCache
-            from schema_salad.ref_resolver import DefaultFetcher
+            from schema_salad.fetcher import DefaultFetcher
 
             if "HOME" in os.environ:
                 session = CacheControl(

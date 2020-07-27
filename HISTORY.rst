@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.12.0.dev0
+0.11.5.dev0
 ---------------------
 
-    
+* Update schema parser for recent changes to schema salad.
 
 ---------------------
 0.11.4 (2020-07-27)
