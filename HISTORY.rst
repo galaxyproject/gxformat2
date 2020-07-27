@@ -9,7 +9,8 @@ History
 0.12.0.dev0
 ---------------------
 
-    
+* Drop support for Python 2 - to support next bullet.
+* Update schema parser for recent changes to schema salad.
 
 ---------------------
 0.11.4 (2020-07-27)
