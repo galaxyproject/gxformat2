@@ -12,6 +12,7 @@ from ._helpers import (
     TEST_PATH,
     to_native,
 )
+from .example_wfs import OPTIONAL_INPUT
 
 
 def test_import_export():
@@ -274,18 +275,7 @@ def test_export_native_no_labels():
 
 
 def test_optional_inputs():
-    as_dict = round_trip("""
-class: GalaxyWorkflow
-inputs:
-  the_input:
-    type: File
-    optional: true
-steps:
-  cat:
-    tool_id: cat_optional
-    in:
-      input1: the_input
-""")
+    as_dict = round_trip(OPTIONAL_INPUT)
     print(as_dict["inputs"])
     assert as_dict["inputs"]["the_input"]["optional"]
 

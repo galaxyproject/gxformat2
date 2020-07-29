@@ -38,6 +38,7 @@ ENTRY_POINTS = '''
      [console_scripts]
      gxwf-lint=gxformat2.lint:main
      gxwf-viz=gxformat2.cytoscape:main
+     gxwf-abstract-export=gxformat2.abstract:main
 '''
 PACKAGE_DATA = {
     # Be sure to update MANIFEST.in for source dist.
