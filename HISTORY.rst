@@ -9,7 +9,7 @@ History
 0.13.0.dev0
 ---------------------
 
-    
+* Add experimental export to CWL 1.2 using new abstract Operation classes.
 
 ---------------------
 0.12.0 (2020-07-27)
