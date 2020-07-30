@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.13.0.dev0
+0.13.0 (2020-07-30)
 ---------------------
 
 * Add experimental export to CWL 1.2 using new abstract Operation classes.
