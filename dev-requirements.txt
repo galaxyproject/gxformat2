@@ -1,5 +1,6 @@
 # Optional dependencies
 schema-salad
+cwltool
 
 # For testing
 tox
