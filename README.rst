@@ -1,15 +1,15 @@
 
-.. image:: https://readthedocs.org/projects/pip/badge/?version=latest
-   :target: https://gxformat2.readthedocs.org
+.. image:: https://readthedocs.org/projects/gxformat2/badge/?version=latest
+   :target: https://gxformat2.readthedocs.io/en/latest/
 
 .. image:: https://badge.fury.io/py/gxformat2.svg
    :target: https://pypi.python.org/pypi/gxformat2/
 
-.. image:: https://travis-ci.org/jmchilton/gxformat2.png?branch=master
-   :target: https://travis-ci.org/jmchilton/gxformat2
+.. image:: https://github.com/galaxyproject/gxformat2/workflows/Python%20CI/badge.svg
+   :target: https://github.com/galaxyproject/gxformat2/actions?query=workflow%3A%22Python+CI%22
 
-.. image:: https://coveralls.io/repos/jmchilton/gxformat2/badge.svg?branch=master
-   :target: https://coveralls.io/r/jmchilton/gxformat2?branch=master
+.. image:: https://github.com/galaxyproject/gxformat2/workflows/Java%20CI/badge.svg
+   :target: https://github.com/galaxyproject/gxformat2/actions?query=workflow%3A%22Java+CI%22
 
 Quick Start
 -----------
