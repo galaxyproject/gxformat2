@@ -11,7 +11,7 @@
 .. image:: https://github.com/galaxyproject/gxformat2/workflows/Java%20CI/badge.svg
    :target: https://github.com/galaxyproject/gxformat2/actions?query=workflow%3A%22Java+CI%22
 
-.. image:: https://img.shields.io/badge/latestschema-v19.09-blue
+.. image:: https://img.shields.io/badge/latest%20schema-v19.09-blue
    :target: http://galaxyproject.github.io/gxformat2/v19_09.html
 
 Quick Start
