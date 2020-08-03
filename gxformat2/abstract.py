@@ -169,7 +169,7 @@ def _parser():
     parser.add_argument('input_path', metavar='INPUT', type=str,
                         help='input workflow path (.ga/gxwf.yml)')
     parser.add_argument('output_path', metavar='OUTPUT', type=str, nargs="?",
-                        help='input workflow path (.cwl)')
+                        help='output workflow path (.cwl)')
     return parser
 
 
