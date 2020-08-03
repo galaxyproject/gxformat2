@@ -11,6 +11,8 @@
 .. image:: https://coveralls.io/repos/jmchilton/gxformat2/badge.svg?branch=master
    :target: https://coveralls.io/r/jmchilton/gxformat2?branch=master
 
+Quick Start
+-----------
 
 This package defines a high-level Galaxy_ workflow description termed "Format
 2". At this point, these workflows are defined entirely client side and
