@@ -1,6 +1,7 @@
 """Module for exporting Galaxy workflows to CWL abstract interface."""
 import argparse
 import sys
+from typing import Any, Dict
 
 from gxformat2._scripts import ensure_format2
 from gxformat2._yaml import ordered_dump, ordered_load
@@ -22,7 +23,7 @@ the workflow structure.
 """
 
 
-def from_dict(workflow_dict, subworkflow=False):
+def from_dict(workflow_dict: dict, subworkflow=False):
     """Convert dictified Galaxy workflow into abstract CWL representation."""
     # TODO: pass some sort of flag to ensure_format2 to make sure information
     # about step outputs that may be present in native format is not lost when
@@ -30,10 +31,10 @@ def from_dict(workflow_dict, subworkflow=False):
     workflow_dict = ensure_format2(workflow_dict)
     ensure_implicit_step_outs(workflow_dict)
 
-    requirements = {}
+    requirements = {}  # type: Dict[str, Any]
     abstract_dict = {
         'class': 'Workflow',
-    }
+    }  # type: Dict[str, Any]
     if not subworkflow:
         abstract_dict["cwlVersion"] = CWL_VERSION
     # inputs and outputs already mostly in CWL format...

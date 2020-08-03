@@ -6,7 +6,7 @@ is :class:`BioBlendImporterGalaxyInterface`.
 """
 import abc
 
-import bioblend
+import bioblend  # type: ignore
 import six
 
 

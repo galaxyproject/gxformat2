@@ -2,7 +2,7 @@
 from collections import OrderedDict
 
 try:
-    from galaxy.model.custom_types import MutationDict
+    from galaxy.model.custom_types import MutationDict  # type: ignore
 except ImportError:
     MutationDict = None
 import yaml
