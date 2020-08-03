@@ -17,6 +17,7 @@ DOC_URL?=https://gxformat2.readthedocs.org
 PROJECT_URL?=https://github.com/jmchilton/gxformat2
 PROJECT_NAME?=gxformat2
 TEST_DIR?=tests
+DOCS_DIR?=docs
 
 .PHONY: clean-pyc clean-build docs clean
 
@@ -59,6 +60,10 @@ lint: ## check style using tox and flake8 for Python 2 and Python 3
 
 lint-readme: ## check README formatting for PyPI
 	$(IN_VENV) python setup.py check -r -s
+
+lint-docs: ready-docs
+	$(IN_VENV) $(MAKE) -C $(DOCS_DIR) clean
+	$(IN_VENV) $(MAKE) -C $(DOCS_DIR) html 2>&1 | python $(BUILD_SCRIPTS_DIR)/lint_sphinx_output.py
 
 test: ## run tests with the default Python (faster than tox)
 	$(IN_VENV) nosetests $(NOSE_TESTS)
