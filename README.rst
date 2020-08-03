@@ -14,25 +14,51 @@
 .. image:: https://img.shields.io/badge/latest%20schema-v19.09-blue
    :target: http://galaxyproject.github.io/gxformat2/v19_09.html
 
-Quick Start
------------
+Format 2
+--------------
 
 This package defines a high-level Galaxy_ workflow description termed "Format
-2". At this point, these workflows are defined entirely client side and
-transcoded into traditional (or Format 1?) Galaxy workflows.
+2". The current schema version is v19_09 and the schema can be found
+[here](http://galaxyproject.github.io/gxformat2/v19_09.html). This version of
+workflow format can be consumed by Galaxy versions 19.09, 20.01, 20.05 and the
+the forthcoming 20.09.
 
-The traditional Galaxy workflow description is not meant to be concise and is
-neither readily human readable or human writable. Format 2 addresses all three
-of these limitations.
+The Format 2 workflow description is still somewhat experimental and may
+yet change in small potentially backward incompatible ways until the format is
+exported by Galaxy by default.
 
-Format 2 workflow is a highly experimental format and will change rapidly in
-potentially backward incompatible ways until the code is merged into the
-Galaxy server and enabled by default.
+The traditional Galaxy workflow description (files ending in .ga extension
+sometimes called native workflows in this project) was not designed to be
+concise and is neither readily human readable or human writable. Galaxy
+workflow Format 2 is being designed to addresses all three of these limitations.
+While also moving Galaxy's workflow description language toward standards such
+as the Common Workflow Language.
 
-* Free software: Academic Free License version 3.0
-* Documentation: https://galaxy-lib.readthedocs.org.
-* Code: https://github.com/galaxyproject/galaxy-lib
+gxformat2
+--------------
 
+This Python project can be installed from PyPI using ``pip``.
+
+::
+
+    $ pip install gxformat2
+
+Checkout the project tests or how it used in projects such as Planemo and
+Galaxy to see how to use the gxformat2 library. Reference documentation for
+the `modules <https://gxformat2.readthedocs.io/en/latest/py-modindex.html>`__
+can be found as part of the project's documentation.
+
+This project also includes various scripts for working with Galaxy workflows.
+Checkout their help for more information.
+
+::
+
+    $ gxwf-lint --help
+    $ gxwf-viz --help
+    $ gxwf-abstract-export --help
+
+This library and associated scripts are licensed under the Academic Free License
+version 3.0.
 
 .. _Galaxy: http://galaxyproject.org/
 .. _GitHub: https://github.com/

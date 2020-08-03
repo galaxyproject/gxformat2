@@ -1,4 +1,5 @@
 """Build standalone visualization for Galaxy workflows."""
+import argparse
 import json
 import os
 import string
@@ -11,9 +12,19 @@ from gxformat2.normalize import steps_normalized
 
 CYTOSCAPE_JS_TEMPLATE = pkg_resources.resource_filename(__name__, 'cytoscape.html')
 MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
+SCRIPT_DESCRIPTION = """
+This script converts the an executable Galaxy workflow (in either format -
+Format 2 or native .ga) into a format for visualization with Cytoscape
+(https://cytoscape.org/).
+
+If the target output path ends with .html this script will output a HTML
+page with the workflow visualized using cytoscape.js. Otherwise, this script
+will output a JSON description of the workflow elements for consumption by
+Cytoscape.
+"""
 
 
-def to_cytoscape(workflow_path, output_path=None):
+def to_cytoscape(workflow_path: str, output_path=None):
     """Produce cytoscape output for supplied workflow path."""
     if output_path is None:
         output_path, _ = os.path.splitext(workflow_path)
@@ -79,11 +90,20 @@ def main(argv=None):
     if argv is None:
         argv = sys.argv[1:]
 
-    workflow_path = argv[0]
-    if len(argv) > 1:
-        output_path = argv[1]
+    args = _parser().parse_args(argv)
 
+    workflow_path = args.input_path
+    output_path = args.output_path
     to_cytoscape(workflow_path, output_path)
+
+
+def _parser():
+    parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
+    parser.add_argument('input_path', metavar='INPUT', type=str,
+                        help='input workflow path (.ga/gxwf.yml)')
+    parser.add_argument('output_path', metavar='OUTPUT', type=str, nargs="?",
+                        help='output viz path (.json/.html)')
+    return parser
 
 
 if __name__ == "__main__":
