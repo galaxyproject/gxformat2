@@ -6,10 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.14.0.dev0
+0.13.1.dev0
 ---------------------
 
-    
+* Improve package structure - publish fixed sphinx docs, fix readme badges, add mypy typing support.
 
 ---------------------
 0.13.0 (2020-07-30)
