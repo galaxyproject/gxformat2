@@ -1,4 +1,6 @@
 """Abstractions for uniform across formats."""
+from typing import Union
+
 from gxformat2._scripts import ensure_format2
 from gxformat2._yaml import ordered_load
 from gxformat2.converter import _outputs_as_list, convert_inputs_to_steps, steps_as_list
@@ -38,7 +40,7 @@ def outputs_normalized(**kwd):
     return _outputs_as_list(workflow_dict)
 
 
-def walk_id_list_or_dict(dict_or_list):
+def walk_id_list_or_dict(dict_or_list: Union[dict, list]):
     """Walk over idmap regardless of list or dict representation."""
     if isinstance(dict_or_list, list):
         for item in dict_or_list:
@@ -48,7 +50,7 @@ def walk_id_list_or_dict(dict_or_list):
             yield item
 
 
-def ensure_implicit_step_outs(workflow_dict):
+def ensure_implicit_step_outs(workflow_dict: dict):
     """Ensure implicit 'out' dicts allowed by format2 are filled in for CWL."""
     outputs_by_label = {}
 

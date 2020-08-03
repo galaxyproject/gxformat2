@@ -3,6 +3,7 @@
 # The code itself is released under the Apache 2.0 license and the help text is
 # subject to the license of the original schema.
 #
+# type: ignore
 import copy
 import os
 import re
