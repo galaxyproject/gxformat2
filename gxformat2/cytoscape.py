@@ -7,7 +7,7 @@ import sys
 
 import pkg_resources
 
-from gxformat2.converter import ensure_step_position
+from gxformat2.model import ensure_step_position
 from gxformat2.normalize import steps_normalized
 
 CYTOSCAPE_JS_TEMPLATE = pkg_resources.resource_filename(__name__, 'cytoscape.html')

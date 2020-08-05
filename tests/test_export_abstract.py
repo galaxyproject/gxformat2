@@ -1,4 +1,6 @@
 """Test exporting Galaxy workflow to abstract CWL syntax."""
+import os
+
 from cwltool.context import (
     getdefault,
     LoadingContext,
@@ -12,6 +14,7 @@ from cwltool.main import (
 
 from gxformat2._yaml import ordered_dump, ordered_load
 from gxformat2.abstract import CWL_VERSION, from_dict
+from ._helpers import TEST_PATH, to_example_path
 from .example_wfs import (
     BASIC_WORKFLOW,
     NESTED_WORKFLOW,
@@ -63,12 +66,24 @@ def test_to_cwl_array():
 
 
 def test_nested_workflow():
-    _run_example(ordered_load(NESTED_WORKFLOW))
+    path = _examples_path_for("nested_format2.cwl")
+    _run_example(ordered_load(NESTED_WORKFLOW), out=path)
 
 
-def _run_example(as_dict):
+def test_sars_covid_example():
+    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    _run_example_path(sars_example)
+
+
+def _run_example_path(path):
+    out = _examples_path_for(path)
+    with open(path, "r") as f:
+        return _run_example(ordered_load(f), out)
+
+
+def _run_example(as_dict, out="test.cwl"):
     abstract_as_dict = from_dict(as_dict)
-    with open("test.cwl", "w") as f:
+    with open(out, "w") as f:
         ordered_dump(abstract_as_dict, f)
 
     check_abstract_def(abstract_as_dict)
@@ -82,12 +97,13 @@ def _run_example(as_dict):
         enable_dev=enable_dev,
     )
     loadingContext.resolver = getdefault(loadingContext.resolver, tool_resolver)
-    loadingContext, workflowobj, uri = fetch_document("./test.cwl", loadingContext)
+    loadingContext, workflowobj, uri = fetch_document(out, loadingContext)
     loadingContext, uri = resolve_and_validate_document(
         loadingContext,
         workflowobj,
         uri,
     )
+    return abstract_as_dict
 
 
 def check_abstract_def(abstract_as_dict):
@@ -101,3 +117,7 @@ def check_abstract_def(abstract_as_dict):
         assert run["class"] in ["Operation", "Workflow"]
         assert "out" in step_def
         assert isinstance(step_def["out"], list)
+
+
+def _examples_path_for(workflow_path):
+    return to_example_path(workflow_path, "abstractcwl", "cwl")

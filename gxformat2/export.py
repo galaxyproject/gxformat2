@@ -1,10 +1,15 @@
 """Functionality for converting a standard Galaxy workflow into a format 2 workflow."""
-
+import argparse
 import json
+import sys
 from collections import OrderedDict
 
 from ._labels import Labels
-from ._yaml import ordered_dump
+from .yaml import ordered_dump
+
+SCRIPT_DESCRIPTION = """
+Convert a native Galaxy workflow description into a Format 2 description.
+"""
 
 
 def _copy_common_properties(from_native_step, to_format2_step):
@@ -16,22 +21,22 @@ def _copy_common_properties(from_native_step, to_format2_step):
         to_format2_step["position"] = position
 
 
-def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=False):
+def from_galaxy_native(format2_dict, tool_interface=None, json_wrapper=False):
     """Convert native .ga workflow definition to a format2 workflow.
 
     This is highly experimental and currently broken.
     """
     data = OrderedDict()
     data['class'] = 'GalaxyWorkflow'
-    _copy_common_properties(native_workflow_dict, data)
-    if "name" in native_workflow_dict:
-        data["label"] = native_workflow_dict.pop("name")
+    _copy_common_properties(format2_dict, data)
+    if "name" in format2_dict:
+        data["label"] = format2_dict.pop("name")
     for top_level_key in ['tags', 'uuid', 'report']:
-        value = native_workflow_dict.get(top_level_key)
+        value = format2_dict.get(top_level_key)
         if value:
             data[top_level_key] = value
 
-    native_steps = native_workflow_dict.get("steps")
+    native_steps = format2_dict.get("steps")
 
     label_map = {}
     all_labeled = True
@@ -245,6 +250,33 @@ def _to_source(has_output_name, label_map, output_id=None):
     return source
 
 
+def main(argv=None):
+    """Entry point for script to convert native workflows to Format 2."""
+    if argv is None:
+        argv = sys.argv[1:]
+
+    args = _parser().parse_args(argv)
+
+    format2_path = args.input_path
+    output_path = args.output_path or (format2_path + ".gxwf.yml")
+    with open(format2_path, "r") as f:
+        native_workflow_dict = json.load(f)
+
+    as_dict = from_galaxy_native(native_workflow_dict)
+    with open(output_path, "w") as f:
+        ordered_dump(as_dict, f)
+
+
+def _parser():
+    parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
+    parser.add_argument('input_path', metavar='INPUT', type=str,
+                        help='input workflow path (.ga)')
+    parser.add_argument('output_path', metavar='OUTPUT', type=str, nargs="?",
+                        help='output workflow path (.gxfw.yml)')
+    return parser
+
+
 __all__ = (
     'from_galaxy_native',
+    'main',
 )

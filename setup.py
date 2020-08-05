@@ -36,6 +36,8 @@ PACKAGES = [
 ]
 ENTRY_POINTS = '''
      [console_scripts]
+     gxwf-to-native=gxformat2.converter:main
+     gxwf-to-format2=gxformat2.export:main
      gxwf-lint=gxformat2.lint:main
      gxwf-viz=gxformat2.cytoscape:main
      gxwf-abstract-export=gxformat2.abstract:main

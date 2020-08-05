@@ -1,6 +1,7 @@
 """Functionality for converting a Format 2 workflow into a standard Galaxy workflow."""
 from __future__ import print_function
 
+import argparse
 import copy
 import json
 import logging
@@ -8,9 +9,19 @@ import os
 import sys
 import uuid
 from collections import OrderedDict
+from typing import Dict, Optional
 
 from ._labels import Labels
-from ._yaml import ordered_load
+from .model import (
+    convert_dict_to_id_list_if_needed,
+    ensure_step_position,
+    inputs_as_steps,
+)
+from .yaml import ordered_load
+
+SCRIPT_DESCRIPTION = """
+Convert a Format 2 Galaxy workflow description into a native format.
+"""
 
 # source: step#output and $link: step#output instead of outputSource: step/output and $link: step/output
 SUPPORT_LEGACY_CONNECTIONS = os.environ.get("GXFORMAT2_SUPPORT_LEGACY_CONNECTIONS") == "1"
@@ -131,26 +142,41 @@ def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, imp
 
 
 # move to a utils file?
-def steps_as_list(format2_workflow, add_label=True):
-    """Return steps as a list, converting ID map to list representation if needed."""
+def steps_as_list(format2_workflow: dict, add_ids: bool = False, inputs_offset: int = 0, mutate: bool = False):
+    """Return steps as a list, converting ID map to list representation if needed.
+
+    This method does mutate the supplied steps, try to make progress toward not doing this.
+
+    Add keys as labels instead of IDs. Why am I doing this?
+    """
     steps = format2_workflow["steps"]
-    steps = _convert_dict_to_id_list_if_needed(steps, add_label=True)
+    steps = convert_dict_to_id_list_if_needed(steps, add_label=True, mutate=mutate)
+    if add_ids:
+        if mutate:
+            _append_step_id_to_step_list_elements(steps, inputs_offset=inputs_offset)
+        else:
+            steps = _with_step_ids(steps, inputs_offset=inputs_offset)
     return steps
 
 
-def ensure_step_position(step, order_index):
-    """Ensure step contains a position definition."""
-    if "position" not in step:
-        step["position"] = {
-            "left": 10 * order_index,
-            "top": 10 * order_index
-        }
+def _append_step_id_to_step_list_elements(steps: list, inputs_offset: int = 0):
+    assert isinstance(steps, list)
+    for i, step in enumerate(steps):
+        if "id" not in step:
+            step["id"] = i + inputs_offset
+        assert step["id"] is not None
 
 
-def _outputs_as_list(as_python):
-    outputs = as_python.get("outputs", [])
-    outputs = _convert_dict_to_id_list_if_needed(outputs)
-    return outputs
+def _with_step_ids(steps: list, inputs_offset: int = 0):
+    assert isinstance(steps, list)
+    new_steps = []
+    for i, step in enumerate(steps):
+        if "id" not in step:
+            step = step.copy()
+            step["id"] = i + inputs_offset
+        assert step["id"] is not None
+        new_steps.append(step)
+    return new_steps
 
 
 def _python_to_workflow(as_python, conversion_context):
@@ -172,17 +198,15 @@ def _python_to_workflow(as_python, conversion_context):
     })
     _populate_annotation(as_python)
 
-    steps = steps_as_list(as_python)
+    steps = steps_as_list(as_python, mutate=True)
 
     convert_inputs_to_steps(as_python, steps)
 
     if isinstance(steps, list):
+        _append_step_id_to_step_list_elements(steps)
         steps_as_dict = OrderedDict()
         for i, step in enumerate(steps):
             steps_as_dict[str(i)] = step
-            if "id" not in step:
-                step["id"] = i
-
             if "label" in step:
                 label = step["label"]
                 conversion_context.labels[label] = i
@@ -218,8 +242,8 @@ def _python_to_workflow(as_python, conversion_context):
         step["type"] = step_type
         eval("transform_%s" % step_type)(conversion_context, step)
 
-    outputs = as_python.get("outputs", [])
-    outputs = _convert_dict_to_id_list_if_needed(outputs)
+    outputs = as_python.pop("outputs", [])
+    outputs = convert_dict_to_id_list_if_needed(outputs)
 
     for output in outputs:
         assert isinstance(output, dict), "Output definition must be dictionary"
@@ -274,48 +298,19 @@ def _preprocess_graphs(as_python, conversion_context):
     return as_python
 
 
-def convert_inputs_to_steps(workflow_dict, steps):
-    """Convert workflow inputs to a steps in array - like in native Galaxy."""
+def convert_inputs_to_steps(workflow_dict: dict, steps: list):
+    """Convert workflow inputs to a steps in array - like in native Galaxy.
+
+    workflow_dict is a Format 2 representation of a workflow and steps is a
+    list of steps. This method will prepend all the inputs as as steps to the
+    steps list. This method modifies both workflow_dict and steps.
+    """
     if "inputs" not in workflow_dict:
         return
 
-    inputs = workflow_dict.pop("inputs", [])
-    new_steps = []
-    inputs = _convert_dict_to_id_list_if_needed(inputs)
-    for input_def_raw in inputs:
-        input_def = input_def_raw.copy()
-
-        if "label" in input_def and "id" in input_def:
-            raise Exception("label and id are aliases for inputs, may only define one")
-        if "label" not in input_def and "id" not in input_def:
-            raise Exception("Input must define a label.")
-
-        raw_label = input_def.pop("label", None)
-        raw_id = input_def.pop("id", None)
-        label = raw_label or raw_id
-
-        if not label:
-            raise Exception("Input label must not be empty.")
-
-        input_type = input_def.pop("type", "data")
-        if input_type in ["File", "data", "data_input"]:
-            step_type = "data_input"
-        elif input_type in ["collection", "data_collection", "data_collection_input"]:
-            step_type = "data_collection_input"
-        elif input_type in ["text", "integer", "float", "color", "boolean"]:
-            step_type = "parameter_input"
-            input_def["parameter_type"] = input_type
-        else:
-            raise Exception("Input type must be a data file or collection.")
-
-        step_def = input_def
-        step_def.update({
-            "type": step_type,
-            "label": label,
-        })
-        new_steps.append(step_def)
-
-    for i, new_step in enumerate(new_steps):
+    input_steps = inputs_as_steps(workflow_dict)
+    workflow_dict.pop("inputs")
+    for i, new_step in enumerate(input_steps):
         steps.insert(i, new_step)
 
 
@@ -499,7 +494,7 @@ def transform_tool(context, step):
     if out is None:
         # Handle LEGACY 19.XX outputs key.
         out = step.pop("outputs", [])
-    out = _convert_dict_to_id_list_if_needed(out)
+    out = convert_dict_to_id_list_if_needed(out)
     for output in out:
         name = output["id"]
         for action_key, action_dict in POST_JOB_ACTIONS.items():
@@ -585,11 +580,11 @@ class BaseConversionContext(object):
 
 class ConversionContext(BaseConversionContext):
 
-    def __init__(self, galaxy_interface, workflow_directory, import_options=None):
+    def __init__(self, galaxy_interface, workflow_directory, import_options: Optional[ImportOptions] = None):
         super(ConversionContext, self).__init__()
         self.import_options = import_options or ImportOptions()
-        self.graph_ids = OrderedDict()
-        self.graph_id_subworkflow_conversion_contexts = {}
+        self.graph_ids = OrderedDict()  # type: Dict
+        self.graph_id_subworkflow_conversion_contexts = {}  # type: Dict
         self.workflow_directory = workflow_directory
         self.galaxy_interface = galaxy_interface
 
@@ -732,29 +727,42 @@ def _populate_tool_state(step, tool_state):
     step["tool_state"] = json.dumps(tool_state)
 
 
-def _convert_dict_to_id_list_if_needed(dict_or_list, add_label=False):
-    rval = dict_or_list
-    if isinstance(dict_or_list, dict):
-        rval = []
-        for key, value in dict_or_list.items():
-            if not isinstance(value, dict):
-                value = {"type": value}
-            if add_label:
-                value["label"] = key
-            else:
-                value["id"] = key
-            rval.append(value)
-    return rval
+def main(argv=None):
+    """Entry point for script to conversion from Format 2 interface."""
+    if argv is None:
+        argv = sys.argv[1:]
+
+    args = _parser().parse_args(argv)
+
+    format2_path = args.input_path
+    output_path = args.output_path or (format2_path + ".gxwf.yml")
+
+    workflow_directory = os.path.abspath(format2_path)
+    galaxy_interface = None
+
+    with open(format2_path, "r") as f:
+        has_workflow = ordered_load(f)
+
+    output = python_to_workflow(has_workflow, galaxy_interface=galaxy_interface, workflow_directory=workflow_directory)
+    with open(output_path, "w") as f:
+        json.dump(output, f, indent=4)
 
 
-def main(argv):
-    print(json.dumps(yaml_to_workflow(argv[0])))
+def _parser():
+    parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
+    parser.add_argument('input_path', metavar='INPUT', type=str,
+                        help='input workflow path (.ga)')
+    parser.add_argument('output_path', metavar='OUTPUT', type=str, nargs="?",
+                        help='output workflow path (.gxfw.yml)')
+    return parser
 
 
 if __name__ == "__main__":
     main(sys.argv)
 
+
 __all__ = (
-    'yaml_to_workflow',
+    'main',
     'python_to_workflow',
+    'yaml_to_workflow',
 )

@@ -4,9 +4,9 @@ import sys
 from typing import Any, Dict
 
 from gxformat2._scripts import ensure_format2
-from gxformat2._yaml import ordered_dump, ordered_load
 from gxformat2.converter import steps_as_list
-from gxformat2.normalize import ensure_implicit_step_outs, walk_id_list_or_dict
+from gxformat2.normalize import NormalizedWorkflow, walk_id_list_or_dict
+from gxformat2.yaml import ordered_dump_to_path, ordered_load
 
 CWL_VERSION = "v1.2.0-dev5"
 
@@ -29,7 +29,8 @@ def from_dict(workflow_dict: dict, subworkflow=False):
     # about step outputs that may be present in native format is not lost when
     # converting to Format2.
     workflow_dict = ensure_format2(workflow_dict)
-    ensure_implicit_step_outs(workflow_dict)
+    normalized_workflow = NormalizedWorkflow(workflow_dict)
+    workflow_dict = normalized_workflow.normalized_workflow_dict
 
     requirements = {}  # type: Dict[str, Any]
     abstract_dict = {
@@ -38,11 +39,16 @@ def from_dict(workflow_dict: dict, subworkflow=False):
     if not subworkflow:
         abstract_dict["cwlVersion"] = CWL_VERSION
     # inputs and outputs already mostly in CWL format...
+
+    # TODO: add test case where format2 input without inputs declaration is used
     abstract_dict["inputs"] = _format2_inputs_to_abstract(workflow_dict.get("inputs", {}))
     abstract_dict["outputs"] = _format2_outputs_to_abstract(workflow_dict.get("outputs", {}))
     steps = {}
-    for format2_step in steps_as_list(workflow_dict):
-        steps[format2_step["label"]] = _format2_step_to_abstract(format2_step, requirements=requirements)
+    for format2_step in steps_as_list(workflow_dict, add_ids=True, inputs_offset=len(abstract_dict["inputs"]), mutate=False):
+        label = format2_step.get("label") or format2_step.get("id")
+        assert label is not None
+        label = str(label)
+        steps[label] = _format2_step_to_abstract(format2_step, requirements=requirements)
 
     abstract_dict["steps"] = steps
     if requirements:
@@ -60,7 +66,6 @@ def _format2_step_to_abstract(format2_step, requirements):
         requirements["SubworkflowFeatureRequirement"] = {}
         if format2_run_class == "GalaxyWorkflow":
             # preprocess to ensure it has outs - should the original call be recursive?
-            ensure_implicit_step_outs(format2_run)
             step_run = from_dict(format2_run, subworkflow=True)
             abstract_step["run"] = step_run
         else:
@@ -74,7 +79,7 @@ def _format2_step_to_abstract(format2_step, requirements):
         }
         abstract_step["run"] = step_run
     abstract_step["in"] = _format2_in_to_abstract(format2_step.get("in", []))
-    abstract_step["out"] = _format2_out_to_abstract(format2_step.get("out", []))
+    abstract_step["out"] = _format2_out_to_abstract(format2_step)
     return abstract_step
 
 
@@ -83,15 +88,18 @@ def _format2_in_to_abstract(in_dict):
     return in_dict
 
 
-def _format2_out_to_abstract(out):
+def _format2_out_to_abstract(format2_step, run=None):
     """Convert Format2 'out' list for step into CWL abstract 'out' list."""
     cwl_out = []
-    if isinstance(out, dict):
-        for out_name, out_def in out.items():
-            # discard PJA info when converting to abstract CWL
-            cwl_out.append(out_name)
-    else:
-        cwl_out = out
+    if "out" in format2_step:
+        out = format2_step.get("out")
+        if isinstance(out, dict):
+            for out_name, out_def in out.items():
+                # discard PJA info when converting to abstract CWL
+                cwl_out.append(out_name)
+        else:
+            cwl_out = out
+
     return cwl_out
 
 
@@ -158,9 +166,7 @@ def main(argv=None):
             workflow_dict = ordered_load(f)
 
     abstract_dict = from_dict(workflow_dict)
-    with open(output_path, "w") as f:
-        ordered_dump(abstract_dict, f)
-
+    ordered_dump_to_path(abstract_dict, output_path)
     return 0
 
 
