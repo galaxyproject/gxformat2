@@ -64,7 +64,11 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
                 input_dict['type'] = 'data'
             elif module_type == "parameter_input":
                 tool_state = _tool_state(step)
-                input_dict['type'] = tool_state.get("parameter_type")
+                galaxy_type = tool_state.get("parameter_type")
+                format2_type = galaxy_type
+                if galaxy_type == "integer":
+                    format2_type = "int"
+                input_dict['type'] = format2_type
             # TODO: handle parameter_input types
             _copy_common_properties(step, input_dict)
             # If we are only copying property - use the CWL-style short-hand

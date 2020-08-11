@@ -270,8 +270,11 @@ def convert_inputs_to_steps(inputs, steps):
             step_type = "data_input"
         elif input_type in ["collection", "data_collection", "data_collection_input"]:
             step_type = "data_collection_input"
-        elif input_type in ["text", "integer", "float", "color", "boolean"]:
+        elif input_type in ["text", "integer", "int", "float", "color", "boolean"]:
             step_type = "parameter_input"
+            format2_type = input_type
+            if format2_type == "integer":
+                format2_type = "int"
             input_def["parameter_type"] = input_type
         else:
             raise Exception("Input type must be a data file or collection.")

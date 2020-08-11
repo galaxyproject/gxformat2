@@ -1,5 +1,6 @@
 # Optional dependencies
-schema-salad
+schema-salad <= 4.5.20191229160203
+
 
 # For testing
 tox
