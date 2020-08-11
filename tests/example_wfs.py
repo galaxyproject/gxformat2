@@ -168,3 +168,97 @@ steps:
     in:
       input1: the_input
 """
+
+
+INT_INPUT = """
+class: GalaxyWorkflow
+inputs:
+  input_d: File
+  num_lines:
+    type: int
+outputs:
+  out1:
+    outputSource: random_lines/out_file1
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      num_lines: num_lines
+      input: input_d
+    state:
+      seed_source:
+        seed_source_selector: set_seed
+        seed: asdf
+"""
+
+
+# not vaild according to the schema, but the native format calls them
+# integers and some old examples used this syntax. Make illegal post v19.09?
+INTEGER_INPUT = """
+class: GalaxyWorkflow
+inputs:
+  input_d:
+    type: data
+  num_lines:
+    type: integer
+outputs:
+  out1:
+    outputSource: random_lines/out_file1
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      num_lines: num_lines
+      input: input_d
+    state:
+      seed_source:
+        seed_source_selector: set_seed
+        seed: asdf
+"""
+
+
+FLOAT_INPUT_DEFAULT = """
+class: GalaxyWorkflow
+inputs:
+  input_d: File
+  num_lines:
+    type: float
+    default: 6.0
+outputs:
+  out1:
+    outputSource: random_lines/out_file1
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      num_lines: num_lines
+      input: input_d
+    state:
+      seed_source:
+        seed_source_selector: set_seed
+        seed: asdf
+"""
+
+
+STRING_INPUT = """
+class: GalaxyWorkflow
+inputs:
+  input_d:
+    type: data
+  seed:
+    type: string
+    default: mycooldefault
+outputs:
+  out1:
+    outputSource: random_lines/out_file1
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      'seed_source|seed': seed
+      input: input_d
+    state:
+      num_lines: 5
+      seed_source:
+        seed_source_selector: set_seed
+"""

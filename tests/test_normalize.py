@@ -1,8 +1,9 @@
 from gxformat2._yaml import ordered_load
-from gxformat2.normalize import Inputs, inputs_normalized, outputs_normalized
+from gxformat2.normalize import Inputs, inputs_normalized, NormalizedWorkflow, outputs_normalized
 from ._helpers import (
     to_native,
 )
+from .example_wfs import INT_INPUT, INTEGER_INPUT
 from .test_auto_label import NESTED_WORKFLOW_AUTO_LABELS_NEWER_SYNTAX
 
 RANDOM_LINES_EXAMPLE = """
@@ -39,7 +40,7 @@ def test_optional_inputs():
     # Ensure normalized inputs can be used to check if inputs have defaults.
     for workflow_dict in _both_formats(RANDOM_LINES_EXAMPLE):
         steps = inputs_normalized(workflow_dict=workflow_dict)
-        assert steps[1]["type"] == "parameter_input"
+        assert steps[1]["type"] == "int"
         assert steps[1]["default"] == 3
 
 
@@ -48,6 +49,20 @@ def test_outputs_normalized():
         outputs = outputs_normalized(workflow_dict=workflow_dict)
         assert len(outputs) == 1
         assert outputs[0]["id"] == "outer_output"
+
+
+def test_normalized_workflow():
+    # same workflow with slightly different input definitions, make sure normalize
+    # unifies these
+    for wf in [INTEGER_INPUT, INT_INPUT]:
+        int_input_normalized = NormalizedWorkflow(ordered_load(INT_INPUT)).normalized_workflow_dict
+        inputs = int_input_normalized["inputs"]
+        assert isinstance(inputs, list)
+        assert isinstance(inputs[0], dict)  # str converted to dictionary
+        assert inputs[0]["id"] == "input_d"
+        assert inputs[0]["type"] == "data"  # converted from File to data
+        assert isinstance(inputs[1], dict)
+        assert inputs[1]["type"] == "int"
 
 
 def _both_formats(contents):

@@ -71,7 +71,7 @@ public class WorkflowInputParameterImpl extends SavableImpl implements WorkflowI
     return this.position;
   }
 
-  private java.util.Optional<GalaxyType> type;
+  private Object type;
 
   /**
    * Getter for property <I>https://w3id.org/cwl/salad#type</I><br>
@@ -82,7 +82,7 @@ public class WorkflowInputParameterImpl extends SavableImpl implements WorkflowI
    *
    * </BLOCKQUOTE>
    */
-  public java.util.Optional<GalaxyType> getType() {
+  public Object getType() {
     return this.type;
   }
 
@@ -190,13 +190,13 @@ public class WorkflowInputParameterImpl extends SavableImpl implements WorkflowI
     } else {
       position = null;
     }
-    java.util.Optional<GalaxyType> type;
+    Object type;
 
     if (__doc.containsKey("type")) {
       try {
         type =
-            LoaderInstances.typedsl_optional_GalaxyType_2.loadField(
-                __doc.get("type"), __baseUri, __loadingOptions);
+            LoaderInstances.typedsl_union_of_GalaxyType_or_StringInstance_or_NullInstance_2
+                .loadField(__doc.get("type"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         type = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `type` field is not valid because:";
@@ -213,6 +213,6 @@ public class WorkflowInputParameterImpl extends SavableImpl implements WorkflowI
     this.id = (java.util.Optional<String>) id;
     this.default_ = (java.util.Optional<Object>) default_;
     this.position = (java.util.Optional<StepPosition>) position;
-    this.type = (java.util.Optional<GalaxyType>) type;
+    this.type = (Object) type;
   }
 }

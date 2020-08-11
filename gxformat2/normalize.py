@@ -7,7 +7,7 @@ from gxformat2.converter import (
     steps_as_list,
 )
 from gxformat2.model import (
-    inputs_as_steps,
+    inputs_as_normalized_steps,
     outputs_as_list,
 )
 from gxformat2.yaml import ordered_load
@@ -42,7 +42,9 @@ class Inputs(object):
 
         if isinstance(target_label, int):
             for index, input_def in enumerate(self._inputs):
-                input_id = input_def.get("id") or index
+                if target_label == index:
+                    return True
+                input_id = input_def.get("id")
                 if isinstance(input_id, str):
                     if input_id.isdigit() and int(input_id) == target_label:
                         return True
@@ -77,6 +79,9 @@ class NormalizedWorkflow(object):
         normalized_workflow = copy.deepcopy(input_workflow)
         _replace_anonymous_output_references(normalized_workflow)
         _ensure_implicit_step_outs(normalized_workflow)
+        inputs = normalized_workflow.get("inputs", None)
+        if inputs:
+            normalized_workflow["inputs"] = inputs_as_normalized_steps(normalized_workflow)
         self.normalized_workflow_dict = normalized_workflow
 
 
@@ -84,7 +89,7 @@ def steps_normalized(workflow_dict=None, workflow_path=None):
     """Walk over a normalized step rep. across workflow formats."""
     workflow_dict = _ensure_format2(workflow_dict=workflow_dict, workflow_path=workflow_path)
     steps = steps_as_list(workflow_dict)
-    return inputs_as_steps(workflow_dict) + steps
+    return inputs_as_normalized_steps(workflow_dict) + steps
 
 
 def inputs_normalized(**kwd):

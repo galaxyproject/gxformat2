@@ -13,10 +13,12 @@ from ._helpers import (
 )
 from .example_wfs import (
     BASIC_WORKFLOW,
+    INT_INPUT,
     NESTED_WORKFLOW,
     PJA_1,
     RULES_TOOL,
     RUNTIME_INPUTS,
+    STRING_INPUT,
     WORKFLOW_WITH_REPEAT,
 )
 
@@ -211,6 +213,34 @@ def setup_module(module):
 
     green_format2_vocab_keys = ordered_load(WORKFLOW_VOCAB_KEYS)
     _dump_with_exit_code(green_format2_vocab_keys, 0, "format2_vocab_keys")
+
+    green_format2_int_input = ordered_load(INT_INPUT)
+    _dump_with_exit_code(green_format2_int_input, 0, "format2_int_input")
+
+    valid_int_default_type = _deep_copy(green_format2_int_input)
+    valid_int_default_type["inputs"]["num_lines"]["default"] = 5
+    _dump_with_exit_code(valid_int_default_type, 0, "format2_int_input_valid_default")
+
+    valid_float_default_type = _deep_copy(green_format2_int_input)
+    valid_float_default_type["inputs"]["num_lines"]["type"] = "float"
+    valid_float_default_type["inputs"]["num_lines"]["default"] = 5.0
+    _dump_with_exit_code(valid_float_default_type, 0, "format2_int_input_valid_default")
+
+    invalid_int_default_type = _deep_copy(green_format2_int_input)
+    invalid_int_default_type["inputs"]["num_lines"]["default"] = "bad_default"
+    _dump_with_exit_code(invalid_int_default_type, 2, "format2_int_input_bad_default")
+
+    invalid_float_default_type = _deep_copy(green_format2_int_input)
+    invalid_float_default_type["inputs"]["num_lines"]["type"] = "float"
+    invalid_float_default_type["inputs"]["num_lines"]["default"] = "bad_default"
+    _dump_with_exit_code(invalid_float_default_type, 2, "format2_float_input_bad_default")
+
+    green_format2_text_input = ordered_load(STRING_INPUT)
+    _dump_with_exit_code(green_format2_text_input, 0, "format2_string_input")
+
+    invalid_string_default_type = _deep_copy(green_format2_text_input)
+    invalid_string_default_type["inputs"]["seed"]["default"] = 6
+    _dump_with_exit_code(invalid_string_default_type, 2, "format2_string_input_bad_default")
 
     # ensure that round tripping all green format2 workflows still lint green.
     for file_name in os.listdir(TEST_LINT_EXAMPLES):

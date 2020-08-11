@@ -17,11 +17,14 @@ from gxformat2.abstract import CWL_VERSION, from_dict
 from ._helpers import TEST_PATH, to_example_path
 from .example_wfs import (
     BASIC_WORKFLOW,
+    FLOAT_INPUT_DEFAULT,
+    INT_INPUT,
     NESTED_WORKFLOW,
     OPTIONAL_INPUT,
     PJA_1,
     RULES_TOOL,
     RUNTIME_INPUTS,
+    STRING_INPUT,
     WORKFLOW_WITH_REPEAT,
 )
 from .test_normalize import _both_formats
@@ -30,11 +33,14 @@ from .test_normalize import _both_formats
 # unrelated to abstract I think.
 EXAMPLES = [
     BASIC_WORKFLOW,
+    FLOAT_INPUT_DEFAULT,
+    INT_INPUT,
     # NESTED_WORKFLOW,
     OPTIONAL_INPUT,
     PJA_1,
     RULES_TOOL,
     RUNTIME_INPUTS,
+    STRING_INPUT,
     WORKFLOW_WITH_REPEAT,
 ]
 
@@ -73,6 +79,26 @@ def test_nested_workflow():
 def test_sars_covid_example():
     sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
     _run_example_path(sars_example)
+
+
+def test_int_inputs():
+    for as_dict in _both_formats(INT_INPUT):
+        abstract_as_dict = from_dict(as_dict)
+        assert abstract_as_dict["inputs"]["num_lines"]["type"] == "int"
+
+
+def test_float_inputs():
+    for as_dict in _both_formats(FLOAT_INPUT_DEFAULT):
+        abstract_as_dict = from_dict(as_dict)
+        assert abstract_as_dict["inputs"]["num_lines"]["type"] == "float"
+        assert abstract_as_dict["inputs"]["num_lines"]["default"] == 6.0
+
+
+def test_string_inputs():
+    for as_dict in _both_formats(STRING_INPUT):
+        abstract_as_dict = from_dict(as_dict)
+        assert abstract_as_dict["inputs"]["seed"]["type"] == "string"
+        assert abstract_as_dict["inputs"]["seed"]["default"] == "mycooldefault"
 
 
 def _run_example_path(path):

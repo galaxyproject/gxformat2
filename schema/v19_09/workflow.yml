@@ -30,11 +30,15 @@ $graph:
   type: enum
   extends: "sld:PrimitiveType"
   symbols:
+    - integer
+    - text
     - File
     - data
     - collection
   doc:
     - "Extends primitive types with the native Galaxy concepts such datasets and collections."
+    - "integer: an alias for int type - matches syntax used by Galaxy tools"
+    - "text: an alias for string type - matches syntax used by Galaxy tools"
     - "File: an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future"
     - "data: a Galaxy dataset"
     - "collection: a Galaxy dataset collection"
@@ -61,7 +65,10 @@ $graph:
   docParent: "#GalaxyWorkflow"
   fields:
     - name: type
-      type: GalaxyType?
+      type:
+      - GalaxyType
+      - string
+      - "null"
       default: data
       jsonldPredicate:
         "_id": "sld:type"

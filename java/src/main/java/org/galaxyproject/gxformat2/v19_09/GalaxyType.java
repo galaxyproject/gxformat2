@@ -3,11 +3,13 @@ package org.galaxyproject.gxformat2.v19_09;
 import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
 
 public enum GalaxyType {
+  INTEGER("integer"),
+  TEXT("text"),
   FILE("File"),
   DATA("data"),
   COLLECTION("collection");
 
-  private static String[] symbols = new String[] {"File", "data", "collection"};
+  private static String[] symbols = new String[] {"integer", "text", "File", "data", "collection"};
   private String docVal;
 
   private GalaxyType(final String docVal) {

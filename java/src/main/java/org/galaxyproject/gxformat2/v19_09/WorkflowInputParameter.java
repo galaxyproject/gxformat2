@@ -54,5 +54,5 @@ public interface WorkflowInputParameter extends InputParameter, HasStepPosition,
    *
    * </BLOCKQUOTE>
    */
-  java.util.Optional<GalaxyType> getType();
+  Object getType();
 }

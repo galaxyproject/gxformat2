@@ -55,6 +55,7 @@ public class ConstantMaps {
     vocab.put("enum", "enum");
     vocab.put("float", "http://www.w3.org/2001/XMLSchema#float");
     vocab.put("int", "http://www.w3.org/2001/XMLSchema#int");
+    vocab.put("integer", "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/integer");
     vocab.put("long", "http://www.w3.org/2001/XMLSchema#long");
     vocab.put("null", "https://w3id.org/cwl/salad#null");
     vocab.put("pause", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/pause");
@@ -62,6 +63,7 @@ public class ConstantMaps {
     vocab.put("string", "http://www.w3.org/2001/XMLSchema#string");
     vocab.put(
         "subworkflow", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/subworkflow");
+    vocab.put("text", "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/text");
     vocab.put("tool", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/tool");
 
     rvocab.put("https://w3id.org/cwl/salad#Any", "Any");
@@ -112,6 +114,7 @@ public class ConstantMaps {
     rvocab.put("enum", "enum");
     rvocab.put("http://www.w3.org/2001/XMLSchema#float", "float");
     rvocab.put("http://www.w3.org/2001/XMLSchema#int", "int");
+    rvocab.put("https://galaxyproject.org/gxformat2/v19_09#GalaxyType/integer", "integer");
     rvocab.put("http://www.w3.org/2001/XMLSchema#long", "long");
     rvocab.put("https://w3id.org/cwl/salad#null", "null");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/pause", "pause");
@@ -119,6 +122,7 @@ public class ConstantMaps {
     rvocab.put("http://www.w3.org/2001/XMLSchema#string", "string");
     rvocab.put(
         "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/subworkflow", "subworkflow");
+    rvocab.put("https://galaxyproject.org/gxformat2/v19_09#GalaxyType/text", "text");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/tool", "tool");
   }
 }
