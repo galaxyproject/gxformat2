@@ -9,7 +9,11 @@ History
 0.14.0.dev0
 ---------------------
 
-    
+* Bug fix where native export had explicit outputs declaration still in it (wouldn't break anything, but
+  was deceptive).
+* Fixes for experimental CWL 1.2 abstract export.
+* Improve script structures and documentation.
+* Improve code structure - add more types, make more things immutable, mention mutability in docstrings.
 
 ---------------------
 0.13.1 (2020-08-03)
