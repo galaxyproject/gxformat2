@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.14.0.dev0
+0.14.0 (2020-08-11)
 ---------------------
 
 * Bug fix where native export had explicit outputs declaration still in it (wouldn't break anything, but
