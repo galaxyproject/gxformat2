@@ -56,3 +56,16 @@ def round_trip(has_yaml):
 
 def from_native(native_as_dict):
     return from_galaxy_native(native_as_dict, None)
+
+
+def to_example_path(input_path: str, examples_dir: str, extension: str):
+    if not os.path.isabs(examples_dir):
+        examples_dir = os.path.join(TEST_INTEROP_EXAMPLES, examples_dir)
+    if not os.path.exists(examples_dir):
+        os.makedirs(examples_dir)
+    rel_path = os.path.join(examples_dir, os.path.basename(input_path))
+    root, ext = os.path.splitext(rel_path)
+    # split again for something like .gxwf.yml
+    if root.endswith(".gxwf"):
+        root, ext = os.path.splitext(root)
+    return root + "." + extension

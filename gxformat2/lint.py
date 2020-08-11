@@ -4,9 +4,9 @@ import os
 import sys
 
 from gxformat2._scripts import ensure_format2
-from gxformat2._yaml import ordered_load
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
+from gxformat2.yaml import ordered_load, ordered_load_path
 
 EXIT_CODE_SUCCESS = 0
 EXIT_CODE_LINT_FAILED = 1
@@ -46,6 +46,12 @@ def _lint_step_errors(lint_context, step):
     step_errors = step.get("errors")
     if step_errors is not None:
         lint_context.warn("tool step contains error indicated during Galaxy export - %s" % step_errors)
+
+
+def lint_ga_path(lint_context, path):
+    """Apply linting of native workflows to specified path."""
+    workflow_dict = ordered_load_path(path)
+    return lint_ga(lint_context, workflow_dict, path=path)
 
 
 def lint_ga(lint_context, workflow_dict, path=None):

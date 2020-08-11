@@ -1,9 +1,9 @@
 """Module containing :func:`convert_and_import_workflow`."""
 import os
 
-from ._yaml import ordered_load
 from .converter import python_to_workflow, yaml_to_workflow
 from .interface import BioBlendImporterGalaxyInterface
+from .yaml import ordered_load
 
 
 def convert_and_import_workflow(has_workflow, **kwds):
