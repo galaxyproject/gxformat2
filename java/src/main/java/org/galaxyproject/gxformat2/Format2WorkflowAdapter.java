@@ -73,7 +73,7 @@ public class Format2WorkflowAdapter implements WorkflowAdapter {
           || inputType.equals("data_collection_input")) {
         stepType = "data_collection_input";
       } else {
-        stepType = "parameterInput";
+        stepType = "parameter_input";
         inputAsStep.put("parameter_type", inputType);
       }
       inputAsStep.put("type", stepType);

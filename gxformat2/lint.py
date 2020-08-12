@@ -6,6 +6,7 @@ import sys
 from gxformat2._scripts import ensure_format2
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
+from gxformat2.normalize import Inputs
 from gxformat2.yaml import ordered_load, ordered_load_path
 
 EXIT_CODE_SUCCESS = 0
@@ -106,8 +107,30 @@ def lint_format2(lint_context, workflow_dict, path=None):
         _lint_step_errors(lint_context, step)
         _lint_tool_if_present(lint_context, step)
 
+    _validate_input_types(lint_context, workflow_dict)
     _validate_report(lint_context, workflow_dict)
     _lint_training(lint_context, workflow_dict)
+
+
+def _validate_input_types(lint_context: LintContext, workflow_dict: dict):
+    try:
+        inputs = Inputs(workflow_dict)
+    except Exception:
+        # bad document, can't process inputs...
+        return
+    for input_def in inputs._inputs:
+        input_type = input_def.get("type")
+        if "default" in input_def:
+            input_default = input_def['default']
+            if input_type == "int":
+                if not isinstance(input_default, int):
+                    lint_context.error('Input default is of invalid type')
+            elif input_type == "float":
+                if not isinstance(input_default, (int, float)):
+                    lint_context.error('Input default is of invalid type')
+            elif input_type == "string":
+                if not isinstance(input_default, str):
+                    lint_context.error('Input default is of invalid type')
 
 
 def _lint_tool_if_present(lint_context, step_dict):

@@ -5,6 +5,7 @@ import sys
 from collections import OrderedDict
 
 from ._labels import Labels
+from .model import native_input_to_format2_type
 from .yaml import ordered_dump
 
 SCRIPT_DESCRIPTION = """
@@ -64,14 +65,7 @@ def from_galaxy_native(format2_dict, tool_interface=None, json_wrapper=False):
             step_id = step["label"]  # TODO: auto-label
             input_dict = {}
             tool_state = _tool_state(step)
-            if module_type == 'data_collection_input':
-                input_dict['type'] = 'collection'
-            elif module_type == 'data_input':
-                input_dict['type'] = 'data'
-                tool_state = _tool_state(step)
-            elif module_type == "parameter_input":
-                input_dict['type'] = tool_state.get("parameter_type")
-
+            input_dict['type'] = native_input_to_format2_type(step, tool_state)
             for tool_state_key in ['optional', 'format', 'default', 'restrictions', 'suggestions', 'restrictOnConnections']:
                 if tool_state_key in tool_state:
                     input_dict[tool_state_key] = tool_state[tool_state_key]

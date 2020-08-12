@@ -176,6 +176,10 @@ public class LoaderInstances {
       new UnionLoader(new Loader[] {FloatInstance, IntegerInstance});
   public static Loader<java.util.Optional<ToolShedRepository>> optional_ToolShedRepository =
       new OptionalLoader(ToolShedRepository);
+  public static Loader<Object> union_of_GalaxyType_or_StringInstance_or_NullInstance =
+      new UnionLoader(new Loader[] {GalaxyType, StringInstance, NullInstance});
+  public static Loader<Object> typedsl_union_of_GalaxyType_or_StringInstance_or_NullInstance_2 =
+      new TypeDslLoader(union_of_GalaxyType_or_StringInstance_or_NullInstance, 2);
   public static Loader<java.util.Optional<GalaxyType>> optional_GalaxyType =
       new OptionalLoader(GalaxyType);
   public static Loader<java.util.Optional<GalaxyType>> typedsl_optional_GalaxyType_2 =

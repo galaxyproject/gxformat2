@@ -15,7 +15,8 @@ from ._labels import Labels
 from .model import (
     convert_dict_to_id_list_if_needed,
     ensure_step_position,
-    inputs_as_steps,
+    inputs_as_native_steps,
+    with_step_ids,
 )
 from .yaml import ordered_load
 
@@ -149,13 +150,15 @@ def steps_as_list(format2_workflow: dict, add_ids: bool = False, inputs_offset: 
 
     Add keys as labels instead of IDs. Why am I doing this?
     """
+    if "steps" not in format2_workflow:
+        raise Exception("No 'steps' key in dict, keys are %s" % format2_workflow.keys())
     steps = format2_workflow["steps"]
     steps = convert_dict_to_id_list_if_needed(steps, add_label=True, mutate=mutate)
     if add_ids:
         if mutate:
             _append_step_id_to_step_list_elements(steps, inputs_offset=inputs_offset)
         else:
-            steps = _with_step_ids(steps, inputs_offset=inputs_offset)
+            steps = with_step_ids(steps, inputs_offset=inputs_offset)
     return steps
 
 
@@ -165,18 +168,6 @@ def _append_step_id_to_step_list_elements(steps: list, inputs_offset: int = 0):
         if "id" not in step:
             step["id"] = i + inputs_offset
         assert step["id"] is not None
-
-
-def _with_step_ids(steps: list, inputs_offset: int = 0):
-    assert isinstance(steps, list)
-    new_steps = []
-    for i, step in enumerate(steps):
-        if "id" not in step:
-            step = step.copy()
-            step["id"] = i + inputs_offset
-        assert step["id"] is not None
-        new_steps.append(step)
-    return new_steps
 
 
 def _python_to_workflow(as_python, conversion_context):
@@ -308,7 +299,7 @@ def convert_inputs_to_steps(workflow_dict: dict, steps: list):
     if "inputs" not in workflow_dict:
         return
 
-    input_steps = inputs_as_steps(workflow_dict)
+    input_steps = inputs_as_native_steps(workflow_dict)
     workflow_dict.pop("inputs")
     for i, new_step in enumerate(input_steps):
         steps.insert(i, new_step)

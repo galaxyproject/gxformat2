@@ -25,7 +25,15 @@ public class Cytoscape {
       String stepId =
           step.get("label") != null ? (String) step.get("label") : Integer.toString(orderIndex);
       String stepType = step.get("type") != null ? (String) step.get("type") : "tool";
-      List<String> classes = new ArrayList(Arrays.asList("type_" + stepType));
+      String effectiveType = stepType;
+      if (stepType.equals("data_input")) {
+        effectiveType = "data";
+      } else if (stepType.equals("data_collection_input")) {
+        effectiveType = "collection";
+      } else if (stepType.equals("parameter_input")) {
+        effectiveType = (String) step.get("parameter_type");
+      }
+      List<String> classes = new ArrayList(Arrays.asList("type_" + effectiveType));
       if (stepType.equals("tool") || stepType.equals("subworkflow")) {
         classes.add("runnable");
       } else {
@@ -61,7 +69,7 @@ public class Cytoscape {
       nodeData.put("tool_id", step.get("tool_id"));
       nodeData.put("doc", normalizedStep.doc);
       nodeData.put("repo_link", repoLink);
-      nodeData.put("step_type", stepType);
+      nodeData.put("step_type", effectiveType);
       final Map<String, Object> nodeElement = new HashMap<String, Object>();
       nodeElement.put("group", "nodes");
       nodeElement.put("data", nodeData);
