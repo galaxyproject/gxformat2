@@ -8,7 +8,7 @@ from gxformat2.converter import steps_as_list
 from gxformat2.normalize import NormalizedWorkflow, walk_id_list_or_dict
 from gxformat2.yaml import ordered_dump_to_path, ordered_load
 
-CWL_VERSION = "v1.2.0-dev5"
+CWL_VERSION = "v1.2"
 
 SCRIPT_DESCRIPTION = """
 This script converts the an executable Galaxy workflow (in either format -
