@@ -193,6 +193,13 @@ input data links are fulfilled.</p>
 <div class="col-xs-12 col-lg-6 description-header">description</div>
 </div>
 <div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#GalaxyType">GalaxyType</a> | <a href="#PrimitiveType">string</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specify valid types of data that may be assigned to this parameter.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>doc</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
@@ -221,13 +228,6 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
 <div class="col-xs-12 col-lg-6 description-col"></div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>type</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#GalaxyType">GalaxyType</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Specify valid types of data that may be assigned to this parameter.</p>
-</div>
 </div></div><h3 id="Any" class="section">Any <a href="#Any">&sect;</a></h3><p>The <strong>Any</strong> type validates for any non-null value.</p>
 <h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Any</code></td><td></td></tr></table><h3 id="StepPosition" class="section">StepPosition <a href="#StepPosition">&sect;</a></h3><p>This field specifies the location of the step's node when rendered in the workflow editor.</p>
 <h3>Fields</h3>
@@ -252,7 +252,7 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-12 col-lg-6 description-col"><p>Relative horizontal position of the step's node when rendered in the workflow editor.</p>
 </div>
 </div></div><h3 id="GalaxyType" class="section">GalaxyType <a href="#GalaxyType">&sect;</a></h3><p>Extends primitive types with the native Galaxy concepts such datasets and collections.</p>
-<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> 32-bit signed integer</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> Unicode character sequence</td></tr><tr><td><code>File</code></td><td> an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future</td></tr><tr><td><code>data</code></td><td> a Galaxy dataset</td></tr><tr><td><code>collection</code></td><td> a Galaxy dataset collection</td></tr></table><h2 id="WorkflowOutputParameter" class="section">WorkflowOutputParameter <a href="#WorkflowOutputParameter">&sect;</a></h2><p>Describe an output parameter of a workflow.  The parameter must be
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> 32-bit signed integer</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> Unicode character sequence</td></tr><tr><td><code>integer</code></td><td> an alias for int type - matches syntax used by Galaxy tools</td></tr><tr><td><code>text</code></td><td> an alias for string type - matches syntax used by Galaxy tools</td></tr><tr><td><code>File</code></td><td> an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future</td></tr><tr><td><code>data</code></td><td> a Galaxy dataset</td></tr><tr><td><code>collection</code></td><td> a Galaxy dataset collection</td></tr></table><h2 id="WorkflowOutputParameter" class="section">WorkflowOutputParameter <a href="#WorkflowOutputParameter">&sect;</a></h2><p>Describe an output parameter of a workflow.  The parameter must be
 connected to one parameter defined in the workflow that
 will provide the value of the output parameter. It is legal to
 connect a WorkflowInputParameter to a WorkflowOutputParameter.</p>
