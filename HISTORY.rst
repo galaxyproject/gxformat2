@@ -9,7 +9,10 @@ History
 0.15.0.dev0
 ---------------------
 
-    
+* Lint types of default values.
+* Fix bugs in schema related to differing type names between Galaxy and CWL.
+* Generate cwl v1.2 instead of cwl v1.2.0-dev5 release now that it has been released.
+* More testing of linting and CWL 1.2 export.
 
 ---------------------
 0.14.0 (2020-08-11)
