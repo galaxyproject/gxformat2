@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.15.0.dev0
+0.15.0 (2020-08-12)
 ---------------------
 
 * Lint types of default values.
