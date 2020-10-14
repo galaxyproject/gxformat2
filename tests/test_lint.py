@@ -12,6 +12,7 @@ from ._helpers import (
     to_native,
 )
 from .example_wfs import (
+    ANNOTATED_WORKFLOW,
     BASIC_WORKFLOW,
     INT_INPUT,
     NESTED_WORKFLOW,
@@ -91,6 +92,9 @@ def setup_module(module):
     green_native = to_native(BASIC_WORKFLOW)
     assert_valid_native(green_native)
     _dump_with_exit_code(green_native, 0, "basic_native")
+
+    green_annotated_format2 = ordered_load(ANNOTATED_WORKFLOW)
+    _dump_with_exit_code(green_annotated_format2, 0, "annotated_format2")
 
     green_explicit_errors_null = _deep_copy(green_native)
     for step, step_def in green_explicit_errors_null["steps"].items():

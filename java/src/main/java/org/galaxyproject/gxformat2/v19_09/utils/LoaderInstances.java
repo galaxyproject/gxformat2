@@ -89,6 +89,18 @@ public class LoaderInstances {
   public static Loader<org.galaxyproject.gxformat2.v19_09.WorkflowStepOutput> WorkflowStepOutput =
       new RecordLoader<org.galaxyproject.gxformat2.v19_09.WorkflowStepOutput>(
           org.galaxyproject.gxformat2.v19_09.WorkflowStepOutputImpl.class);
+  public static Loader<org.galaxyproject.gxformat2.v19_09.Thing> Thing =
+      new RecordLoader<org.galaxyproject.gxformat2.v19_09.Thing>(
+          org.galaxyproject.gxformat2.v19_09.ThingImpl.class);
+  public static Loader<org.galaxyproject.gxformat2.v19_09.IdentifiedThing> IdentifiedThing =
+      new RecordLoader<org.galaxyproject.gxformat2.v19_09.IdentifiedThing>(
+          org.galaxyproject.gxformat2.v19_09.IdentifiedThingImpl.class);
+  public static Loader<org.galaxyproject.gxformat2.v19_09.Organization> Organization =
+      new RecordLoader<org.galaxyproject.gxformat2.v19_09.Organization>(
+          org.galaxyproject.gxformat2.v19_09.OrganizationImpl.class);
+  public static Loader<org.galaxyproject.gxformat2.v19_09.Person> Person =
+      new RecordLoader<org.galaxyproject.gxformat2.v19_09.Person>(
+          org.galaxyproject.gxformat2.v19_09.PersonImpl.class);
   public static Loader<org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow> GalaxyWorkflow =
       new RecordLoader<org.galaxyproject.gxformat2.v19_09.GalaxyWorkflow>(
           org.galaxyproject.gxformat2.v19_09.GalaxyWorkflowImpl.class);
@@ -227,6 +239,16 @@ public class LoaderInstances {
   public static Loader<java.util.List<Object>> idmap_steps_array_of_WorkflowStep =
       new IdMapLoader(array_of_WorkflowStep, "id", "None");
   public static Loader<java.util.Optional<Report>> optional_Report = new OptionalLoader(Report);
+  public static Loader<Object> union_of_Person_or_Organization =
+      new UnionLoader(new Loader[] {Person, Organization});
+  public static Loader<java.util.List<Object>> array_of_union_of_Person_or_Organization =
+      new ArrayLoader(union_of_Person_or_Organization);
+  public static Loader<Object>
+      union_of_array_of_union_of_Person_or_Organization_or_Person_or_Organization_or_NullInstance =
+          new UnionLoader(
+              new Loader[] {
+                array_of_union_of_Person_or_Organization, Person, Organization, NullInstance
+              });
   public static Loader<java.util.List<GalaxyWorkflow>> array_of_GalaxyWorkflow =
       new ArrayLoader(GalaxyWorkflow);
   public static Loader<Object> union_of_GalaxyWorkflow_or_array_of_GalaxyWorkflow =

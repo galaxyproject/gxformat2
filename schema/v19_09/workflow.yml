@@ -289,6 +289,76 @@ $graph:
         - type: array
           items: string
 
+- name: Thing
+  type: record
+  fields:
+    - name: url
+      type: string?
+      doc: https://schema.org/url
+    - name: identifier
+      type: string?
+      doc: https://schema.org/identifier We strongly suggest using orcid.org URLs for this.
+    - name: image
+      type: string?
+      doc: https://schema.org/image
+
+- name: IdentifiedThing
+  type: record
+  extends: Thing
+  fields:
+    - name: address
+      type: string?
+      doc: https://schema.org/address
+    - name: email
+      type: string?
+      doc: https://schema.org/email
+    - name: telephone
+      type: string?
+      doc: https://schema.org/telephone
+    - name: faxNumber
+      type: string?
+      doc: https://schema.org/faxNumber
+
+- name: Organization
+  extends: IdentifiedThing
+  type: record
+  fields:
+    - name: "class"
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      type: string
+    - name: name
+      type: string?
+      jsonldPredicate: "@id"  #  will this bite me?
+      doc: https://schema.org/name
+
+- name: Person
+  extends: IdentifiedThing
+  type: record
+  fields:
+    - name: "class"
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      type: string
+    - name: givenName
+      type: string?
+      doc: https://schema.org/givenName
+    - name: familyName
+      type: string?
+      doc: https://schema.org/familyName
+    - name: honorificPrefix
+      type: string?
+      doc: https://schema.org/honorificPrefix
+    - name: honorificSuffix
+      type: string?
+      doc: https://schema.org/honorificSuffix
+    - name: jobTitle
+      type: string?
+      doc: https://schema.org/jobTitle
+
+
 - name: GalaxyWorkflow
   type: record
   extends:
@@ -338,3 +408,13 @@ $graph:
     - name: report
       doc: Workflow invocation report template.
       type: Report?
+    - name: license
+      doc: URI for license family for workflow, use SPDX (e.g. https://spdx.org/licenses/MIT)
+      type: string?
+    - name: creator
+      type:
+        - type: array
+          items: [Person, Organization]
+        - Person
+        - Organization
+        - "null"

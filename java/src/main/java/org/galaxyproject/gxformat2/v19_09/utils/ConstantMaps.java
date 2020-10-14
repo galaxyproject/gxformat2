@@ -20,10 +20,13 @@ public class ConstantMaps {
         "HasStepPosition", "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition");
     vocab.put("HasUUID", "https://galaxyproject.org/gxformat2/gxformat2common#HasUUID");
     vocab.put("Identified", "https://w3id.org/cwl/cwl#Identified");
+    vocab.put("IdentifiedThing", "https://galaxyproject.org/gxformat2/v19_09#IdentifiedThing");
     vocab.put("InputParameter", "https://w3id.org/cwl/cwl#InputParameter");
     vocab.put("Labeled", "https://w3id.org/cwl/cwl#Labeled");
+    vocab.put("Organization", "https://galaxyproject.org/gxformat2/v19_09#Organization");
     vocab.put("OutputParameter", "https://w3id.org/cwl/cwl#OutputParameter");
     vocab.put("Parameter", "https://w3id.org/cwl/cwl#Parameter");
+    vocab.put("Person", "https://galaxyproject.org/gxformat2/v19_09#Person");
     vocab.put("PrimitiveType", "https://w3id.org/cwl/salad#PrimitiveType");
     vocab.put("Process", "https://w3id.org/cwl/cwl#Process");
     vocab.put("RecordField", "https://w3id.org/cwl/salad#RecordField");
@@ -33,6 +36,7 @@ public class ConstantMaps {
     vocab.put("Report", "https://galaxyproject.org/gxformat2/v19_09#Report");
     vocab.put("Sink", "https://galaxyproject.org/gxformat2/v19_09#Sink");
     vocab.put("StepPosition", "https://galaxyproject.org/gxformat2/gxformat2common#StepPosition");
+    vocab.put("Thing", "https://galaxyproject.org/gxformat2/v19_09#Thing");
     vocab.put(
         "ToolShedRepository",
         "https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository");
@@ -79,10 +83,13 @@ public class ConstantMaps {
         "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition", "HasStepPosition");
     rvocab.put("https://galaxyproject.org/gxformat2/gxformat2common#HasUUID", "HasUUID");
     rvocab.put("https://w3id.org/cwl/cwl#Identified", "Identified");
+    rvocab.put("https://galaxyproject.org/gxformat2/v19_09#IdentifiedThing", "IdentifiedThing");
     rvocab.put("https://w3id.org/cwl/cwl#InputParameter", "InputParameter");
     rvocab.put("https://w3id.org/cwl/cwl#Labeled", "Labeled");
+    rvocab.put("https://galaxyproject.org/gxformat2/v19_09#Organization", "Organization");
     rvocab.put("https://w3id.org/cwl/cwl#OutputParameter", "OutputParameter");
     rvocab.put("https://w3id.org/cwl/cwl#Parameter", "Parameter");
+    rvocab.put("https://galaxyproject.org/gxformat2/v19_09#Person", "Person");
     rvocab.put("https://w3id.org/cwl/salad#PrimitiveType", "PrimitiveType");
     rvocab.put("https://w3id.org/cwl/cwl#Process", "Process");
     rvocab.put("https://w3id.org/cwl/salad#RecordField", "RecordField");
@@ -92,6 +99,7 @@ public class ConstantMaps {
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#Report", "Report");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#Sink", "Sink");
     rvocab.put("https://galaxyproject.org/gxformat2/gxformat2common#StepPosition", "StepPosition");
+    rvocab.put("https://galaxyproject.org/gxformat2/v19_09#Thing", "Thing");
     rvocab.put(
         "https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository",
         "ToolShedRepository");

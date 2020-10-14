@@ -19,6 +19,34 @@ steps:
       input1: the_input
 """
 
+ANNOTATED_WORKFLOW = """
+class: GalaxyWorkflow
+doc: |
+  Simple workflow that no-op cats a file and then selects 10 random lines.
+creator:
+  class: Person
+  givenName: John
+  familyName: Chilton
+  email: jmchilton@gmail.com
+  identifier: https://orcid.org/0000-0002-6794-0756
+license:
+  https://spdx.org/licenses/MIT
+inputs:
+  the_input:
+    type: File
+    doc: input doc
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    doc: cat doc
+    in:
+      input1: the_input
+"""
+
+
 WORKFLOW_WITH_REPEAT = """
 class: GalaxyWorkflow
 inputs:

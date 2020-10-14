@@ -32,7 +32,7 @@ def from_galaxy_native(format2_dict, tool_interface=None, json_wrapper=False):
     _copy_common_properties(format2_dict, data)
     if "name" in format2_dict:
         data["label"] = format2_dict.pop("name")
-    for top_level_key in ['tags', 'uuid', 'report']:
+    for top_level_key in ['tags', 'uuid', 'report', 'license', 'creator']:
         value = format2_dict.get(top_level_key)
         if value:
             data[top_level_key] = value

@@ -2774,6 +2774,992 @@ to connect the output value to downstream parameters.
     attrs = frozenset(['id', 'add_tags', 'change_datatype', 'delete_intermediate_datasets', 'hide', 'remove_tags', 'rename', 'set_columns'])
 
 
+class Thing(Savable):
+    def __init__(
+        self,
+        url=None,  # type: Any
+        identifier=None,  # type: Any
+        image=None,  # type: Any
+        extension_fields=None,  # type: Optional[Dict[str, Any]]
+        loadingOptions=None  # type: Optional[LoadingOptions]
+    ):  # type: (...) -> None
+
+        if extension_fields:
+            self.extension_fields = extension_fields
+        else:
+            self.extension_fields = yaml.comments.CommentedMap()
+        if loadingOptions:
+            self.loadingOptions = loadingOptions
+        else:
+            self.loadingOptions = LoadingOptions()
+        self.url = url
+        self.identifier = identifier
+        self.image = image
+
+    @classmethod
+    def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
+        # type: (Any, str, LoadingOptions, Optional[str]) -> Thing
+
+        _doc = copy.copy(doc)
+        if hasattr(doc, 'lc'):
+            _doc.lc.data = doc.lc.data
+            _doc.lc.filename = doc.lc.filename
+        _errors__ = []
+        if 'url' in _doc:
+            try:
+                url = load_field(_doc.get(
+                    'url'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `url` field is not valid because:",
+                        SourceLine(_doc, 'url', str),
+                        [e]
+                    )
+                )
+        else:
+            url = None
+        if 'identifier' in _doc:
+            try:
+                identifier = load_field(_doc.get(
+                    'identifier'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `identifier` field is not valid because:",
+                        SourceLine(_doc, 'identifier', str),
+                        [e]
+                    )
+                )
+        else:
+            identifier = None
+        if 'image' in _doc:
+            try:
+                image = load_field(_doc.get(
+                    'image'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `image` field is not valid because:",
+                        SourceLine(_doc, 'image', str),
+                        [e]
+                    )
+                )
+        else:
+            image = None
+
+        extension_fields = yaml.comments.CommentedMap()
+        for k in _doc.keys():
+            if k not in cls.attrs:
+                if ":" in k:
+                    ex = expand_url(k,
+                                    "",
+                                    loadingOptions,
+                                    scoped_id=False,
+                                    vocab_term=False)
+                    extension_fields[ex] = _doc[k]
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "invalid field `%s`, expected one of: `url`, `identifier`, `image`" % (k),
+                            SourceLine(_doc, k, str)
+                        )
+                    )
+                    break
+
+        if _errors__:
+            raise ValidationException("Trying 'Thing'", None, _errors__)
+        loadingOptions = copy.deepcopy(loadingOptions)
+        loadingOptions.original_doc = _doc
+        return cls(url=url, identifier=identifier, image=image, extension_fields=extension_fields, loadingOptions=loadingOptions)
+
+    def save(self, top=False, base_url="", relative_uris=True):
+        # type: (bool, str, bool) -> Dict[str, Any]
+        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        for ef in self.extension_fields:
+            r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+
+        if self.url is not None:
+            r['url'] = save(
+                self.url,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.identifier is not None:
+            r['identifier'] = save(
+                self.identifier,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.image is not None:
+            r['image'] = save(
+                self.image,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        # top refers to the directory level
+        if top:
+            if self.loadingOptions.namespaces:
+                r["$namespaces"] = self.loadingOptions.namespaces
+            if self.loadingOptions.schemas:
+                r["$schemas"] = self.loadingOptions.schemas
+        return r
+
+    attrs = frozenset(['url', 'identifier', 'image'])
+
+
+class IdentifiedThing(Thing):
+    def __init__(
+        self,
+        url=None,  # type: Any
+        identifier=None,  # type: Any
+        image=None,  # type: Any
+        address=None,  # type: Any
+        email=None,  # type: Any
+        telephone=None,  # type: Any
+        faxNumber=None,  # type: Any
+        extension_fields=None,  # type: Optional[Dict[str, Any]]
+        loadingOptions=None  # type: Optional[LoadingOptions]
+    ):  # type: (...) -> None
+
+        if extension_fields:
+            self.extension_fields = extension_fields
+        else:
+            self.extension_fields = yaml.comments.CommentedMap()
+        if loadingOptions:
+            self.loadingOptions = loadingOptions
+        else:
+            self.loadingOptions = LoadingOptions()
+        self.url = url
+        self.identifier = identifier
+        self.image = image
+        self.address = address
+        self.email = email
+        self.telephone = telephone
+        self.faxNumber = faxNumber
+
+    @classmethod
+    def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
+        # type: (Any, str, LoadingOptions, Optional[str]) -> IdentifiedThing
+
+        _doc = copy.copy(doc)
+        if hasattr(doc, 'lc'):
+            _doc.lc.data = doc.lc.data
+            _doc.lc.filename = doc.lc.filename
+        _errors__ = []
+        if 'url' in _doc:
+            try:
+                url = load_field(_doc.get(
+                    'url'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `url` field is not valid because:",
+                        SourceLine(_doc, 'url', str),
+                        [e]
+                    )
+                )
+        else:
+            url = None
+        if 'identifier' in _doc:
+            try:
+                identifier = load_field(_doc.get(
+                    'identifier'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `identifier` field is not valid because:",
+                        SourceLine(_doc, 'identifier', str),
+                        [e]
+                    )
+                )
+        else:
+            identifier = None
+        if 'image' in _doc:
+            try:
+                image = load_field(_doc.get(
+                    'image'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `image` field is not valid because:",
+                        SourceLine(_doc, 'image', str),
+                        [e]
+                    )
+                )
+        else:
+            image = None
+        if 'address' in _doc:
+            try:
+                address = load_field(_doc.get(
+                    'address'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `address` field is not valid because:",
+                        SourceLine(_doc, 'address', str),
+                        [e]
+                    )
+                )
+        else:
+            address = None
+        if 'email' in _doc:
+            try:
+                email = load_field(_doc.get(
+                    'email'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `email` field is not valid because:",
+                        SourceLine(_doc, 'email', str),
+                        [e]
+                    )
+                )
+        else:
+            email = None
+        if 'telephone' in _doc:
+            try:
+                telephone = load_field(_doc.get(
+                    'telephone'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `telephone` field is not valid because:",
+                        SourceLine(_doc, 'telephone', str),
+                        [e]
+                    )
+                )
+        else:
+            telephone = None
+        if 'faxNumber' in _doc:
+            try:
+                faxNumber = load_field(_doc.get(
+                    'faxNumber'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `faxNumber` field is not valid because:",
+                        SourceLine(_doc, 'faxNumber', str),
+                        [e]
+                    )
+                )
+        else:
+            faxNumber = None
+
+        extension_fields = yaml.comments.CommentedMap()
+        for k in _doc.keys():
+            if k not in cls.attrs:
+                if ":" in k:
+                    ex = expand_url(k,
+                                    "",
+                                    loadingOptions,
+                                    scoped_id=False,
+                                    vocab_term=False)
+                    extension_fields[ex] = _doc[k]
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "invalid field `%s`, expected one of: `url`, `identifier`, `image`, `address`, `email`, `telephone`, `faxNumber`" % (k),
+                            SourceLine(_doc, k, str)
+                        )
+                    )
+                    break
+
+        if _errors__:
+            raise ValidationException("Trying 'IdentifiedThing'", None, _errors__)
+        loadingOptions = copy.deepcopy(loadingOptions)
+        loadingOptions.original_doc = _doc
+        return cls(url=url, identifier=identifier, image=image, address=address, email=email, telephone=telephone, faxNumber=faxNumber, extension_fields=extension_fields, loadingOptions=loadingOptions)
+
+    def save(self, top=False, base_url="", relative_uris=True):
+        # type: (bool, str, bool) -> Dict[str, Any]
+        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        for ef in self.extension_fields:
+            r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+
+        if self.url is not None:
+            r['url'] = save(
+                self.url,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.identifier is not None:
+            r['identifier'] = save(
+                self.identifier,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.image is not None:
+            r['image'] = save(
+                self.image,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.address is not None:
+            r['address'] = save(
+                self.address,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.email is not None:
+            r['email'] = save(
+                self.email,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.telephone is not None:
+            r['telephone'] = save(
+                self.telephone,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.faxNumber is not None:
+            r['faxNumber'] = save(
+                self.faxNumber,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        # top refers to the directory level
+        if top:
+            if self.loadingOptions.namespaces:
+                r["$namespaces"] = self.loadingOptions.namespaces
+            if self.loadingOptions.schemas:
+                r["$schemas"] = self.loadingOptions.schemas
+        return r
+
+    attrs = frozenset(['url', 'identifier', 'image', 'address', 'email', 'telephone', 'faxNumber'])
+
+
+class Organization(IdentifiedThing):
+    def __init__(
+        self,
+        url=None,  # type: Any
+        identifier=None,  # type: Any
+        image=None,  # type: Any
+        address=None,  # type: Any
+        email=None,  # type: Any
+        telephone=None,  # type: Any
+        faxNumber=None,  # type: Any
+        name=None,  # type: Any
+        extension_fields=None,  # type: Optional[Dict[str, Any]]
+        loadingOptions=None  # type: Optional[LoadingOptions]
+    ):  # type: (...) -> None
+
+        if extension_fields:
+            self.extension_fields = extension_fields
+        else:
+            self.extension_fields = yaml.comments.CommentedMap()
+        if loadingOptions:
+            self.loadingOptions = loadingOptions
+        else:
+            self.loadingOptions = LoadingOptions()
+        self.url = url
+        self.identifier = identifier
+        self.image = image
+        self.address = address
+        self.email = email
+        self.telephone = telephone
+        self.faxNumber = faxNumber
+        self.class_ = "Organization"
+        self.name = name
+
+    @classmethod
+    def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
+        # type: (Any, str, LoadingOptions, Optional[str]) -> Organization
+
+        _doc = copy.copy(doc)
+        if hasattr(doc, 'lc'):
+            _doc.lc.data = doc.lc.data
+            _doc.lc.filename = doc.lc.filename
+        _errors__ = []
+
+        if _doc.get('class') != 'Organization':
+            raise ValidationException("Not a Organization")
+
+        if 'name' in _doc:
+            try:
+                name = load_field(_doc.get(
+                    'name'), uri_union_of_None_type_or_strtype_True_False_None, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `name` field is not valid because:",
+                        SourceLine(_doc, 'name', str),
+                        [e]
+                    )
+                )
+        else:
+            name = None
+
+        if name is None:
+            if docRoot is not None:
+                name = docRoot
+            else:
+                name = "_:" + str(_uuid__.uuid4())
+        baseuri = name
+        if 'url' in _doc:
+            try:
+                url = load_field(_doc.get(
+                    'url'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `url` field is not valid because:",
+                        SourceLine(_doc, 'url', str),
+                        [e]
+                    )
+                )
+        else:
+            url = None
+        if 'identifier' in _doc:
+            try:
+                identifier = load_field(_doc.get(
+                    'identifier'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `identifier` field is not valid because:",
+                        SourceLine(_doc, 'identifier', str),
+                        [e]
+                    )
+                )
+        else:
+            identifier = None
+        if 'image' in _doc:
+            try:
+                image = load_field(_doc.get(
+                    'image'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `image` field is not valid because:",
+                        SourceLine(_doc, 'image', str),
+                        [e]
+                    )
+                )
+        else:
+            image = None
+        if 'address' in _doc:
+            try:
+                address = load_field(_doc.get(
+                    'address'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `address` field is not valid because:",
+                        SourceLine(_doc, 'address', str),
+                        [e]
+                    )
+                )
+        else:
+            address = None
+        if 'email' in _doc:
+            try:
+                email = load_field(_doc.get(
+                    'email'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `email` field is not valid because:",
+                        SourceLine(_doc, 'email', str),
+                        [e]
+                    )
+                )
+        else:
+            email = None
+        if 'telephone' in _doc:
+            try:
+                telephone = load_field(_doc.get(
+                    'telephone'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `telephone` field is not valid because:",
+                        SourceLine(_doc, 'telephone', str),
+                        [e]
+                    )
+                )
+        else:
+            telephone = None
+        if 'faxNumber' in _doc:
+            try:
+                faxNumber = load_field(_doc.get(
+                    'faxNumber'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `faxNumber` field is not valid because:",
+                        SourceLine(_doc, 'faxNumber', str),
+                        [e]
+                    )
+                )
+        else:
+            faxNumber = None
+
+        extension_fields = yaml.comments.CommentedMap()
+        for k in _doc.keys():
+            if k not in cls.attrs:
+                if ":" in k:
+                    ex = expand_url(k,
+                                    "",
+                                    loadingOptions,
+                                    scoped_id=False,
+                                    vocab_term=False)
+                    extension_fields[ex] = _doc[k]
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "invalid field `%s`, expected one of: `url`, `identifier`, `image`, `address`, `email`, `telephone`, `faxNumber`, `class`, `name`" % (k),
+                            SourceLine(_doc, k, str)
+                        )
+                    )
+                    break
+
+        if _errors__:
+            raise ValidationException("Trying 'Organization'", None, _errors__)
+        loadingOptions = copy.deepcopy(loadingOptions)
+        loadingOptions.original_doc = _doc
+        return cls(url=url, identifier=identifier, image=image, address=address, email=email, telephone=telephone, faxNumber=faxNumber, name=name, extension_fields=extension_fields, loadingOptions=loadingOptions)
+
+    def save(self, top=False, base_url="", relative_uris=True):
+        # type: (bool, str, bool) -> Dict[str, Any]
+        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        for ef in self.extension_fields:
+            r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+
+        r['class'] = 'Organization'
+
+        if self.name is not None:
+            u = save_relative_uri(
+                self.name,
+                base_url,
+                True,
+                None,
+                relative_uris)
+            if u:
+                r['name'] = u
+
+        if self.url is not None:
+            r['url'] = save(
+                self.url,
+                top=False,
+                base_url=self.name,
+                relative_uris=relative_uris)
+
+        if self.identifier is not None:
+            r['identifier'] = save(
+                self.identifier,
+                top=False,
+                base_url=self.name,
+                relative_uris=relative_uris)
+
+        if self.image is not None:
+            r['image'] = save(
+                self.image,
+                top=False,
+                base_url=self.name,
+                relative_uris=relative_uris)
+
+        if self.address is not None:
+            r['address'] = save(
+                self.address,
+                top=False,
+                base_url=self.name,
+                relative_uris=relative_uris)
+
+        if self.email is not None:
+            r['email'] = save(
+                self.email,
+                top=False,
+                base_url=self.name,
+                relative_uris=relative_uris)
+
+        if self.telephone is not None:
+            r['telephone'] = save(
+                self.telephone,
+                top=False,
+                base_url=self.name,
+                relative_uris=relative_uris)
+
+        if self.faxNumber is not None:
+            r['faxNumber'] = save(
+                self.faxNumber,
+                top=False,
+                base_url=self.name,
+                relative_uris=relative_uris)
+
+        # top refers to the directory level
+        if top:
+            if self.loadingOptions.namespaces:
+                r["$namespaces"] = self.loadingOptions.namespaces
+            if self.loadingOptions.schemas:
+                r["$schemas"] = self.loadingOptions.schemas
+        return r
+
+    attrs = frozenset(['url', 'identifier', 'image', 'address', 'email', 'telephone', 'faxNumber', 'class', 'name'])
+
+
+class Person(IdentifiedThing):
+    def __init__(
+        self,
+        url=None,  # type: Any
+        identifier=None,  # type: Any
+        image=None,  # type: Any
+        address=None,  # type: Any
+        email=None,  # type: Any
+        telephone=None,  # type: Any
+        faxNumber=None,  # type: Any
+        givenName=None,  # type: Any
+        familyName=None,  # type: Any
+        honorificPrefix=None,  # type: Any
+        honorificSuffix=None,  # type: Any
+        jobTitle=None,  # type: Any
+        extension_fields=None,  # type: Optional[Dict[str, Any]]
+        loadingOptions=None  # type: Optional[LoadingOptions]
+    ):  # type: (...) -> None
+
+        if extension_fields:
+            self.extension_fields = extension_fields
+        else:
+            self.extension_fields = yaml.comments.CommentedMap()
+        if loadingOptions:
+            self.loadingOptions = loadingOptions
+        else:
+            self.loadingOptions = LoadingOptions()
+        self.url = url
+        self.identifier = identifier
+        self.image = image
+        self.address = address
+        self.email = email
+        self.telephone = telephone
+        self.faxNumber = faxNumber
+        self.class_ = "Person"
+        self.givenName = givenName
+        self.familyName = familyName
+        self.honorificPrefix = honorificPrefix
+        self.honorificSuffix = honorificSuffix
+        self.jobTitle = jobTitle
+
+    @classmethod
+    def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
+        # type: (Any, str, LoadingOptions, Optional[str]) -> Person
+
+        _doc = copy.copy(doc)
+        if hasattr(doc, 'lc'):
+            _doc.lc.data = doc.lc.data
+            _doc.lc.filename = doc.lc.filename
+        _errors__ = []
+
+        if _doc.get('class') != 'Person':
+            raise ValidationException("Not a Person")
+
+        if 'url' in _doc:
+            try:
+                url = load_field(_doc.get(
+                    'url'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `url` field is not valid because:",
+                        SourceLine(_doc, 'url', str),
+                        [e]
+                    )
+                )
+        else:
+            url = None
+        if 'identifier' in _doc:
+            try:
+                identifier = load_field(_doc.get(
+                    'identifier'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `identifier` field is not valid because:",
+                        SourceLine(_doc, 'identifier', str),
+                        [e]
+                    )
+                )
+        else:
+            identifier = None
+        if 'image' in _doc:
+            try:
+                image = load_field(_doc.get(
+                    'image'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `image` field is not valid because:",
+                        SourceLine(_doc, 'image', str),
+                        [e]
+                    )
+                )
+        else:
+            image = None
+        if 'address' in _doc:
+            try:
+                address = load_field(_doc.get(
+                    'address'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `address` field is not valid because:",
+                        SourceLine(_doc, 'address', str),
+                        [e]
+                    )
+                )
+        else:
+            address = None
+        if 'email' in _doc:
+            try:
+                email = load_field(_doc.get(
+                    'email'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `email` field is not valid because:",
+                        SourceLine(_doc, 'email', str),
+                        [e]
+                    )
+                )
+        else:
+            email = None
+        if 'telephone' in _doc:
+            try:
+                telephone = load_field(_doc.get(
+                    'telephone'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `telephone` field is not valid because:",
+                        SourceLine(_doc, 'telephone', str),
+                        [e]
+                    )
+                )
+        else:
+            telephone = None
+        if 'faxNumber' in _doc:
+            try:
+                faxNumber = load_field(_doc.get(
+                    'faxNumber'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `faxNumber` field is not valid because:",
+                        SourceLine(_doc, 'faxNumber', str),
+                        [e]
+                    )
+                )
+        else:
+            faxNumber = None
+        if 'givenName' in _doc:
+            try:
+                givenName = load_field(_doc.get(
+                    'givenName'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `givenName` field is not valid because:",
+                        SourceLine(_doc, 'givenName', str),
+                        [e]
+                    )
+                )
+        else:
+            givenName = None
+        if 'familyName' in _doc:
+            try:
+                familyName = load_field(_doc.get(
+                    'familyName'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `familyName` field is not valid because:",
+                        SourceLine(_doc, 'familyName', str),
+                        [e]
+                    )
+                )
+        else:
+            familyName = None
+        if 'honorificPrefix' in _doc:
+            try:
+                honorificPrefix = load_field(_doc.get(
+                    'honorificPrefix'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `honorificPrefix` field is not valid because:",
+                        SourceLine(_doc, 'honorificPrefix', str),
+                        [e]
+                    )
+                )
+        else:
+            honorificPrefix = None
+        if 'honorificSuffix' in _doc:
+            try:
+                honorificSuffix = load_field(_doc.get(
+                    'honorificSuffix'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `honorificSuffix` field is not valid because:",
+                        SourceLine(_doc, 'honorificSuffix', str),
+                        [e]
+                    )
+                )
+        else:
+            honorificSuffix = None
+        if 'jobTitle' in _doc:
+            try:
+                jobTitle = load_field(_doc.get(
+                    'jobTitle'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `jobTitle` field is not valid because:",
+                        SourceLine(_doc, 'jobTitle', str),
+                        [e]
+                    )
+                )
+        else:
+            jobTitle = None
+
+        extension_fields = yaml.comments.CommentedMap()
+        for k in _doc.keys():
+            if k not in cls.attrs:
+                if ":" in k:
+                    ex = expand_url(k,
+                                    "",
+                                    loadingOptions,
+                                    scoped_id=False,
+                                    vocab_term=False)
+                    extension_fields[ex] = _doc[k]
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "invalid field `%s`, expected one of: `url`, `identifier`, `image`, `address`, `email`, `telephone`, `faxNumber`, `class`, `givenName`, `familyName`, `honorificPrefix`, `honorificSuffix`, `jobTitle`" % (k),
+                            SourceLine(_doc, k, str)
+                        )
+                    )
+                    break
+
+        if _errors__:
+            raise ValidationException("Trying 'Person'", None, _errors__)
+        loadingOptions = copy.deepcopy(loadingOptions)
+        loadingOptions.original_doc = _doc
+        return cls(url=url, identifier=identifier, image=image, address=address, email=email, telephone=telephone, faxNumber=faxNumber, givenName=givenName, familyName=familyName, honorificPrefix=honorificPrefix, honorificSuffix=honorificSuffix, jobTitle=jobTitle, extension_fields=extension_fields, loadingOptions=loadingOptions)
+
+    def save(self, top=False, base_url="", relative_uris=True):
+        # type: (bool, str, bool) -> Dict[str, Any]
+        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        for ef in self.extension_fields:
+            r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+
+        r['class'] = 'Person'
+
+        if self.url is not None:
+            r['url'] = save(
+                self.url,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.identifier is not None:
+            r['identifier'] = save(
+                self.identifier,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.image is not None:
+            r['image'] = save(
+                self.image,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.address is not None:
+            r['address'] = save(
+                self.address,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.email is not None:
+            r['email'] = save(
+                self.email,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.telephone is not None:
+            r['telephone'] = save(
+                self.telephone,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.faxNumber is not None:
+            r['faxNumber'] = save(
+                self.faxNumber,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.givenName is not None:
+            r['givenName'] = save(
+                self.givenName,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.familyName is not None:
+            r['familyName'] = save(
+                self.familyName,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.honorificPrefix is not None:
+            r['honorificPrefix'] = save(
+                self.honorificPrefix,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.honorificSuffix is not None:
+            r['honorificSuffix'] = save(
+                self.honorificSuffix,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        if self.jobTitle is not None:
+            r['jobTitle'] = save(
+                self.jobTitle,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris)
+
+        # top refers to the directory level
+        if top:
+            if self.loadingOptions.namespaces:
+                r["$namespaces"] = self.loadingOptions.namespaces
+            if self.loadingOptions.schemas:
+                r["$schemas"] = self.loadingOptions.schemas
+        return r
+
+    attrs = frozenset(['url', 'identifier', 'image', 'address', 'email', 'telephone', 'faxNumber', 'class', 'givenName', 'familyName', 'honorificPrefix', 'honorificSuffix', 'jobTitle'])
+
+
 class GalaxyWorkflow(Process, HasUUID):
     """
 A Galaxy workflow description. This record corresponds to the description of a workflow that should be executable
@@ -2795,11 +3781,13 @@ workflow definition schema the attribute should be called `label`.
         inputs,  # type: Any
         outputs,  # type: Any
         steps,  # type: Any
+        creator,  # type: Any
         id=None,  # type: Any
         label=None,  # type: Any
         doc=None,  # type: Any
         uuid=None,  # type: Any
         report=None,  # type: Any
+        license=None,  # type: Any
         extension_fields=None,  # type: Optional[Dict[str, Any]]
         loadingOptions=None  # type: Optional[LoadingOptions]
     ):  # type: (...) -> None
@@ -2821,6 +3809,8 @@ workflow definition schema the attribute should be called `label`.
         self.class_ = "GalaxyWorkflow"
         self.steps = steps
         self.report = report
+        self.license = license
+        self.creator = creator
 
     @classmethod
     def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
@@ -2945,6 +3935,34 @@ workflow definition schema the attribute should be called `label`.
                 )
         else:
             report = None
+        if 'license' in _doc:
+            try:
+                license = load_field(_doc.get(
+                    'license'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `license` field is not valid because:",
+                        SourceLine(_doc, 'license', str),
+                        [e]
+                    )
+                )
+        else:
+            license = None
+        if 'creator' in _doc:
+            try:
+                creator = load_field(_doc.get(
+                    'creator'), union_of_array_of_union_of_PersonLoader_or_OrganizationLoader_or_PersonLoader_or_OrganizationLoader_or_None_type, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `creator` field is not valid because:",
+                        SourceLine(_doc, 'creator', str),
+                        [e]
+                    )
+                )
+        else:
+            creator = None
 
         extension_fields = yaml.comments.CommentedMap()
         for k in _doc.keys():
@@ -2959,7 +3977,7 @@ workflow definition schema the attribute should be called `label`.
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `uuid`, `class`, `steps`, `report`" % (k),
+                            "invalid field `%s`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `uuid`, `class`, `steps`, `report`, `license`, `creator`" % (k),
                             SourceLine(_doc, k, str)
                         )
                     )
@@ -2969,7 +3987,7 @@ workflow definition schema the attribute should be called `label`.
             raise ValidationException("Trying 'GalaxyWorkflow'", None, _errors__)
         loadingOptions = copy.deepcopy(loadingOptions)
         loadingOptions.original_doc = _doc
-        return cls(id=id, label=label, doc=doc, inputs=inputs, outputs=outputs, uuid=uuid, steps=steps, report=report, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(id=id, label=label, doc=doc, inputs=inputs, outputs=outputs, uuid=uuid, steps=steps, report=report, license=license, creator=creator, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
@@ -3038,6 +4056,20 @@ workflow definition schema the attribute should be called `label`.
                 base_url=self.id,
                 relative_uris=relative_uris)
 
+        if self.license is not None:
+            r['license'] = save(
+                self.license,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
+        if self.creator is not None:
+            r['creator'] = save(
+                self.creator,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
         # top refers to the directory level
         if top:
             if self.loadingOptions.namespaces:
@@ -3046,7 +4078,7 @@ workflow definition schema the attribute should be called `label`.
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(['id', 'label', 'doc', 'inputs', 'outputs', 'uuid', 'class', 'steps', 'report'])
+    attrs = frozenset(['id', 'label', 'doc', 'inputs', 'outputs', 'uuid', 'class', 'steps', 'report', 'license', 'creator'])
 
 
 _vocab = {
@@ -3061,10 +4093,13 @@ _vocab = {
     "HasStepPosition": "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition",
     "HasUUID": "https://galaxyproject.org/gxformat2/gxformat2common#HasUUID",
     "Identified": "https://w3id.org/cwl/cwl#Identified",
+    "IdentifiedThing": "https://galaxyproject.org/gxformat2/v19_09#IdentifiedThing",
     "InputParameter": "https://w3id.org/cwl/cwl#InputParameter",
     "Labeled": "https://w3id.org/cwl/cwl#Labeled",
+    "Organization": "https://galaxyproject.org/gxformat2/v19_09#Organization",
     "OutputParameter": "https://w3id.org/cwl/cwl#OutputParameter",
     "Parameter": "https://w3id.org/cwl/cwl#Parameter",
+    "Person": "https://galaxyproject.org/gxformat2/v19_09#Person",
     "PrimitiveType": "https://w3id.org/cwl/salad#PrimitiveType",
     "Process": "https://w3id.org/cwl/cwl#Process",
     "RecordField": "https://w3id.org/cwl/salad#RecordField",
@@ -3073,6 +4108,7 @@ _vocab = {
     "Report": "https://galaxyproject.org/gxformat2/v19_09#Report",
     "Sink": "https://galaxyproject.org/gxformat2/v19_09#Sink",
     "StepPosition": "https://galaxyproject.org/gxformat2/gxformat2common#StepPosition",
+    "Thing": "https://galaxyproject.org/gxformat2/v19_09#Thing",
     "ToolShedRepository": "https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository",
     "WorkflowInputParameter": "https://galaxyproject.org/gxformat2/v19_09#WorkflowInputParameter",
     "WorkflowOutputParameter": "https://galaxyproject.org/gxformat2/v19_09#WorkflowOutputParameter",
@@ -3110,10 +4146,13 @@ _rvocab = {
     "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition": "HasStepPosition",
     "https://galaxyproject.org/gxformat2/gxformat2common#HasUUID": "HasUUID",
     "https://w3id.org/cwl/cwl#Identified": "Identified",
+    "https://galaxyproject.org/gxformat2/v19_09#IdentifiedThing": "IdentifiedThing",
     "https://w3id.org/cwl/cwl#InputParameter": "InputParameter",
     "https://w3id.org/cwl/cwl#Labeled": "Labeled",
+    "https://galaxyproject.org/gxformat2/v19_09#Organization": "Organization",
     "https://w3id.org/cwl/cwl#OutputParameter": "OutputParameter",
     "https://w3id.org/cwl/cwl#Parameter": "Parameter",
+    "https://galaxyproject.org/gxformat2/v19_09#Person": "Person",
     "https://w3id.org/cwl/salad#PrimitiveType": "PrimitiveType",
     "https://w3id.org/cwl/cwl#Process": "Process",
     "https://w3id.org/cwl/salad#RecordField": "RecordField",
@@ -3122,6 +4161,7 @@ _rvocab = {
     "https://galaxyproject.org/gxformat2/v19_09#Report": "Report",
     "https://galaxyproject.org/gxformat2/v19_09#Sink": "Sink",
     "https://galaxyproject.org/gxformat2/gxformat2common#StepPosition": "StepPosition",
+    "https://galaxyproject.org/gxformat2/v19_09#Thing": "Thing",
     "https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository": "ToolShedRepository",
     "https://galaxyproject.org/gxformat2/v19_09#WorkflowInputParameter": "WorkflowInputParameter",
     "https://galaxyproject.org/gxformat2/v19_09#WorkflowOutputParameter": "WorkflowOutputParameter",
@@ -3182,6 +4222,10 @@ SinkLoader = _RecordLoader(Sink)
 WorkflowStepInputLoader = _RecordLoader(WorkflowStepInput)
 ReportLoader = _RecordLoader(Report)
 WorkflowStepOutputLoader = _RecordLoader(WorkflowStepOutput)
+ThingLoader = _RecordLoader(Thing)
+IdentifiedThingLoader = _RecordLoader(IdentifiedThing)
+OrganizationLoader = _RecordLoader(Organization)
+PersonLoader = _RecordLoader(Person)
 GalaxyWorkflowLoader = _RecordLoader(GalaxyWorkflow)
 array_of_strtype = _ArrayLoader(strtype)
 union_of_None_type_or_strtype_or_array_of_strtype = _UnionLoader((None_type, strtype, array_of_strtype,))
@@ -3231,15 +4275,18 @@ uri_union_of_None_type_or_GalaxyWorkflowLoader_False_False_None = _URILoader(uni
 union_of_None_type_or_array_of_strtype = _UnionLoader((None_type, array_of_strtype,))
 uri_union_of_None_type_or_strtype_or_array_of_strtype_False_False_2 = _URILoader(union_of_None_type_or_strtype_or_array_of_strtype, False, False, 2)
 union_of_None_type_or_booltype = _UnionLoader((None_type, booltype,))
+uri_strtype_False_True_None = _URILoader(strtype, False, True, None)
 array_of_WorkflowInputParameterLoader = _ArrayLoader(WorkflowInputParameterLoader)
 idmap_inputs_array_of_WorkflowInputParameterLoader = _IdMapLoader(array_of_WorkflowInputParameterLoader, 'id', 'type')
 array_of_WorkflowOutputParameterLoader = _ArrayLoader(WorkflowOutputParameterLoader)
 idmap_outputs_array_of_WorkflowOutputParameterLoader = _IdMapLoader(array_of_WorkflowOutputParameterLoader, 'id', 'type')
-uri_strtype_False_True_None = _URILoader(strtype, False, True, None)
 array_of_WorkflowStepLoader = _ArrayLoader(WorkflowStepLoader)
 union_of_array_of_WorkflowStepLoader = _UnionLoader((array_of_WorkflowStepLoader,))
 idmap_steps_union_of_array_of_WorkflowStepLoader = _IdMapLoader(union_of_array_of_WorkflowStepLoader, 'id', 'None')
 union_of_None_type_or_ReportLoader = _UnionLoader((None_type, ReportLoader,))
+union_of_PersonLoader_or_OrganizationLoader = _UnionLoader((PersonLoader, OrganizationLoader,))
+array_of_union_of_PersonLoader_or_OrganizationLoader = _ArrayLoader(union_of_PersonLoader_or_OrganizationLoader)
+union_of_array_of_union_of_PersonLoader_or_OrganizationLoader_or_PersonLoader_or_OrganizationLoader_or_None_type = _UnionLoader((array_of_union_of_PersonLoader_or_OrganizationLoader, PersonLoader, OrganizationLoader, None_type,))
 union_of_GalaxyWorkflowLoader = _UnionLoader((GalaxyWorkflowLoader,))
 array_of_union_of_GalaxyWorkflowLoader = _ArrayLoader(union_of_GalaxyWorkflowLoader)
 union_of_GalaxyWorkflowLoader_or_array_of_union_of_GalaxyWorkflowLoader = _UnionLoader((GalaxyWorkflowLoader, array_of_union_of_GalaxyWorkflowLoader,))

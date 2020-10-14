@@ -11,7 +11,10 @@ public class LintExamplesTest {
       final String path = file.getAbsolutePath();
       // HACK: Java linter doesn't handle Markdown parsing yet?
       // HACK: Java linter doesn't know about int/float default validation yet either :(
-      if (path.indexOf("markdown") >= 0 || path.indexOf("int") >= 0 || path.indexOf("float") >= 0 || path.indexOf("string_input") >=0) {
+      if (path.indexOf("markdown") >= 0
+          || path.indexOf("int") >= 0
+          || path.indexOf("float") >= 0
+          || path.indexOf("string_input") >= 0) {
         continue;
       }
       final String exitCodeString = file.getName().substring(0, 1);

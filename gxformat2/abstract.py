@@ -38,6 +38,22 @@ def from_dict(workflow_dict: dict, subworkflow=False):
     }  # type: Dict[str, Any]
     if not subworkflow:
         abstract_dict["cwlVersion"] = CWL_VERSION
+        add_schema_org = False
+        if 'license' in workflow_dict:
+            add_schema_org = True
+            abstract_dict['s:license'] = workflow_dict['license']
+
+        if 'creator' in workflow_dict:
+            add_schema_org = True
+            abstract_dict['s:creator']
+
+        if add_schema_org:
+            abstract_dict['$schemas'] = [
+                "https://schema.org/version/latest/schema.rdf",
+            ]
+            abstract_dict['$namespaces'] = {
+                's': 'https://schema.org',
+            }
     # inputs and outputs already mostly in CWL format...
 
     # TODO: add test case where format2 input without inputs declaration is used

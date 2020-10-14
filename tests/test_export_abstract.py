@@ -16,6 +16,7 @@ from gxformat2._yaml import ordered_dump, ordered_load
 from gxformat2.abstract import CWL_VERSION, from_dict
 from ._helpers import TEST_PATH, to_example_path
 from .example_wfs import (
+    ANNOTATED_WORKFLOW,
     BASIC_WORKFLOW,
     FLOAT_INPUT_DEFAULT,
     INT_INPUT,
@@ -32,6 +33,7 @@ from .test_normalize import _both_formats
 # double converting nested workflow doesn't work right, bug in gxformat2
 # unrelated to abstract I think.
 EXAMPLES = [
+    ANNOTATED_WORKFLOW,
     BASIC_WORKFLOW,
     FLOAT_INPUT_DEFAULT,
     INT_INPUT,
@@ -69,6 +71,12 @@ def test_to_cwl_array():
     for as_dict in _both_formats(RULES_TOOL):
         abstract_as_dict = from_dict(as_dict)
         assert abstract_as_dict["inputs"]["input_c"]["type"] == "File[]"
+
+
+def test_schemaorg_metadata():
+    for as_dict in _both_formats(ANNOTATED_WORKFLOW):
+        abstract_as_dict = from_dict(as_dict)
+        assert abstract_as_dict["s:license"] == "https://spdx.org/licenses/MIT"
 
 
 def test_nested_workflow():

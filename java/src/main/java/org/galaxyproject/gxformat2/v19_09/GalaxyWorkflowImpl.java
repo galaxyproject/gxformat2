@@ -171,6 +171,32 @@ public class GalaxyWorkflowImpl extends SavableImpl implements GalaxyWorkflow {
     return this.report;
   }
 
+  private java.util.Optional<String> license;
+
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/license</I>
+   * <br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * URI for license family for workflow, use SPDX (e.g. https://spdx.org/licenses/MIT) *
+   *
+   * </BLOCKQUOTE>
+   */
+  public java.util.Optional<String> getLicense() {
+    return this.license;
+  }
+
+  private Object creator;
+
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/creator</I>
+   * <br>
+   */
+  public Object getCreator() {
+    return this.creator;
+  }
+
   /**
    * Used by {@link org.galaxyproject.gxformat2.v19_09.utils.RootLoader} to construct instances of
    * GalaxyWorkflowImpl.
@@ -331,6 +357,39 @@ public class GalaxyWorkflowImpl extends SavableImpl implements GalaxyWorkflow {
     } else {
       report = null;
     }
+    java.util.Optional<String> license;
+
+    if (__doc.containsKey("license")) {
+      try {
+        license =
+            LoaderInstances.optional_StringInstance.loadField(
+                __doc.get("license"), __baseUri, __loadingOptions);
+      } catch (ValidationException e) {
+        license = null; // won't be used but prevents compiler from complaining.
+        final String __message = "the `license` field is not valid because:";
+        __errors.add(new ValidationException(__message, e));
+      }
+
+    } else {
+      license = null;
+    }
+    Object creator;
+
+    if (__doc.containsKey("creator")) {
+      try {
+        creator =
+            LoaderInstances
+                .union_of_array_of_union_of_Person_or_Organization_or_Person_or_Organization_or_NullInstance
+                .loadField(__doc.get("creator"), __baseUri, __loadingOptions);
+      } catch (ValidationException e) {
+        creator = null; // won't be used but prevents compiler from complaining.
+        final String __message = "the `creator` field is not valid because:";
+        __errors.add(new ValidationException(__message, e));
+      }
+
+    } else {
+      creator = null;
+    }
     if (!__errors.isEmpty()) {
       throw new ValidationException("Trying 'RecordField'", __errors);
     }
@@ -343,5 +402,7 @@ public class GalaxyWorkflowImpl extends SavableImpl implements GalaxyWorkflow {
     this.class_ = (String) class_;
     this.steps = (java.util.List<Object>) steps;
     this.report = (java.util.Optional<Report>) report;
+    this.license = (java.util.Optional<String>) license;
+    this.creator = (Object) creator;
   }
 }

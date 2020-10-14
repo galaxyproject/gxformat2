@@ -119,4 +119,20 @@ public interface GalaxyWorkflow extends Process, HasUUID, Savable {
    * </BLOCKQUOTE>
    */
   java.util.Optional<Report> getReport();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/license</I>
+   * <br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * URI for license family for workflow, use SPDX (e.g. https://spdx.org/licenses/MIT) *
+   *
+   * </BLOCKQUOTE>
+   */
+  java.util.Optional<String> getLicense();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/creator</I>
+   * <br>
+   */
+  Object getCreator();
 }

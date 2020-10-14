@@ -68,6 +68,13 @@ def test_docs_round_trip():
 class: GalaxyWorkflow
 doc: |
   Simple workflow that no-op cats a file and then selects 10 random lines.
+creator:
+  class: Person
+  name: John Chilton
+  email: jmchilton@gmail.com
+  identifier: https://orcid.org/0000-0002-6794-0756
+license:
+  https://spdx.org/licenses/MIT
 inputs:
   the_input:
     type: File
@@ -82,6 +89,8 @@ steps:
     assert as_dict["doc"] == "Simple workflow that no-op cats a file and then selects 10 random lines.\n"
     assert as_dict["inputs"]["the_input"]["doc"] == "input doc"
     assert as_dict["steps"]["cat"]["doc"] == "cat doc"
+    assert as_dict["license"] == "https://spdx.org/licenses/MIT"
+    assert as_dict["creator"]["name"] == "John Chilton"
 
 
 def test_reports_round_trip():
