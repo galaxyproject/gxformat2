@@ -12,7 +12,7 @@ from ._helpers import (
     TEST_PATH,
     to_native,
 )
-from .example_wfs import OPTIONAL_INPUT
+from .example_wfs import OPTIONAL_INPUT, WHEN_EXAMPLE
 
 
 def test_import_export():
@@ -250,6 +250,13 @@ steps:
         seed: asdf
 """)
     assert wf_with_step_connections["steps"]["third_cat"]["in"]["$step"]["source"] == "second_cat"
+
+
+def test_round_trip_whens():
+    wf_with_when = round_trip(WHEN_EXAMPLE)
+    assert len(wf_with_when["steps"]) == 1
+    print(wf_with_when)
+    assert wf_with_when["steps"]["random_lines"]["when"] == "$(inputs.seed != 'skip')"
 
 
 def test_export_native_no_labels():
