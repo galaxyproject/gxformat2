@@ -12,7 +12,8 @@ IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
 UPSTREAM?=jmchilton
 SOURCE_DIR?=gxformat2
 BUILD_SCRIPTS_DIR=scripts
-VERSION?=$(shell python $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR))
+DEV_RELEASE?=0
+VERSION?=$(shell DEV_RELEASE=$(DEV_RELEASE) python $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR) $(DEV_RELEASE))
 DOC_URL?=https://gxformat2.readthedocs.org
 PROJECT_URL?=https://github.com/jmchilton/gxformat2
 PROJECT_NAME?=gxformat2
@@ -114,10 +115,10 @@ release-aritfacts: release-test-artifacts ## Package and Upload to PyPi
 	$(IN_VENV) twine upload dist/*
 
 commit-version: ## Update version and history, commit.
-	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/commit_version.py $(SOURCE_DIR) $(VERSION)
+	$(IN_VENV) DEV_RELEASE=$(DEV_RELEASE) python $(BUILD_SCRIPTS_DIR)/commit_version.py $(SOURCE_DIR) $(VERSION)
 
 new-version: ## Mint a new version
-	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/new_version.py $(SOURCE_DIR) $(VERSION)
+	$(IN_VENV) DEV_RELEASE=$(DEV_RELEASE) python $(BUILD_SCRIPTS_DIR)/new_version.py $(SOURCE_DIR) $(VERSION)
 
 release-local: commit-version release-aritfacts new-version
 
