@@ -20,6 +20,9 @@ def _copy_common_properties(from_native_step, to_format2_step):
     position = from_native_step.get("position", None)
     if position:
         to_format2_step["position"] = position
+    when_exp = from_native_step.get("when", None)
+    if when_exp is not None:
+        to_format2_step["when"] = when_exp
 
 
 def from_galaxy_native(format2_dict, tool_interface=None, json_wrapper=False):

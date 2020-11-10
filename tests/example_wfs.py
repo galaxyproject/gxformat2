@@ -262,3 +262,28 @@ steps:
       seed_source:
         seed_source_selector: set_seed
 """
+
+
+WHEN_EXAMPLE = """
+class: GalaxyWorkflow
+inputs:
+  input_d:
+    type: data
+  seed:
+    type: string
+    default: mycooldefault
+outputs:
+  out1:
+    outputSource: random_lines/out_file1
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      'seed_source|seed': seed
+      input: input_d
+    state:
+      num_lines: 5
+      seed_source:
+        seed_source_selector: set_seed
+    when: $(inputs.seed != 'skip')
+"""

@@ -205,6 +205,19 @@ $graph:
         - "null"
         - type: array
           items: string
+    #- name: when
+    #  type:
+    #    - "null"
+    #    - string  # TODO: cwl defines an enum for this, not sure how that works
+    #  jsonldPredicate:
+    #    _id: "gxformat2:when"
+    #    noLinkCheck: true
+    #  doc: |
+    #    If defined, only run the step when the expression evaluates to
+    #    `true`.  If `false` the step is skipped.  A skipped step
+    #    produces a `null` on each output.
+
+    #    Expression should be an ecma5.1 expression.
 
 - name: Sink
   type: record
