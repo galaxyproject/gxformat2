@@ -107,7 +107,9 @@ def _run_example_path(path):
         return _run_example(ordered_load(f), out)
 
 
-def _run_example(as_dict, out="test.cwl"):
+def _run_example(as_dict, out=None):
+    if not out:
+        out = _examples_path_for("test.cwl")
     abstract_as_dict = from_dict(as_dict)
     with open(out, "w") as f:
         ordered_dump(abstract_as_dict, f)
