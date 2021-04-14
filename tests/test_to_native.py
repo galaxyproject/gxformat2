@@ -8,10 +8,23 @@ from gxformat2.lint import lint_ga_path
 from gxformat2.linting import LintContext
 from ._helpers import TEST_PATH, to_example_path
 from .example_wfs import (
+    BASIC_WORKFLOW,
     INT_INPUT,
 )
 
 EXAMPLES_DIR_NAME = "native"
+
+
+def test_basic_workflow():
+    format2_path = to_example_path("basic", EXAMPLES_DIR_NAME, "gxwf.yml")
+    with open(format2_path, "w") as f:
+        f.write(BASIC_WORKFLOW)
+    out = _run_example_path(format2_path)
+    with open(out, "r") as f:
+        as_native = json.load(f)
+    assert as_native["name"] == "Simple workflow"
+    assert as_native["annotation"] == "Simple workflow that no-op cats a file and then selects 10 random lines.\n"
+    assert as_native.get("label") is None
 
 
 def test_double_convert_sars_wf():

@@ -2,6 +2,7 @@
 
 BASIC_WORKFLOW = """
 class: GalaxyWorkflow
+label: Simple workflow
 doc: |
   Simple workflow that no-op cats a file and then selects 10 random lines.
 inputs:
