@@ -1,7 +1,7 @@
 # Default tests run with make test and make quick-tests
 NOSE_TESTS?=tests gxformat2
 # Default environment for make tox
-ENV?=py27
+ENV?=py36
 # Extra arguments supplied to tox command
 ARGS?=
 # Location of virtualenv used for development.
@@ -57,7 +57,7 @@ flake8: ## check style using flake8 for current Python (faster than lint)
 	$(IN_VENV) flake8 --max-complexity 11 $(SOURCE_DIR)  $(TEST_DIR)
 
 lint: ## check style using tox and flake8 for Python 2 and Python 3
-	$(IN_VENV) tox -e py27-lint && tox -e py35-lint
+	$(IN_VENV) tox -e py36-lint && tox -e py39-lint
 
 lint-readme: ## check README formatting for PyPI
 	$(IN_VENV) python setup.py check -r -s
@@ -69,7 +69,7 @@ lint-docs: ready-docs
 test: ## run tests with the default Python (faster than tox)
 	$(IN_VENV) nosetests $(NOSE_TESTS)
 
-tox: ## run tests with tox in the specified ENV, defaults to py27
+tox: ## run tests with tox in the specified ENV
 	$(IN_VENV) tox -e $(ENV) -- $(ARGS)
 
 coverage: ## check code coverage quickly with the default Python
