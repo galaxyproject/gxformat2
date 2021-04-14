@@ -31,18 +31,18 @@ from .test_normalize import _both_formats
 
 # double converting nested workflow doesn't work right, bug in gxformat2
 # unrelated to abstract I think.
-EXAMPLES = [
-    BASIC_WORKFLOW,
-    FLOAT_INPUT_DEFAULT,
-    INT_INPUT,
-    # NESTED_WORKFLOW,
-    OPTIONAL_INPUT,
-    PJA_1,
-    RULES_TOOL,
-    RUNTIME_INPUTS,
-    STRING_INPUT,
-    WORKFLOW_WITH_REPEAT,
-]
+EXAMPLES = {
+    "BASIC_WORKFLOW": BASIC_WORKFLOW,
+    "FLOAT_INPUT_DEFAULT": FLOAT_INPUT_DEFAULT,
+    "INT_INPUT": INT_INPUT,
+    # "NESTED_WORKFLOW": NESTED_WORKFLOW,
+    "OPTIONAL_INPUT": OPTIONAL_INPUT,
+    "PJA_1": PJA_1,
+    "RULES_TOOL": RULES_TOOL,
+    "RUNTIME_INPUTS": RUNTIME_INPUTS,
+    "STRING_INPUT": STRING_INPUT,
+    "WORKFLOW_WITH_REPEAT": WORKFLOW_WITH_REPEAT,
+}
 
 # TODO:
 # - Ensure when reading native format - output information is included,
@@ -53,10 +53,11 @@ EXAMPLES = [
 # - Write test and handle $links embedded in Format2 workflows
 
 
-def test_abstract_export():
-    for example in EXAMPLES:
-        for as_dict in _both_formats(example):
-            _run_example(as_dict)
+def test_abstract_export(tmpdir):
+    for name, example in EXAMPLES.items():
+        format2, native = _both_formats(example)
+        _run_example(format2, os.path.join(tmpdir, "%s_from_format2.cwl" % name))
+        _run_example(native, os.path.join(tmpdir, "%s_from_native.cwl" % name))
 
 
 def test_to_cwl_optional():
