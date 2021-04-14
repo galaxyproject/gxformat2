@@ -59,6 +59,13 @@ def test_abstract_export():
             _run_example(as_dict)
 
 
+def test_basic_workflow():
+    for as_dict in _both_formats(BASIC_WORKFLOW):
+        abstract_as_dict = from_dict(as_dict)
+        assert abstract_as_dict["label"] == "Simple workflow"
+        assert abstract_as_dict["doc"] == "Simple workflow that no-op cats a file and then selects 10 random lines.\n"
+
+
 def test_to_cwl_optional():
     for as_dict in _both_formats(OPTIONAL_INPUT):
         abstract_as_dict = from_dict(as_dict)
@@ -137,7 +144,7 @@ def _run_example(as_dict, out=None):
 def check_abstract_def(abstract_as_dict):
     assert abstract_as_dict["class"] == "Workflow"
     assert abstract_as_dict["cwlVersion"] == CWL_VERSION
-    for step_id, step_def in abstract_as_dict["steps"].items():
+    for step_def in abstract_as_dict["steps"].values():
         assert "run" in step_def
         run = step_def["run"]
         assert "in" in step_def
