@@ -25,22 +25,22 @@ def _copy_common_properties(from_native_step, to_format2_step):
         to_format2_step["when"] = when_exp
 
 
-def from_galaxy_native(format2_dict, tool_interface=None, json_wrapper=False):
+def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=False):
     """Convert native .ga workflow definition to a format2 workflow.
 
     This is highly experimental and currently broken.
     """
     data = OrderedDict()
     data['class'] = 'GalaxyWorkflow'
-    _copy_common_properties(format2_dict, data)
-    if "name" in format2_dict:
-        data["label"] = format2_dict.pop("name")
+    _copy_common_properties(native_workflow_dict, data)
+    if "name" in native_workflow_dict:
+        data["label"] = native_workflow_dict.pop("name")
     for top_level_key in ['tags', 'uuid', 'report']:
-        value = format2_dict.get(top_level_key)
+        value = native_workflow_dict.get(top_level_key)
         if value:
             data[top_level_key] = value
 
-    native_steps = format2_dict.get("steps")
+    native_steps = native_workflow_dict.get("steps")
 
     label_map = {}
     all_labeled = True
