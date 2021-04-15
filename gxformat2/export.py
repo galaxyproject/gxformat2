@@ -147,12 +147,12 @@ def _tool_state(step):
     return tool_state
 
 
-def _copy_properties(from_native_step, to_format2_step, optional_props=[], required_props=[]):
-    for prop in optional_props:
+def _copy_properties(from_native_step, to_format2_step, optional_props=None, required_props=None):
+    for prop in optional_props or []:
         value = from_native_step.get(prop)
         if value:
             to_format2_step[prop] = value
-    for prop in required_props:
+    for prop in required_props or []:
         value = from_native_step.get(prop)
         to_format2_step[prop] = value
 
