@@ -520,10 +520,10 @@ class BaseConversionContext(object):
 
     def step_id(self, label_or_id):
         if label_or_id in self.labels:
-            id = self.labels[label_or_id]
+            id_ = self.labels[label_or_id]
         else:
-            id = label_or_id
-        return int(id)
+            id_ = label_or_id
+        return int(id_)
 
     def step_output(self, value):
         value_parts = str(value).split("/")
