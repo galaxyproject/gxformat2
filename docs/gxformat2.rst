@@ -5,6 +5,7 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
    gxformat2.schema
 
@@ -83,6 +84,14 @@ gxformat2.markdown\_parse module
    :undoc-members:
    :show-inheritance:
 
+gxformat2.model module
+----------------------
+
+.. automodule:: gxformat2.model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 gxformat2.normalize module
 --------------------------
 
@@ -91,6 +100,13 @@ gxformat2.normalize module
    :undoc-members:
    :show-inheritance:
 
+gxformat2.yaml module
+---------------------
+
+.. automodule:: gxformat2.yaml
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------

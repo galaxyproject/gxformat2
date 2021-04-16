@@ -12,7 +12,6 @@ gxformat2.schema.v19\_09 module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 
