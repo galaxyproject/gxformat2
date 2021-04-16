@@ -14,15 +14,13 @@ Convert a native Galaxy workflow description into a Format 2 description.
 
 
 def _copy_common_properties(from_native_step, to_format2_step):
-    annotation = from_native_step.get("annotation", "")
+    annotation = from_native_step.get("annotation")
     if annotation:
         to_format2_step["doc"] = annotation
-    position = from_native_step.get("position", None)
-    if position:
-        to_format2_step["position"] = position
-    when_exp = from_native_step.get("when", None)
-    if when_exp is not None:
-        to_format2_step["when"] = when_exp
+    for prop in ("position", "when"):
+        value = from_native_step.get(prop)
+        if value:
+            to_format2_step[prop] = value
 
 
 def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=False):
@@ -79,9 +77,8 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
                 inputs[step_id] = input_dict["type"]
             else:
                 inputs[step_id] = input_dict
-            continue
 
-        if module_type == "pause":
+        elif module_type == "pause":
             step_dict = OrderedDict()
             optional_props = ['label']
             _copy_common_properties(step, step_dict)
@@ -89,9 +86,8 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             _convert_input_connections(step, step_dict, label_map)
             step_dict["type"] = "pause"
             steps.append(step_dict)
-            continue
 
-        if module_type == 'subworkflow':
+        elif module_type == 'subworkflow':
             step_dict = OrderedDict()
             optional_props = ['label']
             _copy_common_properties(step, step_dict)
@@ -102,25 +98,25 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             subworkflow = from_galaxy_native(subworkflow_native_dict, tool_interface=tool_interface, json_wrapper=False)
             step_dict["run"] = subworkflow
             steps.append(step_dict)
-            continue
 
-        if module_type != 'tool':
-            raise NotImplementedError("Unhandled module type %s" % module_type)
+        elif module_type == 'tool':
+            step_dict = OrderedDict()
+            optional_props = ['label', 'tool_shed_repository']
+            required_props = ['tool_id', 'tool_version']
+            _copy_properties(step, step_dict, optional_props, required_props)
+            _copy_common_properties(step, step_dict)
 
-        step_dict = OrderedDict()
-        optional_props = ['label', 'tool_shed_repository']
-        required_props = ['tool_id', 'tool_version']
-        _copy_properties(step, step_dict, optional_props, required_props)
-        _copy_common_properties(step, step_dict)
+            tool_state = _tool_state(step)
+            tool_state.pop("__page__", None)
+            tool_state.pop("__rerun_remap_job_id__", None)
+            step_dict['tool_state'] = tool_state
 
-        tool_state = _tool_state(step)
-        tool_state.pop("__page__", None)
-        tool_state.pop("__rerun_remap_job_id__", None)
-        step_dict['tool_state'] = tool_state
+            _convert_input_connections(step, step_dict, label_map)
+            _convert_post_job_actions(step, step_dict)
+            steps.append(step_dict)
 
-        _convert_input_connections(step, step_dict, label_map)
-        _convert_post_job_actions(step, step_dict)
-        steps.append(step_dict)
+        else:
+            raise NotImplementedError(f"Unhandled module type {module_type}")
 
     data['inputs'] = inputs
     data['outputs'] = outputs
