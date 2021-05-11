@@ -184,7 +184,7 @@ def _python_to_workflow(as_python, conversion_context):
     _ensure_defaults(as_python, {
         "a_galaxy_workflow": "true",
         "format-version": "0.1",
-        "name": "Workflow",
+        "name": as_python.pop("label", "Workflow"),
         "uuid": str(uuid.uuid4()),
     })
     _populate_annotation(as_python)
@@ -618,7 +618,7 @@ class SubworkflowConversionContext(BaseConversionContext):
         return self.parent_context.get_subworkflow_conversion_context_graph(graph_id)
 
 
-def _action(type, name, arguments={}):
+def _action(type, name, arguments):
     return {
         "action_arguments": arguments,
         "action_type": type,

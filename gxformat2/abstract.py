@@ -36,6 +36,10 @@ def from_dict(workflow_dict: dict, subworkflow=False):
     abstract_dict = {
         'class': 'Workflow',
     }  # type: Dict[str, Any]
+    for attr in ('doc', 'label'):
+        value = workflow_dict.get(attr)
+        if value:
+            abstract_dict[attr] = value
     if not subworkflow:
         abstract_dict["cwlVersion"] = CWL_VERSION
     # inputs and outputs already mostly in CWL format...
@@ -94,7 +98,7 @@ def _format2_out_to_abstract(format2_step, run=None):
     if "out" in format2_step:
         out = format2_step.get("out")
         if isinstance(out, dict):
-            for out_name, out_def in out.items():
+            for out_name in out.keys():
                 # discard PJA info when converting to abstract CWL
                 cwl_out.append(out_name)
         else:
@@ -143,7 +147,7 @@ def _format2_type_to_abstract(has_type):
 
 def _format2_outputs_to_abstract(outputs):
     """Strip Galaxy extensions or namespace them."""
-    for output_name, output in walk_id_list_or_dict(outputs):
+    for _output_name, output in walk_id_list_or_dict(outputs):
         if "type" not in output:
             output["type"] = "File"
     return outputs
