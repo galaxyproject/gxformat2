@@ -31,7 +31,7 @@ $graph:
 
 - name: Parameter
   type: record
-  extends: [sld:Documented, Identified]  # Dropped FieldBase.
+  extends: [Labeled, sld:Documented, Identified]  # Replaced FieldBase with Labeled.
   abstract: true
   doc: |
     Define an input or output parameter to a process.
