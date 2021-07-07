@@ -11,8 +11,8 @@ from gxformat2.yaml import ordered_dump_to_path, ordered_load
 CWL_VERSION = "v1.2"
 
 SCRIPT_DESCRIPTION = """
-This script converts the an executable Galaxy workflow (in either format -
-Format 2 or native .ga) into an abstract CWL representation.
+This script converts an executable Galaxy workflow (in either format - Format 2
+or native .ga) into an abstract CWL representation.
 
 In order to represent Galaxy tool executions in the Common Workflow Language
 workflow language, they are serialized as v1.2+ abstract 'Operation' classes.

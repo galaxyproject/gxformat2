@@ -13,8 +13,8 @@ from gxformat2.normalize import steps_normalized
 CYTOSCAPE_JS_TEMPLATE = pkg_resources.resource_filename(__name__, 'cytoscape.html')
 MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
 SCRIPT_DESCRIPTION = """
-This script converts the an executable Galaxy workflow (in either format -
-Format 2 or native .ga) into a format for visualization with Cytoscape
+This script converts an executable Galaxy workflow (in either format - Format 2
+or native .ga) into a format for visualization with Cytoscape
 (https://cytoscape.org/).
 
 If the target output path ends with .html this script will output a HTML
