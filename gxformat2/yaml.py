@@ -10,7 +10,7 @@ import yaml
 
 def ordered_load_path(path: str, **kwds):
     """Safe and ordered load of YAML from specified path."""
-    with open(path, "r") as f:
+    with open(path) as f:
         return ordered_load(f, **kwds)
 
 

@@ -18,7 +18,7 @@ def convert_and_import_workflow(has_workflow, **kwds):
         workflow_path = has_workflow
         if workflow_directory is None:
             workflow_directory = os.path.dirname(has_workflow)
-        with open(workflow_path, "r") as f:
+        with open(workflow_path) as f:
             has_workflow = ordered_load(f)
 
     if workflow_directory is not None:

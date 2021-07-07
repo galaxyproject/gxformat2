@@ -1,5 +1,4 @@
 """Functionality for converting a Format 2 workflow into a standard Galaxy workflow."""
-from __future__ import print_function
 
 import argparse
 import copy
@@ -94,13 +93,13 @@ def rename_arg(argument):
 def clean_connection(value):
     if value and "#" in value and SUPPORT_LEGACY_CONNECTIONS:
         # Hope these are just used by Galaxy testing workflows and such, and not in production workflows.
-        log.warn("Legacy workflow syntax for connections [%s] will not be supported in the future" % value)
+        log.warn(f"Legacy workflow syntax for connections [{value}] will not be supported in the future")
         value = value.replace("#", "/", 1)
     else:
         return value
 
 
-class ImportOptions(object):
+class ImportOptions:
 
     def __init__(self):
         self.deduplicate_subworkflows = False
@@ -151,7 +150,7 @@ def steps_as_list(format2_workflow: dict, add_ids: bool = False, inputs_offset: 
     Add keys as labels instead of IDs. Why am I doing this?
     """
     if "steps" not in format2_workflow:
-        raise Exception("No 'steps' key in dict, keys are %s" % format2_workflow.keys())
+        raise Exception(f"No 'steps' key in dict, keys are {format2_workflow.keys()}")
     steps = format2_workflow["steps"]
     steps = convert_dict_to_id_list_if_needed(steps, add_label=True, mutate=mutate)
     if add_ids:
@@ -229,9 +228,9 @@ def _python_to_workflow(as_python, conversion_context):
         step_type = step.get("type", "tool")
         step_type = STEP_TYPE_ALIASES.get(step_type, step_type)
         if step_type not in STEP_TYPES:
-            raise Exception("Unknown step type encountered %s" % step_type)
+            raise Exception(f"Unknown step type encountered {step_type}")
         step["type"] = step_type
-        eval("transform_%s" % step_type)(conversion_context, step)
+        eval(f"transform_{step_type}")(conversion_context, step)
 
     outputs = as_python.pop("outputs", [])
     outputs = convert_dict_to_id_list_if_needed(outputs)
@@ -512,7 +511,7 @@ def run_tool_to_step(conversion_context, step, run_action):
     step["tool_uuid"] = tool_description.get("uuid")
 
 
-class BaseConversionContext(object):
+class BaseConversionContext:
 
     def __init__(self):
         self.labels = {}
@@ -559,7 +558,7 @@ class BaseConversionContext(object):
 
             run_action_path = run_action["@import"]
             runnable_path = os.path.join(self.workflow_directory, run_action_path)
-            with open(runnable_path, "r") as f:
+            with open(runnable_path) as f:
                 runnable_description = ordered_load(f)
                 run_action = runnable_description
 
@@ -572,7 +571,7 @@ class BaseConversionContext(object):
 class ConversionContext(BaseConversionContext):
 
     def __init__(self, galaxy_interface, workflow_directory, import_options: Optional[ImportOptions] = None):
-        super(ConversionContext, self).__init__()
+        super().__init__()
         self.import_options = import_options or ImportOptions()
         self.graph_ids = OrderedDict()  # type: Dict
         self.graph_id_subworkflow_conversion_contexts = {}  # type: Dict
@@ -595,7 +594,7 @@ class ConversionContext(BaseConversionContext):
 class SubworkflowConversionContext(BaseConversionContext):
 
     def __init__(self, parent_context):
-        super(SubworkflowConversionContext, self).__init__()
+        super().__init__()
         self.parent_context = parent_context
 
     @property
@@ -632,7 +631,7 @@ def _is_link(value):
 
 def _join_prefix(prefix, key):
     if prefix:
-        new_key = "%s|%s" % (prefix, key)
+        new_key = f"{prefix}|{key}"
     else:
         new_key = key
     return new_key
@@ -657,7 +656,7 @@ def _init_connect_dict(step):
             elif isinstance(value, dict) and 'default' in value:
                 continue
             elif isinstance(value, dict):
-                raise KeyError('step input must define either source or default %s' % value)
+                raise KeyError(f'step input must define either source or default {value}')
             connect[key] = [value]
             connection_keys.add(key)
 
@@ -731,7 +730,7 @@ def main(argv=None):
     workflow_directory = os.path.abspath(format2_path)
     galaxy_interface = None
 
-    with open(format2_path, "r") as f:
+    with open(format2_path) as f:
         has_workflow = ordered_load(f)
 
     output = python_to_workflow(has_workflow, galaxy_interface=galaxy_interface, workflow_directory=workflow_directory)

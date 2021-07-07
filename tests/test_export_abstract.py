@@ -56,8 +56,8 @@ EXAMPLES = {
 def test_abstract_export():
     for name, example in EXAMPLES.items():
         format2, native = _both_formats(example)
-        _run_example(format2, _examples_path_for("%s_from_format2.cwl" % name))
-        _run_example(native, _examples_path_for("%s_from_native.cwl" % name))
+        _run_example(format2, _examples_path_for(f"{name}_from_format2.cwl"))
+        _run_example(native, _examples_path_for(f"{name}_from_native.cwl"))
 
 
 def test_basic_workflow():
@@ -111,7 +111,7 @@ def test_string_inputs():
 
 def _run_example_path(path):
     out = _examples_path_for(path)
-    with open(path, "r") as f:
+    with open(path) as f:
         return _run_example(ordered_load(f), out)
 
 

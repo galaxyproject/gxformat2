@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import ast
 import os
@@ -14,11 +13,11 @@ SOURCE_DIR = "gxformat2"
 _version_re = re.compile(r'__version__\s+=\s+(.*)')
 
 
-with open('%s/__init__.py' % SOURCE_DIR, 'rb') as f:
+with open(f'{SOURCE_DIR}/__init__.py', 'rb') as f:
     init_contents = f.read().decode('utf-8')
 
     def get_var(var_name):
-        pattern = re.compile(r'%s\s+=\s+(.*)' % var_name)
+        pattern = re.compile(fr'{var_name}\s+=\s+(.*)')
         match = pattern.search(init_contents).group(1)
         return str(ast.literal_eval(match))
 

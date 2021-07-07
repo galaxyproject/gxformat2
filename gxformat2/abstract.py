@@ -73,7 +73,7 @@ def _format2_step_to_abstract(format2_step, requirements):
             step_run = from_dict(format2_run, subworkflow=True)
             abstract_step["run"] = step_run
         else:
-            raise NotImplementedError("Unknown runnabled type encountered [%s]" % format2_run_class)
+            raise NotImplementedError(f"Unknown runnabled type encountered [{format2_run_class}]")
     else:
         step_run = {
             "class": "Operation",
@@ -166,7 +166,7 @@ def main(argv=None):
     if workflow_path == "-":
         workflow_dict = ordered_load(sys.stdin)
     else:
-        with open(workflow_path, "r") as f:
+        with open(workflow_path) as f:
             workflow_dict = ordered_load(f)
 
     abstract_dict = from_dict(workflow_dict)

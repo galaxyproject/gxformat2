@@ -15,7 +15,7 @@ from gxformat2.yaml import ordered_load
 NON_INPUT_TYPES = ["tool", "subworkflow", "pause"]
 
 
-class Inputs(object):
+class Inputs:
     """An abstraction around a Galaxy workflow's inputs."""
 
     def __init__(self, workflow_dict):
@@ -60,7 +60,7 @@ class Inputs(object):
         return len(self._inputs)
 
 
-class NormalizedWorkflow(object):
+class NormalizedWorkflow:
     """Present a view of a Format2 workflow that has been normalized.
 
     In a normalized view:
@@ -151,13 +151,13 @@ def _replace_anonymous_output_references(workflow_dict: dict):
                 step, output_name = output_source.split("/", 1)
                 if ":" in output_name:
                     subworkflow_label, subworkflow_output = output_name.split(":", 1)
-                    assert subworkflow_label in runs_by_label, "%s not in %s" % (subworkflow_label, runs_by_label.keys())
+                    assert subworkflow_label in runs_by_label, f"{subworkflow_label} not in {runs_by_label.keys()}"
                     run = runs_by_label[subworkflow_label]
                     subworkflow_outputs = run["outputs"]
                     assert isinstance(subworkflow_outputs, dict)
                     for subworkflow_output_name, output_def in subworkflow_outputs.items():
-                        if output_def["outputSource"] == "%s/%s" % (subworkflow_label, subworkflow_output):
-                            output["outputSource"] = "%s/%s" % (step, subworkflow_output_name)
+                        if output_def["outputSource"] == f"{subworkflow_label}/{subworkflow_output}":
+                            output["outputSource"] = f"{step}/{subworkflow_output_name}"
 
 
 def _ensure_implicit_step_outs(workflow_dict: dict):
@@ -207,7 +207,7 @@ def _ensure_implicit_step_outs(workflow_dict: dict):
 def _ensure_format2(workflow_dict=None, workflow_path=None):
     if workflow_path is not None:
         assert workflow_dict is None
-        with open(workflow_path, "r") as f:
+        with open(workflow_path) as f:
             workflow_dict = ordered_load(f)
 
     workflow_dict = ensure_format2(workflow_dict)

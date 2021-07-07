@@ -162,7 +162,7 @@ def inputs_as_native_steps(workflow_dict: dict):
                 native_type = format2_type
             input_def["parameter_type"] = native_type
         else:
-            raise Exception("Unknown input type [%s] encountered." % input_type)
+            raise Exception(f"Unknown input type [{input_type}] encountered.")
 
         step_def = input_def
         step_def.update({

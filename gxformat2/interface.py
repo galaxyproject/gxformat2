@@ -28,7 +28,7 @@ class ImporterGalaxyInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError()
 
 
-class BioBlendImporterGalaxyInterface(object):
+class BioBlendImporterGalaxyInterface:
     """Implementation of :class:`ImporterGalaxyInterface` using bioblend."""
 
     def __init__(self, **kwds):

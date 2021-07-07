@@ -239,7 +239,7 @@ def _to_source(has_output_name, label_map, output_id=None):
     if output_name == "output":
         source = output_label
     else:
-        source = "%s/%s" % (output_label, output_name)
+        source = f"{output_label}/{output_name}"
     return source
 
 
@@ -252,7 +252,7 @@ def main(argv=None):
 
     format2_path = args.input_path
     output_path = args.output_path or (format2_path + ".gxwf.yml")
-    with open(format2_path, "r") as f:
+    with open(format2_path) as f:
         native_workflow_dict = json.load(f)
 
     as_dict = from_galaxy_native(native_workflow_dict)

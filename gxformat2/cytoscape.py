@@ -33,7 +33,7 @@ def to_cytoscape(workflow_path: str, output_path=None):
     for i, step in enumerate(steps):
         step_id = step.get("id") or step.get("label") or str(i)
         step_type = step.get("type") or 'tool'
-        classes = ["type_%s" % step_type]
+        classes = [f"type_{step_type}"]
         if step_type in ['tool', 'subworkflow']:
             classes.append("runnable")
         else:
@@ -42,7 +42,7 @@ def to_cytoscape(workflow_path: str, output_path=None):
         tool_id = step.get("tool_id")
         if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
             tool_id = tool_id[len(MAIN_TS_PREFIX):]
-        label = step.get("id") or step.get("label") or ("tool:%s" % tool_id) or str(i)
+        label = step.get("id") or step.get("label") or (f"tool:{tool_id}") or str(i)
         ensure_step_position(step, i)
         node_position = dict(x=int(step["position"]["left"]), y=int(step["position"]["top"]))
         repo_link = None
@@ -68,12 +68,12 @@ def to_cytoscape(workflow_path: str, output_path=None):
                 from_step, output = value.split("/", 1)
             else:
                 from_step, output = value, None
-            edge_id = "%s__to__%s" % (step_id, from_step)
+            edge_id = f"{step_id}__to__{from_step}"
             edge_data = {"id": edge_id, "source": from_step, "target": step_id, "input": key, "output": output}
             elements.append({"group": "edges", "data": edge_data})
 
     if output_path.endswith(".html"):
-        with open(CYTOSCAPE_JS_TEMPLATE, "r") as f:
+        with open(CYTOSCAPE_JS_TEMPLATE) as f:
             template = f.read()
         viz = string.Template(template).safe_substitute(elements=json.dumps(elements))
         with open(output_path, "w") as f:
