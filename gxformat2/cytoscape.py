@@ -42,7 +42,7 @@ def to_cytoscape(workflow_path: str, output_path=None):
         tool_id = step.get("tool_id")
         if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
             tool_id = tool_id[len(MAIN_TS_PREFIX):]
-        label = step.get("id") or step.get("label") or (f"tool:{tool_id}") or str(i)
+        label = step.get("id") or step.get("label") or (f"tool:{tool_id}" if tool_id else str(i))
         ensure_step_position(step, i)
         node_position = dict(x=int(step["position"]["left"]), y=int(step["position"]["top"]))
         repo_link = None
