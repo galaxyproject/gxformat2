@@ -25,37 +25,33 @@ def main(argv):
     else:
         dev_version = re.compile(r'dev([\d]+)').search(version).group(1)
         new_dev_version = int(dev_version) + 1
-        new_version = version.replace("dev%s" % dev_version, "dev%s" % new_dev_version)
+        new_version = version.replace(f"dev{dev_version}", f"dev{new_dev_version}")
 
     history_path = os.path.join(PROJECT_DIRECTORY, "HISTORY.rst")
     if not DEV_RELEASE:
-        history = open(history_path, "r").read()
+        history = open(history_path).read()
 
         def extend(from_str, line):
             from_str += "\n"
-            return history.replace(from_str, from_str + line + "\n" )
+            return history.replace(from_str, from_str + line + "\n")
 
-        history = extend(".. to_doc", """
+        history = extend(".. to_doc", f"""
 ---------------------
-%s.dev0
+{new_version}.dev0
 ---------------------
 
-    """ % new_version)
+    """)
         open(history_path, "w").write(history)
 
     mod_path = os.path.join(PROJECT_DIRECTORY, source_dir, "__init__.py")
-    mod = open(mod_path, "r").read()
+    mod = open(mod_path).read()
     if not DEV_RELEASE:
-        mod = re.sub("__version__ = '[\d\.]+'",
-                    "__version__ = '%s.dev0'" % new_version,
-                    mod, 1)
+        mod = re.sub(r"__version__ = '[\d\.]+'", f"__version__ = '{new_version}.dev0'", mod, 1)
     else:
-        mod = re.sub("dev%s" % dev_version,
-                    "dev%s" % new_dev_version,
-                    mod, 1)
+        mod = re.sub(f"dev{dev_version}", f"dev{new_dev_version}", mod, 1)
     mod = open(mod_path, "w").write(mod)
-    shell(["git", "commit", "-m", "Starting work on %s" % new_version,
-           "HISTORY.rst", "%s/__init__.py" % source_dir])
+    shell(["git", "commit", "-m", f"Starting work on {new_version}",
+           "HISTORY.rst", f"{source_dir}/__init__.py"])
 
 
 def shell(cmds, **kwds):

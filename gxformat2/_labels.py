@@ -1,7 +1,7 @@
 """Utilities for handling unlabelled objects when translating workflow formats."""
 
 
-class Labels(object):
+class Labels:
     """Track labels assigned and generate anonymous ones."""
 
     def __init__(self):
@@ -13,7 +13,7 @@ class Labels(object):
         """Ensure supplied label has value or generate an anonymous one."""
         if label is None:
             self.anonymous_labels += 1
-            label = "_anonymous_output_%d" % self.anonymous_labels
+            label = f"_anonymous_output_{self.anonymous_labels}"
         assert label not in self.seen_labels
         self.seen_labels.add(label)
         return label

@@ -17,19 +17,19 @@ def main(argv):
     mod_path = os.path.join(PROJECT_DIRECTORY, source_dir, "__init__.py")
     if not DEV_RELEASE:
         history_path = os.path.join(PROJECT_DIRECTORY, "HISTORY.rst")
-        history = open(history_path, "r").read()
+        history = open(history_path).read()
         today = datetime.datetime.today()
         today_str = today.strftime('%Y-%m-%d')
-        history = history.replace(".dev0", " (%s)" % today_str)
+        history = history.replace(".dev0", f" ({today_str})")
         open(history_path, "w").write(history)
 
-        mod = open(mod_path, "r").read()
-        mod = re.sub("__version__ = '[\d\.]*\.dev0'",
-                     "__version__ = '%s'" % version,
+        mod = open(mod_path).read()
+        mod = re.sub(r"__version__ = '[\d\.]*\.dev0'",
+                     f"__version__ = '{version}'",
                      mod)
         mod = open(mod_path, "w").write(mod)
-    shell(["git", "commit", "-m", "Version %s" % version,
-           "HISTORY.rst", "%s/__init__.py" % source_dir])
+    shell(["git", "commit", "-m", f"Version {version}",
+           "HISTORY.rst", f"{source_dir}/__init__.py"])
     shell(["git", "tag", version])
 
 

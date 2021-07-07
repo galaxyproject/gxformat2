@@ -20,7 +20,7 @@ def test_basic_workflow():
     with open(format2_path, "w") as f:
         f.write(BASIC_WORKFLOW)
     out = _run_example_path(format2_path)
-    with open(out, "r") as f:
+    with open(out) as f:
         as_native = json.load(f)
     assert as_native["name"] == "Simple workflow"
     assert as_native["annotation"] == "Simple workflow that no-op cats a file and then selects 10 random lines.\n"
@@ -44,7 +44,7 @@ def test_int_input():
     with open(format2_path, "w") as f:
         f.write(INT_INPUT)
     out = _run_example_path(format2_path)
-    with open(out, "r") as f:
+    with open(out) as f:
         as_native = json.load(f)
 
     int_step = as_native["steps"]["1"]

@@ -8,7 +8,7 @@ LEVEL_ERROR = "error"
 DEFAULT_TRAINING_LINT = None
 
 
-class LintContext(object):
+class LintContext:
     """Track running status (state) of linting."""
 
     def __init__(self, level=LEVEL_WARN, training_topic=DEFAULT_TRAINING_LINT):
@@ -46,15 +46,15 @@ class LintContext(object):
         """Print error messages and update state at the end of linting."""
         for message in self.error_messages:
             self.found_errors = True
-            print(".. ERROR: %s" % message)
+            print(f".. ERROR: {message}")
 
         if self.level != LEVEL_ERROR:
             for message in self.warn_messages:
                 self.found_warns = True
-                print(".. WARNING: %s" % message)
+                print(f".. WARNING: {message}")
 
         if self.level == LEVEL_ALL:
             for message in self.info_messages:
-                print(".. INFO: %s" % message)
+                print(f".. INFO: {message}")
             for message in self.valid_messages:
-                print(".. CHECK: %s" % message)
+                print(f".. CHECK: {message}")

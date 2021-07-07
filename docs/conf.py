@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 #
 # complexity documentation build configuration file, created by
 # sphinx-quickstart on Tue Jul  9 22:26:36 2013.
@@ -62,8 +61,8 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = u'gxformat2'
-copyright = u'2015'
+project = 'gxformat2'
+copyright = '2015'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -217,8 +216,8 @@ latex_elements = {
 # [howto/manual]).
 latex_documents = [
     ('index', 'gxformat2.tex',
-     u'gxformat2 Documentation',
-     u'Galaxy Project and Community', 'manual'),
+     'gxformat2 Documentation',
+     'Galaxy Project and Community', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at
@@ -248,8 +247,8 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'galaxy-lib',
-     u'Galaxy-lib Documentation',
-     [u'Galaxy Project and Community'], 1)
+     'Galaxy-lib Documentation',
+     ['Galaxy Project and Community'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -263,8 +262,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'galaxy-lib',
-     u'Galaxy-Lib Documentation',
-     u'Galaxy Project and Community',
+     'Galaxy-Lib Documentation',
+     'Galaxy Project and Community',
      'galaxy-lib',
      'One line description of project.',
      'Miscellaneous'),

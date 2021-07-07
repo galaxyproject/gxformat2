@@ -46,7 +46,7 @@ def ensure_key_has_value(lint_context, has_keys, key, value, has_class=None, has
 def _lint_step_errors(lint_context, step):
     step_errors = step.get("errors")
     if step_errors is not None:
-        lint_context.warn("tool step contains error indicated during Galaxy export - %s" % step_errors)
+        lint_context.warn(f"tool step contains error indicated during Galaxy export - {step_errors}")
 
 
 def lint_ga_path(lint_context, path):
@@ -147,7 +147,7 @@ def _validate_report(lint_context, workflow_dict):
             try:
                 validate_galaxy_markdown(markdown)
             except ValueError as e:
-                lint_context.error("Report markdown validation failed [%s]" % e)
+                lint_context.error(f"Report markdown validation failed [{e}]")
 
 
 def _lint_training(lint_context, workflow_dict):
@@ -159,7 +159,7 @@ def _lint_training(lint_context, workflow_dict):
     else:
         tags = workflow_dict["tags"]
         if lint_context.training_topic not in tags:
-            lint_context.warn("Missing expected training topic (%s) as workflow tag." % lint_context.training_topic)
+            lint_context.warn(f"Missing expected training topic ({lint_context.training_topic}) as workflow tag.")
     # Move up into individual lints - all workflows should have docs.
     format2_dict = ensure_format2(workflow_dict)
     if "doc" not in format2_dict:
@@ -174,7 +174,7 @@ def main(argv=None):
         argv = sys.argv
     args = _parser().parse_args(argv[1:])
     path = args.path
-    with open(path, "r") as f:
+    with open(path) as f:
         try:
             workflow_dict = ordered_load(f)
         except Exception:

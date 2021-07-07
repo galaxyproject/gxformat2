@@ -7,11 +7,9 @@ is :class:`BioBlendImporterGalaxyInterface`.
 import abc
 
 import bioblend  # type: ignore
-import six
 
 
-@six.add_metaclass(abc.ABCMeta)
-class ImporterGalaxyInterface(object):
+class ImporterGalaxyInterface(metaclass=abc.ABCMeta):
     """An abstract interface describing Galaxy operations used by gxformat2.
 
     Specifically containing definitions of operations required to load
@@ -30,7 +28,7 @@ class ImporterGalaxyInterface(object):
         raise NotImplementedError()
 
 
-class BioBlendImporterGalaxyInterface(object):
+class BioBlendImporterGalaxyInterface:
     """Implementation of :class:`ImporterGalaxyInterface` using bioblend."""
 
     def __init__(self, **kwds):

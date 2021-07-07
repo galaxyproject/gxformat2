@@ -5,16 +5,14 @@ import os
 import string
 import sys
 
-import pkg_resources
-
 from gxformat2.model import ensure_step_position
 from gxformat2.normalize import steps_normalized
 
-CYTOSCAPE_JS_TEMPLATE = pkg_resources.resource_filename(__name__, 'cytoscape.html')
+CYTOSCAPE_JS_TEMPLATE = os.path.join(os.path.dirname(__file__), 'cytoscape.html')
 MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
 SCRIPT_DESCRIPTION = """
-This script converts the an executable Galaxy workflow (in either format -
-Format 2 or native .ga) into a format for visualization with Cytoscape
+This script converts an executable Galaxy workflow (in either format - Format 2
+or native .ga) into a format for visualization with Cytoscape
 (https://cytoscape.org/).
 
 If the target output path ends with .html this script will output a HTML
@@ -35,7 +33,7 @@ def to_cytoscape(workflow_path: str, output_path=None):
     for i, step in enumerate(steps):
         step_id = step.get("id") or step.get("label") or str(i)
         step_type = step.get("type") or 'tool'
-        classes = ["type_%s" % step_type]
+        classes = [f"type_{step_type}"]
         if step_type in ['tool', 'subworkflow']:
             classes.append("runnable")
         else:
@@ -44,7 +42,7 @@ def to_cytoscape(workflow_path: str, output_path=None):
         tool_id = step.get("tool_id")
         if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
             tool_id = tool_id[len(MAIN_TS_PREFIX):]
-        label = step.get("id") or step.get("label") or ("tool:%s" % tool_id) or str(i)
+        label = step.get("id") or step.get("label") or (f"tool:{tool_id}" if tool_id else str(i))
         ensure_step_position(step, i)
         node_position = dict(x=int(step["position"]["left"]), y=int(step["position"]["top"]))
         repo_link = None
@@ -70,12 +68,12 @@ def to_cytoscape(workflow_path: str, output_path=None):
                 from_step, output = value.split("/", 1)
             else:
                 from_step, output = value, None
-            edge_id = "%s__to__%s" % (step_id, from_step)
+            edge_id = f"{step_id}__to__{from_step}"
             edge_data = {"id": edge_id, "source": from_step, "target": step_id, "input": key, "output": output}
             elements.append({"group": "edges", "data": edge_data})
 
     if output_path.endswith(".html"):
-        with open(CYTOSCAPE_JS_TEMPLATE, "r") as f:
+        with open(CYTOSCAPE_JS_TEMPLATE) as f:
             template = f.read()
         viz = string.Template(template).safe_substitute(elements=json.dumps(elements))
         with open(output_path, "w") as f:

@@ -44,8 +44,7 @@ def copy_without_workflow_output_labels(native_as_dict):
 def native_workflow_outputs(native_as_dict):
     steps = native_as_dict.get("steps")
     for step in steps.values():
-        for workflow_output in step.get("workflow_outputs", []):
-            yield workflow_output
+        yield from step.get("workflow_outputs", [])
 
 
 def round_trip(has_yaml):

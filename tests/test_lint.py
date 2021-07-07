@@ -245,7 +245,7 @@ def setup_module(module):
     # ensure that round tripping all green format2 workflows still lint green.
     for file_name in os.listdir(TEST_LINT_EXAMPLES):
         if file_name.startswith("0_format2") and "roundtrip" not in file_name:
-            roundtrip_contents = round_trip(open(os.path.join(TEST_LINT_EXAMPLES, file_name), "r").read())
+            roundtrip_contents = round_trip(open(os.path.join(TEST_LINT_EXAMPLES, file_name)).read())
             base = os.path.splitext(file_name)[0][len("0_"):]
             _dump_with_exit_code(roundtrip_contents, 0, base + "_roundtrip")
 
@@ -287,7 +287,7 @@ def test_lint_examples():
         expected_exit_code = int(file_name[0])
         actual_exit_code = main(["lint", file_path])
         if actual_exit_code != expected_exit_code:
-            contents = open(file_path, "r").read()
+            contents = open(file_path).read()
             template = "File [%s] didn't lint properly - expected exit code [%d], got [%d]. Contents:\n%s"
             raise AssertionError(template % (file_name, expected_exit_code, actual_exit_code, contents))
 
