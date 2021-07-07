@@ -5,12 +5,10 @@ import os
 import string
 import sys
 
-import pkg_resources
-
 from gxformat2.model import ensure_step_position
 from gxformat2.normalize import steps_normalized
 
-CYTOSCAPE_JS_TEMPLATE = pkg_resources.resource_filename(__name__, 'cytoscape.html')
+CYTOSCAPE_JS_TEMPLATE = os.path.join(os.path.dirname(__file__), 'cytoscape.html')
 MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
 SCRIPT_DESCRIPTION = """
 This script converts an executable Galaxy workflow (in either format - Format 2
