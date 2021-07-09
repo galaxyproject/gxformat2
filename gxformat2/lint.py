@@ -98,7 +98,7 @@ def lint_format2(lint_context, workflow_dict, path=None):
     from gxformat2.schema.v19_09 import load_document
     from schema_salad.exceptions import SchemaSaladException  # type: ignore
     try:
-        load_document("file://" + os.path.normpath(path))
+        load_document("file://" + os.path.abspath(path))
     except SchemaSaladException as e:
         lint_context.error("Validation failed " + str(e))
 
