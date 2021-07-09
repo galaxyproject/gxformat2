@@ -36,7 +36,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
     _copy_common_properties(native_workflow_dict, data)
     if "name" in native_workflow_dict:
         data["label"] = native_workflow_dict.pop("name")
-    for top_level_key in ['tags', 'uuid', 'report']:
+    for top_level_key in ['creator', 'license', 'release', 'tags', 'uuid', 'report']:
         value = native_workflow_dict.get(top_level_key)
         if value:
             data[top_level_key] = value
