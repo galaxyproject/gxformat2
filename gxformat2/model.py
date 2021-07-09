@@ -57,6 +57,11 @@ def ensure_step_position(step: dict, order_index: int):
         }
 
 
+def prune_position(step):
+    """Keep only ``left`` and ``top`` keys in step position."""
+    return {k: v for k, v in step.get('position', {}).items() if k in ('left', 'top')}
+
+
 def native_input_to_format2_type(step: dict, tool_state: dict) -> str:
     """Return a Format2 input type ('type') from a native input step dictionary."""
     module_type = step.get("type")

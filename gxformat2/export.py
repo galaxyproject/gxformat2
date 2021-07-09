@@ -5,7 +5,10 @@ import sys
 from collections import OrderedDict
 
 from ._labels import Labels
-from .model import native_input_to_format2_type
+from .model import (
+    native_input_to_format2_type,
+    prune_position,
+)
 from .yaml import ordered_dump
 
 SCRIPT_DESCRIPTION = """
@@ -56,6 +59,9 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
 
     # For each step, rebuild the form and encode the state
     for step in native_steps.values():
+        position = prune_position(step)
+        if position:
+            step['position'] = position
         for workflow_output in step.get("workflow_outputs", []):
             source = _to_source(workflow_output, label_map, output_id=step["id"])
             output_id = labels.ensure_new_output_label(workflow_output.get("label"))
