@@ -65,6 +65,7 @@ def test_basic_workflow():
         abstract_as_dict = from_dict(as_dict)
         assert abstract_as_dict["label"] == "Simple workflow"
         assert abstract_as_dict["doc"] == "Simple workflow that no-op cats a file and then selects 10 random lines.\n"
+        assert abstract_as_dict["steps"]["cat"]["doc"] == "cat doc"
 
 
 def test_to_cwl_optional():
