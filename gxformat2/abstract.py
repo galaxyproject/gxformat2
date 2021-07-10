@@ -63,6 +63,10 @@ def from_dict(workflow_dict: dict, subworkflow=False):
 def _format2_step_to_abstract(format2_step, requirements):
     """Convert Format2 step CWL 1.2+ abstract operation."""
     abstract_step = {}
+    for attr in ('doc', ):
+        value = format2_step.get(attr)
+        if value:
+            abstract_step[attr] = value
     if "run" in format2_step:
         # probably encountered in subworkflow.
         format2_run = format2_step["run"]
