@@ -146,7 +146,10 @@ def _run_example(as_dict, out=None):
 def check_abstract_def(abstract_as_dict):
     assert abstract_as_dict["class"] == "Workflow"
     assert abstract_as_dict["cwlVersion"] == CWL_VERSION
-    for step_def in abstract_as_dict["steps"].values():
+    steps = abstract_as_dict["steps"]
+    if isinstance(steps, dict):
+        steps = steps.values()
+    for step_def in steps:
         assert "run" in step_def
         run = step_def["run"]
         assert "in" in step_def
