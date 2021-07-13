@@ -83,7 +83,7 @@ $graph:
       - "null"
       default: false
       doc: |
-        If set to true WorkflowInputParameter is not required to submit Workflow.
+        If set to true, `WorkflowInputParameter` is not required to submit the workflow.
 
 - name: WorkflowOutputParameter
   type: record
@@ -364,4 +364,4 @@ $graph:
         items: string
       - "null"
       doc: |
-        Tags for Workflow.
+        Tags for the workflow.
