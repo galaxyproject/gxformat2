@@ -77,6 +77,13 @@ $graph:
         typeDSL: True
       doc: |
         Specify valid types of data that may be assigned to this parameter.
+    - name: optional
+      type:
+      - boolean
+      - "null"
+      default: false
+      doc: |
+        If set to true, `WorkflowInputParameter` is not required to submit the workflow.
 
 - name: WorkflowOutputParameter
   type: record
@@ -351,3 +358,10 @@ $graph:
     - name: report
       doc: Workflow invocation report template.
       type: Report?
+    - name: tags
+      type:
+      - type: array
+        items: string
+      - "null"
+      doc: |
+        Tags for the workflow.

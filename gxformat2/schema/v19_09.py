@@ -24,8 +24,8 @@ from typing import (
 from urllib.parse import quote, urlsplit, urlunsplit
 from urllib.request import pathname2url
 
-from ruamel import yaml
 from ruamel.yaml.comments import CommentedMap
+from ruamel.yaml.main import YAML
 
 from schema_salad.exceptions import SchemaSaladException, ValidationException
 from schema_salad.fetcher import DefaultFetcher, Fetcher
@@ -561,7 +561,9 @@ def _document_load_by_url(loader, url, loadingOptions):
     else:
         textIO = StringIO(text)
     textIO.name = str(url)
-    result = yaml.main.round_trip_load(textIO, preserve_quotes=True)
+    yaml = YAML()
+    yaml.preserve_quotes = True  # type: ignore
+    result = yaml.load(textIO)
     add_lc_filename(result, url)
 
     loadingOptions.idx[url] = result
@@ -651,7 +653,7 @@ A field of a record.
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -716,7 +718,7 @@ A field of a record.
                 )
             )
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -741,7 +743,7 @@ A field of a record.
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -792,7 +794,7 @@ class RecordSchema(Savable):
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -835,7 +837,7 @@ class RecordSchema(Savable):
                 )
             )
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -860,7 +862,7 @@ class RecordSchema(Savable):
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -905,7 +907,7 @@ Define an enumerated type.
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -945,7 +947,7 @@ Define an enumerated type.
                 )
             )
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -970,7 +972,7 @@ Define an enumerated type.
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -1014,7 +1016,7 @@ class ArraySchema(Savable):
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -1054,7 +1056,7 @@ class ArraySchema(Savable):
                 )
             )
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -1079,7 +1081,7 @@ class ArraySchema(Savable):
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -1173,7 +1175,7 @@ This field specifies the location of the step's node when rendered in the workfl
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -1213,7 +1215,7 @@ This field specifies the location of the step's node when rendered in the workfl
                 )
             )
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -1238,7 +1240,7 @@ This field specifies the location of the step's node when rendered in the workfl
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -1285,7 +1287,7 @@ class ToolShedRepository(Savable):
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -1359,7 +1361,7 @@ class ToolShedRepository(Savable):
                 )
             )
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -1384,7 +1386,7 @@ class ToolShedRepository(Savable):
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -1434,6 +1436,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
     def __init__(
         self,
         type,  # type: Any
+        optional,  # type: Any
         label=None,  # type: Any
         doc=None,  # type: Any
         id=None,  # type: Any
@@ -1446,7 +1449,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -1457,6 +1460,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
         self.default = default
         self.position = position
         self.type = type
+        self.optional = optional
 
     @classmethod
     def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
@@ -1558,8 +1562,22 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
                 )
         else:
             type = None
+        if 'optional' in _doc:
+            try:
+                optional = load_field(_doc.get(
+                    'optional'), union_of_booltype_or_None_type, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `optional` field is not valid because:",
+                        SourceLine(_doc, 'optional', str),
+                        [e]
+                    )
+                )
+        else:
+            optional = None
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -1572,7 +1590,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `{}`, expected one of: `label`, `doc`, `id`, `default`, `position`, `type`".format(k),
+                            "invalid field `{}`, expected one of: `label`, `doc`, `id`, `default`, `position`, `type`, `optional`".format(k),
                             SourceLine(_doc, k, str)
                         )
                     )
@@ -1580,11 +1598,11 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
 
         if _errors__:
             raise ValidationException("Trying 'WorkflowInputParameter'", None, _errors__)
-        return cls(label=label, doc=doc, id=id, default=default, position=position, type=type, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(label=label, doc=doc, id=id, default=default, position=position, type=type, optional=optional, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -1633,6 +1651,13 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
                 base_url=self.id,
                 relative_uris=relative_uris)
 
+        if self.optional is not None:
+            r['optional'] = save(
+                self.optional,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
         # top refers to the directory level
         if top:
             if self.loadingOptions.namespaces:
@@ -1641,7 +1666,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(['label', 'doc', 'id', 'default', 'position', 'type'])
+    attrs = frozenset(['label', 'doc', 'id', 'default', 'position', 'type', 'optional'])
 
 
 class WorkflowOutputParameter(OutputParameter):
@@ -1666,7 +1691,7 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -1764,7 +1789,7 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
         else:
             type = None
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -1789,7 +1814,7 @@ connect a WorkflowInputParameter to a WorkflowOutputParameter.
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -1886,7 +1911,7 @@ to representing `state` this way is defining inputs with default values.
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -2149,7 +2174,7 @@ to representing `state` this way is defining inputs with default values.
         else:
             runtime_inputs = None
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -2174,7 +2199,7 @@ to representing `state` this way is defining inputs with default values.
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -2326,7 +2351,7 @@ TODO:
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -2409,7 +2434,7 @@ TODO:
         else:
             default = None
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -2434,7 +2459,7 @@ TODO:
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -2499,7 +2524,7 @@ field is 'markdown'.
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -2527,7 +2552,7 @@ field is 'markdown'.
                 )
             )
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -2552,7 +2577,7 @@ field is 'markdown'.
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -2603,7 +2628,7 @@ to connect the output value to downstream parameters.
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -2746,7 +2771,7 @@ to connect the output value to downstream parameters.
         else:
             set_columns = None
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -2771,7 +2796,7 @@ to connect the output value to downstream parameters.
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -2866,6 +2891,7 @@ workflow definition schema the attribute should be called `label`.
         inputs,  # type: Any
         outputs,  # type: Any
         steps,  # type: Any
+        tags,  # type: Any
         id=None,  # type: Any
         label=None,  # type: Any
         doc=None,  # type: Any
@@ -2878,7 +2904,7 @@ workflow definition schema the attribute should be called `label`.
         if extension_fields:
             self.extension_fields = extension_fields
         else:
-            self.extension_fields = yaml.comments.CommentedMap()
+            self.extension_fields = CommentedMap()
         if loadingOptions:
             self.loadingOptions = loadingOptions
         else:
@@ -2892,6 +2918,7 @@ workflow definition schema the attribute should be called `label`.
         self.class_ = "GalaxyWorkflow"
         self.steps = steps
         self.report = report
+        self.tags = tags
 
     @classmethod
     def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
@@ -3016,8 +3043,22 @@ workflow definition schema the attribute should be called `label`.
                 )
         else:
             report = None
+        if 'tags' in _doc:
+            try:
+                tags = load_field(_doc.get(
+                    'tags'), union_of_array_of_strtype_or_None_type, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `tags` field is not valid because:",
+                        SourceLine(_doc, 'tags', str),
+                        [e]
+                    )
+                )
+        else:
+            tags = None
 
-        extension_fields = yaml.comments.CommentedMap()
+        extension_fields = CommentedMap()
         for k in _doc.keys():
             if k not in cls.attrs:
                 if ":" in k:
@@ -3030,7 +3071,7 @@ workflow definition schema the attribute should be called `label`.
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `{}`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `uuid`, `class`, `steps`, `report`".format(k),
+                            "invalid field `{}`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `uuid`, `class`, `steps`, `report`, `tags`".format(k),
                             SourceLine(_doc, k, str)
                         )
                     )
@@ -3038,11 +3079,11 @@ workflow definition schema the attribute should be called `label`.
 
         if _errors__:
             raise ValidationException("Trying 'GalaxyWorkflow'", None, _errors__)
-        return cls(id=id, label=label, doc=doc, inputs=inputs, outputs=outputs, uuid=uuid, steps=steps, report=report, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(id=id, label=label, doc=doc, inputs=inputs, outputs=outputs, uuid=uuid, steps=steps, report=report, tags=tags, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
-        r = yaml.comments.CommentedMap()  # type: Dict[str, Any]
+        r = CommentedMap()  # type: Dict[str, Any]
         for ef in self.extension_fields:
             r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
 
@@ -3107,6 +3148,13 @@ workflow definition schema the attribute should be called `label`.
                 base_url=self.id,
                 relative_uris=relative_uris)
 
+        if self.tags is not None:
+            r['tags'] = save(
+                self.tags,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
         # top refers to the directory level
         if top:
             if self.loadingOptions.namespaces:
@@ -3115,7 +3163,7 @@ workflow definition schema the attribute should be called `label`.
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(['id', 'label', 'doc', 'inputs', 'outputs', 'uuid', 'class', 'steps', 'report'])
+    attrs = frozenset(['id', 'label', 'doc', 'inputs', 'outputs', 'uuid', 'class', 'steps', 'report', 'tags'])
 
 
 _vocab = {
@@ -3284,6 +3332,7 @@ union_of_floattype_or_inttype = _UnionLoader((floattype, inttype,))
 union_of_None_type_or_ToolShedRepositoryLoader = _UnionLoader((None_type, ToolShedRepositoryLoader,))
 union_of_GalaxyTypeLoader_or_strtype_or_None_type = _UnionLoader((GalaxyTypeLoader, strtype, None_type,))
 typedsl_union_of_GalaxyTypeLoader_or_strtype_or_None_type_2 = _TypeDSLLoader(union_of_GalaxyTypeLoader_or_strtype_or_None_type, 2)
+union_of_booltype_or_None_type = _UnionLoader((booltype, None_type,))
 union_of_None_type_or_GalaxyTypeLoader = _UnionLoader((None_type, GalaxyTypeLoader,))
 typedsl_union_of_None_type_or_GalaxyTypeLoader_2 = _TypeDSLLoader(union_of_None_type_or_GalaxyTypeLoader, 2)
 array_of_WorkflowStepInputLoader = _ArrayLoader(WorkflowStepInputLoader)
@@ -3308,6 +3357,7 @@ array_of_WorkflowStepLoader = _ArrayLoader(WorkflowStepLoader)
 union_of_array_of_WorkflowStepLoader = _UnionLoader((array_of_WorkflowStepLoader,))
 idmap_steps_union_of_array_of_WorkflowStepLoader = _IdMapLoader(union_of_array_of_WorkflowStepLoader, 'id', 'None')
 union_of_None_type_or_ReportLoader = _UnionLoader((None_type, ReportLoader,))
+union_of_array_of_strtype_or_None_type = _UnionLoader((array_of_strtype, None_type,))
 union_of_GalaxyWorkflowLoader = _UnionLoader((GalaxyWorkflowLoader,))
 array_of_union_of_GalaxyWorkflowLoader = _ArrayLoader(union_of_GalaxyWorkflowLoader)
 union_of_GalaxyWorkflowLoader_or_array_of_union_of_GalaxyWorkflowLoader = _UnionLoader((GalaxyWorkflowLoader, array_of_union_of_GalaxyWorkflowLoader,))
@@ -3324,7 +3374,9 @@ def load_document(doc, baseuri=None, loadingOptions=None):
 
 def load_document_by_string(string, uri, loadingOptions=None):
     # type: (Any, str, Optional[LoadingOptions]) -> Any
-    result = yaml.main.round_trip_load(string, preserve_quotes=True)
+    yaml = YAML()
+    yaml.preserve_quotes = True  # type: ignore
+    result = yaml.load(string)
     add_lc_filename(result, uri)
 
     if loadingOptions is None:
@@ -3337,7 +3389,7 @@ def load_document_by_string(string, uri, loadingOptions=None):
 def load_document_by_yaml(yaml, uri, loadingOptions=None):
     # type: (Any, str, Optional[LoadingOptions]) -> Any
     '''Shortcut to load via a YAML object.
-    yaml: must be from ruamel.yaml.main.round_trip_load with preserve_quotes=True
+    yaml: must be from ruamel.yaml.main.YAML.load with preserve_quotes=True
     '''
     add_lc_filename(yaml, uri)
 

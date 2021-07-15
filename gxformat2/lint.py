@@ -37,9 +37,9 @@ def ensure_key_if_present(lint_context, has_keys, key, default=None, has_class=N
 
 def ensure_key_has_value(lint_context, has_keys, key, value, has_class=None, has_value=None):
     if has_class is not None and not isinstance(value, has_class):
-        lint_context.error("expected value [{value}] with key [{key}] to be of class {clazz}", key=key, value=value, clazz=has_class)
+        lint_context.error(f"expected value [{value}] with key [{key}] to be of class {has_class}")
     if has_value is not None and value != has_value:
-        lint_context.error("expected value [{value}] with key [{key}] to be {expected_value}", key=key, value=value, expected_value=has_value)
+        lint_context.error(f"expected value [{value}] with key [{key}] to be {has_value}")
     return value
 
 
@@ -98,12 +98,13 @@ def lint_format2(lint_context, workflow_dict, path=None):
     from gxformat2.schema.v19_09 import load_document
     from schema_salad.exceptions import SchemaSaladException  # type: ignore
     try:
-        load_document("file://" + os.path.normpath(path))
+        load_document("file://" + os.path.abspath(path))
     except SchemaSaladException as e:
         lint_context.error("Validation failed " + str(e))
 
-    steps = ensure_key_if_present(lint_context, workflow_dict, 'steps', default={}, has_class=dict)
-    for key, step in steps.items():
+    steps = ensure_key_if_present(lint_context, workflow_dict, 'steps', default={}, has_class=(dict, list))
+    steps = steps.values() if isinstance(steps, dict) else steps
+    for step in steps:
         _lint_step_errors(lint_context, step)
         _lint_tool_if_present(lint_context, step)
 
