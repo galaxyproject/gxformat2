@@ -20,7 +20,7 @@ def _copy_common_properties(from_native_step, to_format2_step):
     annotation = from_native_step.get("annotation")
     if annotation:
         to_format2_step["doc"] = annotation
-    for prop in ("position", "when"):
+    for prop in ("collection_type", "position", "when"):
         value = from_native_step.get(prop)
         if value:
             to_format2_step[prop] = value
@@ -73,7 +73,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             input_dict = {}
             tool_state = _tool_state(step)
             input_dict['type'] = native_input_to_format2_type(step, tool_state)
-            for tool_state_key in ['optional', 'format', 'default', 'restrictions', 'suggestions', 'restrictOnConnections']:
+            for tool_state_key in ['collection_type', 'optional', 'format', 'default', 'restrictions', 'suggestions', 'restrictOnConnections']:
                 if tool_state_key in tool_state:
                     input_dict[tool_state_key] = tool_state[tool_state_key]
 
