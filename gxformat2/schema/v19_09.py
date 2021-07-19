@@ -1442,6 +1442,8 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
         id=None,  # type: Any
         default=None,  # type: Any
         position=None,  # type: Any
+        format=None,  # type: Any
+        collection_type=None,  # type: Any
         extension_fields=None,  # type: Optional[Dict[str, Any]]
         loadingOptions=None  # type: Optional[LoadingOptions]
     ):  # type: (...) -> None
@@ -1461,6 +1463,8 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
         self.position = position
         self.type = type
         self.optional = optional
+        self.format = format
+        self.collection_type = collection_type
 
     @classmethod
     def fromDoc(cls, doc, baseuri, loadingOptions, docRoot=None):
@@ -1576,6 +1580,34 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
                 )
         else:
             optional = None
+        if 'format' in _doc:
+            try:
+                format = load_field(_doc.get(
+                    'format'), union_of_None_type_or_array_of_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `format` field is not valid because:",
+                        SourceLine(_doc, 'format', str),
+                        [e]
+                    )
+                )
+        else:
+            format = None
+        if 'collection_type' in _doc:
+            try:
+                collection_type = load_field(_doc.get(
+                    'collection_type'), union_of_None_type_or_strtype, baseuri, loadingOptions)
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `collection_type` field is not valid because:",
+                        SourceLine(_doc, 'collection_type', str),
+                        [e]
+                    )
+                )
+        else:
+            collection_type = None
 
         extension_fields = CommentedMap()
         for k in _doc.keys():
@@ -1590,7 +1622,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `{}`, expected one of: `label`, `doc`, `id`, `default`, `position`, `type`, `optional`".format(k),
+                            "invalid field `{}`, expected one of: `label`, `doc`, `id`, `default`, `position`, `type`, `optional`, `format`, `collection_type`".format(k),
                             SourceLine(_doc, k, str)
                         )
                     )
@@ -1598,7 +1630,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
 
         if _errors__:
             raise ValidationException("Trying 'WorkflowInputParameter'", None, _errors__)
-        return cls(label=label, doc=doc, id=id, default=default, position=position, type=type, optional=optional, extension_fields=extension_fields, loadingOptions=loadingOptions)
+        return cls(label=label, doc=doc, id=id, default=default, position=position, type=type, optional=optional, format=format, collection_type=collection_type, extension_fields=extension_fields, loadingOptions=loadingOptions)
 
     def save(self, top=False, base_url="", relative_uris=True):
         # type: (bool, str, bool) -> Dict[str, Any]
@@ -1658,6 +1690,20 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
                 base_url=self.id,
                 relative_uris=relative_uris)
 
+        if self.format is not None:
+            r['format'] = save(
+                self.format,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
+        if self.collection_type is not None:
+            r['collection_type'] = save(
+                self.collection_type,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris)
+
         # top refers to the directory level
         if top:
             if self.loadingOptions.namespaces:
@@ -1666,7 +1712,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(['label', 'doc', 'id', 'default', 'position', 'type', 'optional'])
+    attrs = frozenset(['label', 'doc', 'id', 'default', 'position', 'type', 'optional', 'format', 'collection_type'])
 
 
 class WorkflowOutputParameter(OutputParameter):
@@ -3333,6 +3379,7 @@ union_of_None_type_or_ToolShedRepositoryLoader = _UnionLoader((None_type, ToolSh
 union_of_GalaxyTypeLoader_or_strtype_or_None_type = _UnionLoader((GalaxyTypeLoader, strtype, None_type,))
 typedsl_union_of_GalaxyTypeLoader_or_strtype_or_None_type_2 = _TypeDSLLoader(union_of_GalaxyTypeLoader_or_strtype_or_None_type, 2)
 union_of_booltype_or_None_type = _UnionLoader((booltype, None_type,))
+union_of_None_type_or_array_of_strtype = _UnionLoader((None_type, array_of_strtype,))
 union_of_None_type_or_GalaxyTypeLoader = _UnionLoader((None_type, GalaxyTypeLoader,))
 typedsl_union_of_None_type_or_GalaxyTypeLoader_2 = _TypeDSLLoader(union_of_None_type_or_GalaxyTypeLoader, 2)
 array_of_WorkflowStepInputLoader = _ArrayLoader(WorkflowStepInputLoader)
@@ -3345,7 +3392,6 @@ idmap_out_union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None
 union_of_None_type_or_WorkflowStepTypeLoader = _UnionLoader((None_type, WorkflowStepTypeLoader,))
 typedsl_union_of_None_type_or_WorkflowStepTypeLoader_2 = _TypeDSLLoader(union_of_None_type_or_WorkflowStepTypeLoader, 2)
 union_of_None_type_or_GalaxyWorkflowLoader = _UnionLoader((None_type, GalaxyWorkflowLoader,))
-union_of_None_type_or_array_of_strtype = _UnionLoader((None_type, array_of_strtype,))
 uri_union_of_None_type_or_strtype_or_array_of_strtype_False_False_2 = _URILoader(union_of_None_type_or_strtype_or_array_of_strtype, False, False, 2)
 union_of_None_type_or_booltype = _UnionLoader((None_type, booltype,))
 array_of_WorkflowInputParameterLoader = _ArrayLoader(WorkflowInputParameterLoader)

@@ -129,6 +129,7 @@ def _format2_inputs_to_abstract(inputs):
 
         # Strip off Galaxy extensions
         input_def.pop("position", None)
+        input_def.pop('collection_type', None)
         abstract_inputs[input_name] = input_def
 
     return abstract_inputs
