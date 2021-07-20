@@ -2,10 +2,10 @@ import json
 import os
 
 from gxformat2._scripts import ensure_format2_from_path
-from gxformat2._yaml import ordered_dump
 from gxformat2.converter import main
 from gxformat2.lint import lint_ga_path
 from gxformat2.linting import LintContext
+from gxformat2.yaml import ordered_dump
 from ._helpers import TEST_PATH, to_example_path
 from .example_wfs import (
     BASIC_WORKFLOW,

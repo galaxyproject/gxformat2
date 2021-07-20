@@ -1,5 +1,5 @@
-from gxformat2._yaml import ordered_load
 from gxformat2.normalize import Inputs, inputs_normalized, NormalizedWorkflow, outputs_normalized
+from gxformat2.yaml import ordered_load
 from ._helpers import (
     to_native,
 )
@@ -55,7 +55,7 @@ def test_normalized_workflow():
     # same workflow with slightly different input definitions, make sure normalize
     # unifies these
     for wf in [INTEGER_INPUT, INT_INPUT]:
-        int_input_normalized = NormalizedWorkflow(ordered_load(INT_INPUT)).normalized_workflow_dict
+        int_input_normalized = NormalizedWorkflow(ordered_load(wf)).normalized_workflow_dict
         inputs = int_input_normalized["inputs"]
         assert isinstance(inputs, list)
         assert isinstance(inputs[0], dict)  # str converted to dictionary

@@ -1,8 +1,8 @@
 import copy
 import os
 
-from gxformat2._yaml import ordered_dump, ordered_load
 from gxformat2.lint import main
+from gxformat2.yaml import ordered_dump, ordered_load
 from ._helpers import (
     assert_valid_native,
     copy_without_workflow_output_labels,
@@ -93,7 +93,7 @@ def setup_module(module):
     _dump_with_exit_code(green_native, 0, "basic_native")
 
     green_explicit_errors_null = _deep_copy(green_native)
-    for step, step_def in green_explicit_errors_null["steps"].items():
+    for step_def in green_explicit_errors_null["steps"].values():
         step_def["errors"] = None
     _dump_with_exit_code(green_explicit_errors_null, 0, "basic_native_explicit_no_errors")
 

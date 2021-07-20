@@ -12,8 +12,8 @@ from cwltool.main import (
     tool_resolver,
 )
 
-from gxformat2._yaml import ordered_dump, ordered_load
 from gxformat2.abstract import CWL_VERSION, from_dict
+from gxformat2.yaml import ordered_dump, ordered_load
 from ._helpers import TEST_PATH, to_example_path
 from .example_wfs import (
     BASIC_WORKFLOW,
