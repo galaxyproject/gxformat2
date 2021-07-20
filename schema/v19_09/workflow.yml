@@ -28,7 +28,7 @@ $graph:
 
 - name: GalaxyType
   type: enum
-  extends: "sld:PrimitiveType"
+  extends: sld:PrimitiveType
   symbols:
     - integer
     - text

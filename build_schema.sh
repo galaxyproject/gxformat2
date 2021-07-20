@@ -22,6 +22,7 @@ do
         --brandstyle '<link rel="stylesheet" href="https://jamestaylor.org/galaxy-bootstrap/galaxy_bootstrap.css">' \
         --brandinverse \
         --brand '<img src="icon.png" />' \
+        --brandlink '' \
         --only "https://galaxyproject.org/gxformat2/${schema}#WorkflowDoc" \
         --only "https://galaxyproject.org/gxformat2/${schema}#GalaxyWorkflow" \
         workflow.yml > "$out"
