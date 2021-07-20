@@ -20,7 +20,7 @@ def _copy_common_properties(from_native_step, to_format2_step):
     annotation = from_native_step.get("annotation")
     if annotation:
         to_format2_step["doc"] = annotation
-    for prop in ("collection_type", "position", "when"):
+    for prop in ("position", "when"):
         value = from_native_step.get(prop)
         if value:
             to_format2_step[prop] = value
