@@ -93,7 +93,8 @@ $graph:
           items: string
     - name: collection_type
       doc: |
-        Collection type (defaults to 'list'). Nested collection types are separated with colon, e.g. list:list:paired.
+        Collection type (defaults to `list` if `type` is `collection`). Nested
+        collection types are separated with colons, e.g. `list:list:paired`.
       type:
         - "null"
         - string
