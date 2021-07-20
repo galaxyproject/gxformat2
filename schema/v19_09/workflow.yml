@@ -84,6 +84,20 @@ $graph:
       default: false
       doc: |
         If set to true, `WorkflowInputParameter` is not required to submit the workflow.
+    - name: format
+      doc: |
+        Specify datatype extension for valid input datasets.
+      type:
+        - "null"
+        - type: array
+          items: string
+    - name: collection_type
+      doc: |
+        Collection type (defaults to `list` if `type` is `collection`). Nested
+        collection types are separated with colons, e.g. `list:list:paired`.
+      type:
+        - "null"
+        - string
 
 - name: WorkflowOutputParameter
   type: record

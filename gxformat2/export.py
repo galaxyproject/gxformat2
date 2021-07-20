@@ -73,7 +73,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             input_dict = {}
             tool_state = _tool_state(step)
             input_dict['type'] = native_input_to_format2_type(step, tool_state)
-            for tool_state_key in ['optional', 'format', 'default', 'restrictions', 'suggestions', 'restrictOnConnections']:
+            for tool_state_key in ['collection_type', 'optional', 'format', 'default', 'restrictions', 'suggestions', 'restrictOnConnections']:
                 if tool_state_key in tool_state:
                     input_dict[tool_state_key] = tool_state[tool_state_key]
 
