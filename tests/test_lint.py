@@ -1,8 +1,8 @@
 import copy
 import os
 
-from gxformat2._yaml import ordered_dump, ordered_load
 from gxformat2.lint import main
+from gxformat2.yaml import ordered_dump, ordered_load
 from ._helpers import (
     assert_valid_native,
     copy_without_workflow_output_labels,
