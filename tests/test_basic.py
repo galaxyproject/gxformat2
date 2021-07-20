@@ -263,7 +263,7 @@ def test_export_native_no_labels():
     # Ensure outputs don't get mapped to 'null' key and ensure
     native_unicycler = ordered_load(open(os.path.join(TEST_PATH, "unicycler.ga")).read())
     before_output_count = 0
-    for workflow_output in native_workflow_outputs(native_unicycler):
+    for _ in native_workflow_outputs(native_unicycler):
         before_output_count += 1
     before_step_count = len(native_unicycler["steps"])
 
@@ -273,7 +273,7 @@ def test_export_native_no_labels():
     round_trip_unicycler = to_native(as_format2)
 
     after_output_count = 0
-    for workflow_output in native_workflow_outputs(round_trip_unicycler):
+    for _ in native_workflow_outputs(round_trip_unicycler):
         after_output_count += 1
     after_step_count = len(round_trip_unicycler["steps"])
 

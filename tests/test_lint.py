@@ -93,7 +93,7 @@ def setup_module(module):
     _dump_with_exit_code(green_native, 0, "basic_native")
 
     green_explicit_errors_null = _deep_copy(green_native)
-    for step, step_def in green_explicit_errors_null["steps"].items():
+    for step_def in green_explicit_errors_null["steps"].values():
         step_def["errors"] = None
     _dump_with_exit_code(green_explicit_errors_null, 0, "basic_native_explicit_no_errors")
 

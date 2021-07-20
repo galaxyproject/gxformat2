@@ -55,7 +55,7 @@ def test_normalized_workflow():
     # same workflow with slightly different input definitions, make sure normalize
     # unifies these
     for wf in [INTEGER_INPUT, INT_INPUT]:
-        int_input_normalized = NormalizedWorkflow(ordered_load(INT_INPUT)).normalized_workflow_dict
+        int_input_normalized = NormalizedWorkflow(ordered_load(wf)).normalized_workflow_dict
         inputs = int_input_normalized["inputs"]
         assert isinstance(inputs, list)
         assert isinstance(inputs[0], dict)  # str converted to dictionary

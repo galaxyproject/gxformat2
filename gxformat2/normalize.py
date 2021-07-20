@@ -184,7 +184,7 @@ def _ensure_implicit_step_outs(workflow_dict: dict):
 
     for step in steps_as_list(workflow_dict, mutate=False):
         step_in = step.get("in", {})
-        for step_in_name, step_in_def in step_in.items():
+        for step_in_def in step_in.values():
             register_output_source(step_in_def)
 
     for step in steps_as_list(workflow_dict, add_ids=True, inputs_offset=len(workflow_dict["inputs"]), mutate=True):
