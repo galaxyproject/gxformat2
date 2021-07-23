@@ -119,4 +119,14 @@ public interface GalaxyWorkflow extends Process, HasUUID, Savable {
    * </BLOCKQUOTE>
    */
   java.util.Optional<Report> getReport();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/tags</I><br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * Tags for the workflow. *
+   *
+   * </BLOCKQUOTE>
+   */
+  java.util.Optional<java.util.List<Object>> getTags();
 }

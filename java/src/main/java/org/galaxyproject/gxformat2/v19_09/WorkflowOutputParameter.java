@@ -27,6 +27,16 @@ public interface WorkflowOutputParameter extends OutputParameter, Savable {
    */
   java.util.Optional<String> getId();
   /**
+   * Getter for property <I>https://w3id.org/cwl/cwl#Labeled/label</I><br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * A short, human-readable label of this object. *
+   *
+   * </BLOCKQUOTE>
+   */
+  java.util.Optional<String> getLabel();
+  /**
    * Getter for property <I>https://w3id.org/cwl/salad#Documented/doc</I><br>
    *
    * <BLOCKQUOTE>

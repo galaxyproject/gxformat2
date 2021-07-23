@@ -86,7 +86,7 @@ public class StepPositionImpl extends SavableImpl implements StepPosition {
     Object top;
     try {
       top =
-          LoaderInstances.union_of_FloatInstance_or_IntegerInstance.loadField(
+          LoaderInstances.union_of_DoubleInstance_or_IntegerInstance.loadField(
               __doc.get("top"), __baseUri, __loadingOptions);
     } catch (ValidationException e) {
       top = null; // won't be used but prevents compiler from complaining.
@@ -96,7 +96,7 @@ public class StepPositionImpl extends SavableImpl implements StepPosition {
     Object left;
     try {
       left =
-          LoaderInstances.union_of_FloatInstance_or_IntegerInstance.loadField(
+          LoaderInstances.union_of_DoubleInstance_or_IntegerInstance.loadField(
               __doc.get("left"), __baseUri, __loadingOptions);
     } catch (ValidationException e) {
       left = null; // won't be used but prevents compiler from complaining.

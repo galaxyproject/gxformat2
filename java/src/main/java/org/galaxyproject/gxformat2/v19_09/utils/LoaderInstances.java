@@ -6,7 +6,6 @@ public class LoaderInstances {
   public static Loader<String> StringInstance = new PrimitiveLoader<String>(String.class);
   public static Loader<Integer> IntegerInstance = new PrimitiveLoader<Integer>(Integer.class);
   public static Loader<Long> LongInstance = new PrimitiveLoader<Long>(Long.class);
-  public static Loader<Float> FloatInstance = new PrimitiveLoader<Float>(Float.class);
   public static Loader<Double> DoubleInstance = new PrimitiveLoader<Double>(Double.class);
   public static Loader<Boolean> BooleanInstance = new PrimitiveLoader<Boolean>(Boolean.class);
   public static Loader<Object> NullInstance = new NullLoader();
@@ -172,14 +171,18 @@ public class LoaderInstances {
       new IdMapLoader(array_of_WorkflowOutputParameter, "id", "type");
   public static Loader<java.util.Optional<StepPosition>> optional_StepPosition =
       new OptionalLoader(StepPosition);
-  public static Loader<Object> union_of_FloatInstance_or_IntegerInstance =
-      new UnionLoader(new Loader[] {FloatInstance, IntegerInstance});
+  public static Loader<Object> union_of_DoubleInstance_or_IntegerInstance =
+      new UnionLoader(new Loader[] {DoubleInstance, IntegerInstance});
   public static Loader<java.util.Optional<ToolShedRepository>> optional_ToolShedRepository =
       new OptionalLoader(ToolShedRepository);
   public static Loader<Object> union_of_GalaxyType_or_StringInstance_or_NullInstance =
       new UnionLoader(new Loader[] {GalaxyType, StringInstance, NullInstance});
   public static Loader<Object> typedsl_union_of_GalaxyType_or_StringInstance_or_NullInstance_2 =
       new TypeDslLoader(union_of_GalaxyType_or_StringInstance_or_NullInstance, 2);
+  public static Loader<java.util.Optional<Boolean>> optional_BooleanInstance =
+      new OptionalLoader(BooleanInstance);
+  public static Loader<java.util.Optional<java.util.List<Object>>>
+      optional_array_of_StringInstance = new OptionalLoader(array_of_StringInstance);
   public static Loader<java.util.Optional<GalaxyType>> optional_GalaxyType =
       new OptionalLoader(GalaxyType);
   public static Loader<java.util.Optional<GalaxyType>> typedsl_optional_GalaxyType_2 =
@@ -209,17 +212,10 @@ public class LoaderInstances {
       new TypeDslLoader(optional_WorkflowStepType, 2);
   public static Loader<java.util.Optional<GalaxyWorkflow>> optional_GalaxyWorkflow =
       new OptionalLoader(GalaxyWorkflow);
-  public static Loader<java.util.Optional<GalaxyWorkflow>>
-      uri_optional_GalaxyWorkflow_False_False_None =
-          new UriLoader(optional_GalaxyWorkflow, false, false, null);
-  public static Loader<java.util.Optional<java.util.List<Object>>>
-      optional_array_of_StringInstance = new OptionalLoader(array_of_StringInstance);
   public static Loader<Object>
       uri_union_of_NullInstance_or_StringInstance_or_array_of_StringInstance_False_False_2 =
           new UriLoader(
               union_of_NullInstance_or_StringInstance_or_array_of_StringInstance, false, false, 2);
-  public static Loader<java.util.Optional<Boolean>> optional_BooleanInstance =
-      new OptionalLoader(BooleanInstance);
   public static Loader<String> uri_StringInstance_False_True_None =
       new UriLoader(StringInstance, false, true, null);
   public static Loader<java.util.List<WorkflowStep>> array_of_WorkflowStep =

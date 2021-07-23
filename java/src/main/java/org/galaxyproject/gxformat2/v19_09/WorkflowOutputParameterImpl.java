@@ -37,6 +37,21 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
     return this.id;
   }
 
+  private java.util.Optional<String> label;
+
+  /**
+   * Getter for property <I>https://w3id.org/cwl/cwl#Labeled/label</I><br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * A short, human-readable label of this object. *
+   *
+   * </BLOCKQUOTE>
+   */
+  public java.util.Optional<String> getLabel() {
+    return this.label;
+  }
+
   private Object doc;
 
   /**
@@ -139,6 +154,22 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
       }
     }
     __baseUri = (String) id.orElse(null);
+    java.util.Optional<String> label;
+
+    if (__doc.containsKey("label")) {
+      try {
+        label =
+            LoaderInstances.optional_StringInstance.loadField(
+                __doc.get("label"), __baseUri, __loadingOptions);
+      } catch (ValidationException e) {
+        label = null; // won't be used but prevents compiler from complaining.
+        final String __message = "the `label` field is not valid because:";
+        __errors.add(new ValidationException(__message, e));
+      }
+
+    } else {
+      label = null;
+    }
     Object doc;
 
     if (__doc.containsKey("doc")) {
@@ -190,6 +221,7 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
     if (!__errors.isEmpty()) {
       throw new ValidationException("Trying 'RecordField'", __errors);
     }
+    this.label = (java.util.Optional<String>) label;
     this.doc = (Object) doc;
     this.id = (java.util.Optional<String>) id;
     this.outputSource = (java.util.Optional<String>) outputSource;

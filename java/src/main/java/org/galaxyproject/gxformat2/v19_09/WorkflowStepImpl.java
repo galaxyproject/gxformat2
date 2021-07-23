@@ -554,7 +554,7 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     if (__doc.containsKey("run")) {
       try {
         run =
-            LoaderInstances.uri_optional_GalaxyWorkflow_False_False_None.loadField(
+            LoaderInstances.optional_GalaxyWorkflow.loadField(
                 __doc.get("run"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         run = null; // won't be used but prevents compiler from complaining.
