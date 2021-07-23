@@ -1,6 +1,5 @@
 package org.galaxyproject.gxformat2.v19_09.utils;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -99,7 +98,9 @@ public class LoadingOptions {
       }
       sp.add(url);
       final String fragment = String.join("/", sp);
-      url = Uris.unsplit(splitbase.scheme, splitbase.netloc, splitbase.path, splitbase.query, fragment);
+      url =
+          Uris.unsplit(
+              splitbase.scheme, splitbase.netloc, splitbase.path, splitbase.query, fragment);
     } else {
       url = this.fetcher.urlJoin(baseUrl, url);
     }

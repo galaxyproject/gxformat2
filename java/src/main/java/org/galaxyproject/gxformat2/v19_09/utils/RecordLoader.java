@@ -32,5 +32,4 @@ public class RecordLoader<T extends Savable> implements Loader<T> {
       throw new RuntimeException(e);
     }
   }
-
 }

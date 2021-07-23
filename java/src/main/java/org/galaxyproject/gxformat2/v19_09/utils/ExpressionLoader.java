@@ -2,8 +2,7 @@ package org.galaxyproject.gxformat2.v19_09.utils;
 
 public class ExpressionLoader implements Loader<String> {
 
-  public ExpressionLoader() {
-  }
+  public ExpressionLoader() {}
 
   public String load(
       final Object doc_,
@@ -11,9 +10,9 @@ public class ExpressionLoader implements Loader<String> {
       final LoadingOptions loadingOptions,
       final String docRoot) {
     if (doc_ instanceof String) {
-	    return (String) doc_;
+      return (String) doc_;
     } else {
-        throw new ValidationException("Expected a string.");
+      throw new ValidationException("Expected a string.");
     }
   }
 }

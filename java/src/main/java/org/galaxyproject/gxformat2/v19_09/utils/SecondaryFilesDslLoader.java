@@ -12,7 +12,6 @@ public class SecondaryFilesDslLoader<T> implements Loader<T> {
     this.innerLoader = innerLoader;
   }
 
-
   public T load(
       final Object doc_,
       final String baseUri,
@@ -25,44 +24,46 @@ public class SecondaryFilesDslLoader<T> implements Loader<T> {
       for (final Object d : docList) {
         Map<String, Object> entry = new HashMap<String, Object>();
         if (d instanceof String) {
-	  String dString = (String) d;
-	  if (dString.endsWith("?")) {
-            entry.put("pattern", dString.substring(0, dString.length()-1));
-	    entry.put("required", false);
-	  } else {
+          String dString = (String) d;
+          if (dString.endsWith("?")) {
+            entry.put("pattern", dString.substring(0, dString.length() - 1));
+            entry.put("required", false);
+          } else {
             entry.put("pattern", dString);
-	  }
-	  r.add(entry);
-	} else if (d instanceof Map) {
-	  Map<String, Object> dMap = (Map<String, Object>) d;
-	  if (dMap.containsKey("pattern")) {
+          }
+          r.add(entry);
+        } else if (d instanceof Map) {
+          Map<String, Object> dMap = (Map<String, Object>) d;
+          if (dMap.containsKey("pattern")) {
             entry.put("pattern", dMap.remove("pattern"));
-	  } else {
-            throw new ValidationException("Missing 'pattern' in secondaryFiles specification entry.");
-	  }
-	  if (dMap.containsKey("required")) {
+          } else {
+            throw new ValidationException(
+                "Missing 'pattern' in secondaryFiles specification entry.");
+          }
+          if (dMap.containsKey("required")) {
             entry.put("required", dMap.remove("required"));
-	  }
-	  if (dMap.size() > 0) {
-            throw new ValidationException("Unallowed values in secondaryFiles specification entry.");
-	  }
-	  r.add(entry);
-	} else {
-	  throw new ValidationException("Expected a string or sequence of (strings or mappings).");
-	}
+          }
+          if (dMap.size() > 0) {
+            throw new ValidationException(
+                "Unallowed values in secondaryFiles specification entry.");
+          }
+          r.add(entry);
+        } else {
+          throw new ValidationException("Expected a string or sequence of (strings or mappings).");
+        }
       }
     } else if (doc instanceof String) {
-	  String dString = (String) doc;
-	  Map<String, Object> entry = new HashMap<String, Object>();
-	  if (dString.endsWith("?")) {
-        entry.put("pattern", dString.substring(0, dString.length()-1));
-	    entry.put("required", false);
-	  } else {
+      String dString = (String) doc;
+      Map<String, Object> entry = new HashMap<String, Object>();
+      if (dString.endsWith("?")) {
+        entry.put("pattern", dString.substring(0, dString.length() - 1));
+        entry.put("required", false);
+      } else {
         entry.put("pattern", dString);
-	  }
-	  r.add(entry);
+      }
+      r.add(entry);
     } else {
-        throw new ValidationException("Expected a string or sequence of (strings or mappings).");
+      throw new ValidationException("Expected a string or sequence of (strings or mappings).");
     }
     return this.innerLoader.load(r, baseUri, loadingOptions, docRoot);
   }

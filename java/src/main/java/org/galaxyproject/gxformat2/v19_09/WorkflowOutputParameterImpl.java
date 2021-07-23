@@ -1,17 +1,3 @@
-// Copyright Common Workflow Language project contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package org.galaxyproject.gxformat2.v19_09;
 
 import org.galaxyproject.gxformat2.v19_09.utils.LoaderInstances;
@@ -21,26 +7,32 @@ import org.galaxyproject.gxformat2.v19_09.utils.SavableImpl;
 import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
 
 /**
-* Auto-generated class implementation for <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowOutputParameter</I><BR> <BLOCKQUOTE>
- Describe an output parameter of a workflow.  The parameter must be
- connected to one parameter defined in the workflow that
- will provide the value of the output parameter. It is legal to
- connect a WorkflowInputParameter to a WorkflowOutputParameter.
-  </BLOCKQUOTE>
+ * Auto-generated class implementation for
+ * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowOutputParameter</I><br>
+ *
+ * <BLOCKQUOTE>
+ *
+ * Describe an output parameter of a workflow. The parameter must be connected to one parameter
+ * defined in the workflow that will provide the value of the output parameter. It is legal to
+ * connect a WorkflowInputParameter to a WorkflowOutputParameter.
+ *
+ * </BLOCKQUOTE>
  */
 public class WorkflowOutputParameterImpl extends SavableImpl implements WorkflowOutputParameter {
   private LoadingOptions loadingOptions_ = new LoadingOptionsBuilder().build();
-  private java.util.Map<String, Object> extensionFields_ =
-      new java.util.HashMap<String, Object>();
+  private java.util.Map<String, Object> extensionFields_ = new java.util.HashMap<String, Object>();
 
   private java.util.Optional<String> id;
 
   /**
-   * Getter for property <I>https://w3id.org/cwl/cwl#Identified/id</I><BR>
+   * Getter for property <I>https://w3id.org/cwl/cwl#Identified/id</I><br>
+   *
    * <BLOCKQUOTE>
-   * The unique identifier for this object.   * </BLOCKQUOTE>
+   *
+   * The unique identifier for this object. *
+   *
+   * </BLOCKQUOTE>
    */
-
   public java.util.Optional<String> getId() {
     return this.id;
   }
@@ -48,11 +40,14 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
   private java.util.Optional<String> label;
 
   /**
-   * Getter for property <I>https://w3id.org/cwl/cwl#Labeled/label</I><BR>
+   * Getter for property <I>https://w3id.org/cwl/cwl#Labeled/label</I><br>
+   *
    * <BLOCKQUOTE>
-   * A short, human-readable label of this object.   * </BLOCKQUOTE>
+   *
+   * A short, human-readable label of this object. *
+   *
+   * </BLOCKQUOTE>
    */
-
   public java.util.Optional<String> getLabel() {
     return this.label;
   }
@@ -60,11 +55,14 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
   private Object doc;
 
   /**
-   * Getter for property <I>https://w3id.org/cwl/salad#Documented/doc</I><BR>
+   * Getter for property <I>https://w3id.org/cwl/salad#Documented/doc</I><br>
+   *
    * <BLOCKQUOTE>
-   * A documentation string for this object, or an array of strings which should be concatenated.   * </BLOCKQUOTE>
+   *
+   * A documentation string for this object, or an array of strings which should be concatenated. *
+   *
+   * </BLOCKQUOTE>
    */
-
   public Object getDoc() {
     return this.doc;
   }
@@ -72,13 +70,15 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
   private java.util.Optional<String> outputSource;
 
   /**
-   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowOutputParameter/outputSource</I><BR>
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowOutputParameter/outputSource</I><br>
+   *
    * <BLOCKQUOTE>
-   * Specifies workflow parameter that supply the value of to
-   * the output parameter.
-   *    * </BLOCKQUOTE>
+   *
+   * Specifies workflow parameter that supply the value of to the output parameter. *
+   *
+   * </BLOCKQUOTE>
    */
-
   public java.util.Optional<String> getOutputSource() {
     return this.outputSource;
   }
@@ -86,26 +86,29 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
   private java.util.Optional<GalaxyType> type;
 
   /**
-   * Getter for property <I>https://w3id.org/cwl/salad#type</I><BR>
+   * Getter for property <I>https://w3id.org/cwl/salad#type</I><br>
+   *
    * <BLOCKQUOTE>
-   * Specify valid types of data that may be assigned to this parameter.
-   *    * </BLOCKQUOTE>
+   *
+   * Specify valid types of data that may be assigned to this parameter. *
+   *
+   * </BLOCKQUOTE>
    */
-
   public java.util.Optional<GalaxyType> getType() {
     return this.type;
   }
 
   /**
-   * Used by {@link org.galaxyproject.gxformat2.v19_09.utils.RootLoader} to construct instances of WorkflowOutputParameterImpl.
+   * Used by {@link org.galaxyproject.gxformat2.v19_09.utils.RootLoader} to construct instances of
+   * WorkflowOutputParameterImpl.
    *
-   * @param __doc_            Document fragment to load this record object from (presumably a
-                              {@link java.util.Map}).
-   * @param __baseUri_        Base URI to generate child document IDs against.
-   * @param __loadingOptions  Context for loading URIs and populating objects.
-   * @param __docRoot_        ID at this position in the document (if available) (maybe?)
-   * @throws ValidationException If the document fragment is not a {@link java.util.Map}
-   *                             or validation of fields fails.
+   * @param __doc_ Document fragment to load this record object from (presumably a {@link
+   *     java.util.Map}).
+   * @param __baseUri_ Base URI to generate child document IDs against.
+   * @param __loadingOptions Context for loading URIs and populating objects.
+   * @param __docRoot_ ID at this position in the document (if available) (maybe?)
+   * @throws ValidationException If the document fragment is not a {@link java.util.Map} or
+   *     validation of fields fails.
    */
   public WorkflowOutputParameterImpl(
       final Object __doc_,
@@ -131,9 +134,8 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
     if (__doc.containsKey("id")) {
       try {
         id =
-            LoaderInstances
-                .uri_optional_StringInstance_True_False_None
-                .loadField(__doc.get("id"), __baseUri, __loadingOptions);
+            LoaderInstances.uri_optional_StringInstance_True_False_None.loadField(
+                __doc.get("id"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         id = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `id` field is not valid because:";
@@ -157,9 +159,8 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
     if (__doc.containsKey("label")) {
       try {
         label =
-            LoaderInstances
-                .optional_StringInstance
-                .loadField(__doc.get("label"), __baseUri, __loadingOptions);
+            LoaderInstances.optional_StringInstance.loadField(
+                __doc.get("label"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         label = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `label` field is not valid because:";
@@ -174,8 +175,7 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
     if (__doc.containsKey("doc")) {
       try {
         doc =
-            LoaderInstances
-                .union_of_NullInstance_or_StringInstance_or_array_of_StringInstance
+            LoaderInstances.union_of_NullInstance_or_StringInstance_or_array_of_StringInstance
                 .loadField(__doc.get("doc"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         doc = null; // won't be used but prevents compiler from complaining.
@@ -191,9 +191,8 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
     if (__doc.containsKey("outputSource")) {
       try {
         outputSource =
-            LoaderInstances
-                .optional_StringInstance
-                .loadField(__doc.get("outputSource"), __baseUri, __loadingOptions);
+            LoaderInstances.optional_StringInstance.loadField(
+                __doc.get("outputSource"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         outputSource = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `outputSource` field is not valid because:";
@@ -208,9 +207,8 @@ public class WorkflowOutputParameterImpl extends SavableImpl implements Workflow
     if (__doc.containsKey("type")) {
       try {
         type =
-            LoaderInstances
-                .typedsl_optional_GalaxyType_2
-                .loadField(__doc.get("type"), __baseUri, __loadingOptions);
+            LoaderInstances.typedsl_optional_GalaxyType_2.loadField(
+                __doc.get("type"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         type = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `type` field is not valid because:";
