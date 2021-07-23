@@ -1,5 +1,6 @@
 package org.galaxyproject.gxformat2.v19_09.utils;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,7 +11,7 @@ public class LoadingOptions {
   String fileUri;
   Map<String, String> namespaces;
   List<String> schemas;
-  Map<String, Map<String, Object>> idx;
+  Map<String, Object> idx;
   Map<String, String> vocab;
   Map<String, String> rvocab;
 
@@ -19,7 +20,7 @@ public class LoadingOptions {
       final String fileUri,
       final Map<String, String> namespaces,
       final List<String> schemas,
-      final Map<String, Map<String, Object>> idx) {
+      final Map<String, Object> idx) {
     this.fetcher = fetcher;
     this.fileUri = fileUri;
     this.namespaces = namespaces;
@@ -98,9 +99,7 @@ public class LoadingOptions {
       }
       sp.add(url);
       final String fragment = String.join("/", sp);
-      url =
-          Uris.unsplit(
-              splitbase.scheme, splitbase.netloc, splitbase.path, splitbase.query, fragment);
+      url = Uris.unsplit(splitbase.scheme, splitbase.netloc, splitbase.path, splitbase.query, fragment);
     } else {
       url = this.fetcher.urlJoin(baseUrl, url);
     }

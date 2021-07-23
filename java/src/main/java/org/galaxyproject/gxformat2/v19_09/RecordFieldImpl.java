@@ -1,3 +1,17 @@
+// Copyright Common Workflow Language project contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package org.galaxyproject.gxformat2.v19_09;
 
 import org.galaxyproject.gxformat2.v19_09.utils.LoaderInstances;
@@ -7,29 +21,23 @@ import org.galaxyproject.gxformat2.v19_09.utils.SavableImpl;
 import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
 
 /**
- * Auto-generated class implementation for <I>https://w3id.org/cwl/salad#RecordField</I><br>
- *
- * <BLOCKQUOTE>
- *
- * A field of a record.
- *
- * </BLOCKQUOTE>
+* Auto-generated class implementation for <I>https://w3id.org/cwl/salad#RecordField</I><BR> <BLOCKQUOTE>
+ A field of a record. </BLOCKQUOTE>
  */
 public class RecordFieldImpl extends SavableImpl implements RecordField {
   private LoadingOptions loadingOptions_ = new LoadingOptionsBuilder().build();
-  private java.util.Map<String, Object> extensionFields_ = new java.util.HashMap<String, Object>();
+  private java.util.Map<String, Object> extensionFields_ =
+      new java.util.HashMap<String, Object>();
 
   private String name;
 
   /**
-   * Getter for property <I>https://w3id.org/cwl/salad#RecordField/name</I><br>
-   *
+   * Getter for property <I>https://w3id.org/cwl/salad#RecordField/name</I><BR>
    * <BLOCKQUOTE>
-   *
-   * The name of the field *
-   *
-   * </BLOCKQUOTE>
+   * The name of the field
+   *    * </BLOCKQUOTE>
    */
+
   public String getName() {
     return this.name;
   }
@@ -37,14 +45,11 @@ public class RecordFieldImpl extends SavableImpl implements RecordField {
   private Object doc;
 
   /**
-   * Getter for property <I>https://w3id.org/cwl/salad#Documented/doc</I><br>
-   *
+   * Getter for property <I>https://w3id.org/cwl/salad#Documented/doc</I><BR>
    * <BLOCKQUOTE>
-   *
-   * A documentation string for this object, or an array of strings which should be concatenated. *
-   *
-   * </BLOCKQUOTE>
+   * A documentation string for this object, or an array of strings which should be concatenated.   * </BLOCKQUOTE>
    */
+
   public Object getDoc() {
     return this.doc;
   }
@@ -52,29 +57,26 @@ public class RecordFieldImpl extends SavableImpl implements RecordField {
   private Object type;
 
   /**
-   * Getter for property <I>https://w3id.org/cwl/salad#type</I><br>
-   *
+   * Getter for property <I>https://w3id.org/cwl/salad#type</I><BR>
    * <BLOCKQUOTE>
-   *
-   * The field type *
-   *
-   * </BLOCKQUOTE>
+   * The field type
+   *    * </BLOCKQUOTE>
    */
+
   public Object getType() {
     return this.type;
   }
 
   /**
-   * Used by {@link org.galaxyproject.gxformat2.v19_09.utils.RootLoader} to construct instances of
-   * RecordFieldImpl.
+   * Used by {@link org.galaxyproject.gxformat2.v19_09.utils.RootLoader} to construct instances of RecordFieldImpl.
    *
-   * @param __doc_ Document fragment to load this record object from (presumably a {@link
-   *     java.util.Map}).
-   * @param __baseUri_ Base URI to generate child document IDs against.
-   * @param __loadingOptions Context for loading URIs and populating objects.
-   * @param __docRoot_ ID at this position in the document (if available) (maybe?)
-   * @throws ValidationException If the document fragment is not a {@link java.util.Map} or
-   *     validation of fields fails.
+   * @param __doc_            Document fragment to load this record object from (presumably a
+                              {@link java.util.Map}).
+   * @param __baseUri_        Base URI to generate child document IDs against.
+   * @param __loadingOptions  Context for loading URIs and populating objects.
+   * @param __docRoot_        ID at this position in the document (if available) (maybe?)
+   * @throws ValidationException If the document fragment is not a {@link java.util.Map}
+   *                             or validation of fields fails.
    */
   public RecordFieldImpl(
       final Object __doc_,
@@ -100,8 +102,9 @@ public class RecordFieldImpl extends SavableImpl implements RecordField {
     if (__doc.containsKey("name")) {
       try {
         name =
-            LoaderInstances.uri_StringInstance_True_False_None.loadField(
-                __doc.get("name"), __baseUri, __loadingOptions);
+            LoaderInstances
+                .uri_StringInstance_True_False_None
+                .loadField(__doc.get("name"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         name = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `name` field is not valid because:";
@@ -125,7 +128,8 @@ public class RecordFieldImpl extends SavableImpl implements RecordField {
     if (__doc.containsKey("doc")) {
       try {
         doc =
-            LoaderInstances.union_of_NullInstance_or_StringInstance_or_array_of_StringInstance
+            LoaderInstances
+                .union_of_NullInstance_or_StringInstance_or_array_of_StringInstance
                 .loadField(__doc.get("doc"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         doc = null; // won't be used but prevents compiler from complaining.
