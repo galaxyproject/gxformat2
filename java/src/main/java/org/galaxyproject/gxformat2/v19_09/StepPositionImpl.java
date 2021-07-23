@@ -1,3 +1,17 @@
+// Copyright Common Workflow Language project contributors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package org.galaxyproject.gxformat2.v19_09;
 
 import org.galaxyproject.gxformat2.v19_09.utils.LoaderInstances;
@@ -7,31 +21,23 @@ import org.galaxyproject.gxformat2.v19_09.utils.SavableImpl;
 import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
 
 /**
- * Auto-generated class implementation for
- * <I>https://galaxyproject.org/gxformat2/gxformat2common#StepPosition</I><br>
- *
- * <BLOCKQUOTE>
- *
- * This field specifies the location of the step's node when rendered in the workflow editor.
- *
- * </BLOCKQUOTE>
+* Auto-generated class implementation for <I>https://galaxyproject.org/gxformat2/gxformat2common#StepPosition</I><BR> <BLOCKQUOTE>
+ This field specifies the location of the step's node when rendered in the workflow editor. </BLOCKQUOTE>
  */
 public class StepPositionImpl extends SavableImpl implements StepPosition {
   private LoadingOptions loadingOptions_ = new LoadingOptionsBuilder().build();
-  private java.util.Map<String, Object> extensionFields_ = new java.util.HashMap<String, Object>();
+  private java.util.Map<String, Object> extensionFields_ =
+      new java.util.HashMap<String, Object>();
 
   private Object top;
 
   /**
-   * Getter for property <I>https://galaxyproject.org/gxformat2/gxformat2common#StepPosition/top</I>
-   * <br>
-   *
+   * Getter for property <I>https://galaxyproject.org/gxformat2/gxformat2common#StepPosition/top</I><BR>
    * <BLOCKQUOTE>
-   *
-   * Relative vertical position of the step's node when rendered in the workflow editor. *
-   *
-   * </BLOCKQUOTE>
+   * Relative vertical position of the step's node when rendered in the workflow editor.
+   *    * </BLOCKQUOTE>
    */
+
   public Object getTop() {
     return this.top;
   }
@@ -39,30 +45,26 @@ public class StepPositionImpl extends SavableImpl implements StepPosition {
   private Object left;
 
   /**
-   * Getter for property
-   * <I>https://galaxyproject.org/gxformat2/gxformat2common#StepPosition/left</I><br>
-   *
+   * Getter for property <I>https://galaxyproject.org/gxformat2/gxformat2common#StepPosition/left</I><BR>
    * <BLOCKQUOTE>
-   *
-   * Relative horizontal position of the step's node when rendered in the workflow editor. *
-   *
-   * </BLOCKQUOTE>
+   * Relative horizontal position of the step's node when rendered in the workflow editor.
+   *    * </BLOCKQUOTE>
    */
+
   public Object getLeft() {
     return this.left;
   }
 
   /**
-   * Used by {@link org.galaxyproject.gxformat2.v19_09.utils.RootLoader} to construct instances of
-   * StepPositionImpl.
+   * Used by {@link org.galaxyproject.gxformat2.v19_09.utils.RootLoader} to construct instances of StepPositionImpl.
    *
-   * @param __doc_ Document fragment to load this record object from (presumably a {@link
-   *     java.util.Map}).
-   * @param __baseUri_ Base URI to generate child document IDs against.
-   * @param __loadingOptions Context for loading URIs and populating objects.
-   * @param __docRoot_ ID at this position in the document (if available) (maybe?)
-   * @throws ValidationException If the document fragment is not a {@link java.util.Map} or
-   *     validation of fields fails.
+   * @param __doc_            Document fragment to load this record object from (presumably a
+                              {@link java.util.Map}).
+   * @param __baseUri_        Base URI to generate child document IDs against.
+   * @param __loadingOptions  Context for loading URIs and populating objects.
+   * @param __docRoot_        ID at this position in the document (if available) (maybe?)
+   * @throws ValidationException If the document fragment is not a {@link java.util.Map}
+   *                             or validation of fields fails.
    */
   public StepPositionImpl(
       final Object __doc_,
@@ -86,8 +88,9 @@ public class StepPositionImpl extends SavableImpl implements StepPosition {
     Object top;
     try {
       top =
-          LoaderInstances.union_of_FloatInstance_or_IntegerInstance.loadField(
-              __doc.get("top"), __baseUri, __loadingOptions);
+          LoaderInstances
+              .union_of_DoubleInstance_or_IntegerInstance
+              .loadField(__doc.get("top"), __baseUri, __loadingOptions);
     } catch (ValidationException e) {
       top = null; // won't be used but prevents compiler from complaining.
       final String __message = "the `top` field is not valid because:";
@@ -96,8 +99,9 @@ public class StepPositionImpl extends SavableImpl implements StepPosition {
     Object left;
     try {
       left =
-          LoaderInstances.union_of_FloatInstance_or_IntegerInstance.loadField(
-              __doc.get("left"), __baseUri, __loadingOptions);
+          LoaderInstances
+              .union_of_DoubleInstance_or_IntegerInstance
+              .loadField(__doc.get("left"), __baseUri, __loadingOptions);
     } catch (ValidationException e) {
       left = null; // won't be used but prevents compiler from complaining.
       final String __message = "the `left` field is not valid because:";
