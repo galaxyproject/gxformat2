@@ -11,8 +11,6 @@
 
     <properties>
         <commonslang.version>3.7</commonslang.version>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
     </properties>
 
     <licenses>
@@ -119,9 +117,9 @@
             <version>4.13.1</version>
         </dependency>
         <dependency>
-            <groupId>org.snakeyaml</groupId>
-            <artifactId>snakeyaml-engine</artifactId>
-            <version>2.2.1</version>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.26</version>
         </dependency>
     </dependencies>
 </project>

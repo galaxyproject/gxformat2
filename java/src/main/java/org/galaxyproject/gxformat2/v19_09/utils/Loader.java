@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface Loader<T> {
 
-  T load(
+  abstract T load(
       final Object doc,
       final String baseUri,
       final LoadingOptions loadingOptions,
@@ -49,29 +49,15 @@ public interface Loader<T> {
 
   default T documentLoadByUrl(final String url, final LoadingOptions loadingOptions) {
     if (loadingOptions.idx.containsKey(url)) {
-      Object result = loadingOptions.idx.get(url);
-      if (result instanceof String) {
-        return documentLoad((String) result, url, loadingOptions);
-      } else if (result instanceof Map) {
-        return documentLoad((Map<String, Object>) result, url, loadingOptions);
-      }
-      return load(result, url, loadingOptions);
+      return documentLoad(loadingOptions.idx.get(url), url, loadingOptions);
     }
 
     final String text = loadingOptions.fetcher.fetchText(url);
-    try {
-      Map<String, Object> resultMap = YamlUtils.mapFromString(text);
-      loadingOptions.idx.put(url, resultMap);
-      final LoadingOptionsBuilder urlLoadingOptions =
-          new LoadingOptionsBuilder().copiedFrom(loadingOptions).setFileUri(url);
-      return documentLoad(resultMap, url, urlLoadingOptions.build());
-    } catch (ClassCastException e) {
-      List<Object> resultList = YamlUtils.listFromString(text);
-      loadingOptions.idx.put(url, resultList);
-      final LoadingOptionsBuilder urlLoadingOptions =
-          new LoadingOptionsBuilder().copiedFrom(loadingOptions).setFileUri(url);
-      return documentLoad(resultList, url, urlLoadingOptions.build());
-    }
+    final Map<String, Object> result = YamlUtils.mapFromString(text);
+    loadingOptions.idx.put(url, result);
+    final LoadingOptionsBuilder urlLoadingOptions =
+        new LoadingOptionsBuilder().copiedFrom(loadingOptions).setFileUri(url);
+    return documentLoad(result, url, urlLoadingOptions.build());
   }
 
   default T loadField(
@@ -99,7 +85,7 @@ public interface Loader<T> {
     return load(val, baseUri, loadingOptions);
   }
 
-  default Map<String, Object> copyWithoutKey(final Map<String, Object> doc, final String key) {
+  private Map<String, Object> copyWithoutKey(final Map<String, Object> doc, final String key) {
     final Map<String, Object> result = new HashMap();
     for (final Map.Entry<String, Object> entry : doc.entrySet()) {
       if (!entry.getKey().equals(key)) {
@@ -109,7 +95,7 @@ public interface Loader<T> {
     return result;
   }
 
-  static <T> T validateOfJavaType(final Class<T> clazz, final Object doc) {
+  public static <T> T validateOfJavaType(final Class<T> clazz, final Object doc) {
     if (!clazz.isInstance(doc)) {
       String className = "null";
       if (doc != null) {

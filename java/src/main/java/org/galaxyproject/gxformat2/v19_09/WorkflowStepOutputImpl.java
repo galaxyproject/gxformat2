@@ -1,17 +1,3 @@
-// Copyright Common Workflow Language project contributors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package org.galaxyproject.gxformat2.v19_09;
 
 import org.galaxyproject.gxformat2.v19_09.utils.LoaderInstances;
@@ -21,30 +7,35 @@ import org.galaxyproject.gxformat2.v19_09.utils.SavableImpl;
 import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
 
 /**
-* Auto-generated class implementation for <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput</I><BR> <BLOCKQUOTE>
- Associate an output parameter of the underlying process with a workflow
- parameter.  The workflow parameter (given in the `id` field) be may be used
- as a `source` to connect with input parameters of other workflow steps, or
- with an output parameter of the process.
- 
- A unique identifier for this workflow output parameter.  This is
- the identifier to use in the `source` field of `WorkflowStepInput`
- to connect the output value to downstream parameters.
-  </BLOCKQUOTE>
+ * Auto-generated class implementation for
+ * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput</I><br>
+ *
+ * <BLOCKQUOTE>
+ *
+ * Associate an output parameter of the underlying process with a workflow parameter. The workflow
+ * parameter (given in the `id` field) be may be used as a `source` to connect with input parameters
+ * of other workflow steps, or with an output parameter of the process.
+ *
+ * <p>A unique identifier for this workflow output parameter. This is the identifier to use in the
+ * `source` field of `WorkflowStepInput` to connect the output value to downstream parameters.
+ *
+ * </BLOCKQUOTE>
  */
 public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepOutput {
   private LoadingOptions loadingOptions_ = new LoadingOptionsBuilder().build();
-  private java.util.Map<String, Object> extensionFields_ =
-      new java.util.HashMap<String, Object>();
+  private java.util.Map<String, Object> extensionFields_ = new java.util.HashMap<String, Object>();
 
   private java.util.Optional<String> id;
 
   /**
-   * Getter for property <I>https://w3id.org/cwl/cwl#Identified/id</I><BR>
+   * Getter for property <I>https://w3id.org/cwl/cwl#Identified/id</I><br>
+   *
    * <BLOCKQUOTE>
-   * The unique identifier for this object.   * </BLOCKQUOTE>
+   *
+   * The unique identifier for this object. *
+   *
+   * </BLOCKQUOTE>
    */
-
   public java.util.Optional<String> getId() {
     return this.id;
   }
@@ -52,10 +43,9 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
   private java.util.Optional<java.util.List<Object>> add_tags;
 
   /**
-   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/add_tags</I><BR>
-
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/add_tags</I><br>
    */
-
   public java.util.Optional<java.util.List<Object>> getAdd_tags() {
     return this.add_tags;
   }
@@ -63,10 +53,9 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
   private java.util.Optional<String> change_datatype;
 
   /**
-   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/change_datatype</I><BR>
-
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/change_datatype</I><br>
    */
-
   public java.util.Optional<String> getChange_datatype() {
     return this.change_datatype;
   }
@@ -74,10 +63,10 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
   private java.util.Optional<Boolean> delete_intermediate_datasets;
 
   /**
-   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/delete_intermediate_datasets</I><BR>
-
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/delete_intermediate_datasets</I>
+   * <br>
    */
-
   public java.util.Optional<Boolean> getDelete_intermediate_datasets() {
     return this.delete_intermediate_datasets;
   }
@@ -85,10 +74,9 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
   private java.util.Optional<Boolean> hide;
 
   /**
-   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/hide</I><BR>
-
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/hide</I>
+   * <br>
    */
-
   public java.util.Optional<Boolean> getHide() {
     return this.hide;
   }
@@ -96,10 +84,9 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
   private java.util.Optional<java.util.List<Object>> remove_tags;
 
   /**
-   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/remove_tags</I><BR>
-
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/remove_tags</I><br>
    */
-
   public java.util.Optional<java.util.List<Object>> getRemove_tags() {
     return this.remove_tags;
   }
@@ -107,10 +94,9 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
   private java.util.Optional<String> rename;
 
   /**
-   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/rename</I><BR>
-
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/rename</I>
+   * <br>
    */
-
   public java.util.Optional<String> getRename() {
     return this.rename;
   }
@@ -118,24 +104,24 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
   private java.util.Optional<java.util.List<Object>> set_columns;
 
   /**
-   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/set_columns</I><BR>
-
+   * Getter for property
+   * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/set_columns</I><br>
    */
-
   public java.util.Optional<java.util.List<Object>> getSet_columns() {
     return this.set_columns;
   }
 
   /**
-   * Used by {@link org.galaxyproject.gxformat2.v19_09.utils.RootLoader} to construct instances of WorkflowStepOutputImpl.
+   * Used by {@link org.galaxyproject.gxformat2.v19_09.utils.RootLoader} to construct instances of
+   * WorkflowStepOutputImpl.
    *
-   * @param __doc_            Document fragment to load this record object from (presumably a
-                              {@link java.util.Map}).
-   * @param __baseUri_        Base URI to generate child document IDs against.
-   * @param __loadingOptions  Context for loading URIs and populating objects.
-   * @param __docRoot_        ID at this position in the document (if available) (maybe?)
-   * @throws ValidationException If the document fragment is not a {@link java.util.Map}
-   *                             or validation of fields fails.
+   * @param __doc_ Document fragment to load this record object from (presumably a {@link
+   *     java.util.Map}).
+   * @param __baseUri_ Base URI to generate child document IDs against.
+   * @param __loadingOptions Context for loading URIs and populating objects.
+   * @param __docRoot_ ID at this position in the document (if available) (maybe?)
+   * @throws ValidationException If the document fragment is not a {@link java.util.Map} or
+   *     validation of fields fails.
    */
   public WorkflowStepOutputImpl(
       final Object __doc_,
@@ -161,9 +147,8 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     if (__doc.containsKey("id")) {
       try {
         id =
-            LoaderInstances
-                .uri_optional_StringInstance_True_False_None
-                .loadField(__doc.get("id"), __baseUri, __loadingOptions);
+            LoaderInstances.uri_optional_StringInstance_True_False_None.loadField(
+                __doc.get("id"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         id = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `id` field is not valid because:";
@@ -187,9 +172,8 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     if (__doc.containsKey("add_tags")) {
       try {
         add_tags =
-            LoaderInstances
-                .optional_array_of_StringInstance
-                .loadField(__doc.get("add_tags"), __baseUri, __loadingOptions);
+            LoaderInstances.optional_array_of_StringInstance.loadField(
+                __doc.get("add_tags"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         add_tags = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `add_tags` field is not valid because:";
@@ -204,9 +188,8 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     if (__doc.containsKey("change_datatype")) {
       try {
         change_datatype =
-            LoaderInstances
-                .optional_StringInstance
-                .loadField(__doc.get("change_datatype"), __baseUri, __loadingOptions);
+            LoaderInstances.optional_StringInstance.loadField(
+                __doc.get("change_datatype"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         change_datatype = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `change_datatype` field is not valid because:";
@@ -221,11 +204,11 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     if (__doc.containsKey("delete_intermediate_datasets")) {
       try {
         delete_intermediate_datasets =
-            LoaderInstances
-                .optional_BooleanInstance
-                .loadField(__doc.get("delete_intermediate_datasets"), __baseUri, __loadingOptions);
+            LoaderInstances.optional_BooleanInstance.loadField(
+                __doc.get("delete_intermediate_datasets"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
-        delete_intermediate_datasets = null; // won't be used but prevents compiler from complaining.
+        delete_intermediate_datasets =
+            null; // won't be used but prevents compiler from complaining.
         final String __message = "the `delete_intermediate_datasets` field is not valid because:";
         __errors.add(new ValidationException(__message, e));
       }
@@ -238,9 +221,8 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     if (__doc.containsKey("hide")) {
       try {
         hide =
-            LoaderInstances
-                .optional_BooleanInstance
-                .loadField(__doc.get("hide"), __baseUri, __loadingOptions);
+            LoaderInstances.optional_BooleanInstance.loadField(
+                __doc.get("hide"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         hide = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `hide` field is not valid because:";
@@ -255,9 +237,8 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     if (__doc.containsKey("remove_tags")) {
       try {
         remove_tags =
-            LoaderInstances
-                .optional_array_of_StringInstance
-                .loadField(__doc.get("remove_tags"), __baseUri, __loadingOptions);
+            LoaderInstances.optional_array_of_StringInstance.loadField(
+                __doc.get("remove_tags"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         remove_tags = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `remove_tags` field is not valid because:";
@@ -272,9 +253,8 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     if (__doc.containsKey("rename")) {
       try {
         rename =
-            LoaderInstances
-                .optional_StringInstance
-                .loadField(__doc.get("rename"), __baseUri, __loadingOptions);
+            LoaderInstances.optional_StringInstance.loadField(
+                __doc.get("rename"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         rename = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `rename` field is not valid because:";
@@ -289,9 +269,8 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     if (__doc.containsKey("set_columns")) {
       try {
         set_columns =
-            LoaderInstances
-                .optional_array_of_StringInstance
-                .loadField(__doc.get("set_columns"), __baseUri, __loadingOptions);
+            LoaderInstances.optional_array_of_StringInstance.loadField(
+                __doc.get("set_columns"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         set_columns = null; // won't be used but prevents compiler from complaining.
         final String __message = "the `set_columns` field is not valid because:";

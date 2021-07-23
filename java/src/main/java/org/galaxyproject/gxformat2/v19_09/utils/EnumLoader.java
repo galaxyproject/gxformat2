@@ -1,11 +1,8 @@
 package org.galaxyproject.gxformat2.v19_09.utils;
 
 import java.lang.reflect.Method;
-import java.lang.ReflectiveOperationException;
-import java.util.Arrays;
-import java.util.List;
 
-public class EnumLoader<T extends Enum> implements Loader<T>{
+public class EnumLoader<T extends Enum> implements Loader<T> {
   private final Class<T> symbolEnumClass;
 
   public EnumLoader(final Class<T> symbolEnumClass) {

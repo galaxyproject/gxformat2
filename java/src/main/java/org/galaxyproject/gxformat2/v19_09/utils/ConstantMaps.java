@@ -16,7 +16,8 @@ public class ConstantMaps {
     vocab.put("GalaxyType", "https://galaxyproject.org/gxformat2/v19_09#GalaxyType");
     vocab.put("GalaxyWorkflow", "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow");
     vocab.put("HasStepErrors", "https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors");
-    vocab.put("HasStepPosition", "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition");
+    vocab.put(
+        "HasStepPosition", "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition");
     vocab.put("HasUUID", "https://galaxyproject.org/gxformat2/gxformat2common#HasUUID");
     vocab.put("Identified", "https://w3id.org/cwl/cwl#Identified");
     vocab.put("InputParameter", "https://w3id.org/cwl/cwl#InputParameter");
@@ -27,16 +28,24 @@ public class ConstantMaps {
     vocab.put("Process", "https://w3id.org/cwl/cwl#Process");
     vocab.put("RecordField", "https://w3id.org/cwl/salad#RecordField");
     vocab.put("RecordSchema", "https://w3id.org/cwl/salad#RecordSchema");
-    vocab.put("ReferencesTool", "https://galaxyproject.org/gxformat2/gxformat2common#ReferencesTool");
+    vocab.put(
+        "ReferencesTool", "https://galaxyproject.org/gxformat2/gxformat2common#ReferencesTool");
     vocab.put("Report", "https://galaxyproject.org/gxformat2/v19_09#Report");
     vocab.put("Sink", "https://galaxyproject.org/gxformat2/v19_09#Sink");
     vocab.put("StepPosition", "https://galaxyproject.org/gxformat2/gxformat2common#StepPosition");
-    vocab.put("ToolShedRepository", "https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository");
-    vocab.put("WorkflowInputParameter", "https://galaxyproject.org/gxformat2/v19_09#WorkflowInputParameter");
-    vocab.put("WorkflowOutputParameter", "https://galaxyproject.org/gxformat2/v19_09#WorkflowOutputParameter");
+    vocab.put(
+        "ToolShedRepository",
+        "https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository");
+    vocab.put(
+        "WorkflowInputParameter",
+        "https://galaxyproject.org/gxformat2/v19_09#WorkflowInputParameter");
+    vocab.put(
+        "WorkflowOutputParameter",
+        "https://galaxyproject.org/gxformat2/v19_09#WorkflowOutputParameter");
     vocab.put("WorkflowStep", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStep");
     vocab.put("WorkflowStepInput", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepInput");
-    vocab.put("WorkflowStepOutput", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput");
+    vocab.put(
+        "WorkflowStepOutput", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput");
     vocab.put("WorkflowStepType", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType");
     vocab.put("array", "array");
     vocab.put("boolean", "http://www.w3.org/2001/XMLSchema#boolean");
@@ -52,10 +61,10 @@ public class ConstantMaps {
     vocab.put("pause", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/pause");
     vocab.put("record", "record");
     vocab.put("string", "http://www.w3.org/2001/XMLSchema#string");
-    vocab.put("subworkflow", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/subworkflow");
+    vocab.put(
+        "subworkflow", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/subworkflow");
     vocab.put("text", "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/text");
     vocab.put("tool", "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/tool");
-
 
     rvocab.put("https://w3id.org/cwl/salad#Any", "Any");
     rvocab.put("https://w3id.org/cwl/salad#ArraySchema", "ArraySchema");
@@ -64,8 +73,10 @@ public class ConstantMaps {
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#GalaxyType/File", "File");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#GalaxyType", "GalaxyType");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow", "GalaxyWorkflow");
-    rvocab.put("https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors", "HasStepErrors");
-    rvocab.put("https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition", "HasStepPosition");
+    rvocab.put(
+        "https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors", "HasStepErrors");
+    rvocab.put(
+        "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition", "HasStepPosition");
     rvocab.put("https://galaxyproject.org/gxformat2/gxformat2common#HasUUID", "HasUUID");
     rvocab.put("https://w3id.org/cwl/cwl#Identified", "Identified");
     rvocab.put("https://w3id.org/cwl/cwl#InputParameter", "InputParameter");
@@ -76,16 +87,24 @@ public class ConstantMaps {
     rvocab.put("https://w3id.org/cwl/cwl#Process", "Process");
     rvocab.put("https://w3id.org/cwl/salad#RecordField", "RecordField");
     rvocab.put("https://w3id.org/cwl/salad#RecordSchema", "RecordSchema");
-    rvocab.put("https://galaxyproject.org/gxformat2/gxformat2common#ReferencesTool", "ReferencesTool");
+    rvocab.put(
+        "https://galaxyproject.org/gxformat2/gxformat2common#ReferencesTool", "ReferencesTool");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#Report", "Report");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#Sink", "Sink");
     rvocab.put("https://galaxyproject.org/gxformat2/gxformat2common#StepPosition", "StepPosition");
-    rvocab.put("https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository", "ToolShedRepository");
-    rvocab.put("https://galaxyproject.org/gxformat2/v19_09#WorkflowInputParameter", "WorkflowInputParameter");
-    rvocab.put("https://galaxyproject.org/gxformat2/v19_09#WorkflowOutputParameter", "WorkflowOutputParameter");
+    rvocab.put(
+        "https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository",
+        "ToolShedRepository");
+    rvocab.put(
+        "https://galaxyproject.org/gxformat2/v19_09#WorkflowInputParameter",
+        "WorkflowInputParameter");
+    rvocab.put(
+        "https://galaxyproject.org/gxformat2/v19_09#WorkflowOutputParameter",
+        "WorkflowOutputParameter");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#WorkflowStep", "WorkflowStep");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#WorkflowStepInput", "WorkflowStepInput");
-    rvocab.put("https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput", "WorkflowStepOutput");
+    rvocab.put(
+        "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput", "WorkflowStepOutput");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType", "WorkflowStepType");
     rvocab.put("array", "array");
     rvocab.put("http://www.w3.org/2001/XMLSchema#boolean", "boolean");
@@ -101,9 +120,9 @@ public class ConstantMaps {
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/pause", "pause");
     rvocab.put("record", "record");
     rvocab.put("http://www.w3.org/2001/XMLSchema#string", "string");
-    rvocab.put("https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/subworkflow", "subworkflow");
+    rvocab.put(
+        "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/subworkflow", "subworkflow");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#GalaxyType/text", "text");
     rvocab.put("https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/tool", "tool");
-
   }
 }

@@ -1,9 +1,6 @@
 package org.galaxyproject.gxformat2.v19_09.utils;
 
-import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Scanner;
 
 public class DefaultFetcher implements Fetcher {
 
@@ -30,19 +27,6 @@ public class DefaultFetcher implements Fetcher {
   }
 
   public String fetchText(final String url) {
-    final URI uri = Uris.toUri(url);
-    final String scheme = uri.getScheme();
-    if (Arrays.asList("http", "https", "file").contains(scheme)) {
-      Scanner scanner;
-      try {
-        scanner = new Scanner(uri.toURL().openStream(), "UTF-8").useDelimiter("\\A");
-      } catch (IOException e) {
-        throw new ValidationException("Error fetching %s: %s.".format(url, e));
-      }
-      String result = scanner.next();
-      scanner.close();
-      return result;
-    }
-    throw new ValidationException("Unsupported scheme in URL: %s".format(url));
+    return "fetched";
   }
 }

@@ -2,7 +2,6 @@ package org.galaxyproject.gxformat2.v19_09.utils;
 
 import java.util.Optional;
 
-
 public class OptionalLoader<T> implements Loader<Optional<T>> {
   private final Loader<T> itemLoader;
 
@@ -15,7 +14,7 @@ public class OptionalLoader<T> implements Loader<Optional<T>> {
       final String baseUri,
       final LoadingOptions loadingOptions,
       final String docRoot) {
-    if(doc == null) {
+    if (doc == null) {
       return Optional.empty();
     }
     return Optional.of(itemLoader.load(doc, baseUri, loadingOptions, docRoot));

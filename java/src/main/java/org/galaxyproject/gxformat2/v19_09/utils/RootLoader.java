@@ -13,13 +13,13 @@ public class RootLoader {
     final String baseUri = ensureBaseUri(baseUri_);
     LoadingOptions loadingOptions = loadingOptions_;
     if (loadingOptions == null) {
-      loadingOptions = new LoadingOptionsBuilder().setFileUri(baseUri).build();
+      loadingOptions = new LoadingOptionsBuilder().build();
     }
-    return LoaderInstances.union_of_GalaxyWorkflow_or_array_of_GalaxyWorkflow.documentLoad(doc, baseUri, loadingOptions);
+    return LoaderInstances.union_of_GalaxyWorkflow_or_array_of_GalaxyWorkflow.documentLoad(
+        doc, baseUri, loadingOptions);
   }
 
-  public static Object loadDocument(
-      final Map<String, Object> doc, final String baseUri) {
+  public static Object loadDocument(final Map<String, Object> doc, final String baseUri) {
     return loadDocument(doc, baseUri, null);
   }
 
@@ -35,13 +35,12 @@ public class RootLoader {
     return loadDocument(readPath(path), baseUri);
   }
 
-  public static Object loadDocument(
-      final Path path, LoadingOptions loadingOptions) {
+  public static Object loadDocument(final Path path, LoadingOptions loadingOptions) {
     return loadDocument(readPath(path), loadingOptions);
   }
 
   public static Object loadDocument(
-final Path path, String baseUri, LoadingOptions loadingOptions) {
+      final Path path, String baseUri, LoadingOptions loadingOptions) {
     return loadDocument(readPath(path), baseUri, loadingOptions);
   }
 
@@ -96,10 +95,9 @@ final Path path, String baseUri, LoadingOptions loadingOptions) {
 
   static String ensureBaseUri(final String baseUri_) {
     String baseUri = baseUri_;
-    if(baseUri == null) {
+    if (baseUri == null) {
       baseUri = Uris.fileUri(Paths.get(".").toAbsolutePath().normalize().toString()) + "/";
     }
     return baseUri;
   }
-
 }
