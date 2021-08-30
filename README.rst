@@ -12,26 +12,25 @@
    :target: https://github.com/galaxyproject/gxformat2/actions?query=workflow%3A%22Java+CI%22
 
 .. image:: https://img.shields.io/badge/latest%20schema-v19.09-blue
-   :target: http://galaxyproject.github.io/gxformat2/v19_09.html
+   :target: https://galaxyproject.github.io/gxformat2/v19_09.html
 
 Format 2
 --------
 
 This package defines a high-level Galaxy_ workflow description termed "Format
 2". The current schema version is v19_09 and the schema can be found
-[here](http://galaxyproject.github.io/gxformat2/v19_09.html). This version of
-workflow format can be consumed by Galaxy versions 19.09, 20.01, 20.05 and the
-the forthcoming 20.09.
+`here <https://galaxyproject.github.io/gxformat2/v19_09.html>`__. This version of
+workflow format can be consumed by Galaxy since version 19.09.
 
 The Format 2 workflow description is still somewhat experimental and may
 yet change in small potentially backward incompatible ways until the format is
 exported by Galaxy by default.
 
-The traditional Galaxy workflow description (files ending in .ga extension
+The traditional Galaxy workflow description (files ending in ``.ga`` extension,
 sometimes called native workflows in this project) was not designed to be
 concise and is neither readily human readable or human writable. Galaxy
-workflow Format 2 is being designed to addresses all three of these limitations.
-While also moving Galaxy's workflow description language toward standards such
+workflow Format 2 is being designed to address these limitations,
+while also moving Galaxy's workflow description language toward standards such
 as the Common Workflow Language.
 
 gxformat2
@@ -59,4 +58,4 @@ Checkout their help for more information.
 
 This library and associated scripts are licensed under the MIT License.
 
-.. _Galaxy: http://galaxyproject.org/
+.. _Galaxy: https://galaxyproject.org/
