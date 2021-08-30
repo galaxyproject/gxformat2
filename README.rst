@@ -15,7 +15,7 @@
    :target: http://galaxyproject.github.io/gxformat2/v19_09.html
 
 Format 2
---------------
+--------
 
 This package defines a high-level Galaxy_ workflow description termed "Format
 2". The current schema version is v19_09 and the schema can be found
@@ -35,7 +35,7 @@ While also moving Galaxy's workflow description language toward standards such
 as the Common Workflow Language.
 
 gxformat2
---------------
+---------
 
 This Python project can be installed from PyPI using ``pip``.
 
@@ -57,9 +57,6 @@ Checkout their help for more information.
     $ gxwf-viz --help
     $ gxwf-abstract-export --help
 
-This library and associated scripts are licensed under the Academic Free License
-version 3.0.
+This library and associated scripts are licensed under the MIT License.
 
 .. _Galaxy: http://galaxyproject.org/
-.. _GitHub: https://github.com/
-.. _Travis CI: http://travis-ci.org/
