@@ -14,7 +14,7 @@ $graph:
   doc:
     - |
       # Galaxy Workflow Format 2 Description
-      
+
       The traditional Galaxy workflow description (.ga) is not meant to be concise and is neither readily human readable or human writable.
       Format 2 addresses all three of these limitations while also converging (where it makes sense without sacrificing these other goals)
       with the workflow description with that used by the Common Workflow Language.
@@ -50,7 +50,7 @@ $graph:
     - subworkflow
     - pause
   doc:
-    - | 
+    - |
         Module types used by Galaxy steps. Galaxy's native format allows additional types such as data_input, data_input_collection, and parameter_type
         but these should be represented as ``inputs`` in Format2.
     - "tool: Run a tool."
@@ -212,7 +212,7 @@ $graph:
       doc: |
         Workflow step module's type (defaults to 'tool').
     - name: run
-      type: 
+      type:
         - "null"
         - GalaxyWorkflow
       jsonldPredicate:
@@ -226,19 +226,19 @@ $graph:
         - "null"
         - type: array
           items: string
-    #- name: when
-    #  type:
-    #    - "null"
-    #    - string  # TODO: cwl defines an enum for this, not sure how that works
-    #  jsonldPredicate:
-    #    _id: "gxformat2:when"
-    #    noLinkCheck: true
-    #  doc: |
-    #    If defined, only run the step when the expression evaluates to
-    #    `true`.  If `false` the step is skipped.  A skipped step
-    #    produces a `null` on each output.
+    - name: when
+      type:
+        - "null"
+        - string  # TODO: cwl defines an enum for this, not sure how that works
+      jsonldPredicate:
+        _id: "gxformat2:when"
+        noLinkCheck: true
+      doc: |
+        If defined, only run the step when the expression evaluates to
+        `true`.  If `false` the step is skipped.  A skipped step
+        produces a `null` on each output.
 
-    #    Expression should be an ecma5.1 expression.
+        Expression should be an ecma5.1 expression.
 
 - name: Sink
   type: record

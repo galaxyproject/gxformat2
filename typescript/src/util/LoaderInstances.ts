@@ -127,6 +127,7 @@ export const idmapoutunionOfarrayOfunionOfstrtypeOrWorkflowStepOutputLoaderOrund
 export const unionOfundefinedtypeOrWorkflowStepTypeLoader = new _UnionLoader([undefinedtype, WorkflowStepTypeLoader]);
 export const typedslunionOfundefinedtypeOrWorkflowStepTypeLoader2 = new _TypeDSLLoader(unionOfundefinedtypeOrWorkflowStepTypeLoader, 2);
 export const unionOfundefinedtypeOrGalaxyWorkflowLoader = new _UnionLoader([undefinedtype, GalaxyWorkflowLoader]);
+export const uriunionOfundefinedtypeOrGalaxyWorkflowLoaderFalseFalseNone = new _URILoader(unionOfundefinedtypeOrGalaxyWorkflowLoader, false, false, undefined);
 export const uriunionOfundefinedtypeOrstrtypeOrarrayOfstrtypeFalseFalse2 = new _URILoader(unionOfundefinedtypeOrstrtypeOrarrayOfstrtype, false, false, 2);
 export const unionOfundefinedtypeOrbooltype = new _UnionLoader([undefinedtype, booltype]);
 export const uristrtypeFalseTrueNone = new _URILoader(strtype, false, true, undefined);

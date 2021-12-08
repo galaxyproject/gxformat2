@@ -14,7 +14,7 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /**
  * Auto-generated interface for <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStep</I><br>
@@ -47,7 +47,7 @@ public interface WorkflowStep
         ReferencesTool,
         HasStepErrors,
         HasUUID,
-        Savable {
+        Saveable {
   /**
    * Getter for property <I>https://w3id.org/cwl/cwl#Identified/id</I><br>
    *
@@ -219,4 +219,17 @@ public interface WorkflowStep
    * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStep/runtime_inputs</I><br>
    */
   java.util.Optional<java.util.List<String>> getRuntime_inputs();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#when</I><br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * If defined, only run the step when the expression evaluates to `true`. If `false` the step is
+   * skipped. A skipped step produces a `null` on each output.
+   *
+   * <p>Expression should be an ecma5.1 expression. *
+   *
+   * </BLOCKQUOTE>
+   */
+  java.util.Optional<String> getWhen();
 }

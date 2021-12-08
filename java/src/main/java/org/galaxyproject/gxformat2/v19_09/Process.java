@@ -14,7 +14,7 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /**
  * Auto-generated interface for <I>https://w3id.org/cwl/cwl#Process</I><br>
@@ -26,7 +26,7 @@ import org.galaxyproject.gxformat2.v19_09.utils.Savable;
  *
  * </BLOCKQUOTE>
  */
-public interface Process extends Identified, Labeled, Documented, Savable {
+public interface Process extends Identified, Labeled, Documented, Saveable {
   /**
    * Getter for property <I>https://w3id.org/cwl/cwl#Labeled/label</I><br>
    *

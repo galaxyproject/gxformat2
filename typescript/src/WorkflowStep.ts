@@ -137,8 +137,18 @@ export class WorkflowStep extends Saveable implements Internal.WorkflowStepPrope
   run?: undefined | Internal.GalaxyWorkflow
   runtime_inputs?: undefined | Array<string>
 
+  /**
+   * If defined, only run the step when the expression evaluates to
+   * `true`.  If `false` the step is skipped.  A skipped step
+   * produces a `null` on each output.
+   * 
+   * Expression should be an ecma5.1 expression.
+   * 
+   */
+  when?: undefined | string
 
-  constructor ({loadingOptions, extensionFields, id, label, doc, position, tool_id, tool_shed_repository, tool_version, errors, uuid, in_, out, state, tool_state, type, run, runtime_inputs} : {loadingOptions?: LoadingOptions} & Internal.WorkflowStepProperties) {
+
+  constructor ({loadingOptions, extensionFields, id, label, doc, position, tool_id, tool_shed_repository, tool_version, errors, uuid, in_, out, state, tool_state, type, run, runtime_inputs, when} : {loadingOptions?: LoadingOptions} & Internal.WorkflowStepProperties) {
     super(loadingOptions)
     this.extensionFields = extensionFields ?? {}
     this.id = id
@@ -157,6 +167,7 @@ export class WorkflowStep extends Saveable implements Internal.WorkflowStepPrope
     this.type = type
     this.run = run
     this.runtime_inputs = runtime_inputs
+    this.when = when
   }
 
   /**
@@ -413,7 +424,7 @@ export class WorkflowStep extends Saveable implements Internal.WorkflowStepPrope
     let run
     if ('run' in _doc) {
       try {
-        run = await loadField(_doc.run, LoaderInstances.unionOfundefinedtypeOrGalaxyWorkflowLoader,
+        run = await loadField(_doc.run, LoaderInstances.uriunionOfundefinedtypeOrGalaxyWorkflowLoaderFalseFalseNone,
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
@@ -442,6 +453,22 @@ export class WorkflowStep extends Saveable implements Internal.WorkflowStepPrope
       }
     }
 
+    let when
+    if ('when' in _doc) {
+      try {
+        when = await loadField(_doc.when, LoaderInstances.unionOfundefinedtypeOrstrtype,
+          baseuri, loadingOptions)
+      } catch (e) {
+        if (e instanceof ValidationException) {
+          __errors.push(
+            new ValidationException('the `when` field is not valid because: ', [e])
+          )
+        } else {
+          throw e
+        }
+      }
+    }
+
     const extensionFields: Dictionary<any> = {}
     for (const [key, value] of Object.entries(_doc)) {
       if (!WorkflowStep.attr.has(key)) {
@@ -451,7 +478,7 @@ export class WorkflowStep extends Saveable implements Internal.WorkflowStepPrope
         } else {
           __errors.push(
             new ValidationException(`invalid field ${key as string}, \
-            expected one of: \`id\`,\`label\`,\`doc\`,\`position\`,\`tool_id\`,\`tool_shed_repository\`,\`tool_version\`,\`errors\`,\`uuid\`,\`in\`,\`out\`,\`state\`,\`tool_state\`,\`type\`,\`run\`,\`runtime_inputs\``)
+            expected one of: \`id\`,\`label\`,\`doc\`,\`position\`,\`tool_id\`,\`tool_shed_repository\`,\`tool_version\`,\`errors\`,\`uuid\`,\`in\`,\`out\`,\`state\`,\`tool_state\`,\`type\`,\`run\`,\`runtime_inputs\`,\`when\``)
           )
           break
         }
@@ -480,7 +507,8 @@ export class WorkflowStep extends Saveable implements Internal.WorkflowStepPrope
       tool_state: tool_state,
       type: type,
       run: run,
-      runtime_inputs: runtime_inputs
+      runtime_inputs: runtime_inputs,
+      when: when
     })
     return schema
   }
@@ -553,11 +581,19 @@ export class WorkflowStep extends Saveable implements Internal.WorkflowStepPrope
     }
                 
     if (this.run != null) {
-      r.run = save(this.run, false, this.id, relativeUris)
+      const u = saveRelativeUri(this.run, this.id, false,
+                                relativeUris, undefined)
+      if (u != null) {
+        r.run = u
+      }
     }
                 
     if (this.runtime_inputs != null) {
       r.runtime_inputs = save(this.runtime_inputs, false, this.id, relativeUris)
+    }
+                
+    if (this.when != null) {
+      r.when = save(this.when, false, this.id, relativeUris)
     }
                 
     if (top) {
@@ -571,5 +607,5 @@ export class WorkflowStep extends Saveable implements Internal.WorkflowStepPrope
     return r
   }
             
-  static attr: Set<string> = new Set(['id','label','doc','position','tool_id','tool_shed_repository','tool_version','errors','uuid','in','out','state','tool_state','type','run','runtime_inputs'])
+  static attr: Set<string> = new Set(['id','label','doc','position','tool_id','tool_shed_repository','tool_version','errors','uuid','in','out','state','tool_state','type','run','runtime_inputs','when'])
 }

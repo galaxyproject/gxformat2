@@ -14,14 +14,14 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /**
  * Auto-generated interface for
  * <I>https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository</I><br>
  * This interface is implemented by {@link ToolShedRepositoryImpl}<br>
  */
-public interface ToolShedRepository extends Savable {
+public interface ToolShedRepository extends Saveable {
   /**
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository/name</I><br>

@@ -14,13 +14,13 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /**
  * Auto-generated interface for
  * <I>https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors</I><br>
  */
-public interface HasStepErrors extends Savable {
+public interface HasStepErrors extends Saveable {
   /**
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/gxformat2common#HasStepErrors/errors</I><br>

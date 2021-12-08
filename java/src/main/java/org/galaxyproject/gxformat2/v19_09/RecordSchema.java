@@ -14,13 +14,13 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /**
  * Auto-generated interface for <I>https://w3id.org/cwl/salad#RecordSchema</I><br>
  * This interface is implemented by {@link RecordSchemaImpl}<br>
  */
-public interface RecordSchema extends Savable {
+public interface RecordSchema extends Saveable {
   /**
    * Getter for property <I>https://w3id.org/cwl/salad#fields</I><br>
    *

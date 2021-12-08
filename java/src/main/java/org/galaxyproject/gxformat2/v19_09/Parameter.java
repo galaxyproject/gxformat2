@@ -14,7 +14,7 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /**
  * Auto-generated interface for <I>https://w3id.org/cwl/cwl#Parameter</I><br>
@@ -25,7 +25,7 @@ import org.galaxyproject.gxformat2.v19_09.utils.Savable;
  *
  * </BLOCKQUOTE>
  */
-public interface Parameter extends Labeled, Documented, Identified, Savable {
+public interface Parameter extends Labeled, Documented, Identified, Saveable {
   /**
    * Getter for property <I>https://w3id.org/cwl/cwl#Labeled/label</I><br>
    *

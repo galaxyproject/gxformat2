@@ -9,7 +9,7 @@ History
 0.17.0.dev0
 ---------------------
 
-    
+* Add "when" to workflow steps.
 
 ---------------------
 0.16.0 (2022-09-20)
@@ -37,7 +37,7 @@ History
 * Fix cytoscape HTML exports from dist package. by @jmchilton in https://github.com/galaxyproject/gxformat2/pull/82
 * Add missing elements to schema, fix change_datatype conversion, CSS by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/83
 * Support lists as data inputs by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/84
-    
+
 
 ---------------------
 0.15.0 (2020-08-12)
@@ -125,7 +125,7 @@ History
 ---------------------
 0.10.0 (2019-12-06)
 ---------------------
-    
+
 * Implement scheam, validation, linting (for Format 2 and .ga).
 * Handle new reports field in Galaxy 19.09 workflows.
 * Numerous fixes for conversiion to and from native workflows.
@@ -142,7 +142,7 @@ History
 0.8.4 (2019-06-24)
 ---------------------
 
-* Fix output IDs of 0.    
+* Fix output IDs of 0.
 
 ---------------------
 0.8.3 (2019-05-23)

@@ -212,6 +212,9 @@ public class LoaderInstances {
       new TypeDslLoader(optional_WorkflowStepType, 2);
   public static Loader<java.util.Optional<GalaxyWorkflow>> optional_GalaxyWorkflow =
       new OptionalLoader(GalaxyWorkflow);
+  public static Loader<java.util.Optional<GalaxyWorkflow>>
+      uri_optional_GalaxyWorkflow_False_False_None =
+          new UriLoader(optional_GalaxyWorkflow, false, false, null);
   public static Loader<Object>
       uri_union_of_NullInstance_or_StringInstance_or_array_of_StringInstance_False_False_2 =
           new UriLoader(

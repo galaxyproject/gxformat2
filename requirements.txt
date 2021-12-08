@@ -1,2 +1,3 @@
 bioblend
 pyyaml
+schema-salad >= 8.2

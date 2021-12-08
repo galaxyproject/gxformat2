@@ -14,7 +14,7 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /**
  * Auto-generated interface for <I>https://w3id.org/cwl/salad#EnumSchema</I><br>
@@ -26,7 +26,7 @@ import org.galaxyproject.gxformat2.v19_09.utils.Savable;
  *
  * </BLOCKQUOTE>
  */
-public interface EnumSchema extends Savable {
+public interface EnumSchema extends Saveable {
   /**
    * Getter for property <I>https://w3id.org/cwl/salad#symbols</I><br>
    *

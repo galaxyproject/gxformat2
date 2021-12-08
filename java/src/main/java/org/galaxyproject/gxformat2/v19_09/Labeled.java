@@ -14,10 +14,10 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /** Auto-generated interface for <I>https://w3id.org/cwl/cwl#Labeled</I><br> */
-public interface Labeled extends Savable {
+public interface Labeled extends Saveable {
   /**
    * Getter for property <I>https://w3id.org/cwl/cwl#Labeled/label</I><br>
    *

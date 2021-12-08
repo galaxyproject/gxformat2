@@ -17,13 +17,34 @@ package org.galaxyproject.gxformat2.v19_09;
 import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
 
 public enum GalaxyType {
+  NULL("null"),
+  BOOLEAN("boolean"),
+  INT("int"),
+  LONG("long"),
+  FLOAT("float"),
+  DOUBLE("double"),
+  STRING("string"),
   INTEGER("integer"),
   TEXT("text"),
   FILE("File"),
   DATA("data"),
   COLLECTION("collection");
 
-  private static String[] symbols = new String[] {"integer", "text", "File", "data", "collection"};
+  private static String[] symbols =
+      new String[] {
+        "null",
+        "boolean",
+        "int",
+        "long",
+        "float",
+        "double",
+        "string",
+        "integer",
+        "text",
+        "File",
+        "data",
+        "collection"
+      };
   private String docVal;
 
   private GalaxyType(final String docVal) {
