@@ -55,7 +55,7 @@ export class ArraySchema extends Saveable {
   static override async fromDoc (__doc: any, baseuri: string, loadingOptions: LoadingOptions,
     docRoot?: string): Promise<Saveable> {
     const _doc = Object.assign({}, __doc)
-    const errors: ValidationException[] = []
+    const __errors: ValidationException[] = []
             
     let items
     try {
@@ -63,9 +63,11 @@ export class ArraySchema extends Saveable {
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {
-        errors.push(
+        __errors.push(
           new ValidationException('the `items` field is not valid because: ', [e])
         )
+      } else {
+        throw e
       }
     }
 
@@ -75,20 +77,22 @@ export class ArraySchema extends Saveable {
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {
-        errors.push(
+        __errors.push(
           new ValidationException('the `type` field is not valid because: ', [e])
         )
+      } else {
+        throw e
       }
     }
 
     const extensionFields: Dictionary<any> = {}
-    for (const [key, value] of _doc) {
-      if (!this.attr.has(key)) {
+    for (const [key, value] of Object.entries(_doc)) {
+      if (!ArraySchema.attr.has(key)) {
         if ((key as string).includes(':')) {
           const ex = expandUrl(key, '', loadingOptions, false, false)
           extensionFields[ex] = value
         } else {
-          errors.push(
+          __errors.push(
             new ValidationException(`invalid field ${key as string}, \
             expected one of: \`items\`,\`type\``)
           )
@@ -97,8 +101,8 @@ export class ArraySchema extends Saveable {
       }
     }
 
-    if (errors.length > 0) {
-      throw new ValidationException("Trying 'ArraySchema'", errors)
+    if (__errors.length > 0) {
+      throw new ValidationException("Trying 'ArraySchema'", __errors)
     }
 
     const schema = new ArraySchema({

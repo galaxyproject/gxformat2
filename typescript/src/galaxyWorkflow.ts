@@ -130,7 +130,7 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
   static override async fromDoc (__doc: any, baseuri: string, loadingOptions: LoadingOptions,
     docRoot?: string): Promise<Saveable> {
     const _doc = Object.assign({}, __doc)
-    const errors: ValidationException[] = []
+    const __errors: ValidationException[] = []
             
     let id
     if ('id' in _doc) {
@@ -139,9 +139,11 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `id` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -163,9 +165,11 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {
-        errors.push(
+        __errors.push(
           new ValidationException('the `class` field is not valid because: ', [e])
         )
+      } else {
+        throw e
       }
     }
 
@@ -176,9 +180,11 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `label` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -190,9 +196,11 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `doc` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -203,9 +211,11 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {
-        errors.push(
+        __errors.push(
           new ValidationException('the `inputs` field is not valid because: ', [e])
         )
+      } else {
+        throw e
       }
     }
 
@@ -215,9 +225,11 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {
-        errors.push(
+        __errors.push(
           new ValidationException('the `outputs` field is not valid because: ', [e])
         )
+      } else {
+        throw e
       }
     }
 
@@ -228,9 +240,11 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `uuid` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -241,9 +255,11 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {
-        errors.push(
+        __errors.push(
           new ValidationException('the `steps` field is not valid because: ', [e])
         )
+      } else {
+        throw e
       }
     }
 
@@ -254,9 +270,11 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `report` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -268,21 +286,23 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `tags` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
 
     const extensionFields: Dictionary<any> = {}
-    for (const [key, value] of _doc) {
-      if (!this.attr.has(key)) {
+    for (const [key, value] of Object.entries(_doc)) {
+      if (!GalaxyWorkflow.attr.has(key)) {
         if ((key as string).includes(':')) {
           const ex = expandUrl(key, '', loadingOptions, false, false)
           extensionFields[ex] = value
         } else {
-          errors.push(
+          __errors.push(
             new ValidationException(`invalid field ${key as string}, \
             expected one of: \`id\`,\`label\`,\`doc\`,\`inputs\`,\`outputs\`,\`uuid\`,\`class\`,\`steps\`,\`report\`,\`tags\``)
           )
@@ -291,8 +311,8 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
       }
     }
 
-    if (errors.length > 0) {
-      throw new ValidationException("Trying 'GalaxyWorkflow'", errors)
+    if (__errors.length > 0) {
+      throw new ValidationException("Trying 'GalaxyWorkflow'", __errors)
     }
 
     const schema = new GalaxyWorkflow({

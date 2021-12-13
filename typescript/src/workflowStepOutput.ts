@@ -73,7 +73,7 @@ export class WorkflowStepOutput extends Saveable implements Internal.Identified 
   static override async fromDoc (__doc: any, baseuri: string, loadingOptions: LoadingOptions,
     docRoot?: string): Promise<Saveable> {
     const _doc = Object.assign({}, __doc)
-    const errors: ValidationException[] = []
+    const __errors: ValidationException[] = []
             
     let id
     if ('id' in _doc) {
@@ -82,9 +82,11 @@ export class WorkflowStepOutput extends Saveable implements Internal.Identified 
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `id` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -107,9 +109,11 @@ export class WorkflowStepOutput extends Saveable implements Internal.Identified 
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `add_tags` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -121,9 +125,11 @@ export class WorkflowStepOutput extends Saveable implements Internal.Identified 
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `change_datatype` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -135,9 +141,11 @@ export class WorkflowStepOutput extends Saveable implements Internal.Identified 
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `delete_intermediate_datasets` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -149,9 +157,11 @@ export class WorkflowStepOutput extends Saveable implements Internal.Identified 
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `hide` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -163,9 +173,11 @@ export class WorkflowStepOutput extends Saveable implements Internal.Identified 
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `remove_tags` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -177,9 +189,11 @@ export class WorkflowStepOutput extends Saveable implements Internal.Identified 
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `rename` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -191,21 +205,23 @@ export class WorkflowStepOutput extends Saveable implements Internal.Identified 
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `set_columns` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
 
     const extensionFields: Dictionary<any> = {}
-    for (const [key, value] of _doc) {
-      if (!this.attr.has(key)) {
+    for (const [key, value] of Object.entries(_doc)) {
+      if (!WorkflowStepOutput.attr.has(key)) {
         if ((key as string).includes(':')) {
           const ex = expandUrl(key, '', loadingOptions, false, false)
           extensionFields[ex] = value
         } else {
-          errors.push(
+          __errors.push(
             new ValidationException(`invalid field ${key as string}, \
             expected one of: \`id\`,\`add_tags\`,\`change_datatype\`,\`delete_intermediate_datasets\`,\`hide\`,\`remove_tags\`,\`rename\`,\`set_columns\``)
           )
@@ -214,8 +230,8 @@ export class WorkflowStepOutput extends Saveable implements Internal.Identified 
       }
     }
 
-    if (errors.length > 0) {
-      throw new ValidationException("Trying 'WorkflowStepOutput'", errors)
+    if (__errors.length > 0) {
+      throw new ValidationException("Trying 'WorkflowStepOutput'", __errors)
     }
 
     const schema = new WorkflowStepOutput({

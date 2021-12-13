@@ -71,7 +71,7 @@ export class ToolShedRepository extends Saveable {
   static override async fromDoc (__doc: any, baseuri: string, loadingOptions: LoadingOptions,
     docRoot?: string): Promise<Saveable> {
     const _doc = Object.assign({}, __doc)
-    const errors: ValidationException[] = []
+    const __errors: ValidationException[] = []
             
     let name
     if ('name' in _doc) {
@@ -80,9 +80,11 @@ export class ToolShedRepository extends Saveable {
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `name` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -104,9 +106,11 @@ export class ToolShedRepository extends Saveable {
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {
-        errors.push(
+        __errors.push(
           new ValidationException('the `changeset_revision` field is not valid because: ', [e])
         )
+      } else {
+        throw e
       }
     }
 
@@ -116,9 +120,11 @@ export class ToolShedRepository extends Saveable {
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {
-        errors.push(
+        __errors.push(
           new ValidationException('the `owner` field is not valid because: ', [e])
         )
+      } else {
+        throw e
       }
     }
 
@@ -128,20 +134,22 @@ export class ToolShedRepository extends Saveable {
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {
-        errors.push(
+        __errors.push(
           new ValidationException('the `tool_shed` field is not valid because: ', [e])
         )
+      } else {
+        throw e
       }
     }
 
     const extensionFields: Dictionary<any> = {}
-    for (const [key, value] of _doc) {
-      if (!this.attr.has(key)) {
+    for (const [key, value] of Object.entries(_doc)) {
+      if (!ToolShedRepository.attr.has(key)) {
         if ((key as string).includes(':')) {
           const ex = expandUrl(key, '', loadingOptions, false, false)
           extensionFields[ex] = value
         } else {
-          errors.push(
+          __errors.push(
             new ValidationException(`invalid field ${key as string}, \
             expected one of: \`changeset_revision\`,\`name\`,\`owner\`,\`tool_shed\``)
           )
@@ -150,8 +158,8 @@ export class ToolShedRepository extends Saveable {
       }
     }
 
-    if (errors.length > 0) {
-      throw new ValidationException("Trying 'ToolShedRepository'", errors)
+    if (__errors.length > 0) {
+      throw new ValidationException("Trying 'ToolShedRepository'", __errors)
     }
 
     const schema = new ToolShedRepository({

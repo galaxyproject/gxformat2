@@ -175,7 +175,7 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
   static override async fromDoc (__doc: any, baseuri: string, loadingOptions: LoadingOptions,
     docRoot?: string): Promise<Saveable> {
     const _doc = Object.assign({}, __doc)
-    const errors: ValidationException[] = []
+    const __errors: ValidationException[] = []
             
     let id
     if ('id' in _doc) {
@@ -184,9 +184,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `id` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -209,9 +211,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `label` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -223,9 +227,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `doc` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -237,9 +243,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `position` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -251,9 +259,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `tool_id` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -265,9 +275,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `tool_shed_repository` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -279,9 +291,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `tool_version` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -293,9 +307,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `errors` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -307,9 +323,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `uuid` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -321,9 +339,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `in` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -335,9 +355,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `out` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -349,9 +371,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `state` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -363,9 +387,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `tool_state` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -377,9 +403,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `type` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -391,9 +419,11 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `run` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
@@ -405,21 +435,23 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
-          errors.push(
+          __errors.push(
             new ValidationException('the `runtime_inputs` field is not valid because: ', [e])
           )
+        } else {
+          throw e
         }
       }
     }
 
     const extensionFields: Dictionary<any> = {}
-    for (const [key, value] of _doc) {
-      if (!this.attr.has(key)) {
+    for (const [key, value] of Object.entries(_doc)) {
+      if (!WorkflowStep.attr.has(key)) {
         if ((key as string).includes(':')) {
           const ex = expandUrl(key, '', loadingOptions, false, false)
           extensionFields[ex] = value
         } else {
-          errors.push(
+          __errors.push(
             new ValidationException(`invalid field ${key as string}, \
             expected one of: \`id\`,\`label\`,\`doc\`,\`position\`,\`tool_id\`,\`tool_shed_repository\`,\`tool_version\`,\`errors\`,\`uuid\`,\`in\`,\`out\`,\`state\`,\`tool_state\`,\`type\`,\`run\`,\`runtime_inputs\``)
           )
@@ -428,8 +460,8 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
       }
     }
 
-    if (errors.length > 0) {
-      throw new ValidationException("Trying 'WorkflowStep'", errors)
+    if (__errors.length > 0) {
+      throw new ValidationException("Trying 'WorkflowStep'", __errors)
     }
 
     const schema = new WorkflowStep({
