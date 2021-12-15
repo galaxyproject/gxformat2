@@ -39,18 +39,18 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
   /**
    * The unique identifier for this object.
    */
-  id: undefined | string
+  id?: undefined | string
   class_: string
 
   /**
    * A short, human-readable label of this object.
    */
-  label: undefined | string
+  label?: undefined | string
 
   /**
    * A documentation string for this object, or an array of strings which should be concatenated.
    */
-  doc: undefined | string | Array<string>
+  doc?: undefined | string | Array<string>
 
   /**
    * Defines the input parameters of the process.  The process is ready to
@@ -79,7 +79,7 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
    * UUID uniquely representing this element.
    * 
    */
-  uuid: undefined | string
+  uuid?: undefined | string
 
   /**
    * The individual steps that make up the workflow. Each step is executed when all of its
@@ -91,16 +91,16 @@ export class GalaxyWorkflow extends Saveable implements Internal.Process, Intern
   /**
    * Workflow invocation report template.
    */
-  report: undefined | Internal.Report
+  report?: undefined | Internal.Report
 
   /**
    * Tags for the workflow.
    * 
    */
-  tags: Array<string> | undefined
+  tags?: Array<string> | undefined
 
 
-  constructor ({extensionFields, loadingOptions, id, class_, label, doc, inputs, outputs, uuid, steps, report, tags} : {extensionFields?: Dictionary<any>, loadingOptions?: LoadingOptions,  id: undefined | string, label: undefined | string, doc: undefined | string | Array<string>, inputs: Array<Internal.WorkflowInputParameter>, outputs: Array<Internal.WorkflowOutputParameter>, uuid: undefined | string, class_: string, steps: Array<Internal.WorkflowStep>, report: undefined | Internal.Report, tags: Array<string> | undefined,}) {
+  constructor ({extensionFields, loadingOptions, id, class_, label, doc, inputs, outputs, uuid, steps, report, tags} : {extensionFields?: Dictionary<any>, loadingOptions?: LoadingOptions,  id?: undefined | string, label?: undefined | string, doc?: undefined | string | Array<string>, inputs: Array<Internal.WorkflowInputParameter>, outputs: Array<Internal.WorkflowOutputParameter>, uuid?: undefined | string, class_: string, steps: Array<Internal.WorkflowStep>, report?: undefined | Internal.Report, tags?: Array<string> | undefined,}) {
     super()
     this.extensionFields = extensionFields ?? {}
     this.loadingOptions = loadingOptions ?? new LoadingOptions({})

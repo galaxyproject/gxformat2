@@ -28,19 +28,19 @@ export class WorkflowStepInput extends Saveable implements Internal.Identified, 
   /**
    * The unique identifier for this object.
    */
-  id: undefined | string
+  id?: undefined | string
 
   /**
    * Specifies one or more workflow parameters that will provide input to
    * the underlying step parameter.
    * 
    */
-  source: undefined | string | Array<string>
+  source?: undefined | string | Array<string>
 
   /**
    * A short, human-readable label of this object.
    */
-  label: undefined | string
+  label?: undefined | string
 
   /**
    * The default value for this parameter to use if either there is no
@@ -48,10 +48,10 @@ export class WorkflowStepInput extends Saveable implements Internal.Identified, 
    * default must be applied prior to scattering or evaluating `valueFrom`.
    * 
    */
-  default_: undefined | any
+  default_?: undefined | any
 
 
-  constructor ({extensionFields, loadingOptions, id, source, label, default_} : {extensionFields?: Dictionary<any>, loadingOptions?: LoadingOptions,  id: undefined | string, source: undefined | string | Array<string>, label: undefined | string, default_: undefined | any,}) {
+  constructor ({extensionFields, loadingOptions, id, source, label, default_} : {extensionFields?: Dictionary<any>, loadingOptions?: LoadingOptions,  id?: undefined | string, source?: undefined | string | Array<string>, label?: undefined | string, default_?: undefined | any,}) {
     super()
     this.extensionFields = extensionFields ?? {}
     this.loadingOptions = loadingOptions ?? new LoadingOptions({})

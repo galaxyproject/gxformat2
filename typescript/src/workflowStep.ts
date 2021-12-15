@@ -42,37 +42,37 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
   /**
    * The unique identifier for this object.
    */
-  id: undefined | string
+  id?: undefined | string
 
   /**
    * A short, human-readable label of this object.
    */
-  label: undefined | string
+  label?: undefined | string
 
   /**
    * A documentation string for this object, or an array of strings which should be concatenated.
    */
-  doc: undefined | string | Array<string>
-  position: undefined | Internal.StepPosition
+  doc?: undefined | string | Array<string>
+  position?: undefined | Internal.StepPosition
 
   /**
    * The tool ID used to run this step of the workflow (e.g. 'cat1' or 'toolshed.g2.bx.psu.edu/repos/nml/collapse_collections/collapse_dataset/4.0').
    * 
    */
-  tool_id: undefined | string
+  tool_id?: undefined | string
 
   /**
    * The Galaxy Tool Shed repository that should be installed in order to use this tool.
    * 
    */
-  tool_shed_repository: undefined | Internal.ToolShedRepository
+  tool_shed_repository?: undefined | Internal.ToolShedRepository
 
   /**
    * The tool version corresponding used to run this step of the workflow. For tool shed installed tools, the ID generally uniquely specifies a version
    * and this field is optional.
    * 
    */
-  tool_version: undefined | string
+  tool_version?: undefined | string
 
   /**
    * During Galaxy export there may be some problem validating the tool state, tool used, etc..
@@ -85,13 +85,13 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
    * and re-saving the workflow and then re-exporting it.
    * 
    */
-  errors: undefined | string
+  errors?: undefined | string
 
   /**
    * UUID uniquely representing this element.
    * 
    */
-  uuid: undefined | string
+  uuid?: undefined | string
 
   /**
    * Defines the input parameters of the workflow step.  The process is ready to
@@ -101,7 +101,7 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
    * interface for constructing the input object.
    * 
    */
-  in_: undefined | Array<Internal.WorkflowStepInput>
+  in_?: undefined | Array<Internal.WorkflowStepInput>
 
   /**
    * Defines the parameters representing the output of the process.  May be
@@ -111,35 +111,35 @@ export class WorkflowStep extends Saveable implements Internal.Identified, Inter
    * workflow document is not a valid instance of this schema.
    * 
    */
-  out: Array<string | Internal.WorkflowStepOutput> | undefined
+  out?: Array<string | Internal.WorkflowStepOutput> | undefined
 
   /**
    * Structured tool state.
    * 
    */
-  state: undefined | any
+  state?: undefined | any
 
   /**
    * Unstructured tool state.
    * 
    */
-  tool_state: undefined | any
+  tool_state?: undefined | any
 
   /**
    * Workflow step module's type (defaults to 'tool').
    * 
    */
-  type: undefined | string
+  type?: undefined | string
 
   /**
    * Specifies a subworkflow to run.
    * 
    */
-  run: undefined | Internal.GalaxyWorkflow
-  runtime_inputs: undefined | Array<string>
+  run?: undefined | Internal.GalaxyWorkflow
+  runtime_inputs?: undefined | Array<string>
 
 
-  constructor ({extensionFields, loadingOptions, id, label, doc, position, tool_id, tool_shed_repository, tool_version, errors, uuid, in_, out, state, tool_state, type, run, runtime_inputs} : {extensionFields?: Dictionary<any>, loadingOptions?: LoadingOptions,  id: undefined | string, label: undefined | string, doc: undefined | string | Array<string>, position: undefined | Internal.StepPosition, tool_id: undefined | string, tool_shed_repository: undefined | Internal.ToolShedRepository, tool_version: undefined | string, errors: undefined | string, uuid: undefined | string, in_: undefined | Array<Internal.WorkflowStepInput>, out: Array<string | Internal.WorkflowStepOutput> | undefined, state: undefined | any, tool_state: undefined | any, type: undefined | string, run: undefined | Internal.GalaxyWorkflow, runtime_inputs: undefined | Array<string>,}) {
+  constructor ({extensionFields, loadingOptions, id, label, doc, position, tool_id, tool_shed_repository, tool_version, errors, uuid, in_, out, state, tool_state, type, run, runtime_inputs} : {extensionFields?: Dictionary<any>, loadingOptions?: LoadingOptions,  id?: undefined | string, label?: undefined | string, doc?: undefined | string | Array<string>, position?: undefined | Internal.StepPosition, tool_id?: undefined | string, tool_shed_repository?: undefined | Internal.ToolShedRepository, tool_version?: undefined | string, errors?: undefined | string, uuid?: undefined | string, in_?: undefined | Array<Internal.WorkflowStepInput>, out?: Array<string | Internal.WorkflowStepOutput> | undefined, state?: undefined | any, tool_state?: undefined | any, type?: undefined | string, run?: undefined | Internal.GalaxyWorkflow, runtime_inputs?: undefined | Array<string>,}) {
     super()
     this.extensionFields = extensionFields ?? {}
     this.loadingOptions = loadingOptions ?? new LoadingOptions({})

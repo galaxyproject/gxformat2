@@ -35,17 +35,17 @@ export class WorkflowStepOutput extends Saveable implements Internal.Identified 
   /**
    * The unique identifier for this object.
    */
-  id: undefined | string
-  add_tags: undefined | Array<string>
-  change_datatype: undefined | string
-  delete_intermediate_datasets: undefined | boolean
-  hide: undefined | boolean
-  remove_tags: undefined | Array<string>
-  rename: undefined | string
-  set_columns: undefined | Array<string>
+  id?: undefined | string
+  add_tags?: undefined | Array<string>
+  change_datatype?: undefined | string
+  delete_intermediate_datasets?: undefined | boolean
+  hide?: undefined | boolean
+  remove_tags?: undefined | Array<string>
+  rename?: undefined | string
+  set_columns?: undefined | Array<string>
 
 
-  constructor ({extensionFields, loadingOptions, id, add_tags, change_datatype, delete_intermediate_datasets, hide, remove_tags, rename, set_columns} : {extensionFields?: Dictionary<any>, loadingOptions?: LoadingOptions,  id: undefined | string, add_tags: undefined | Array<string>, change_datatype: undefined | string, delete_intermediate_datasets: undefined | boolean, hide: undefined | boolean, remove_tags: undefined | Array<string>, rename: undefined | string, set_columns: undefined | Array<string>,}) {
+  constructor ({extensionFields, loadingOptions, id, add_tags, change_datatype, delete_intermediate_datasets, hide, remove_tags, rename, set_columns} : {extensionFields?: Dictionary<any>, loadingOptions?: LoadingOptions,  id?: undefined | string, add_tags?: undefined | Array<string>, change_datatype?: undefined | string, delete_intermediate_datasets?: undefined | boolean, hide?: undefined | boolean, remove_tags?: undefined | Array<string>, rename?: undefined | string, set_columns?: undefined | Array<string>,}) {
     super()
     this.extensionFields = extensionFields ?? {}
     this.loadingOptions = loadingOptions ?? new LoadingOptions({})

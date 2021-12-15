@@ -25,7 +25,7 @@ export class RecordSchema extends Saveable {
   /**
    * Defines the fields of the record.
    */
-  fields: undefined | Array<Internal.RecordField>
+  fields?: undefined | Array<Internal.RecordField>
 
   /**
    * Must be `record`
@@ -33,7 +33,7 @@ export class RecordSchema extends Saveable {
   type: string
 
 
-  constructor ({extensionFields, loadingOptions, fields, type} : {extensionFields?: Dictionary<any>, loadingOptions?: LoadingOptions,  fields: undefined | Array<Internal.RecordField>, type: string,}) {
+  constructor ({extensionFields, loadingOptions, fields, type} : {extensionFields?: Dictionary<any>, loadingOptions?: LoadingOptions,  fields?: undefined | Array<Internal.RecordField>, type: string,}) {
     super()
     this.extensionFields = extensionFields ?? {}
     this.loadingOptions = loadingOptions ?? new LoadingOptions({})
