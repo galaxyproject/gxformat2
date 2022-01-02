@@ -174,6 +174,11 @@ def inputs_as_native_steps(workflow_dict: dict):
             "type": step_type,
             "label": label,
         })
+        default = step_def.get("default")
+        if isinstance(default, dict) and default.get('class') == 'File':
+            # First 'default' is input name, hardcoded to default, second 'default'
+            # is the actual default for the input name
+            step_def['in'] = {'default': {'default': step_def.pop('default')}}
         new_steps.append(step_def)
 
     return new_steps
