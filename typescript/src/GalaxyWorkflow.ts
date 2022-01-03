@@ -99,7 +99,7 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
   tags?: Array<string> | undefined
 
 
-  constructor ({loadingOptions, extensionFields, id, class_ = string.GALAXYWORKFLOW, label, doc, inputs, outputs, uuid, steps, report, tags} : {loadingOptions?: LoadingOptions} & Internal.GalaxyWorkflowProperties) {
+  constructor ({loadingOptions, extensionFields, id, class_ = 'GalaxyWorkflow', label, doc, inputs, outputs, uuid, steps, report, tags} : {loadingOptions?: LoadingOptions} & Internal.GalaxyWorkflowProperties) {
     super(loadingOptions)
     this.extensionFields = extensionFields ?? {}
     this.id = id
