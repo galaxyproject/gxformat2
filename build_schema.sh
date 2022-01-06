@@ -50,6 +50,7 @@ do
         cd "$ts_package"
         npm install
         npm test
+        npm run doc
         cd "${PROJECT_DIRECTORY}"
     fi
 done
