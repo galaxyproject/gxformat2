@@ -63,6 +63,33 @@ steps:
     assert isinstance(steps, dict)
 
 
+def test_import_default_file():
+    as_dict_native = to_native("""
+class: GalaxyWorkflow
+inputs:
+  default_file_input:
+    default:
+      class: File
+      basename: a file
+      format: txt
+      location: test.txt
+steps:
+  cat1:
+    tool_id: cat1
+    in:
+      input1: default_file_input
+""")
+    default_file_input_step = as_dict_native['steps']['0']
+    assert default_file_input_step['in']['default'] == {
+      'default': {
+        'class': 'File',
+        'basename': 'a file',
+        'format': 'txt',
+        'location': 'test.txt',
+      }
+    }
+
+
 def test_docs_round_trip():
     as_dict = round_trip("""
 class: GalaxyWorkflow
