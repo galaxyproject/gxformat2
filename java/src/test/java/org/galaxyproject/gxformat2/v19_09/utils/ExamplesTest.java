@@ -4,12 +4,10 @@ public class ExamplesTest {
 
   @org.junit.Test
   public void testvalid1ByString() throws Exception {
-    String path = java.nio.file.Paths.get(".").toAbsolutePath().normalize().toString();
-    String baseUri = Uris.fileUri(path) + "/";
     java.net.URL url = getClass().getResource("valid1.yml");
     java.nio.file.Path resPath = java.nio.file.Paths.get(url.toURI());
     String yaml = new String(java.nio.file.Files.readAllBytes(resPath), "UTF8");
-    RootLoader.loadDocument(yaml, baseUri);
+    RootLoader.loadDocument(yaml, url.toString());
   }
 
   @org.junit.Test

@@ -5,6 +5,7 @@ set -e
 
 PROJECT_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 SKIP_JAVA=${SKIP_JAVA:-0}
+SKIP_TYPESCRIPT=${SKIP_TYPESCRIPT:-0}
 DIST_DIRECTORY="${PROJECT_DIRECTORY}/dist/schema"
 rm -rf "${DIST_DIRECTORY}"
 mkdir -p "${DIST_DIRECTORY}"
@@ -37,6 +38,19 @@ do
         cd "$java_package"
         mvn test
         mvn javadoc:javadoc
+        cd "${PROJECT_DIRECTORY}"
+    fi
+    if [ $SKIP_TYPESCRIPT -eq 0 ]; then
+        ts_package="${PROJECT_DIRECTORY}/typescript"
+        schema-salad-tool \
+            --codegen typescript \
+            --codegen-target "$ts_package" \
+            --codegen-examples examples \
+            workflow.yml
+        cd "$ts_package"
+        npm install
+        npm test
+        npm run doc
         cd "${PROJECT_DIRECTORY}"
     fi
 done
