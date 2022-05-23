@@ -131,7 +131,7 @@ public class WorkflowInputParameterImpl extends SavableImpl implements WorkflowI
     return this.optional;
   }
 
-  private java.util.Optional<java.util.List<Object>> format;
+  private java.util.Optional<java.util.List<String>> format;
 
   /**
    * Getter for property
@@ -143,7 +143,7 @@ public class WorkflowInputParameterImpl extends SavableImpl implements WorkflowI
    *
    * </BLOCKQUOTE>
    */
-  public java.util.Optional<java.util.List<Object>> getFormat() {
+  public java.util.Optional<java.util.List<String>> getFormat() {
     return this.format;
   }
 
@@ -321,7 +321,7 @@ public class WorkflowInputParameterImpl extends SavableImpl implements WorkflowI
     } else {
       optional = null;
     }
-    java.util.Optional<java.util.List<Object>> format;
+    java.util.Optional<java.util.List<String>> format;
 
     if (__doc.containsKey("format")) {
       try {
@@ -363,7 +363,7 @@ public class WorkflowInputParameterImpl extends SavableImpl implements WorkflowI
     this.position = (java.util.Optional<StepPosition>) position;
     this.type = (Object) type;
     this.optional = (java.util.Optional<Boolean>) optional;
-    this.format = (java.util.Optional<java.util.List<Object>>) format;
+    this.format = (java.util.Optional<java.util.List<String>>) format;
     this.collection_type = (java.util.Optional<String>) collection_type;
   }
 }

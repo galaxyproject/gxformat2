@@ -100,7 +100,7 @@ public interface WorkflowInputParameter extends InputParameter, HasStepPosition,
    *
    * </BLOCKQUOTE>
    */
-  java.util.Optional<java.util.List<Object>> getFormat();
+  java.util.Optional<java.util.List<String>> getFormat();
   /**
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowInputParameter/collection_type</I><br>

@@ -185,7 +185,7 @@ public class GalaxyWorkflowImpl extends SavableImpl implements GalaxyWorkflow {
     return this.report;
   }
 
-  private java.util.Optional<java.util.List<Object>> tags;
+  private java.util.Optional<java.util.List<String>> tags;
 
   /**
    * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/tags</I><br>
@@ -196,8 +196,57 @@ public class GalaxyWorkflowImpl extends SavableImpl implements GalaxyWorkflow {
    *
    * </BLOCKQUOTE>
    */
-  public java.util.Optional<java.util.List<Object>> getTags() {
+  public java.util.Optional<java.util.List<String>> getTags() {
     return this.tags;
+  }
+
+  private java.util.Optional<Object> creator;
+
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/creator</I>
+   * <br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * Can be a schema.org Person (https://schema.org/Person) or Organization
+   * (https://schema.org/Organization) entity *
+   *
+   * </BLOCKQUOTE>
+   */
+  public java.util.Optional<Object> getCreator() {
+    return this.creator;
+  }
+
+  private java.util.Optional<String> license;
+
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/license</I>
+   * <br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * Must be a valid license listed at https://spdx.org/licenses/ *
+   *
+   * </BLOCKQUOTE>
+   */
+  public java.util.Optional<String> getLicense() {
+    return this.license;
+  }
+
+  private java.util.Optional<String> release;
+
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/release</I>
+   * <br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * If listed should correspond to the release of the workflow in its source reposiory. *
+   *
+   * </BLOCKQUOTE>
+   */
+  public java.util.Optional<String> getRelease() {
+    return this.release;
   }
 
   /**
@@ -365,7 +414,7 @@ public class GalaxyWorkflowImpl extends SavableImpl implements GalaxyWorkflow {
     } else {
       report = null;
     }
-    java.util.Optional<java.util.List<Object>> tags;
+    java.util.Optional<java.util.List<String>> tags;
 
     if (__doc.containsKey("tags")) {
       try {
@@ -381,6 +430,54 @@ public class GalaxyWorkflowImpl extends SavableImpl implements GalaxyWorkflow {
     } else {
       tags = null;
     }
+    java.util.Optional<Object> creator;
+
+    if (__doc.containsKey("creator")) {
+      try {
+        creator =
+            LoaderInstances.optional_AnyInstance.loadField(
+                __doc.get("creator"), __baseUri, __loadingOptions);
+      } catch (ValidationException e) {
+        creator = null; // won't be used but prevents compiler from complaining.
+        final String __message = "the `creator` field is not valid because:";
+        __errors.add(new ValidationException(__message, e));
+      }
+
+    } else {
+      creator = null;
+    }
+    java.util.Optional<String> license;
+
+    if (__doc.containsKey("license")) {
+      try {
+        license =
+            LoaderInstances.optional_StringInstance.loadField(
+                __doc.get("license"), __baseUri, __loadingOptions);
+      } catch (ValidationException e) {
+        license = null; // won't be used but prevents compiler from complaining.
+        final String __message = "the `license` field is not valid because:";
+        __errors.add(new ValidationException(__message, e));
+      }
+
+    } else {
+      license = null;
+    }
+    java.util.Optional<String> release;
+
+    if (__doc.containsKey("release")) {
+      try {
+        release =
+            LoaderInstances.optional_StringInstance.loadField(
+                __doc.get("release"), __baseUri, __loadingOptions);
+      } catch (ValidationException e) {
+        release = null; // won't be used but prevents compiler from complaining.
+        final String __message = "the `release` field is not valid because:";
+        __errors.add(new ValidationException(__message, e));
+      }
+
+    } else {
+      release = null;
+    }
     if (!__errors.isEmpty()) {
       throw new ValidationException("Trying 'RecordField'", __errors);
     }
@@ -393,6 +490,9 @@ public class GalaxyWorkflowImpl extends SavableImpl implements GalaxyWorkflow {
     this.class_ = (String) class_;
     this.steps = (java.util.List<Object>) steps;
     this.report = (java.util.Optional<Report>) report;
-    this.tags = (java.util.Optional<java.util.List<Object>>) tags;
+    this.tags = (java.util.Optional<java.util.List<String>>) tags;
+    this.creator = (java.util.Optional<Object>) creator;
+    this.license = (java.util.Optional<String>) license;
+    this.release = (java.util.Optional<String>) release;
   }
 }

@@ -47,7 +47,7 @@ public interface WorkflowStepOutput extends Identified, Savable {
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/add_tags</I><br>
    */
-  java.util.Optional<java.util.List<Object>> getAdd_tags();
+  java.util.Optional<java.util.List<String>> getAdd_tags();
   /**
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/change_datatype</I><br>
@@ -68,7 +68,7 @@ public interface WorkflowStepOutput extends Identified, Savable {
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/remove_tags</I><br>
    */
-  java.util.Optional<java.util.List<Object>> getRemove_tags();
+  java.util.Optional<java.util.List<String>> getRemove_tags();
   /**
    * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/rename</I>
    * <br>
@@ -78,5 +78,5 @@ public interface WorkflowStepOutput extends Identified, Savable {
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/set_columns</I><br>
    */
-  java.util.Optional<java.util.List<Object>> getSet_columns();
+  java.util.Optional<java.util.List<String>> getSet_columns();
 }

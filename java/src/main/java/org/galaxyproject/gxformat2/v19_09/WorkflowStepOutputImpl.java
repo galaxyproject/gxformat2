@@ -54,13 +54,13 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     return this.id;
   }
 
-  private java.util.Optional<java.util.List<Object>> add_tags;
+  private java.util.Optional<java.util.List<String>> add_tags;
 
   /**
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/add_tags</I><br>
    */
-  public java.util.Optional<java.util.List<Object>> getAdd_tags() {
+  public java.util.Optional<java.util.List<String>> getAdd_tags() {
     return this.add_tags;
   }
 
@@ -95,13 +95,13 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     return this.hide;
   }
 
-  private java.util.Optional<java.util.List<Object>> remove_tags;
+  private java.util.Optional<java.util.List<String>> remove_tags;
 
   /**
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/remove_tags</I><br>
    */
-  public java.util.Optional<java.util.List<Object>> getRemove_tags() {
+  public java.util.Optional<java.util.List<String>> getRemove_tags() {
     return this.remove_tags;
   }
 
@@ -115,13 +115,13 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     return this.rename;
   }
 
-  private java.util.Optional<java.util.List<Object>> set_columns;
+  private java.util.Optional<java.util.List<String>> set_columns;
 
   /**
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStepOutput/set_columns</I><br>
    */
-  public java.util.Optional<java.util.List<Object>> getSet_columns() {
+  public java.util.Optional<java.util.List<String>> getSet_columns() {
     return this.set_columns;
   }
 
@@ -186,7 +186,7 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     } else {
       __baseUri = (String) id.orElse(null);
     }
-    java.util.Optional<java.util.List<Object>> add_tags;
+    java.util.Optional<java.util.List<String>> add_tags;
 
     if (__doc.containsKey("add_tags")) {
       try {
@@ -251,7 +251,7 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     } else {
       hide = null;
     }
-    java.util.Optional<java.util.List<Object>> remove_tags;
+    java.util.Optional<java.util.List<String>> remove_tags;
 
     if (__doc.containsKey("remove_tags")) {
       try {
@@ -283,7 +283,7 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
     } else {
       rename = null;
     }
-    java.util.Optional<java.util.List<Object>> set_columns;
+    java.util.Optional<java.util.List<String>> set_columns;
 
     if (__doc.containsKey("set_columns")) {
       try {
@@ -303,12 +303,12 @@ public class WorkflowStepOutputImpl extends SavableImpl implements WorkflowStepO
       throw new ValidationException("Trying 'RecordField'", __errors);
     }
     this.id = (java.util.Optional<String>) id;
-    this.add_tags = (java.util.Optional<java.util.List<Object>>) add_tags;
+    this.add_tags = (java.util.Optional<java.util.List<String>>) add_tags;
     this.change_datatype = (java.util.Optional<String>) change_datatype;
     this.delete_intermediate_datasets = (java.util.Optional<Boolean>) delete_intermediate_datasets;
     this.hide = (java.util.Optional<Boolean>) hide;
-    this.remove_tags = (java.util.Optional<java.util.List<Object>>) remove_tags;
+    this.remove_tags = (java.util.Optional<java.util.List<String>>) remove_tags;
     this.rename = (java.util.Optional<String>) rename;
-    this.set_columns = (java.util.Optional<java.util.List<Object>>) set_columns;
+    this.set_columns = (java.util.Optional<java.util.List<String>>) set_columns;
   }
 }

@@ -36,7 +36,7 @@ public interface EnumSchema extends Savable {
    *
    * </BLOCKQUOTE>
    */
-  java.util.List<Object> getSymbols();
+  java.util.List<String> getSymbols();
   /**
    * Getter for property <I>https://w3id.org/cwl/salad#type</I><br>
    *

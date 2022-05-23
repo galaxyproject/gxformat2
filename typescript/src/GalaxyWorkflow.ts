@@ -98,8 +98,23 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
    */
   tags?: Array<string> | undefined
 
+  /**
+   * Can be a schema.org Person (https://schema.org/Person) or Organization (https://schema.org/Organization) entity
+   */
+  creator?: undefined | any
 
-  constructor ({loadingOptions, extensionFields, id, class_ = 'GalaxyWorkflow', label, doc, inputs, outputs, uuid, steps, report, tags} : {loadingOptions?: LoadingOptions} & Internal.GalaxyWorkflowProperties) {
+  /**
+   * Must be a valid license listed at https://spdx.org/licenses/
+   */
+  license?: undefined | string
+
+  /**
+   * If listed should correspond to the release of the workflow in its source reposiory.
+   */
+  release?: undefined | string
+
+
+  constructor ({loadingOptions, extensionFields, id, class_ = 'GalaxyWorkflow', label, doc, inputs, outputs, uuid, steps, report, tags, creator, license, release} : {loadingOptions?: LoadingOptions} & Internal.GalaxyWorkflowProperties) {
     super(loadingOptions)
     this.extensionFields = extensionFields ?? {}
     this.id = id
@@ -112,6 +127,9 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
     this.steps = steps
     this.report = report
     this.tags = tags
+    this.creator = creator
+    this.license = license
+    this.release = release
   }
 
   /**
@@ -293,6 +311,54 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
       }
     }
 
+    let creator
+    if ('creator' in _doc) {
+      try {
+        creator = await loadField(_doc.creator, LoaderInstances.unionOfundefinedtypeOranyType,
+          baseuri, loadingOptions)
+      } catch (e) {
+        if (e instanceof ValidationException) {
+          __errors.push(
+            new ValidationException('the `creator` field is not valid because: ', [e])
+          )
+        } else {
+          throw e
+        }
+      }
+    }
+
+    let license
+    if ('license' in _doc) {
+      try {
+        license = await loadField(_doc.license, LoaderInstances.unionOfundefinedtypeOrstrtype,
+          baseuri, loadingOptions)
+      } catch (e) {
+        if (e instanceof ValidationException) {
+          __errors.push(
+            new ValidationException('the `license` field is not valid because: ', [e])
+          )
+        } else {
+          throw e
+        }
+      }
+    }
+
+    let release
+    if ('release' in _doc) {
+      try {
+        release = await loadField(_doc.release, LoaderInstances.unionOfundefinedtypeOrstrtype,
+          baseuri, loadingOptions)
+      } catch (e) {
+        if (e instanceof ValidationException) {
+          __errors.push(
+            new ValidationException('the `release` field is not valid because: ', [e])
+          )
+        } else {
+          throw e
+        }
+      }
+    }
+
     const extensionFields: Dictionary<any> = {}
     for (const [key, value] of Object.entries(_doc)) {
       if (!GalaxyWorkflow.attr.has(key)) {
@@ -302,7 +368,7 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
         } else {
           __errors.push(
             new ValidationException(`invalid field ${key as string}, \
-            expected one of: \`id\`,\`label\`,\`doc\`,\`inputs\`,\`outputs\`,\`uuid\`,\`class\`,\`steps\`,\`report\`,\`tags\``)
+            expected one of: \`id\`,\`label\`,\`doc\`,\`inputs\`,\`outputs\`,\`uuid\`,\`class\`,\`steps\`,\`report\`,\`tags\`,\`creator\`,\`license\`,\`release\``)
           )
           break
         }
@@ -325,7 +391,10 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
       class_: class_,
       steps: steps,
       report: report,
-      tags: tags
+      tags: tags,
+      creator: creator,
+      license: license,
+      release: release
     })
     return schema
   }
@@ -385,6 +454,18 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
       r.tags = save(this.tags, false, this.id, relativeUris)
     }
                 
+    if (this.creator != null) {
+      r.creator = save(this.creator, false, this.id, relativeUris)
+    }
+                
+    if (this.license != null) {
+      r.license = save(this.license, false, this.id, relativeUris)
+    }
+                
+    if (this.release != null) {
+      r.release = save(this.release, false, this.id, relativeUris)
+    }
+                
     if (top) {
       if (this.loadingOptions.namespaces != null) {
         r.$namespaces = this.loadingOptions.namespaces
@@ -396,5 +477,5 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
     return r
   }
             
-  static attr: Set<string> = new Set(['id','label','doc','inputs','outputs','uuid','class','steps','report','tags'])
+  static attr: Set<string> = new Set(['id','label','doc','inputs','outputs','uuid','class','steps','report','tags','creator','license','release'])
 }

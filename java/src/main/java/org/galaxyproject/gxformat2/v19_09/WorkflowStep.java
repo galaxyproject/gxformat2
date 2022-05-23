@@ -218,5 +218,5 @@ public interface WorkflowStep
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStep/runtime_inputs</I><br>
    */
-  java.util.Optional<java.util.List<Object>> getRuntime_inputs();
+  java.util.Optional<java.util.List<String>> getRuntime_inputs();
 }
