@@ -38,7 +38,7 @@ do
         cd "$java_package"
         mvn test
         mvn javadoc:javadoc
-        cd "${PROJECT_DIRECTORY}"
+        cd "$PROJECT_DIRECTORY"/schema/"$schema"
     fi
     if [ $SKIP_TYPESCRIPT -eq 0 ]; then
         ts_package="${PROJECT_DIRECTORY}/typescript"
@@ -51,6 +51,6 @@ do
         npm install
         npm test
         npm run doc
-        cd "${PROJECT_DIRECTORY}"
+        cd "$PROJECT_DIRECTORY"/schema/"$schema"
     fi
 done
