@@ -379,3 +379,12 @@ $graph:
       - "null"
       doc: |
         Tags for the workflow.
+    - name: creator
+      type: Any?
+      doc: Can be a schema.org Person (https://schema.org/Person) or Organization (https://schema.org/Organization) entity
+    - name: license
+      type: string?
+      doc: Must be a valid license listed at https://spdx.org/licenses/
+    - name: release
+      type: string?
+      doc: If listed should correspond to the release of the workflow in its source reposiory.
