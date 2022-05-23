@@ -10,6 +10,7 @@ DIST_DIRECTORY="${PROJECT_DIRECTORY}/dist/schema"
 rm -rf "${DIST_DIRECTORY}"
 mkdir -p "${DIST_DIRECTORY}"
 cp schema/*png "${DIST_DIRECTORY}"
+curl https://raw.githubusercontent.com/jxtx/galaxy-bootstrap/master/dist/galaxy_bootstrap.min.css -o "$DIST_DIRECTORY/galaxy_bootstrap.min.css"
 
 # Requires schema-salad-doc that recognizes --brandstyle and --brandinverse
 for schema in "v19_09";
@@ -20,7 +21,7 @@ do
 
     out="${DIST_DIRECTORY}/${schema}.html"
     schema-salad-doc \
-        --brandstyle '<link rel="stylesheet" href="https://raw.githubusercontent.com/jxtx/galaxy-bootstrap/master/dist/galaxy_bootstrap.css">' \
+        --brandstyle '<link rel="stylesheet" href="galaxy_bootstrap.min.css">' \
         --brandinverse \
         --brand '<img src="icon.png" />' \
         --brandlink '' \
