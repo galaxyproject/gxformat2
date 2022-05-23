@@ -114,4 +114,20 @@ public class Uris {
       throw new RuntimeException(e);
     }
   }
+
+  public static String shortname(final String input_id) {
+    try {
+      final URI uri = new URI(input_id);
+      final String fragment = uri.getFragment();
+      if (fragment != null) {
+        String[] fragment_elements = fragment.split("/");
+        return fragment_elements[fragment_elements.length - 1];
+      } else {
+        String[] path_elements = uri.getPath().split("/");
+        return path_elements[path_elements.length - 1];
+      }
+    } catch (URISyntaxException e) {
+      return input_id;
+    }
+  }
 }

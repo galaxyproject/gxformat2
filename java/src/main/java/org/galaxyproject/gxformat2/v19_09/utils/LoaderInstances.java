@@ -134,7 +134,7 @@ public class LoaderInstances {
   public static Loader<enum_d9cba076fca539106791a4f46d198c7fcfbdb779>
       typedsl_enum_d9cba076fca539106791a4f46d198c7fcfbdb779_2 =
           new TypeDslLoader(enum_d9cba076fca539106791a4f46d198c7fcfbdb779, 2);
-  public static Loader<java.util.List<Object>> uri_array_of_StringInstance_True_False_None =
+  public static Loader<java.util.List<String>> uri_array_of_StringInstance_True_False_None =
       new UriLoader(array_of_StringInstance, true, false, null);
   public static Loader<enum_d961d79c225752b9fadb617367615ab176b47d77>
       enum_d961d79c225752b9fadb617367615ab176b47d77 =
@@ -181,7 +181,7 @@ public class LoaderInstances {
       new TypeDslLoader(union_of_GalaxyType_or_StringInstance_or_NullInstance, 2);
   public static Loader<java.util.Optional<Boolean>> optional_BooleanInstance =
       new OptionalLoader(BooleanInstance);
-  public static Loader<java.util.Optional<java.util.List<Object>>>
+  public static Loader<java.util.Optional<java.util.List<String>>>
       optional_array_of_StringInstance = new OptionalLoader(array_of_StringInstance);
   public static Loader<java.util.Optional<GalaxyType>> optional_GalaxyType =
       new OptionalLoader(GalaxyType);

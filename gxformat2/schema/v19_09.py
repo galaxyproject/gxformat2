@@ -22,7 +22,7 @@ from typing import (
     Type,
     Union,
 )
-from urllib.parse import quote, urlsplit, urlunsplit
+from urllib.parse import quote, urlparse, urlsplit, urlunsplit
 from urllib.request import pathname2url
 
 from ruamel.yaml.comments import CommentedMap
@@ -672,6 +672,18 @@ def save_relative_uri(
         return uri
     else:
         return save(uri, top=False, base_url=base_url)
+
+
+def shortname(inputid: str) -> str:
+    """
+    Compute the shortname of a fully qualified identifer.
+
+    See https://w3id.org/cwl/v1.2/SchemaSalad.html#Short_names.
+    """
+    parsed_id = urlparse(inputid)
+    if parsed_id.fragment:
+        return parsed_id.fragment.split("/")[-1]
+    return parsed_id.path.split("/")[-1]
 
 
 def parser_info() -> str:
@@ -3271,6 +3283,9 @@ class GalaxyWorkflow(Process, HasUUID):
         doc: Optional[Any] = None,
         uuid: Optional[Any] = None,
         report: Optional[Any] = None,
+        creator: Optional[Any] = None,
+        license: Optional[Any] = None,
+        release: Optional[Any] = None,
         extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
@@ -3293,6 +3308,9 @@ class GalaxyWorkflow(Process, HasUUID):
         self.steps = steps
         self.report = report
         self.tags = tags
+        self.creator = creator
+        self.license = license
+        self.release = release
 
     @classmethod
     def fromDoc(
@@ -3473,6 +3491,60 @@ class GalaxyWorkflow(Process, HasUUID):
                 )
         else:
             tags = None
+        if "creator" in _doc:
+            try:
+                creator = load_field(
+                    _doc.get("creator"),
+                    union_of_None_type_or_Any_type,
+                    baseuri,
+                    loadingOptions,
+                )
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `creator` field is not valid because:",
+                        SourceLine(_doc, "creator", str),
+                        [e],
+                    )
+                )
+        else:
+            creator = None
+        if "license" in _doc:
+            try:
+                license = load_field(
+                    _doc.get("license"),
+                    union_of_None_type_or_strtype,
+                    baseuri,
+                    loadingOptions,
+                )
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `license` field is not valid because:",
+                        SourceLine(_doc, "license", str),
+                        [e],
+                    )
+                )
+        else:
+            license = None
+        if "release" in _doc:
+            try:
+                release = load_field(
+                    _doc.get("release"),
+                    union_of_None_type_or_strtype,
+                    baseuri,
+                    loadingOptions,
+                )
+            except ValidationException as e:
+                _errors__.append(
+                    ValidationException(
+                        "the `release` field is not valid because:",
+                        SourceLine(_doc, "release", str),
+                        [e],
+                    )
+                )
+        else:
+            release = None
         extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
@@ -3484,7 +3556,7 @@ class GalaxyWorkflow(Process, HasUUID):
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `{}`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `uuid`, `class`, `steps`, `report`, `tags`".format(
+                            "invalid field `{}`, expected one of: `id`, `label`, `doc`, `inputs`, `outputs`, `uuid`, `class`, `steps`, `report`, `tags`, `creator`, `license`, `release`".format(
                                 k
                             ),
                             SourceLine(_doc, k, str),
@@ -3504,6 +3576,9 @@ class GalaxyWorkflow(Process, HasUUID):
             steps=steps,
             report=report,
             tags=tags,
+            creator=creator,
+            license=license,
+            release=release,
             extension_fields=extension_fields,
             loadingOptions=loadingOptions,
         )
@@ -3552,6 +3627,18 @@ class GalaxyWorkflow(Process, HasUUID):
             r["tags"] = save(
                 self.tags, top=False, base_url=self.id, relative_uris=relative_uris
             )
+        if self.creator is not None:
+            r["creator"] = save(
+                self.creator, top=False, base_url=self.id, relative_uris=relative_uris
+            )
+        if self.license is not None:
+            r["license"] = save(
+                self.license, top=False, base_url=self.id, relative_uris=relative_uris
+            )
+        if self.release is not None:
+            r["release"] = save(
+                self.release, top=False, base_url=self.id, relative_uris=relative_uris
+            )
 
         # top refers to the directory level
         if top:
@@ -3573,6 +3660,9 @@ class GalaxyWorkflow(Process, HasUUID):
             "steps",
             "report",
             "tags",
+            "creator",
+            "license",
+            "release",
         ]
     )
 

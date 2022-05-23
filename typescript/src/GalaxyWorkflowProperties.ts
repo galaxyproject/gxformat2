@@ -27,7 +27,7 @@ export interface GalaxyWorkflowProperties extends Internal.ProcessProperties, In
    * The unique identifier for this object.
    */
   id?: undefined | string
-  class_: string
+  class_?: string
 
   /**
    * A short, human-readable label of this object.
@@ -85,4 +85,19 @@ export interface GalaxyWorkflowProperties extends Internal.ProcessProperties, In
    * 
    */
   tags?: Array<string> | undefined
+
+  /**
+   * Can be a schema.org Person (https://schema.org/Person) or Organization (https://schema.org/Organization) entity
+   */
+  creator?: undefined | any
+
+  /**
+   * Must be a valid license listed at https://spdx.org/licenses/
+   */
+  license?: undefined | string
+
+  /**
+   * If listed should correspond to the release of the workflow in its source reposiory.
+   */
+  release?: undefined | string
 }

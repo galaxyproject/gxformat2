@@ -142,5 +142,39 @@ public interface GalaxyWorkflow extends Process, HasUUID, Savable {
    *
    * </BLOCKQUOTE>
    */
-  java.util.Optional<java.util.List<Object>> getTags();
+  java.util.Optional<java.util.List<String>> getTags();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/creator</I>
+   * <br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * Can be a schema.org Person (https://schema.org/Person) or Organization
+   * (https://schema.org/Organization) entity *
+   *
+   * </BLOCKQUOTE>
+   */
+  java.util.Optional<Object> getCreator();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/license</I>
+   * <br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * Must be a valid license listed at https://spdx.org/licenses/ *
+   *
+   * </BLOCKQUOTE>
+   */
+  java.util.Optional<String> getLicense();
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/release</I>
+   * <br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * If listed should correspond to the release of the workflow in its source reposiory. *
+   *
+   * </BLOCKQUOTE>
+   */
+  java.util.Optional<String> getRelease();
 }

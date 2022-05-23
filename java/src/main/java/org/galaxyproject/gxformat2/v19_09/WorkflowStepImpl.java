@@ -288,13 +288,13 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     return this.run;
   }
 
-  private java.util.Optional<java.util.List<Object>> runtime_inputs;
+  private java.util.Optional<java.util.List<String>> runtime_inputs;
 
   /**
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowStep/runtime_inputs</I><br>
    */
-  public java.util.Optional<java.util.List<Object>> getRuntime_inputs() {
+  public java.util.Optional<java.util.List<String>> getRuntime_inputs() {
     return this.runtime_inputs;
   }
 
@@ -584,7 +584,7 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     } else {
       run = null;
     }
-    java.util.Optional<java.util.List<Object>> runtime_inputs;
+    java.util.Optional<java.util.List<String>> runtime_inputs;
 
     if (__doc.containsKey("runtime_inputs")) {
       try {
@@ -618,6 +618,6 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     this.tool_state = (java.util.Optional<Object>) tool_state;
     this.type = (java.util.Optional<WorkflowStepType>) type;
     this.run = (java.util.Optional<GalaxyWorkflow>) run;
-    this.runtime_inputs = (java.util.Optional<java.util.List<Object>>) runtime_inputs;
+    this.runtime_inputs = (java.util.Optional<java.util.List<String>>) runtime_inputs;
   }
 }
