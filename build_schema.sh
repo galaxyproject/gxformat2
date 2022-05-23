@@ -20,7 +20,7 @@ do
 
     out="${DIST_DIRECTORY}/${schema}.html"
     schema-salad-doc \
-        --brandstyle '<link rel="stylesheet" href="https://jamestaylor.org/galaxy-bootstrap/galaxy_bootstrap.css">' \
+        --brandstyle '<link rel="stylesheet" href="https://raw.githubusercontent.com/jxtx/galaxy-bootstrap/master/dist/galaxy_bootstrap.css">' \
         --brandinverse \
         --brand '<img src="icon.png" />' \
         --brandlink '' \
