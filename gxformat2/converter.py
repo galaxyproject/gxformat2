@@ -682,13 +682,16 @@ def _populate_input_connections(context, step, connect):
             if not isinstance(value, dict):
                 if key == "$step":
                     value += "/__NO_INPUT_OUTPUT_NAME__"
-                id, output_name = context.step_output(value)
-                value = {"id": id, "output_name": output_name}
-                if is_subworkflow_step:
-                    subworkflow_conversion_context = context.get_subworkflow_conversion_context(step)
-                    input_subworkflow_step_id = subworkflow_conversion_context.step_id(key)
-                    value["input_subworkflow_step_id"] = input_subworkflow_step_id
-            input_connection_value.append(value)
+                if not isinstance(value, list):
+                    value = [value]
+                for source in value:
+                    step_id, output_name = context.step_output(source)
+                    source = {"id": step_id, "output_name": output_name}
+                    if is_subworkflow_step:
+                        subworkflow_conversion_context = context.get_subworkflow_conversion_context(step)
+                        input_subworkflow_step_id = subworkflow_conversion_context.step_id(key)
+                        source["input_subworkflow_step_id"] = input_subworkflow_step_id
+                    input_connection_value.append(source)
         if key == "$step":
             key = "__NO_INPUT_OUTPUT_NAME__"
         input_connections[key] = input_connection_value

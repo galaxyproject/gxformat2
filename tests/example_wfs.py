@@ -193,7 +193,7 @@ steps:
 """
 
 
-# not vaild according to the schema, but the native format calls them
+# not valid according to the schema, but the native format calls them
 # integers and some old examples used this syntax. Make illegal post v19.09?
 INTEGER_INPUT = """
 class: GalaxyWorkflow
@@ -287,4 +287,24 @@ steps:
       seed_source:
         seed_source_selector: set_seed
     when: $(inputs.seed != 'skip')
+"""
+
+MULTI_DATA_INPUT_WORKFLOW = """
+class: GalaxyWorkflow
+label: Multi-data input
+inputs:
+  optional:
+    optional: true
+    type: data
+  required:
+    optional: false
+    type: data
+steps:
+  count_multi_file:
+    tool_id: count_multi_file
+    in:
+      input1:
+        source:
+        - required
+        - optional
 """

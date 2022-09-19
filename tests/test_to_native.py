@@ -10,6 +10,7 @@ from ._helpers import TEST_PATH, to_example_path
 from .example_wfs import (
     BASIC_WORKFLOW,
     INT_INPUT,
+    MULTI_DATA_INPUT_WORKFLOW,
 )
 
 EXAMPLES_DIR_NAME = "native"
@@ -50,6 +51,17 @@ def test_int_input():
     int_step = as_native["steps"]["1"]
     assert int_step["type"] == "parameter_input"
     assert json.loads(int_step["tool_state"])["parameter_type"] == "integer"
+
+
+def test_multi_data_input():
+    format2_path = to_example_path("muti_data_example", EXAMPLES_DIR_NAME, "gxwf.yml")
+    with open(format2_path, "w") as f:
+        f.write(MULTI_DATA_INPUT_WORKFLOW)
+    out = _run_example_path(format2_path)
+    with open(out) as f:
+        as_native = json.load(f)
+    multi_data_step = as_native["steps"]["2"]
+    assert len(multi_data_step["input_connections"]["input1"]) == 2
 
 
 def _run_example_path(path):
