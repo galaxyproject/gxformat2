@@ -59,12 +59,17 @@ def validate_galaxy_markdown(galaxy_markdown, internal=True):
 
         def invalid_line(template, **kwd):
             if "line" in kwd:
-                kwd["line"] = line.rstrip("\r\n")
-            raise ValueError("Invalid line %d: %s" % (line_no + 1, template.format(**kwd)))
+                kwd["line"] = kwd["line"].rstrip("\r\n")
+            raise ValueError("Invalid line %d: %s" % (kwd["line_no"] + 1, template.format(**kwd)))
 
         expecting_container_close = expecting_container_close_for is not None
         if not fenced and expecting_container_close:
-            invalid_line("[{line}] is not expected close line for [{expected_for}]", line=line, expected_for=expecting_container_close_for)
+            invalid_line(
+                "[{line}] is not expected close line for [{expected_for}]",
+                line=line,
+                line_no=line_no,
+                expected_for=expecting_container_close_for
+            )
             continue
         elif not fenced:
             continue
@@ -75,7 +80,12 @@ def validate_galaxy_markdown(galaxy_markdown, internal=True):
         elif open_fence and GALAXY_FLAVORED_MARKDOWN_CONTAINER_LINE_PATTERN.match(line):
             if expecting_container_close:
                 if not VALID_CONTAINER_END_PATTERN.match(line):
-                    invalid_line("Invalid command close line [{line}] for [{expected_for}]", line=line, expected_for=expecting_container_close_for)
+                    invalid_line(
+                        "Invalid command close line [{line}] for [{expected_for}]",
+                        line=line,
+                        line_no=line_no,
+                        expected_for=expecting_container_close_for
+                    )
                 # else closing container and we're done
                 expecting_container_close_for = None
                 function_calls = 0
@@ -88,18 +98,27 @@ def validate_galaxy_markdown(galaxy_markdown, internal=True):
             if func_call_match:
                 function_calls += 1
                 if function_calls > 1:
-                    invalid_line("Only one Galaxy directive is allowed per fenced Galaxy block (```galaxy)")
+                    invalid_line(
+                        "Only one Galaxy directive is allowed per fenced Galaxy block (```galaxy)",
+                        line=line,
+                        line_no=line_no,
+                    )
                 container = func_call_match.group("container")
                 valid_args = VALID_ARGUMENTS[container]
                 first_arg_call = func_call_match.group("firstargcall")
 
-                def _validate_arg(arg_str):
+                def _validate_arg(arg_str, valid_args, line, line_no):
                     if arg_str is not None:
                         arg_name = arg_str.split("=", 1)[0].strip()
                         if arg_name not in valid_args:
-                            invalid_line("Invalid argument to Galaxy directive [{argument}]", argument=arg_name)
+                            invalid_line(
+                                "Invalid argument to Galaxy directive [{argument}]",
+                                line=line,
+                                line_no=line_no,
+                                argument=arg_name
+                            )
 
-                _validate_arg(first_arg_call)
+                _validate_arg(first_arg_call, valid_args, line, line_no)
                 rest = func_call_match.group("restargcalls")
                 while rest:
                     rest = rest.strip().split(",", 1)[1]
@@ -107,12 +126,12 @@ def validate_galaxy_markdown(galaxy_markdown, internal=True):
                     if not arg_match:
                         break
                     first_arg_call = arg_match.group("firstargcall")
-                    _validate_arg(first_arg_call)
+                    _validate_arg(first_arg_call, valid_args, line, line_no)
                     rest = arg_match.group("restargcalls")
 
                 continue
             else:
-                invalid_line("Invalid embedded Galaxy markup line [{line}]", line=line)
+                invalid_line("Invalid embedded Galaxy markup line [{line}]", line=line, line_no=line_no)
 
         # Markdown unrelated to Galaxy object containers.
         continue
