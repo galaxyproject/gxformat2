@@ -1,0 +1,74 @@
+{
+    "steps": {
+        "0": {
+            "optional": true,
+            "type": "data_input",
+            "label": "optional",
+            "id": 0,
+            "position": {
+                "left": 0,
+                "top": 0
+            },
+            "annotation": "",
+            "input_connections": {},
+            "inputs": [
+                {
+                    "name": "optional",
+                    "description": ""
+                }
+            ],
+            "tool_state": "{\"name\": \"optional\", \"optional\": true}"
+        },
+        "1": {
+            "optional": false,
+            "type": "data_input",
+            "label": "required",
+            "id": 1,
+            "position": {
+                "left": 10,
+                "top": 10
+            },
+            "annotation": "",
+            "input_connections": {},
+            "inputs": [
+                {
+                    "name": "required",
+                    "description": ""
+                }
+            ],
+            "tool_state": "{\"name\": \"required\", \"optional\": false}"
+        },
+        "2": {
+            "tool_id": "count_multi_file",
+            "label": "count_multi_file",
+            "id": 2,
+            "position": {
+                "left": 20,
+                "top": 20
+            },
+            "type": "tool",
+            "name": "count_multi_file",
+            "post_job_actions": {},
+            "tool_version": null,
+            "annotation": "",
+            "input_connections": {
+                "input1": [
+                    {
+                        "id": 1,
+                        "output_name": "output"
+                    },
+                    {
+                        "id": 0,
+                        "output_name": "output"
+                    }
+                ]
+            },
+            "tool_state": "{\"__page__\": 0}"
+        }
+    },
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Multi-data input",
+    "uuid": "23584e0c-59c3-4849-b703-853ef8883c99",
+    "annotation": ""
+}

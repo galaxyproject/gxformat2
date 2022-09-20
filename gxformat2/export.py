@@ -171,9 +171,16 @@ def _convert_input_connections(from_native_step, to_format2_step, label_map):
                 input_name = "$step"
                 assert source.endswith("/__NO_INPUT_OUTPUT_NAME__")
                 source = source[:-len("/__NO_INPUT_OUTPUT_NAME__")]
-            in_dict[input_name] = {
-                "source": source
-            }
+            if input_name in in_dict:
+                existing_source = in_dict[input_name]["source"]
+                if not isinstance(existing_source, list):
+                    existing_source = [existing_source]
+                existing_source.append(source)
+                in_dict[input_name]["source"] = existing_source
+            else:
+                in_dict[input_name] = {
+                    "source": source
+                }
     to_format2_step["in"] = in_dict
 
 
