@@ -18,15 +18,43 @@
       padding-top: 61px;
       margin-top: -61px;
     }
-    body {
-      padding-top: 61px;
-    }
     .tocnav ol {
       list-style: none
     }
     pre {
-      margin-left: 2em;
-      margin-right: 2em;
+      margin: 0 2em 10px 2em;
+      padding: 9.5px;
+      line-height: 1.42857143;
+      color: #333;
+      word-break: break-all;
+      word-wrap: break-word;
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    pre code {
+      padding: 0;
+      font-size: inherit;
+      color: inherit;
+      white-space: pre-wrap;
+      background-color: transparent;
+      border-radius: 0;
+    }
+    code {
+      background-color: #f9f2f4;
+      border-radius: 4px;
+      padding: 2px 4px;
+      color: #c7254e;
+    }
+    blockquote {
+      padding: 10px 20px 1px 20px;
+      border-left: 5px solid #eee;
+    }
+    a {
+      text-decoration: none;
+    }
+    a code {
+      color: #c7254e;
     }
     .section a {
       visibility: hidden;
@@ -78,16 +106,14 @@
     </head>
     <body>
     
-      <nav class="navbar navbar-default navbar-fixed-top navbar-inverse">
+      <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light navbar-inverse">
         <div class="container">
-          <div class="navbar-header">
-            <a class="navbar-brand" href=""><img src="icon.png" /></a>
+          <a class="navbar-brand" href=""><img src="icon.png" /></a>
     
-          </div>
         </div>
       </nav>
     
-    <div class="container">
+    <div class="container mt-4">
     
     <div class="row">
     
@@ -309,7 +335,7 @@ collection types are separated with colons, e.g. <code>list:list:paired</code>.<
 <div class="col-xs-12 col-lg-6 description-col"><p>Relative horizontal position of the step's node when rendered in the workflow editor.</p>
 </div>
 </div></div><h3 id="GalaxyType" class="section">GalaxyType <a href="#GalaxyType">&sect;</a></h3><p>Extends primitive types with the native Galaxy concepts such datasets and collections.</p>
-<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> 32-bit signed integer</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> Unicode character sequence</td></tr><tr><td><code>integer</code></td><td> an alias for int type - matches syntax used by Galaxy tools</td></tr><tr><td><code>text</code></td><td> an alias for string type - matches syntax used by Galaxy tools</td></tr><tr><td><code>File</code></td><td> an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future</td></tr><tr><td><code>data</code></td><td> a Galaxy dataset</td></tr><tr><td><code>collection</code></td><td> a Galaxy dataset collection</td></tr></table><h2 id="WorkflowOutputParameter" class="section">WorkflowOutputParameter <a href="#WorkflowOutputParameter">&sect;</a></h2><p>Describe an output parameter of a workflow.  The parameter must be
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> 32-bit signed integer</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> Unicode character sequence</td></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> 32-bit signed integer</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> Unicode character sequence</td></tr><tr><td><code>integer</code></td><td> an alias for int type - matches syntax used by Galaxy tools</td></tr><tr><td><code>text</code></td><td> an alias for string type - matches syntax used by Galaxy tools</td></tr><tr><td><code>File</code></td><td> an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future</td></tr><tr><td><code>data</code></td><td> a Galaxy dataset</td></tr><tr><td><code>collection</code></td><td> a Galaxy dataset collection</td></tr></table><h2 id="WorkflowOutputParameter" class="section">WorkflowOutputParameter <a href="#WorkflowOutputParameter">&sect;</a></h2><p>Describe an output parameter of a workflow.  The parameter must be
 connected to one parameter defined in the workflow that
 will provide the value of the output parameter. It is legal to
 connect a WorkflowInputParameter to a WorkflowOutputParameter.</p>
