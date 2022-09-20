@@ -6,9 +6,31 @@ History
 .. to_doc
 
 ---------------------
-0.16.0.dev0
+0.16.0 (2022-09-20)
 ---------------------
 
+* Add dev ``when`` on steps to backend (don't expose in schema yet). by @jmchilton in https://github.com/galaxyproject/gxformat2/pull/48
+* Update project plumbing to allow dev release. by @jmchilton in https://github.com/galaxyproject/gxformat2/pull/49
+* Drop support for Python 3.5, add 3.9 by @nsoranzo in https://github.com/galaxyproject/gxformat2/pull/52
+* Relicense under the MIT license by @nsoranzo in https://github.com/galaxyproject/gxformat2/pull/58
+* Format2: Add `label` attribute to `WorkflowInputParameter` and `WorkflowOutputParameter` by @nsoranzo in https://github.com/galaxyproject/gxformat2/pull/56
+* Misc fixes and refactorings by @nsoranzo in https://github.com/galaxyproject/gxformat2/pull/55
+* Convert Format2 workflow `label` to native `name` by @nsoranzo in https://github.com/galaxyproject/gxformat2/pull/54
+* test_abstract_export: use different names for the different outputs by @simleo in https://github.com/galaxyproject/gxformat2/pull/57
+* Fix 2 typos by @nsoranzo in https://github.com/galaxyproject/gxformat2/pull/62
+* Propagate `doc` field to abstract CWL format by @nsoranzo in https://github.com/galaxyproject/gxformat2/pull/65
+* Linting fixes by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/64
+* Maintain collection_type if present by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/68
+* Fix schema doc build by @nsoranzo in https://github.com/galaxyproject/gxformat2/pull/69
+* Lint and deprecation fixes by @nsoranzo in https://github.com/galaxyproject/gxformat2/pull/70
+* Run java codegenerator by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/71
+* Run maven tests on pull_request by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/72
+* fix schema-salad pycodegen by @mr-c in https://github.com/galaxyproject/gxformat2/pull/76
+* Add workflow default file support by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/79
+* Add typescript implementation by @mr-c in https://github.com/galaxyproject/gxformat2/pull/75
+* Fix cytoscape HTML exports from dist package. by @jmchilton in https://github.com/galaxyproject/gxformat2/pull/82
+* Add missing elements to schema, fix change_datatype conversion, CSS by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/83
+* Support lists as data inputs by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/84
     
 
 ---------------------
