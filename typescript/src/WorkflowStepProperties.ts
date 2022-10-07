@@ -124,4 +124,14 @@ export interface WorkflowStepProperties extends Internal.IdentifiedProperties, I
    */
   run?: undefined | Internal.GalaxyWorkflow
   runtime_inputs?: undefined | Array<string>
+
+  /**
+   * If defined, only run the step when the expression evaluates to
+   * `true`.  If `false` the step is skipped.  A skipped step
+   * produces a `null` on each output.
+   * 
+   * Expression should be an ecma5.1 expression.
+   * 
+   */
+  when?: undefined | string
 }

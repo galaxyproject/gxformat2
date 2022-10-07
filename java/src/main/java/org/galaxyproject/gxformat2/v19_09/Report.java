@@ -14,7 +14,7 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /**
  * Auto-generated interface for <I>https://galaxyproject.org/gxformat2/v19_09#Report</I><br>
@@ -26,7 +26,7 @@ import org.galaxyproject.gxformat2.v19_09.utils.Savable;
  *
  * </BLOCKQUOTE>
  */
-public interface Report extends Savable {
+public interface Report extends Saveable {
   /**
    * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#Report/markdown</I><br>
    *

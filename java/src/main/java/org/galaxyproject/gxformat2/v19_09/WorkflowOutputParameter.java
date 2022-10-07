@@ -14,7 +14,7 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /**
  * Auto-generated interface for
@@ -29,7 +29,7 @@ import org.galaxyproject.gxformat2.v19_09.utils.Savable;
  *
  * </BLOCKQUOTE>
  */
-public interface WorkflowOutputParameter extends OutputParameter, Savable {
+public interface WorkflowOutputParameter extends OutputParameter, Saveable {
   /**
    * Getter for property <I>https://w3id.org/cwl/cwl#Identified/id</I><br>
    *

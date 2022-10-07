@@ -14,14 +14,14 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /**
  * Auto-generated interface for
  * <I>https://galaxyproject.org/gxformat2/v19_09#WorkflowInputParameter</I><br>
  * This interface is implemented by {@link WorkflowInputParameterImpl}<br>
  */
-public interface WorkflowInputParameter extends InputParameter, HasStepPosition, Savable {
+public interface WorkflowInputParameter extends InputParameter, HasStepPosition, Saveable {
   /**
    * Getter for property <I>https://w3id.org/cwl/cwl#Identified/id</I><br>
    *

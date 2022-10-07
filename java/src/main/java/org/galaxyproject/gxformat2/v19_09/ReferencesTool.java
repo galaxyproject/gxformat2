@@ -14,13 +14,13 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /**
  * Auto-generated interface for
  * <I>https://galaxyproject.org/gxformat2/gxformat2common#ReferencesTool</I><br>
  */
-public interface ReferencesTool extends Savable {
+public interface ReferencesTool extends Saveable {
   /**
    * Getter for property
    * <I>https://galaxyproject.org/gxformat2/gxformat2common#ReferencesTool/tool_id</I><br>

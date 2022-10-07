@@ -17,11 +17,11 @@ package org.galaxyproject.gxformat2.v19_09;
 import org.galaxyproject.gxformat2.v19_09.utils.LoaderInstances;
 import org.galaxyproject.gxformat2.v19_09.utils.LoadingOptions;
 import org.galaxyproject.gxformat2.v19_09.utils.LoadingOptionsBuilder;
-import org.galaxyproject.gxformat2.v19_09.utils.SavableImpl;
+import org.galaxyproject.gxformat2.v19_09.utils.SaveableImpl;
 import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
 
 /** Auto-generated class implementation for <I>https://w3id.org/cwl/salad#RecordSchema</I><br> */
-public class RecordSchemaImpl extends SavableImpl implements RecordSchema {
+public class RecordSchemaImpl extends SaveableImpl implements RecordSchema {
   private LoadingOptions loadingOptions_ = new LoadingOptionsBuilder().build();
   private java.util.Map<String, Object> extensionFields_ = new java.util.HashMap<String, Object>();
 

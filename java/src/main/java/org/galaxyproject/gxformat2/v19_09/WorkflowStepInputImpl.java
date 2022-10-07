@@ -17,7 +17,7 @@ package org.galaxyproject.gxformat2.v19_09;
 import org.galaxyproject.gxformat2.v19_09.utils.LoaderInstances;
 import org.galaxyproject.gxformat2.v19_09.utils.LoadingOptions;
 import org.galaxyproject.gxformat2.v19_09.utils.LoadingOptionsBuilder;
-import org.galaxyproject.gxformat2.v19_09.utils.SavableImpl;
+import org.galaxyproject.gxformat2.v19_09.utils.SaveableImpl;
 import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
 
 /**
@@ -30,7 +30,7 @@ import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
  *
  * </BLOCKQUOTE>
  */
-public class WorkflowStepInputImpl extends SavableImpl implements WorkflowStepInput {
+public class WorkflowStepInputImpl extends SaveableImpl implements WorkflowStepInput {
   private LoadingOptions loadingOptions_ = new LoadingOptionsBuilder().build();
   private java.util.Map<String, Object> extensionFields_ = new java.util.HashMap<String, Object>();
 

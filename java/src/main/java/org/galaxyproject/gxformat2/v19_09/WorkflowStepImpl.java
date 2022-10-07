@@ -17,7 +17,7 @@ package org.galaxyproject.gxformat2.v19_09;
 import org.galaxyproject.gxformat2.v19_09.utils.LoaderInstances;
 import org.galaxyproject.gxformat2.v19_09.utils.LoadingOptions;
 import org.galaxyproject.gxformat2.v19_09.utils.LoadingOptionsBuilder;
-import org.galaxyproject.gxformat2.v19_09.utils.SavableImpl;
+import org.galaxyproject.gxformat2.v19_09.utils.SaveableImpl;
 import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
 
 /**
@@ -43,7 +43,7 @@ import org.galaxyproject.gxformat2.v19_09.utils.ValidationException;
  *
  * </BLOCKQUOTE>
  */
-public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
+public class WorkflowStepImpl extends SaveableImpl implements WorkflowStep {
   private LoadingOptions loadingOptions_ = new LoadingOptionsBuilder().build();
   private java.util.Map<String, Object> extensionFields_ = new java.util.HashMap<String, Object>();
 
@@ -296,6 +296,24 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
    */
   public java.util.Optional<java.util.List<String>> getRuntime_inputs() {
     return this.runtime_inputs;
+  }
+
+  private java.util.Optional<String> when;
+
+  /**
+   * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#when</I><br>
+   *
+   * <BLOCKQUOTE>
+   *
+   * If defined, only run the step when the expression evaluates to `true`. If `false` the step is
+   * skipped. A skipped step produces a `null` on each output.
+   *
+   * <p>Expression should be an ecma5.1 expression. *
+   *
+   * </BLOCKQUOTE>
+   */
+  public java.util.Optional<String> getWhen() {
+    return this.when;
   }
 
   /**
@@ -573,7 +591,7 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     if (__doc.containsKey("run")) {
       try {
         run =
-            LoaderInstances.optional_GalaxyWorkflow.loadField(
+            LoaderInstances.uri_optional_GalaxyWorkflow_False_False_None.loadField(
                 __doc.get("run"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         run = null; // won't be used but prevents compiler from complaining.
@@ -600,6 +618,22 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     } else {
       runtime_inputs = null;
     }
+    java.util.Optional<String> when;
+
+    if (__doc.containsKey("when")) {
+      try {
+        when =
+            LoaderInstances.optional_StringInstance.loadField(
+                __doc.get("when"), __baseUri, __loadingOptions);
+      } catch (ValidationException e) {
+        when = null; // won't be used but prevents compiler from complaining.
+        final String __message = "the `when` field is not valid because:";
+        __errors.add(new ValidationException(__message, e));
+      }
+
+    } else {
+      when = null;
+    }
     if (!__errors.isEmpty()) {
       throw new ValidationException("Trying 'RecordField'", __errors);
     }
@@ -619,5 +653,6 @@ public class WorkflowStepImpl extends SavableImpl implements WorkflowStep {
     this.type = (java.util.Optional<WorkflowStepType>) type;
     this.run = (java.util.Optional<GalaxyWorkflow>) run;
     this.runtime_inputs = (java.util.Optional<java.util.List<String>>) runtime_inputs;
+    this.when = (java.util.Optional<String>) when;
   }
 }

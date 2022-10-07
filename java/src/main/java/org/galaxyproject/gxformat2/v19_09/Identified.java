@@ -14,7 +14,7 @@
 
 package org.galaxyproject.gxformat2.v19_09;
 
-import org.galaxyproject.gxformat2.v19_09.utils.Savable;
+import org.galaxyproject.gxformat2.v19_09.utils.Saveable;
 
 /** Auto-generated interface for <I>https://w3id.org/cwl/cwl#Identified</I><br> */
-public interface Identified extends Savable {}
+public interface Identified extends Saveable {}
