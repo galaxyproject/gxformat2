@@ -522,6 +522,16 @@ interface for constructing the input object.</p>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
 <div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>when</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>If defined, only run the step when the expression evaluates to
+<code>true</code>.  If <code>false</code> the step is skipped.  A skipped step
+produces a <code>null</code> on each output.</p>
+<p>Expression should be an ecma5.1 expression.</p>
+</div>
 </div></div><h3 id="WorkflowStepInput" class="section">WorkflowStepInput <a href="#WorkflowStepInput">&sect;</a></h3><p>TODO:</p>
 <h3>Fields</h3>
 <div class="responsive-table">
