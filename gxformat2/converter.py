@@ -413,6 +413,10 @@ def transform_tool(context, step):
         "post_job_actions": {},
         "tool_version": None,
     })
+    if "when" in step and "source" in step["when"]:
+        step_id, output_name = context.step_output(step["when"]["source"])
+        step["when"]["source"] = {"id": step_id, "output_name": output_name}
+
     post_job_actions = step["post_job_actions"]
     _populate_annotation(step)
 
