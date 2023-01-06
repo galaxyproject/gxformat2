@@ -388,6 +388,10 @@ def transform_pause(context, step, default_name="Pause for dataset review"):
 
 
 def transform_subworkflow(context, step):
+    if "when" in step and "source" in step["when"]:
+        step_id, output_name = context.step_output(step["when"]["source"])
+        step["when"]["source"] = {"id": step_id, "output_name": output_name}
+
     _populate_annotation(step)
 
     _ensure_inputs_connections(step)
@@ -689,8 +693,9 @@ def _populate_input_connections(context, step, connect):
                     source = {"id": step_id, "output_name": output_name}
                     if is_subworkflow_step:
                         subworkflow_conversion_context = context.get_subworkflow_conversion_context(step)
-                        input_subworkflow_step_id = subworkflow_conversion_context.step_id(key)
-                        source["input_subworkflow_step_id"] = input_subworkflow_step_id
+                        if key in subworkflow_conversion_context.labels:
+                            input_subworkflow_step_id = subworkflow_conversion_context.step_id(key)
+                            source["input_subworkflow_step_id"] = input_subworkflow_step_id
                     input_connection_value.append(source)
         if key == "$step":
             key = "__NO_INPUT_OUTPUT_NAME__"
