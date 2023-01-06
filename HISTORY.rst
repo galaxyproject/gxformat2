@@ -6,10 +6,11 @@ History
 .. to_doc
 
 ---------------------
-0.17.0.dev0
+0.17.0 (2023-01-06)
 ---------------------
 
-* Add "when" to workflow steps.
+* Enable "when" for workflow steps by @mr-c in https://github.com/galaxyproject/gxformat2/pull/74
+* When fixes by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/86
 
 ---------------------
 0.16.0 (2022-09-20)
