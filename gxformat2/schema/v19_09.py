@@ -47,7 +47,6 @@ IdxType = MutableMapping[str, Tuple[Any, "LoadingOptions"]]
 
 
 class LoadingOptions:
-
     idx: IdxType
     fileuri: Optional[str]
     baseuri: str
@@ -73,7 +72,6 @@ class LoadingOptions:
         idx: Optional[IdxType] = None,
     ) -> None:
         """Create a LoadingOptions object."""
-
         self.original_doc = original_doc
 
         if idx is not None:
@@ -151,24 +149,29 @@ class LoadingOptions:
                 if self.fileuri is not None
                 else pathlib.Path(schema).resolve().as_uri()
             )
-            try:
-                if fetchurl not in self.cache or self.cache[fetchurl] is True:
-                    _logger.debug("Getting external schema %s", fetchurl)
+            if fetchurl not in self.cache or self.cache[fetchurl] is True:
+                _logger.debug("Getting external schema %s", fetchurl)
+                try:
                     content = self.fetcher.fetch_text(fetchurl)
-                    self.cache[fetchurl] = newGraph = Graph()
-                    for fmt in ["xml", "turtle"]:
-                        try:
-                            newGraph.parse(
-                                data=content, format=fmt, publicID=str(fetchurl)
-                            )
-                            break
-                        except (xml.sax.SAXParseException, TypeError, BadSyntax):
-                            pass
-                graph += self.cache[fetchurl]
-            except Exception as e:
-                _logger.warning(
-                    "Could not load extension schema %s: %s", fetchurl, str(e)
-                )
+                except Exception as e:
+                    _logger.warning(
+                        "Could not load extension schema %s: %s", fetchurl, str(e)
+                    )
+                    continue
+                newGraph = Graph()
+                err_msg = "unknown error"
+                for fmt in ["xml", "turtle"]:
+                    try:
+                        newGraph.parse(data=content, format=fmt, publicID=str(fetchurl))
+                        self.cache[fetchurl] = newGraph
+                        graph += newGraph
+                        break
+                    except (xml.sax.SAXParseException, TypeError, BadSyntax) as e:
+                        err_msg = str(e)
+                else:
+                    _logger.warning(
+                        "Could not load extension schema %s: %s", fetchurl, err_msg
+                    )
         self.cache[key] = graph
         return graph
 
@@ -382,7 +385,7 @@ class _ArrayLoader(_Loader):
     def load(self, doc, baseuri, loadingOptions, docRoot=None):
         # type: (Any, str, LoadingOptions, Optional[str]) -> Any
         if not isinstance(doc, MutableSequence):
-            raise ValidationException("Expected a list, was {}".format(type(doc)))
+            raise ValidationException(f"Expected a list, was {type(doc)}")
         r = []  # type: List[Any]
         errors = []  # type: List[SchemaSaladException]
         for i in range(0, len(doc)):
@@ -438,8 +441,9 @@ class _SecondaryDSLLoader(_Loader):
                         r.append({"pattern": d})
                 elif isinstance(d, dict):
                     new_dict: Dict[str, Any] = {}
-                    if "pattern" in d:
-                        new_dict["pattern"] = d.pop("pattern")
+                    dict_copy = copy.deepcopy(d)
+                    if "pattern" in dict_copy:
+                        new_dict["pattern"] = dict_copy.pop("pattern")
                     else:
                         raise ValidationException(
                             "Missing pattern in secondaryFiles specification entry: {}".format(
@@ -447,13 +451,13 @@ class _SecondaryDSLLoader(_Loader):
                             )
                         )
                     new_dict["required"] = (
-                        d.pop("required") if "required" in d else None
+                        dict_copy.pop("required") if "required" in dict_copy else None
                     )
 
-                    if len(d):
+                    if len(dict_copy):
                         raise ValidationException(
                             "Unallowed values in secondaryFiles specification entry: {}".format(
-                                d
+                                dict_copy
                             )
                         )
                     r.append(new_dict)
@@ -464,20 +468,23 @@ class _SecondaryDSLLoader(_Loader):
                     )
         elif isinstance(doc, MutableMapping):
             new_dict = {}
-            if "pattern" in doc:
-                new_dict["pattern"] = doc.pop("pattern")
+            doc_copy = copy.deepcopy(doc)
+            if "pattern" in doc_copy:
+                new_dict["pattern"] = doc_copy.pop("pattern")
             else:
                 raise ValidationException(
                     "Missing pattern in secondaryFiles specification entry: {}".format(
                         doc
                     )
                 )
-            new_dict["required"] = doc.pop("required") if "required" in doc else None
+            new_dict["required"] = (
+                doc_copy.pop("required") if "required" in doc_copy else None
+            )
 
-            if len(doc):
+            if len(doc_copy):
                 raise ValidationException(
                     "Unallowed values in secondaryFiles specification entry: {}".format(
-                        doc
+                        doc_copy
                     )
                 )
             r.append(new_dict)
@@ -500,7 +507,7 @@ class _RecordLoader(_Loader):
     def load(self, doc, baseuri, loadingOptions, docRoot=None):
         # type: (Any, str, LoadingOptions, Optional[str]) -> Any
         if not isinstance(doc, MutableMapping):
-            raise ValidationException("Expected a dict, was {}".format(type(doc)))
+            raise ValidationException(f"Expected a dict, was {type(doc)}")
         return self.classtype.fromDoc(doc, baseuri, loadingOptions, docRoot=docRoot)
 
     def __repr__(self):  # type: () -> str
@@ -514,7 +521,7 @@ class _ExpressionLoader(_Loader):
     def load(self, doc, baseuri, loadingOptions, docRoot=None):
         # type: (Any, str, LoadingOptions, Optional[str]) -> Any
         if not isinstance(doc, str):
-            raise ValidationException("Expected a str, was {}".format(type(doc)))
+            raise ValidationException(f"Expected a str, was {type(doc)}")
         return doc
 
 
