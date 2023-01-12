@@ -32,10 +32,10 @@ def from_dict(workflow_dict: dict, subworkflow=False):
     normalized_workflow = NormalizedWorkflow(workflow_dict)
     workflow_dict = normalized_workflow.normalized_workflow_dict
 
-    requirements = {}  # type: Dict[str, Any]
-    abstract_dict = {
+    requirements: Dict[str, Any] = {}
+    abstract_dict: Dict[str, Any] = {
         'class': 'Workflow',
-    }  # type: Dict[str, Any]
+    }
     for attr in ('doc', 'label'):
         value = workflow_dict.get(attr)
         if value:
