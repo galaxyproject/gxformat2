@@ -7,8 +7,7 @@ import logging
 import os
 import sys
 import uuid
-from collections import OrderedDict
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 from ._labels import Labels
 from .model import (
@@ -129,7 +128,7 @@ def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, imp
     if conversion_context.import_options.deduplicate_subworkflows:
         # TODO: import only required workflows...
         # TODO: dag sort these...
-        subworkflows = OrderedDict()
+        subworkflows = {}
         for graph_id, subworkflow_content in conversion_context.graph_ids.items():
             if graph_id == "main":
                 continue
@@ -194,7 +193,7 @@ def _python_to_workflow(as_python, conversion_context):
 
     if isinstance(steps, list):
         _append_step_id_to_step_list_elements(steps)
-        steps_as_dict = OrderedDict()
+        steps_as_dict: Dict[str, Any] = {}
         for i, step in enumerate(steps):
             steps_as_dict[str(i)] = step
             if "label" in step:
@@ -577,8 +576,8 @@ class ConversionContext(BaseConversionContext):
     def __init__(self, galaxy_interface, workflow_directory, import_options: Optional[ImportOptions] = None):
         super().__init__()
         self.import_options = import_options or ImportOptions()
-        self.graph_ids = OrderedDict()  # type: Dict
-        self.graph_id_subworkflow_conversion_contexts = {}  # type: Dict
+        self.graph_ids: Dict[str, Any] = {}
+        self.graph_id_subworkflow_conversion_contexts: Dict[str, Any] = {}
         self.workflow_directory = workflow_directory
         self.galaxy_interface = galaxy_interface
 
