@@ -99,7 +99,7 @@ open-project: ## open project on github
 	open $(PROJECT_URL) || xdg-open $(PROJECT_URL)
 
 dist: clean ## package
-	$(IN_VENV) python setup.py sdist bdist_egg bdist_wheel
+	$(IN_VENV) python setup.py sdist bdist_wheel
 	ls -l dist
 
 release-test-artifacts: dist
