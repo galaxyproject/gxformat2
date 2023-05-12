@@ -90,6 +90,11 @@ def test_sars_covid_example():
     _run_example_path(sars_example)
 
 
+def test_no_input_label_example():
+    no_input_label = os.path.join(TEST_PATH, "basic_without_step_input_label.ga")
+    _run_example_path(no_input_label)
+
+
 def test_int_inputs():
     for as_dict in _both_formats(INT_INPUT):
         abstract_as_dict = from_dict(as_dict)
