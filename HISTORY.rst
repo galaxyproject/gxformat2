@@ -6,10 +6,9 @@ History
 .. to_doc
 
 ---------------------
-0.18.0.dev0
+0.18.0 (2023-05-12)
 ---------------------
-
-    
+* Fix input conversion if input has no label by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/89
 
 ---------------------
 0.17.0 (2023-01-06)
