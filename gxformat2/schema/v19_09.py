@@ -6,7 +6,6 @@ import copy
 import logging
 import os
 import pathlib
-import re
 import tempfile
 import uuid as _uuid__  # pylint: disable=unused-import # noqa: F401
 import xml.sax  # nosec
@@ -58,6 +57,8 @@ class LoadingOptions:
     vocab: Dict[str, str]
     rvocab: Dict[str, str]
     cache: CacheType
+    imports: List[str]
+    includes: List[str]
 
     def __init__(
         self,
@@ -70,6 +71,8 @@ class LoadingOptions:
         addl_metadata: Optional[Dict[str, str]] = None,
         baseuri: Optional[str] = None,
         idx: Optional[IdxType] = None,
+        imports: Optional[List[str]] = None,
+        includes: Optional[List[str]] = None,
     ) -> None:
         """Create a LoadingOptions object."""
         self.original_doc = original_doc
@@ -104,6 +107,16 @@ class LoadingOptions:
         else:
             self.addl_metadata = copyfrom.addl_metadata if copyfrom is not None else {}
 
+        if imports is not None:
+            self.imports = imports
+        else:
+            self.imports = copyfrom.imports if copyfrom is not None else []
+
+        if includes is not None:
+            self.includes = includes
+        else:
+            self.includes = copyfrom.includes if copyfrom is not None else []
+
         if fetcher is not None:
             self.fetcher = fetcher
         elif copyfrom is not None:
@@ -120,9 +133,7 @@ class LoadingOptions:
             )
             self.fetcher: Fetcher = DefaultFetcher({}, session)
 
-        self.cache = (
-            self.fetcher.cache if isinstance(self.fetcher, MemoryCachingFetcher) else {}
-        )
+        self.cache = self.fetcher.cache if isinstance(self.fetcher, MemoryCachingFetcher) else {}
 
         self.vocab = _vocab
         self.rvocab = _rvocab
@@ -154,9 +165,7 @@ class LoadingOptions:
                 try:
                     content = self.fetcher.fetch_text(fetchurl)
                 except Exception as e:
-                    _logger.warning(
-                        "Could not load extension schema %s: %s", fetchurl, str(e)
-                    )
+                    _logger.warning("Could not load extension schema %s: %s", fetchurl, str(e))
                     continue
                 newGraph = Graph()
                 err_msg = "unknown error"
@@ -169,9 +178,7 @@ class LoadingOptions:
                     except (xml.sax.SAXParseException, TypeError, BadSyntax) as e:
                         err_msg = str(e)
                 else:
-                    _logger.warning(
-                        "Could not load extension schema %s: %s", fetchurl, err_msg
-                    )
+                    _logger.warning("Could not load extension schema %s: %s", fetchurl, err_msg)
         self.cache[key] = graph
         return graph
 
@@ -203,24 +210,24 @@ def load_field(val, fieldtype, baseuri, loadingOptions):
         if "$import" in val:
             if loadingOptions.fileuri is None:
                 raise SchemaSaladException("Cannot load $import without fileuri")
+            url = loadingOptions.fetcher.urljoin(loadingOptions.fileuri, val["$import"])
             result, metadata = _document_load_by_url(
                 fieldtype,
-                loadingOptions.fetcher.urljoin(loadingOptions.fileuri, val["$import"]),
+                url,
                 loadingOptions,
             )
+            loadingOptions.imports.append(url)
             return result
-        elif "$include" in val:
+        if "$include" in val:
             if loadingOptions.fileuri is None:
                 raise SchemaSaladException("Cannot load $import without fileuri")
-            val = loadingOptions.fetcher.fetch_text(
-                loadingOptions.fetcher.urljoin(loadingOptions.fileuri, val["$include"])
-            )
+            url = loadingOptions.fetcher.urljoin(loadingOptions.fileuri, val["$include"])
+            val = loadingOptions.fetcher.fetch_text(url)
+            loadingOptions.includes.append(url)
     return fieldtype.load(val, baseuri, loadingOptions)
 
 
-save_type = Optional[
-    Union[MutableMapping[str, Any], MutableSequence[Any], int, float, bool, str]
-]
+save_type = Optional[Union[MutableMapping[str, Any], MutableSequence[Any], int, float, bool, str]]
 
 
 def save(
@@ -232,16 +239,11 @@ def save(
     if isinstance(val, Saveable):
         return val.save(top=top, base_url=base_url, relative_uris=relative_uris)
     if isinstance(val, MutableSequence):
-        return [
-            save(v, top=False, base_url=base_url, relative_uris=relative_uris)
-            for v in val
-        ]
+        return [save(v, top=False, base_url=base_url, relative_uris=relative_uris) for v in val]
     if isinstance(val, MutableMapping):
         newdict = {}
         for key in val:
-            newdict[key] = save(
-                val[key], top=False, base_url=base_url, relative_uris=relative_uris
-            )
+            newdict[key] = save(val[key], top=False, base_url=base_url, relative_uris=relative_uris)
         return newdict
     if val is None or isinstance(val, (int, float, bool, str)):
         return val
@@ -299,7 +301,7 @@ def expand_url(
     split = urlsplit(url)
 
     if (
-        (bool(split.scheme) and split.scheme in ["http", "https", "file"])
+        (bool(split.scheme) and split.scheme in loadingOptions.fetcher.supported_schemes())
         or url.startswith("$(")
         or url.startswith("${")
     ):
@@ -339,7 +341,7 @@ def expand_url(
             if url in loadingOptions.rvocab:
                 return loadingOptions.rvocab[url]
         else:
-            raise ValidationException(f"Term '{url}' not in vocabulary")
+            raise ValidationException(f"Term {url!r} not in vocabulary")
 
     return url
 
@@ -390,9 +392,7 @@ class _ArrayLoader(_Loader):
         errors = []  # type: List[SchemaSaladException]
         for i in range(0, len(doc)):
             try:
-                lf = load_field(
-                    doc[i], _UnionLoader((self, self.items)), baseuri, loadingOptions
-                )
+                lf = load_field(doc[i], _UnionLoader((self, self.items)), baseuri, loadingOptions)
                 if isinstance(lf, MutableSequence):
                     r.extend(lf)
                 else:
@@ -408,8 +408,7 @@ class _ArrayLoader(_Loader):
 
 
 class _EnumLoader(_Loader):
-    def __init__(self, symbols, name):
-        # type: (Sequence[str], str) -> None
+    def __init__(self, symbols: Sequence[str], name: str) -> None:
         self.symbols = symbols
         self.name = name
 
@@ -417,8 +416,7 @@ class _EnumLoader(_Loader):
         # type: (Any, str, LoadingOptions, Optional[str]) -> Any
         if doc in self.symbols:
             return doc
-        else:
-            raise ValidationException(f"Expected one of {self.symbols}")
+        raise ValidationException(f"Expected one of {self.symbols}")
 
     def __repr__(self):  # type: () -> str
         return self.name
@@ -446,9 +444,7 @@ class _SecondaryDSLLoader(_Loader):
                         new_dict["pattern"] = dict_copy.pop("pattern")
                     else:
                         raise ValidationException(
-                            "Missing pattern in secondaryFiles specification entry: {}".format(
-                                d
-                            )
+                            f"Missing pattern in secondaryFiles specification entry: {d}"
                         )
                     new_dict["required"] = (
                         dict_copy.pop("required") if "required" in dict_copy else None
@@ -473,19 +469,13 @@ class _SecondaryDSLLoader(_Loader):
                 new_dict["pattern"] = doc_copy.pop("pattern")
             else:
                 raise ValidationException(
-                    "Missing pattern in secondaryFiles specification entry: {}".format(
-                        doc
-                    )
+                    f"Missing pattern in secondaryFiles specification entry: {doc}"
                 )
-            new_dict["required"] = (
-                doc_copy.pop("required") if "required" in doc_copy else None
-            )
+            new_dict["required"] = doc_copy.pop("required") if "required" in doc_copy else None
 
             if len(doc_copy):
                 raise ValidationException(
-                    "Unallowed values in secondaryFiles specification entry: {}".format(
-                        doc_copy
-                    )
+                    f"Unallowed values in secondaryFiles specification entry: {doc_copy}"
                 )
             r.append(new_dict)
 
@@ -526,8 +516,7 @@ class _ExpressionLoader(_Loader):
 
 
 class _UnionLoader(_Loader):
-    def __init__(self, alternates):
-        # type: (Sequence[_Loader]) -> None
+    def __init__(self, alternates: Sequence[_Loader]) -> None:
         self.alternates = alternates
 
     def load(self, doc, baseuri, loadingOptions, docRoot=None):
@@ -584,12 +573,11 @@ class _URILoader(_Loader):
 
 
 class _TypeDSLLoader(_Loader):
-    typeDSLregex = re.compile(r"^([^[?]+)(\[\])?(\?)?$")
-
-    def __init__(self, inner, refScope):
-        # type: (_Loader, Union[int, None]) -> None
+    def __init__(self, inner, refScope, salad_version):
+        # type: (_Loader, Union[int, None], str) -> None
         self.inner = inner
         self.refScope = refScope
+        self.salad_version = salad_version
 
     def resolve(
         self,
@@ -597,30 +585,35 @@ class _TypeDSLLoader(_Loader):
         baseuri,  # type: str
         loadingOptions,  # type: LoadingOptions
     ):
-        # type: (...) -> Union[List[Union[Dict[str, str], str]], Dict[str, str], str]
-        m = self.typeDSLregex.match(doc)
-        if m:
-            group1 = m.group(1)
-            assert group1 is not None  # nosec
-            first = expand_url(
-                group1, baseuri, loadingOptions, False, True, self.refScope
-            )
-            second = third = None
-            if bool(m.group(2)):
-                second = {"type": "array", "items": first}
-                # second = CommentedMap((("type", "array"),
-                #                       ("items", first)))
-                # second.lc.add_kv_line_col("type", lc)
-                # second.lc.add_kv_line_col("items", lc)
-                # second.lc.filename = filename
-            if bool(m.group(3)):
-                third = ["null", second or first]
-                # third = CommentedSeq(["null", second or first])
-                # third.lc.add_kv_line_col(0, lc)
-                # third.lc.add_kv_line_col(1, lc)
-                # third.lc.filename = filename
-            return third or second or first
-        return doc
+        # type: (...) -> Union[List[Union[Dict[str, Any], str]], Dict[str, Any], str]
+        doc_ = doc
+        optional = False
+        if doc_.endswith("?"):
+            optional = True
+            doc_ = doc_[0:-1]
+
+        if doc_.endswith("[]"):
+            salad_versions = [int(v) for v in self.salad_version[1:].split(".")]
+            items = ""  # type: Union[List[Union[Dict[str, Any], str]], Dict[str, Any], str]
+            rest = doc_[0:-2]
+            if salad_versions < [1, 3]:
+                if rest.endswith("[]"):
+                    # To show the error message with the original type
+                    return doc
+                else:
+                    items = expand_url(rest, baseuri, loadingOptions, False, True, self.refScope)
+            else:
+                items = self.resolve(rest, baseuri, loadingOptions)
+                if isinstance(items, str):
+                    items = expand_url(items, baseuri, loadingOptions, False, True, self.refScope)
+            expanded = {"type": "array", "items": items}  # type: Union[Dict[str, Any], str]
+        else:
+            expanded = expand_url(doc_, baseuri, loadingOptions, False, True, self.refScope)
+
+        if optional:
+            return ["null", expanded]
+        else:
+            return expanded
 
     def load(self, doc, baseuri, loadingOptions, docRoot=None):
         # type: (Any, str, LoadingOptions, Optional[str]) -> Any
@@ -713,11 +706,7 @@ def _document_load(
             addl_metadata=addl_metadata,
         )
 
-        doc = {
-            k: v
-            for k, v in doc.items()
-            if k not in ("$namespaces", "$schemas", "$base")
-        }
+        doc = {k: v for k, v in doc.items() if k not in ("$namespaces", "$schemas", "$base")}
 
         if "$graph" in doc:
             loadingOptions.idx[baseuri] = (
@@ -759,10 +748,7 @@ def _document_load_by_url(
     doc_url, frg = urldefrag(url)
 
     text = loadingOptions.fetcher.fetch_text(doc_url)
-    if isinstance(text, bytes):
-        textIO = StringIO(text.decode("utf-8"))
-    else:
-        textIO = StringIO(text)
+    textIO = StringIO(text)
     textIO.name = str(doc_url)
     yaml = yaml_no_ts()
     result = yaml.load(textIO)
@@ -793,8 +779,7 @@ def file_uri(path, split_frag=False):  # type: (str, bool) -> str
         frag = ""
     if urlpath.startswith("//"):
         return f"file:{urlpath}{frag}"
-    else:
-        return f"file://{urlpath}{frag}"
+    return f"file://{urlpath}{frag}"
 
 
 def prefix_url(url: str, namespaces: Dict[str, str]) -> str:
@@ -814,10 +799,7 @@ def save_relative_uri(
 ) -> Any:
     """Convert any URI to a relative one, obeying the scoping rules."""
     if isinstance(uri, MutableSequence):
-        return [
-            save_relative_uri(u, base_url, scoped_id, ref_scope, relative_uris)
-            for u in uri
-        ]
+        return [save_relative_uri(u, base_url, scoped_id, ref_scope, relative_uris) for u in uri]
     elif isinstance(uri, str):
         if not relative_uris or uri == base_url:
             return uri
@@ -841,8 +823,7 @@ def save_relative_uri(
 
             if urisplit.fragment.startswith(basefrag):
                 return urisplit.fragment[len(basefrag) :]
-            else:
-                return urisplit.fragment
+            return urisplit.fragment
         return uri
     else:
         return save(uri, top=False, base_url=base_url, relative_uris=relative_uris)
@@ -930,7 +911,7 @@ class RecordField(Documented):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `name` field is not valid because:",
+                        "the 'name' field is not valid because:",
                         SourceLine(_doc, "name", str),
                         [e],
                     )
@@ -957,7 +938,7 @@ class RecordField(Documented):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `doc` field is not valid because:",
+                        "the 'doc' field is not valid because:",
                         SourceLine(_doc, "doc", str),
                         [e],
                     )
@@ -974,7 +955,7 @@ class RecordField(Documented):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `type` field is not valid because:",
+                    "the 'type' field is not valid because:",
                     SourceLine(_doc, "type", str),
                     [e],
                 )
@@ -1096,7 +1077,7 @@ class RecordSchema(Saveable):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `fields` field is not valid because:",
+                        "the 'fields' field is not valid because:",
                         SourceLine(_doc, "fields", str),
                         [e],
                     )
@@ -1113,7 +1094,7 @@ class RecordSchema(Saveable):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `type` field is not valid because:",
+                    "the 'type' field is not valid because:",
                     SourceLine(_doc, "type", str),
                     [e],
                 )
@@ -1234,7 +1215,7 @@ class EnumSchema(Saveable):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `symbols` field is not valid because:",
+                    "the 'symbols' field is not valid because:",
                     SourceLine(_doc, "symbols", str),
                     [e],
                 )
@@ -1249,7 +1230,7 @@ class EnumSchema(Saveable):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `type` field is not valid because:",
+                    "the 'type' field is not valid because:",
                     SourceLine(_doc, "type", str),
                     [e],
                 )
@@ -1364,7 +1345,7 @@ class ArraySchema(Saveable):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `items` field is not valid because:",
+                    "the 'items' field is not valid because:",
                     SourceLine(_doc, "items", str),
                     [e],
                 )
@@ -1379,7 +1360,7 @@ class ArraySchema(Saveable):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `type` field is not valid because:",
+                    "the 'type' field is not valid because:",
                     SourceLine(_doc, "type", str),
                     [e],
                 )
@@ -1547,7 +1528,7 @@ class StepPosition(Saveable):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `top` field is not valid because:",
+                    "the 'top' field is not valid because:",
                     SourceLine(_doc, "top", str),
                     [e],
                 )
@@ -1562,7 +1543,7 @@ class StepPosition(Saveable):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `left` field is not valid because:",
+                    "the 'left' field is not valid because:",
                     SourceLine(_doc, "left", str),
                     [e],
                 )
@@ -1692,7 +1673,7 @@ class ToolShedRepository(Saveable):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `name` field is not valid because:",
+                        "the 'name' field is not valid because:",
                         SourceLine(_doc, "name", str),
                         [e],
                     )
@@ -1718,7 +1699,7 @@ class ToolShedRepository(Saveable):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `changeset_revision` field is not valid because:",
+                    "the 'changeset_revision' field is not valid because:",
                     SourceLine(_doc, "changeset_revision", str),
                     [e],
                 )
@@ -1733,7 +1714,7 @@ class ToolShedRepository(Saveable):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `owner` field is not valid because:",
+                    "the 'owner' field is not valid because:",
                     SourceLine(_doc, "owner", str),
                     [e],
                 )
@@ -1748,7 +1729,7 @@ class ToolShedRepository(Saveable):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `tool_shed` field is not valid because:",
+                    "the 'tool_shed' field is not valid because:",
                     SourceLine(_doc, "tool_shed", str),
                     [e],
                 )
@@ -1917,7 +1898,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `id` field is not valid because:",
+                        "the 'id' field is not valid because:",
                         SourceLine(_doc, "id", str),
                         [e],
                     )
@@ -1944,7 +1925,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `label` field is not valid because:",
+                        "the 'label' field is not valid because:",
                         SourceLine(_doc, "label", str),
                         [e],
                     )
@@ -1962,7 +1943,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `doc` field is not valid because:",
+                        "the 'doc' field is not valid because:",
                         SourceLine(_doc, "doc", str),
                         [e],
                     )
@@ -1980,7 +1961,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `default` field is not valid because:",
+                        "the 'default' field is not valid because:",
                         SourceLine(_doc, "default", str),
                         [e],
                     )
@@ -1998,7 +1979,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `position` field is not valid because:",
+                        "the 'position' field is not valid because:",
                         SourceLine(_doc, "position", str),
                         [e],
                     )
@@ -2016,7 +1997,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `type` field is not valid because:",
+                        "the 'type' field is not valid because:",
                         SourceLine(_doc, "type", str),
                         [e],
                     )
@@ -2034,7 +2015,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `optional` field is not valid because:",
+                        "the 'optional' field is not valid because:",
                         SourceLine(_doc, "optional", str),
                         [e],
                     )
@@ -2052,7 +2033,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `format` field is not valid because:",
+                        "the 'format' field is not valid because:",
                         SourceLine(_doc, "format", str),
                         [e],
                     )
@@ -2070,7 +2051,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `collection_type` field is not valid because:",
+                        "the 'collection_type' field is not valid because:",
                         SourceLine(_doc, "collection_type", str),
                         [e],
                     )
@@ -2261,7 +2242,7 @@ class WorkflowOutputParameter(OutputParameter):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `id` field is not valid because:",
+                        "the 'id' field is not valid because:",
                         SourceLine(_doc, "id", str),
                         [e],
                     )
@@ -2288,7 +2269,7 @@ class WorkflowOutputParameter(OutputParameter):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `label` field is not valid because:",
+                        "the 'label' field is not valid because:",
                         SourceLine(_doc, "label", str),
                         [e],
                     )
@@ -2306,7 +2287,7 @@ class WorkflowOutputParameter(OutputParameter):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `doc` field is not valid because:",
+                        "the 'doc' field is not valid because:",
                         SourceLine(_doc, "doc", str),
                         [e],
                     )
@@ -2324,7 +2305,7 @@ class WorkflowOutputParameter(OutputParameter):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `outputSource` field is not valid because:",
+                        "the 'outputSource' field is not valid because:",
                         SourceLine(_doc, "outputSource", str),
                         [e],
                     )
@@ -2342,7 +2323,7 @@ class WorkflowOutputParameter(OutputParameter):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `type` field is not valid because:",
+                        "the 'type' field is not valid because:",
                         SourceLine(_doc, "type", str),
                         [e],
                     )
@@ -2576,7 +2557,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `id` field is not valid because:",
+                        "the 'id' field is not valid because:",
                         SourceLine(_doc, "id", str),
                         [e],
                     )
@@ -2603,7 +2584,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `label` field is not valid because:",
+                        "the 'label' field is not valid because:",
                         SourceLine(_doc, "label", str),
                         [e],
                     )
@@ -2621,7 +2602,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `doc` field is not valid because:",
+                        "the 'doc' field is not valid because:",
                         SourceLine(_doc, "doc", str),
                         [e],
                     )
@@ -2639,7 +2620,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `position` field is not valid because:",
+                        "the 'position' field is not valid because:",
                         SourceLine(_doc, "position", str),
                         [e],
                     )
@@ -2657,7 +2638,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `tool_id` field is not valid because:",
+                        "the 'tool_id' field is not valid because:",
                         SourceLine(_doc, "tool_id", str),
                         [e],
                     )
@@ -2675,7 +2656,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `tool_shed_repository` field is not valid because:",
+                        "the 'tool_shed_repository' field is not valid because:",
                         SourceLine(_doc, "tool_shed_repository", str),
                         [e],
                     )
@@ -2693,7 +2674,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `tool_version` field is not valid because:",
+                        "the 'tool_version' field is not valid because:",
                         SourceLine(_doc, "tool_version", str),
                         [e],
                     )
@@ -2711,7 +2692,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `errors` field is not valid because:",
+                        "the 'errors' field is not valid because:",
                         SourceLine(_doc, "errors", str),
                         [e],
                     )
@@ -2729,7 +2710,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `uuid` field is not valid because:",
+                        "the 'uuid' field is not valid because:",
                         SourceLine(_doc, "uuid", str),
                         [e],
                     )
@@ -2747,7 +2728,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `in` field is not valid because:",
+                        "the 'in' field is not valid because:",
                         SourceLine(_doc, "in", str),
                         [e],
                     )
@@ -2765,7 +2746,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `out` field is not valid because:",
+                        "the 'out' field is not valid because:",
                         SourceLine(_doc, "out", str),
                         [e],
                     )
@@ -2783,7 +2764,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `state` field is not valid because:",
+                        "the 'state' field is not valid because:",
                         SourceLine(_doc, "state", str),
                         [e],
                     )
@@ -2801,7 +2782,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `tool_state` field is not valid because:",
+                        "the 'tool_state' field is not valid because:",
                         SourceLine(_doc, "tool_state", str),
                         [e],
                     )
@@ -2819,7 +2800,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `type` field is not valid because:",
+                        "the 'type' field is not valid because:",
                         SourceLine(_doc, "type", str),
                         [e],
                     )
@@ -2839,7 +2820,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `run` field is not valid because:",
+                        "the 'run' field is not valid because:",
                         SourceLine(_doc, "run", str),
                         [e],
                     )
@@ -2857,7 +2838,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `runtime_inputs` field is not valid because:",
+                        "the 'runtime_inputs' field is not valid because:",
                         SourceLine(_doc, "runtime_inputs", str),
                         [e],
                     )
@@ -2875,7 +2856,7 @@ class WorkflowStep(
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `when` field is not valid because:",
+                        "the 'when' field is not valid because:",
                         SourceLine(_doc, "when", str),
                         [e],
                     )
@@ -3118,7 +3099,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `id` field is not valid because:",
+                        "the 'id' field is not valid because:",
                         SourceLine(_doc, "id", str),
                         [e],
                     )
@@ -3145,7 +3126,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `source` field is not valid because:",
+                        "the 'source' field is not valid because:",
                         SourceLine(_doc, "source", str),
                         [e],
                     )
@@ -3163,7 +3144,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `label` field is not valid because:",
+                        "the 'label' field is not valid because:",
                         SourceLine(_doc, "label", str),
                         [e],
                     )
@@ -3181,7 +3162,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `default` field is not valid because:",
+                        "the 'default' field is not valid because:",
                         SourceLine(_doc, "default", str),
                         [e],
                     )
@@ -3312,7 +3293,7 @@ class Report(Saveable):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `markdown` field is not valid because:",
+                    "the 'markdown' field is not valid because:",
                     SourceLine(_doc, "markdown", str),
                     [e],
                 )
@@ -3467,7 +3448,7 @@ class WorkflowStepOutput(Identified):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `id` field is not valid because:",
+                        "the 'id' field is not valid because:",
                         SourceLine(_doc, "id", str),
                         [e],
                     )
@@ -3494,7 +3475,7 @@ class WorkflowStepOutput(Identified):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `add_tags` field is not valid because:",
+                        "the 'add_tags' field is not valid because:",
                         SourceLine(_doc, "add_tags", str),
                         [e],
                     )
@@ -3512,7 +3493,7 @@ class WorkflowStepOutput(Identified):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `change_datatype` field is not valid because:",
+                        "the 'change_datatype' field is not valid because:",
                         SourceLine(_doc, "change_datatype", str),
                         [e],
                     )
@@ -3530,7 +3511,7 @@ class WorkflowStepOutput(Identified):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `delete_intermediate_datasets` field is not valid because:",
+                        "the 'delete_intermediate_datasets' field is not valid because:",
                         SourceLine(_doc, "delete_intermediate_datasets", str),
                         [e],
                     )
@@ -3548,7 +3529,7 @@ class WorkflowStepOutput(Identified):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `hide` field is not valid because:",
+                        "the 'hide' field is not valid because:",
                         SourceLine(_doc, "hide", str),
                         [e],
                     )
@@ -3566,7 +3547,7 @@ class WorkflowStepOutput(Identified):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `remove_tags` field is not valid because:",
+                        "the 'remove_tags' field is not valid because:",
                         SourceLine(_doc, "remove_tags", str),
                         [e],
                     )
@@ -3584,7 +3565,7 @@ class WorkflowStepOutput(Identified):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `rename` field is not valid because:",
+                        "the 'rename' field is not valid because:",
                         SourceLine(_doc, "rename", str),
                         [e],
                     )
@@ -3602,7 +3583,7 @@ class WorkflowStepOutput(Identified):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `set_columns` field is not valid because:",
+                        "the 'set_columns' field is not valid because:",
                         SourceLine(_doc, "set_columns", str),
                         [e],
                     )
@@ -3845,7 +3826,7 @@ class GalaxyWorkflow(Process, HasUUID):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `id` field is not valid because:",
+                        "the 'id' field is not valid because:",
                         SourceLine(_doc, "id", str),
                         [e],
                     )
@@ -3872,7 +3853,7 @@ class GalaxyWorkflow(Process, HasUUID):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `label` field is not valid because:",
+                        "the 'label' field is not valid because:",
                         SourceLine(_doc, "label", str),
                         [e],
                     )
@@ -3890,7 +3871,7 @@ class GalaxyWorkflow(Process, HasUUID):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `doc` field is not valid because:",
+                        "the 'doc' field is not valid because:",
                         SourceLine(_doc, "doc", str),
                         [e],
                     )
@@ -3907,7 +3888,7 @@ class GalaxyWorkflow(Process, HasUUID):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `inputs` field is not valid because:",
+                    "the 'inputs' field is not valid because:",
                     SourceLine(_doc, "inputs", str),
                     [e],
                 )
@@ -3922,7 +3903,7 @@ class GalaxyWorkflow(Process, HasUUID):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `outputs` field is not valid because:",
+                    "the 'outputs' field is not valid because:",
                     SourceLine(_doc, "outputs", str),
                     [e],
                 )
@@ -3938,7 +3919,7 @@ class GalaxyWorkflow(Process, HasUUID):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `uuid` field is not valid because:",
+                        "the 'uuid' field is not valid because:",
                         SourceLine(_doc, "uuid", str),
                         [e],
                     )
@@ -3955,7 +3936,7 @@ class GalaxyWorkflow(Process, HasUUID):
         except ValidationException as e:
             _errors__.append(
                 ValidationException(
-                    "the `steps` field is not valid because:",
+                    "the 'steps' field is not valid because:",
                     SourceLine(_doc, "steps", str),
                     [e],
                 )
@@ -3971,7 +3952,7 @@ class GalaxyWorkflow(Process, HasUUID):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `report` field is not valid because:",
+                        "the 'report' field is not valid because:",
                         SourceLine(_doc, "report", str),
                         [e],
                     )
@@ -3989,7 +3970,7 @@ class GalaxyWorkflow(Process, HasUUID):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `tags` field is not valid because:",
+                        "the 'tags' field is not valid because:",
                         SourceLine(_doc, "tags", str),
                         [e],
                     )
@@ -4007,7 +3988,7 @@ class GalaxyWorkflow(Process, HasUUID):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `creator` field is not valid because:",
+                        "the 'creator' field is not valid because:",
                         SourceLine(_doc, "creator", str),
                         [e],
                     )
@@ -4025,7 +4006,7 @@ class GalaxyWorkflow(Process, HasUUID):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `license` field is not valid because:",
+                        "the 'license' field is not valid because:",
                         SourceLine(_doc, "license", str),
                         [e],
                     )
@@ -4043,7 +4024,7 @@ class GalaxyWorkflow(Process, HasUUID):
             except ValidationException as e:
                 _errors__.append(
                     ValidationException(
-                        "the `release` field is not valid because:",
+                        "the 'release' field is not valid because:",
                         SourceLine(_doc, "release", str),
                         [e],
                     )
@@ -4295,7 +4276,23 @@ PrimitiveTypeLoader = _EnumLoader(
     ),
     "PrimitiveType",
 )
+"""
+Salad data types are based on Avro schema declarations.  Refer to the
+[Avro schema declaration documentation](https://avro.apache.org/docs/current/spec.html#schemas) for
+detailed information.
+
+null: no value
+boolean: a binary value
+int: 32-bit signed integer
+long: 64-bit signed integer
+float: single precision (32-bit) IEEE 754 floating-point number
+double: double precision (64-bit) IEEE 754 floating-point number
+string: Unicode character sequence
+"""
 AnyLoader = _EnumLoader(("Any",), "Any")
+"""
+The **Any** type validates for any non-null value.
+"""
 RecordFieldLoader = _RecordLoader(RecordField)
 RecordSchemaLoader = _RecordLoader(RecordSchema)
 EnumSchemaLoader = _RecordLoader(EnumSchema)
@@ -4319,6 +4316,14 @@ GalaxyTypeLoader = _EnumLoader(
     ),
     "GalaxyType",
 )
+"""
+Extends primitive types with the native Galaxy concepts such datasets and collections.
+integer: an alias for int type - matches syntax used by Galaxy tools
+text: an alias for string type - matches syntax used by Galaxy tools
+File: an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future
+data: a Galaxy dataset
+collection: a Galaxy dataset collection
+"""
 WorkflowStepTypeLoader = _EnumLoader(
     (
         "tool",
@@ -4327,6 +4332,14 @@ WorkflowStepTypeLoader = _EnumLoader(
     ),
     "WorkflowStepType",
 )
+"""
+Module types used by Galaxy steps. Galaxy's native format allows additional types such as data_input, data_input_collection, and parameter_type
+but these should be represented as ``inputs`` in Format2.
+
+tool: Run a tool.
+subworkflow: Run a subworkflow.
+pause: Pause computation on this branch of workflow until user allows it to continue.
+"""
 WorkflowInputParameterLoader = _RecordLoader(WorkflowInputParameter)
 WorkflowOutputParameterLoader = _RecordLoader(WorkflowOutputParameter)
 WorkflowStepLoader = _RecordLoader(WorkflowStep)
@@ -4368,6 +4381,7 @@ union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArrayS
 typedsl_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_2 = _TypeDSLLoader(
     union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype,
     2,
+    "v1.1",
 )
 array_of_RecordFieldLoader = _ArrayLoader(RecordFieldLoader)
 union_of_None_type_or_array_of_RecordFieldLoader = _UnionLoader(
@@ -4383,14 +4397,14 @@ enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader = _EnumLoader(
     ("record",), "enum_d9cba076fca539106791a4f46d198c7fcfbdb779"
 )
 typedsl_enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader_2 = _TypeDSLLoader(
-    enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader, 2
+    enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader, 2, "v1.1"
 )
 uri_array_of_strtype_True_False_None = _URILoader(array_of_strtype, True, False, None)
 enum_d961d79c225752b9fadb617367615ab176b47d77Loader = _EnumLoader(
     ("enum",), "enum_d961d79c225752b9fadb617367615ab176b47d77"
 )
 typedsl_enum_d961d79c225752b9fadb617367615ab176b47d77Loader_2 = _TypeDSLLoader(
-    enum_d961d79c225752b9fadb617367615ab176b47d77Loader, 2
+    enum_d961d79c225752b9fadb617367615ab176b47d77Loader, 2, "v1.1"
 )
 uri_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_False_True_2 = _URILoader(
     union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype,
@@ -4402,7 +4416,7 @@ enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader = _EnumLoader(
     ("array",), "enum_d062602be0b4b8fd33e69e29a841317b6ab665bc"
 )
 typedsl_enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader_2 = _TypeDSLLoader(
-    enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader, 2
+    enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader, 2, "v1.1"
 )
 union_of_None_type_or_strtype = _UnionLoader(
     (
@@ -4459,7 +4473,7 @@ union_of_GalaxyTypeLoader_or_strtype_or_None_type = _UnionLoader(
     )
 )
 typedsl_union_of_GalaxyTypeLoader_or_strtype_or_None_type_2 = _TypeDSLLoader(
-    union_of_GalaxyTypeLoader_or_strtype_or_None_type, 2
+    union_of_GalaxyTypeLoader_or_strtype_or_None_type, 2, "v1.1"
 )
 union_of_booltype_or_None_type = _UnionLoader(
     (
@@ -4480,7 +4494,7 @@ union_of_None_type_or_GalaxyTypeLoader = _UnionLoader(
     )
 )
 typedsl_union_of_None_type_or_GalaxyTypeLoader_2 = _TypeDSLLoader(
-    union_of_None_type_or_GalaxyTypeLoader, 2
+    union_of_None_type_or_GalaxyTypeLoader, 2, "v1.1"
 )
 array_of_WorkflowStepInputLoader = _ArrayLoader(WorkflowStepInputLoader)
 union_of_None_type_or_array_of_WorkflowStepInputLoader = _UnionLoader(
@@ -4521,7 +4535,7 @@ union_of_None_type_or_WorkflowStepTypeLoader = _UnionLoader(
     )
 )
 typedsl_union_of_None_type_or_WorkflowStepTypeLoader_2 = _TypeDSLLoader(
-    union_of_None_type_or_WorkflowStepTypeLoader, 2
+    union_of_None_type_or_WorkflowStepTypeLoader, 2, "v1.1"
 )
 union_of_None_type_or_GalaxyWorkflowLoader = _UnionLoader(
     (
