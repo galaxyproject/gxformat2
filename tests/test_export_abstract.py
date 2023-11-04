@@ -5,10 +5,10 @@ from cwltool.context import (
     getdefault,
     LoadingContext,
 )
+from cwltool.load_tool import recursive_resolve_and_validate_document
 from cwltool.main import (
     default_loader,
     fetch_document,
-    resolve_and_validate_document,
     tool_resolver,
 )
 
@@ -140,7 +140,7 @@ def _run_example(as_dict, out=None):
     )
     loadingContext.resolver = getdefault(loadingContext.resolver, tool_resolver)
     loadingContext, workflowobj, uri = fetch_document(out, loadingContext)
-    loadingContext, uri = resolve_and_validate_document(
+    loadingContext, uri = recursive_resolve_and_validate_document(
         loadingContext,
         workflowobj,
         uri,
