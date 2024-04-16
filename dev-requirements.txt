@@ -1,7 +1,7 @@
 # Optional dependencies
 schema-salad[pycodegen]
-# Needs to validate v1.2
-cwltool>=3.0.20200807132242
+# Needs to validate v1.2, recursive_resolve_and_validate_document
+cwltool>=3.0.20201117141248
 
 
 mypy

@@ -82,14 +82,18 @@ def _format2_step_to_abstract(format2_step, requirements):
         step_run = {
             "class": "Operation",
             "doc": format2_step.get("doc", ""),
-            "inputs": {},  # TODO
-            "outputs": {},  # TODO
+            "inputs": _format2_wfstep_inputs_to_abstract(format2_step),
+            "outputs": { out: "Any" for out in format2_step["out"] }
         }
         abstract_step["run"] = step_run
     abstract_step["in"] = _format2_in_to_abstract(format2_step.get("in", []))
     abstract_step["out"] = _format2_out_to_abstract(format2_step)
     return abstract_step
 
+def _format2_wfstep_inputs_to_abstract(format2_step):
+    if "in" in format2_step:
+        return { name: "Any" for name in format2_step["in"].keys() }
+    return {}
 
 def _format2_in_to_abstract(in_dict):
     """Convert Format2 'in' dict for step into CWL abstract 'in' dict."""

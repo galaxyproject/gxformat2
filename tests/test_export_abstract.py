@@ -140,7 +140,7 @@ def _run_example(as_dict, out=None):
     )
     loadingContext.resolver = getdefault(loadingContext.resolver, tool_resolver)
     loadingContext, workflowobj, uri = fetch_document(out, loadingContext)
-    loadingContext, uri = recursive_resolve_and_validate_document(
+    loadingContext, uri, process = recursive_resolve_and_validate_document(
         loadingContext,
         workflowobj,
         uri,
