@@ -407,6 +407,10 @@ def _runtime_value():
     return {"__class__": "RuntimeValue"}
 
 
+def _connected_value():
+    return {"__class__": "ConnectedValue"}
+
+
 def transform_tool(context, step):
     if "tool_id" not in step:
         raise Exception("Tool steps must define a tool_id.")
@@ -437,12 +441,9 @@ def transform_tool(context, step):
         if _is_link(value):
             append_link(key, value)
             # Filled in by the connection, so to force late
-            # validation of the field just mark as RuntimeValue.
-            # It would be better I guess if this were some other
-            # value dedicated to this purpose (e.g. a ficitious
-            # {"__class__": "ConnectedValue"}) that could be further
-            # validated by Galaxy.
-            return _runtime_value()
+            # validation of the field just mark as ConnectedValue,
+            # which should be further validated by Galaxy
+            return _connected_value()
         if isinstance(value, dict):
             new_values = {}
             for k, v in value.items():
