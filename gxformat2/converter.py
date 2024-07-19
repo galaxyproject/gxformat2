@@ -3,7 +3,6 @@
 import argparse
 import copy
 import json
-import logging
 import os
 import sys
 import uuid
@@ -11,9 +10,13 @@ from typing import Any, Dict, Optional
 
 from ._labels import Labels
 from .model import (
+    clean_connection,
     convert_dict_to_id_list_if_needed,
     ensure_step_position,
     inputs_as_native_steps,
+    pop_connect_from_step_dict,
+    setup_connected_values,
+    SUPPORT_LEGACY_CONNECTIONS,
     with_step_ids,
 )
 from .yaml import ordered_load
@@ -22,8 +25,6 @@ SCRIPT_DESCRIPTION = """
 Convert a Format 2 Galaxy workflow description into a native format.
 """
 
-# source: step#output and $link: step#output instead of outputSource: step/output and $link: step/output
-SUPPORT_LEGACY_CONNECTIONS = os.environ.get("GXFORMAT2_SUPPORT_LEGACY_CONNECTIONS") == "1"
 STEP_TYPES = [
     "subworkflow",
     "data_input",
@@ -82,20 +83,9 @@ POST_JOB_ACTIONS = {
     },
 }
 
-log = logging.getLogger(__name__)
-
 
 def rename_arg(argument):
     return argument
-
-
-def clean_connection(value):
-    if value and "#" in value and SUPPORT_LEGACY_CONNECTIONS:
-        # Hope these are just used by Galaxy testing workflows and such, and not in production workflows.
-        log.warn(f"Legacy workflow syntax for connections [{value}] will not be supported in the future")
-        value = value.replace("#", "/", 1)
-    else:
-        return value
 
 
 class ImportOptions:
@@ -381,7 +371,7 @@ def transform_pause(context, step, default_name="Pause for dataset review"):
         "name": name
     }
 
-    connect = _init_connect_dict(step)
+    connect = pop_connect_from_step_dict(step)
     _populate_input_connections(context, step, connect)
     _populate_tool_state(step, tool_state)
 
@@ -398,17 +388,13 @@ def transform_subworkflow(context, step):
     tool_state = {
     }
 
-    connect = _init_connect_dict(step)
+    connect = pop_connect_from_step_dict(step)
     _populate_input_connections(context, step, connect)
     _populate_tool_state(step, tool_state)
 
 
 def _runtime_value():
     return {"__class__": "RuntimeValue"}
-
-
-def _connected_value():
-    return {"__class__": "ConnectedValue"}
 
 
 def transform_tool(context, step):
@@ -428,48 +414,13 @@ def transform_tool(context, step):
         "__page__": 0,
     }
 
-    connect = _init_connect_dict(step)
-
-    def append_link(key, value):
-        if key not in connect:
-            connect[key] = []
-        assert "$link" in value
-        link_value = value["$link"]
-        connect[key].append(clean_connection(link_value))
-
-    def replace_links(value, key=""):
-        if _is_link(value):
-            append_link(key, value)
-            # Filled in by the connection, so to force late
-            # validation of the field just mark as ConnectedValue,
-            # which should be further validated by Galaxy
-            return _connected_value()
-        if isinstance(value, dict):
-            new_values = {}
-            for k, v in value.items():
-                new_key = _join_prefix(key, k)
-                new_values[k] = replace_links(v, new_key)
-            return new_values
-        elif isinstance(value, list):
-            new_values = []
-            for i, v in enumerate(value):
-                # If we are a repeat we need to modify the key
-                # but not if values are actually $links.
-                if _is_link(v):
-                    append_link(key, v)
-                    new_values.append(None)
-                else:
-                    new_key = "%s_%d" % (key, i)
-                    new_values.append(replace_links(v, new_key))
-            return new_values
-        else:
-            return value
+    connect = pop_connect_from_step_dict(step)
 
     # TODO: handle runtime inputs and state together.
     runtime_inputs = step.get("runtime_inputs", [])
     if "state" in step or runtime_inputs:
         step_state = step.pop("state", {})
-        step_state = replace_links(step_state)
+        step_state = setup_connected_values(step_state, append_to=connect)
 
         for key, value in step_state.items():
             tool_state[key] = json.dumps(value)
@@ -627,50 +578,6 @@ def _action(type, name, arguments):
         "action_type": type,
         "output_name": name,
     }
-
-
-def _is_link(value):
-    return isinstance(value, dict) and "$link" in value
-
-
-def _join_prefix(prefix, key):
-    if prefix:
-        new_key = f"{prefix}|{key}"
-    else:
-        new_key = key
-    return new_key
-
-
-def _init_connect_dict(step):
-    if "connect" not in step:
-        step["connect"] = {}
-
-    connect = step["connect"]
-    del step["connect"]
-
-    # handle CWL-style in dict connections.
-    if "in" in step:
-        step_in = step["in"]
-        assert isinstance(step_in, dict)
-        connection_keys = set()
-        for key, value in step_in.items():
-            # TODO: this can be a list right?
-            if isinstance(value, dict) and 'source' in value:
-                value = value["source"]
-            elif isinstance(value, dict) and 'default' in value:
-                continue
-            elif isinstance(value, dict):
-                raise KeyError(f'step input must define either source or default {value}')
-            connect[key] = [value]
-            connection_keys.add(key)
-
-        for key in connection_keys:
-            del step_in[key]
-
-        if len(step_in) == 0:
-            del step['in']
-
-    return connect
 
 
 def _populate_input_connections(context, step, connect):
