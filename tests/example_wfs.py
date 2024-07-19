@@ -18,6 +18,8 @@ steps:
     doc: cat doc
     in:
       input1: the_input
+    out:
+      out_file1: {}
 """
 
 WORKFLOW_WITH_REPEAT = """
@@ -100,6 +102,8 @@ steps:
         mapping:
           - type: list_identifiers
             columns: [0, 1]
+    out:
+      output: {}
   random_lines:
     tool_id: random_lines1
     state:
@@ -109,6 +113,8 @@ steps:
       seed_source:
         seed_source_selector: set_seed
         seed: asdf
+    out:
+      out_file1: {}
 """
 
 RUNTIME_INPUTS = """
