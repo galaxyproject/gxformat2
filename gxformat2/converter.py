@@ -10,35 +10,22 @@ from typing import Any, Dict, Optional
 
 from ._labels import Labels
 from .model import (
+    append_step_id_to_step_list_elements,
     clean_connection,
     convert_dict_to_id_list_if_needed,
     ensure_step_position,
+    get_native_step_type,
     inputs_as_native_steps,
     pop_connect_from_step_dict,
     setup_connected_values,
+    steps_as_list,
     SUPPORT_LEGACY_CONNECTIONS,
-    with_step_ids,
 )
 from .yaml import ordered_load
 
 SCRIPT_DESCRIPTION = """
 Convert a Format 2 Galaxy workflow description into a native format.
 """
-
-STEP_TYPES = [
-    "subworkflow",
-    "data_input",
-    "data_collection_input",
-    "tool",
-    "pause",
-    "parameter_input",
-]
-
-STEP_TYPE_ALIASES = {
-    'input': 'data_input',
-    'input_collection': 'data_collection_input',
-    'parameter': 'parameter_input',
-}
 
 RUN_ACTIONS_TO_STEPS = {
     'GalaxyWorkflow': 'run_workflow_to_step',
@@ -130,34 +117,6 @@ def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, imp
     return converted
 
 
-# move to a utils file?
-def steps_as_list(format2_workflow: dict, add_ids: bool = False, inputs_offset: int = 0, mutate: bool = False):
-    """Return steps as a list, converting ID map to list representation if needed.
-
-    This method does mutate the supplied steps, try to make progress toward not doing this.
-
-    Add keys as labels instead of IDs. Why am I doing this?
-    """
-    if "steps" not in format2_workflow:
-        raise Exception(f"No 'steps' key in dict, keys are {format2_workflow.keys()}")
-    steps = format2_workflow["steps"]
-    steps = convert_dict_to_id_list_if_needed(steps, add_label=True, mutate=mutate)
-    if add_ids:
-        if mutate:
-            _append_step_id_to_step_list_elements(steps, inputs_offset=inputs_offset)
-        else:
-            steps = with_step_ids(steps, inputs_offset=inputs_offset)
-    return steps
-
-
-def _append_step_id_to_step_list_elements(steps: list, inputs_offset: int = 0):
-    assert isinstance(steps, list)
-    for i, step in enumerate(steps):
-        if "id" not in step:
-            step["id"] = i + inputs_offset
-        assert step["id"] is not None
-
-
 def _python_to_workflow(as_python, conversion_context):
 
     if "class" not in as_python:
@@ -182,7 +141,7 @@ def _python_to_workflow(as_python, conversion_context):
     convert_inputs_to_steps(as_python, steps)
 
     if isinstance(steps, list):
-        _append_step_id_to_step_list_elements(steps)
+        append_step_id_to_step_list_elements(steps)
         steps_as_dict: Dict[str, Any] = {}
         for i, step in enumerate(steps):
             steps_as_dict[str(i)] = step
@@ -214,10 +173,8 @@ def _python_to_workflow(as_python, conversion_context):
             del step["run"]
 
     for step in steps.values():
-        step_type = step.get("type", "tool")
-        step_type = STEP_TYPE_ALIASES.get(step_type, step_type)
-        if step_type not in STEP_TYPES:
-            raise Exception(f"Unknown step type encountered {step_type}")
+        step_type = get_native_step_type(step)
+        # in case it was an alias or default - set it back up in the resulting dict
         step["type"] = step_type
         eval(f"transform_{step_type}")(conversion_context, step)
 

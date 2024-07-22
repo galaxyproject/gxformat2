@@ -10,7 +10,10 @@ from typing import (
     Union,
 )
 
-from typing_extensions import TypedDict
+from typing_extensions import (
+    Literal,
+    TypedDict,
+)
 
 log = logging.getLogger(__name__)
 
@@ -19,6 +22,52 @@ ConnectDict = dict
 
 
 EmbeddedLink = TypedDict("EmbeddedLink", {"$link": str})
+
+NativeGalaxyStepType = Literal[
+    "subworkflow",
+    "data_input",
+    "data_collection_input",
+    "tool",
+    "pause",
+    "parameter_input",
+]
+GxFormat2StepTypeAlias = Literal[
+    "input",
+    "input_collection",
+    "parameter",
+]
+StepTypes = Union[NativeGalaxyStepType, GxFormat2StepTypeAlias]
+
+
+STEP_TYPES = [
+    "subworkflow",
+    "data_input",
+    "data_collection_input",
+    "tool",
+    "pause",
+    "parameter_input",
+]
+STEP_TYPE_ALIASES: Dict[GxFormat2StepTypeAlias, NativeGalaxyStepType] = {
+    'input': 'data_input',
+    'input_collection': 'data_collection_input',
+    'parameter': 'parameter_input',
+}
+
+
+def get_native_step_type(gxformat2_step_dict: dict) -> NativeGalaxyStepType:
+    """Infer native galaxy step type from the gxformat2 step as a dict."""
+    specifies_subworkflow_run = bool(gxformat2_step_dict.get("run"))
+    step_type_default = "tool" if not specifies_subworkflow_run else "subworkflow"
+    raw_step_type = gxformat2_step_dict.get("type", step_type_default)
+    if raw_step_type not in STEP_TYPES and raw_step_type not in STEP_TYPE_ALIASES:
+        raise Exception(f"Unknown step type encountered {raw_step_type}")
+    step_type:  NativeGalaxyStepType
+    if raw_step_type in STEP_TYPE_ALIASES:
+        step_type = STEP_TYPE_ALIASES[cast(GxFormat2StepTypeAlias, raw_step_type)]
+    else:
+        step_type = cast(NativeGalaxyStepType, raw_step_type)
+    return step_type
+
 
 # source: step#output and $link: step#output instead of outputSource: step/output and $link: step/output
 SUPPORT_LEGACY_CONNECTIONS = os.environ.get("GXFORMAT2_SUPPORT_LEGACY_CONNECTIONS") == "1"
@@ -318,3 +367,31 @@ def outputs_as_list(as_python: dict) -> list:
     outputs = as_python.get("outputs", [])
     outputs = convert_dict_to_id_list_if_needed(outputs)
     return outputs
+
+
+def steps_as_list(format2_workflow: dict, add_ids: bool = False, inputs_offset: int = 0, mutate: bool = False) -> List[Dict[str, Any]]:
+    """Return steps as a list, converting ID map to list representation if needed.
+
+    This method does mutate the supplied steps, try to make progress toward not doing this.
+
+    Add keys as labels instead of IDs. Why am I doing this?
+    """
+    if "steps" not in format2_workflow:
+        raise Exception(f"No 'steps' key in dict, keys are {format2_workflow.keys()}")
+    steps = format2_workflow["steps"]
+    steps = convert_dict_to_id_list_if_needed(steps, add_label=True, mutate=mutate)
+    if add_ids:
+        if mutate:
+            append_step_id_to_step_list_elements(steps, inputs_offset=inputs_offset)
+        else:
+            steps = with_step_ids(steps, inputs_offset=inputs_offset)
+    return steps
+
+
+def append_step_id_to_step_list_elements(steps: List[Dict[str, Any]], inputs_offset: int = 0) -> None:
+    """Ensure a list of steps each contains an 'id' element."""
+    assert isinstance(steps, list)
+    for i, step in enumerate(steps):
+        if "id" not in step:
+            step["id"] = i + inputs_offset
+        assert step["id"] is not None
