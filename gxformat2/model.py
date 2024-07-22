@@ -1,7 +1,136 @@
 """Abstractions for dealing with Format2 data."""
-from typing import cast, Dict, List, Union
+import logging
+import os
+from typing import (
+    Any,
+    cast,
+    Dict,
+    List,
+    Optional,
+    Union,
+)
+
+from typing_extensions import TypedDict
+
+log = logging.getLogger(__name__)
 
 DictOrList = Union[Dict, List]
+ConnectDict = dict
+
+
+EmbeddedLink = TypedDict("EmbeddedLink", {"$link": str})
+
+# source: step#output and $link: step#output instead of outputSource: step/output and $link: step/output
+SUPPORT_LEGACY_CONNECTIONS = os.environ.get("GXFORMAT2_SUPPORT_LEGACY_CONNECTIONS") == "1"
+
+
+def pop_connect_from_step_dict(step: dict) -> ConnectDict:
+    """Merge 'in' and 'connect' keys into a unified connection dict separated from state.
+
+    Meant to be used an initial processing step in reasoning about connections defined by the
+    format2 step description.
+    """
+    if "connect" not in step:
+        step["connect"] = {}
+
+    connect = step["connect"]
+    del step["connect"]
+
+    # handle CWL-style in dict connections.
+    if "in" in step:
+        step_in = step["in"]
+        assert isinstance(step_in, dict)
+        connection_keys = set()
+        for key, value in step_in.items():
+            # TODO: this can be a list right?
+            if isinstance(value, dict) and 'source' in value:
+                value = value["source"]
+            elif isinstance(value, dict) and 'default' in value:
+                continue
+            elif isinstance(value, dict):
+                raise KeyError(f'step input must define either source or default {value}')
+            connect[key] = [value]
+            connection_keys.add(key)
+
+        for key in connection_keys:
+            del step_in[key]
+
+        if len(step_in) == 0:
+            del step['in']
+
+    return connect
+
+
+def setup_connected_values(value, key: str = "", append_to: Optional[Dict[str, list]] = None) -> Any:
+    """Replace links with connected value."""
+
+    def append_link(key: str, value: dict):
+        if append_to is None:
+            return
+
+        if key not in append_to:
+            append_to[key] = []
+
+        assert "$link" in value
+        link_value = value["$link"]
+        append_to[key].append(clean_connection(link_value))
+
+    def recurse(sub_value, sub_key) -> Any:
+        return setup_connected_values(sub_value, sub_key, append_to=append_to)
+
+    if _is_link(value):
+        append_link(key, value)
+        # Filled in by the connection, so to force late
+        # validation of the field just mark as ConnectedValue,
+        # which should be further validated by Galaxy
+        return _connected_value()
+    if isinstance(value, dict):
+        new_dict_values: Dict[str, Any] = {}
+        for dict_k, dict_v in value.items():
+            new_key = _join_prefix(key, dict_k)
+            new_dict_values[dict_k] = recurse(dict_v, new_key)
+        return new_dict_values
+    elif isinstance(value, list):
+        new_list_values: List[Any] = []
+        for i, list_v in enumerate(value):
+            # If we are a repeat we need to modify the key
+            # but not if values are actually $links.
+            if _is_link(list_v):
+                assert isinstance(list_v, dict)
+                append_link(key, list_v)
+                new_list_values.append(None)
+            else:
+                new_key = "%s_%d" % (key, i)
+                new_list_values.append(recurse(list_v, new_key))
+        return new_list_values
+    else:
+        return value
+
+
+def clean_connection(value: str) -> str:
+    """Convert legacy style connection targets with modern CWL-style ones."""
+    if value and "#" in value and SUPPORT_LEGACY_CONNECTIONS:
+        # Hope these are just used by Galaxy testing workflows and such, and not in production workflows.
+        log.warn(f"Legacy workflow syntax for connections [{value}] will not be supported in the future")
+        value = value.replace("#", "/", 1)
+
+    return value
+
+
+def _connected_value():
+    return {"__class__": "ConnectedValue"}
+
+
+def _is_link(value: Any) -> bool:
+    return isinstance(value, dict) and "$link" in value
+
+
+def _join_prefix(prefix: Optional[str], key: str):
+    if prefix:
+        new_key = f"{prefix}|{key}"
+    else:
+        new_key = key
+    return new_key
 
 
 def convert_dict_to_id_list_if_needed(
