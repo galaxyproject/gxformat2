@@ -4,7 +4,7 @@
 
 1) gxformat2 should be human readable and writable
 1) gxformat2 should be able to be consumed by Galaxy without access to a Galaxy toolbox
-1) gxformat2 should be able to be convertible Galaxy's original workflow format without a Galaxy runtime
+1) gxformat2 should be convertible to Galaxy's original workflow format without a Galaxy runtime
 1) gxformat2 should align with workflows standards (and specifically the Common Workflow Langauge) when it is pratical
 1) We will work on solidifying a version of gxformat2 called 19.09 that is compatible with the workflow models in
    Galaxy versions 19.09-24.1 and which can be fixed for older versions with just a gxformat2 dependency upgrade.
