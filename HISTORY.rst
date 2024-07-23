@@ -6,6 +6,22 @@ History
 .. to_doc
 
 ---------------------
+0.19.0 (2024-07-23)
+---------------------
+* Sync markdown_parse with Galaxy (thanks to `@mvdbeek`_). `Pull Request 99`_
+* More helpers for reasoning about gxformat2 steps (thanks to `@jmchilton`_).
+  `Pull Request 98`_
+* Add abstraction for popping connection dictionary to model (thanks to
+  `@jmchilton`_). `Pull Request 96`_
+* Add now mandatory readthedocs config files (thanks to `@nsoranzo`_). `Pull
+  Request 94`_
+* Use `ConnectedValue` for connected values (thanks to `@mvdbeek`_). `Pull
+  Request 95`_
+* Refresh codegen using schema-salad 8.4.20230808163024 (thanks to `@mr-c`_).
+  `Pull Request 92`_
+* Update label comment (thanks to `@mvdbeek`_). `Pull Request 90`_
+
+---------------------
 0.18.0 (2023-05-12)
 ---------------------
 * Fix input conversion if input has no label by @mvdbeek in https://github.com/galaxyproject/gxformat2/pull/89
@@ -251,3 +267,16 @@ History
 
 * Initial version - code from Galaxy's test framework with changes
   based on planemo testing.
+
+.. github_links
+.. _Pull Request 99: https://github.com/galaxyproject/gxformat2/pull/99
+.. _Pull Request 98: https://github.com/galaxyproject/gxformat2/pull/98
+.. _Pull Request 96: https://github.com/galaxyproject/gxformat2/pull/96
+.. _Pull Request 94: https://github.com/galaxyproject/gxformat2/pull/94
+.. _Pull Request 95: https://github.com/galaxyproject/gxformat2/pull/95
+.. _Pull Request 92: https://github.com/galaxyproject/gxformat2/pull/92
+.. _Pull Request 90: https://github.com/galaxyproject/gxformat2/pull/90
+.. _@mvdbeek: https://github.com/mvdbeek
+.. _@mr-c: https://github.com/mr-c
+.. _@nsoranzo: https://github.com/nsoranzo
+.. _@jmchilton: https://github.com/jmchilton
