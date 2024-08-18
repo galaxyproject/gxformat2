@@ -67,8 +67,10 @@ $graph:
     - name: type
       type:
       - GalaxyType
-      - string
       - "null"
+      - type: array
+        items:
+          - GalaxyType
       default: data
       jsonldPredicate:
         "_id": "sld:type"
