@@ -240,7 +240,7 @@ def prune_position(step):
     return {k: v for k, v in step.get('position', {}).items() if k in ('left', 'top')}
 
 
-def native_input_to_format2_type(step: dict, tool_state: dict) -> str:
+def native_input_to_format2_type(step: dict, tool_state: dict) -> Union[str, List[str]]:
     """Return a Format2 input type ('type') from a native input step dictionary."""
     module_type = step.get("type")
     if module_type == 'data_collection_input':
@@ -254,6 +254,8 @@ def native_input_to_format2_type(step: dict, tool_state: dict) -> str:
             format2_type = "int"
         elif native_type == "text":
             format2_type = "string"
+        if tool_state.get("multiple", False):
+            return [format2_type]
     return format2_type
 
 
@@ -330,6 +332,13 @@ def inputs_as_native_steps(workflow_dict: dict):
             raise Exception("Input label must not be empty.")
 
         input_type = input_def.pop("type", "data")
+        if isinstance(input_type, list):
+            if len(input_type) != 1:
+                raise Exception("Only simple arrays of workflow inputs are currently supported")
+            input_type = input_type[0]
+            if input_type in ["File", "data", "data_input"]:
+                raise Exception(f"Array of {input_type} is not supported")
+            input_def["tool_state"] = {"multiple": True}
         if input_type in ["File", "data", "data_input"]:
             step_type = "data_input"
         elif input_type in ["collection", "data_collection", "data_collection_input"]:
