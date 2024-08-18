@@ -60,7 +60,7 @@ export class EnumSchema extends Saveable implements Internal.EnumSchemaPropertie
             
     let symbols
     try {
-      symbols = await loadField(_doc.symbols, LoaderInstances.uriarrayOfstrtypeTrueFalseNone,
+      symbols = await loadField(_doc.symbols, LoaderInstances.uriarrayOfstrtypeTrueFalseNoneNone,
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {

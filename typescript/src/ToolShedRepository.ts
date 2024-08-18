@@ -74,7 +74,7 @@ export class ToolShedRepository extends Saveable implements Internal.ToolShedRep
     let name
     if ('name' in _doc) {
       try {
-        name = await loadField(_doc.name, LoaderInstances.uristrtypeTrueFalseNone,
+        name = await loadField(_doc.name, LoaderInstances.uristrtypeTrueFalseNoneNone,
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {

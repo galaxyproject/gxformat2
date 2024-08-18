@@ -133,7 +133,7 @@ public class WorkflowStepInputImpl extends SaveableImpl implements WorkflowStepI
     if (__doc.containsKey("id")) {
       try {
         id =
-            LoaderInstances.uri_optional_StringInstance_True_False_None.loadField(
+            LoaderInstances.uri_optional_StringInstance_True_False_None_None.loadField(
                 __doc.get("id"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         id = null; // won't be used but prevents compiler from complaining.
@@ -164,7 +164,7 @@ public class WorkflowStepInputImpl extends SaveableImpl implements WorkflowStepI
       try {
         source =
             LoaderInstances
-                .uri_union_of_NullInstance_or_StringInstance_or_array_of_StringInstance_False_False_2
+                .uri_union_of_NullInstance_or_StringInstance_or_array_of_StringInstance_False_False_2_None
                 .loadField(__doc.get("source"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         source = null; // won't be used but prevents compiler from complaining.

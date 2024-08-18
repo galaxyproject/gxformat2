@@ -151,7 +151,7 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
     let id
     if ('id' in _doc) {
       try {
-        id = await loadField(_doc.id, LoaderInstances.uriunionOfundefinedtypeOrstrtypeTrueFalseNone,
+        id = await loadField(_doc.id, LoaderInstances.uriunionOfundefinedtypeOrstrtypeTrueFalseNoneNone,
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
@@ -177,7 +177,7 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
             
     let class_
     try {
-      class_ = await loadField(_doc.class, LoaderInstances.uristrtypeFalseTrueNone,
+      class_ = await loadField(_doc.class, LoaderInstances.uristrtypeFalseTrueNoneNone,
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {

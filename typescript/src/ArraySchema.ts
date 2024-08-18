@@ -57,7 +57,7 @@ export class ArraySchema extends Saveable implements Internal.ArraySchemaPropert
             
     let items
     try {
-      items = await loadField(_doc.items, LoaderInstances.uriunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtypeOrarrayOfunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtypeFalseTrue2,
+      items = await loadField(_doc.items, LoaderInstances.uriunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtypeOrarrayOfunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtypeFalseTrue2None,
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {

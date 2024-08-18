@@ -148,7 +148,7 @@ public class WorkflowOutputParameterImpl extends SaveableImpl implements Workflo
     if (__doc.containsKey("id")) {
       try {
         id =
-            LoaderInstances.uri_optional_StringInstance_True_False_None.loadField(
+            LoaderInstances.uri_optional_StringInstance_True_False_None_None.loadField(
                 __doc.get("id"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         id = null; // won't be used but prevents compiler from complaining.

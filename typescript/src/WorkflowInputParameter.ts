@@ -50,7 +50,7 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
    * Specify valid types of data that may be assigned to this parameter.
    * 
    */
-  type?: Internal.GalaxyType | string | undefined
+  type?: Internal.GalaxyType | undefined | Array<Internal.GalaxyType>
 
   /**
    * If set to true, `WorkflowInputParameter` is not required to submit the workflow.
@@ -105,7 +105,7 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
     let id
     if ('id' in _doc) {
       try {
-        id = await loadField(_doc.id, LoaderInstances.uriunionOfundefinedtypeOrstrtypeTrueFalseNone,
+        id = await loadField(_doc.id, LoaderInstances.uriunionOfundefinedtypeOrstrtypeTrueFalseNoneNone,
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
@@ -196,7 +196,7 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
     let type
     if ('type' in _doc) {
       try {
-        type = await loadField(_doc.type, LoaderInstances.typedslunionOfGalaxyTypeLoaderOrstrtypeOrundefinedtype2,
+        type = await loadField(_doc.type, LoaderInstances.typedslunionOfGalaxyTypeLoaderOrundefinedtypeOrarrayOfunionOfGalaxyTypeLoader2,
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {

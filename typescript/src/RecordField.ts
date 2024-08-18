@@ -68,7 +68,7 @@ export class RecordField extends Saveable implements Internal.RecordFieldPropert
     let name
     if ('name' in _doc) {
       try {
-        name = await loadField(_doc.name, LoaderInstances.uristrtypeTrueFalseNone,
+        name = await loadField(_doc.name, LoaderInstances.uristrtypeTrueFalseNoneNone,
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {

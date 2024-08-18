@@ -8,6 +8,7 @@ import {
   _ArrayLoader,
   _EnumLoader,
   _IdMapLoader,
+  _MapLoader,
   _TypeDSLLoader,
   _SecondaryDSLLoader,
   TypeGuards,
@@ -66,24 +67,24 @@ export const undefinedtype = new _PrimitiveLoader(TypeGuards.Undefined);
 export const anyType = new _AnyLoader();
 export const PrimitiveTypeLoader = new _EnumLoader((Object.keys(PrimitiveType) as Array<keyof typeof PrimitiveType>).map(key => PrimitiveType[key]));
 export const AnyLoader = new _EnumLoader((Object.keys(Any) as Array<keyof typeof Any>).map(key => Any[key]));
-export const RecordFieldLoader = new _RecordLoader(RecordField.fromDoc);
-export const RecordSchemaLoader = new _RecordLoader(RecordSchema.fromDoc);
-export const EnumSchemaLoader = new _RecordLoader(EnumSchema.fromDoc);
-export const ArraySchemaLoader = new _RecordLoader(ArraySchema.fromDoc);
-export const StepPositionLoader = new _RecordLoader(StepPosition.fromDoc);
-export const ToolShedRepositoryLoader = new _RecordLoader(ToolShedRepository.fromDoc);
+export const RecordFieldLoader = new _RecordLoader(RecordField.fromDoc, undefined, undefined);
+export const RecordSchemaLoader = new _RecordLoader(RecordSchema.fromDoc, undefined, undefined);
+export const EnumSchemaLoader = new _RecordLoader(EnumSchema.fromDoc, undefined, undefined);
+export const ArraySchemaLoader = new _RecordLoader(ArraySchema.fromDoc, undefined, undefined);
+export const StepPositionLoader = new _RecordLoader(StepPosition.fromDoc, undefined, undefined);
+export const ToolShedRepositoryLoader = new _RecordLoader(ToolShedRepository.fromDoc, undefined, undefined);
 export const GalaxyTypeLoader = new _EnumLoader((Object.keys(GalaxyType) as Array<keyof typeof GalaxyType>).map(key => GalaxyType[key]));
 export const WorkflowStepTypeLoader = new _EnumLoader((Object.keys(WorkflowStepType) as Array<keyof typeof WorkflowStepType>).map(key => WorkflowStepType[key]));
-export const WorkflowInputParameterLoader = new _RecordLoader(WorkflowInputParameter.fromDoc);
-export const WorkflowOutputParameterLoader = new _RecordLoader(WorkflowOutputParameter.fromDoc);
-export const WorkflowStepLoader = new _RecordLoader(WorkflowStep.fromDoc);
-export const WorkflowStepInputLoader = new _RecordLoader(WorkflowStepInput.fromDoc);
-export const ReportLoader = new _RecordLoader(Report.fromDoc);
-export const WorkflowStepOutputLoader = new _RecordLoader(WorkflowStepOutput.fromDoc);
-export const GalaxyWorkflowLoader = new _RecordLoader(GalaxyWorkflow.fromDoc);
+export const WorkflowInputParameterLoader = new _RecordLoader(WorkflowInputParameter.fromDoc, undefined, undefined);
+export const WorkflowOutputParameterLoader = new _RecordLoader(WorkflowOutputParameter.fromDoc, undefined, undefined);
+export const WorkflowStepLoader = new _RecordLoader(WorkflowStep.fromDoc, undefined, undefined);
+export const WorkflowStepInputLoader = new _RecordLoader(WorkflowStepInput.fromDoc, undefined, undefined);
+export const ReportLoader = new _RecordLoader(Report.fromDoc, undefined, undefined);
+export const WorkflowStepOutputLoader = new _RecordLoader(WorkflowStepOutput.fromDoc, undefined, undefined);
+export const GalaxyWorkflowLoader = new _RecordLoader(GalaxyWorkflow.fromDoc, undefined, undefined);
 export const arrayOfstrtype = new _ArrayLoader([strtype]);
 export const unionOfundefinedtypeOrstrtypeOrarrayOfstrtype = new _UnionLoader([undefinedtype, strtype, arrayOfstrtype]);
-export const uristrtypeTrueFalseNone = new _URILoader(strtype, true, false, undefined);
+export const uristrtypeTrueFalseNoneNone = new _URILoader(strtype, true, false, undefined, undefined);
 export const unionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtype = new _UnionLoader([PrimitiveTypeLoader, RecordSchemaLoader, EnumSchemaLoader, ArraySchemaLoader, strtype]);
 export const arrayOfunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtype = new _ArrayLoader([unionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtype]);
 export const unionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtypeOrarrayOfunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtype = new _UnionLoader([PrimitiveTypeLoader, RecordSchemaLoader, EnumSchemaLoader, ArraySchemaLoader, strtype, arrayOfunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtype]);
@@ -93,14 +94,14 @@ export const unionOfundefinedtypeOrarrayOfRecordFieldLoader = new _UnionLoader([
 export const idmapfieldsunionOfundefinedtypeOrarrayOfRecordFieldLoader = new _IdMapLoader(unionOfundefinedtypeOrarrayOfRecordFieldLoader, 'name', 'type');
 export const enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader = new _EnumLoader((Object.keys(enum_d9cba076fca539106791a4f46d198c7fcfbdb779) as Array<keyof typeof enum_d9cba076fca539106791a4f46d198c7fcfbdb779>).map(key => enum_d9cba076fca539106791a4f46d198c7fcfbdb779[key]));
 export const typedslenum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader2 = new _TypeDSLLoader(enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader, 2);
-export const uriarrayOfstrtypeTrueFalseNone = new _URILoader(arrayOfstrtype, true, false, undefined);
+export const uriarrayOfstrtypeTrueFalseNoneNone = new _URILoader(arrayOfstrtype, true, false, undefined, undefined);
 export const enum_d961d79c225752b9fadb617367615ab176b47d77Loader = new _EnumLoader((Object.keys(enum_d961d79c225752b9fadb617367615ab176b47d77) as Array<keyof typeof enum_d961d79c225752b9fadb617367615ab176b47d77>).map(key => enum_d961d79c225752b9fadb617367615ab176b47d77[key]));
 export const typedslenum_d961d79c225752b9fadb617367615ab176b47d77Loader2 = new _TypeDSLLoader(enum_d961d79c225752b9fadb617367615ab176b47d77Loader, 2);
-export const uriunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtypeOrarrayOfunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtypeFalseTrue2 = new _URILoader(unionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtypeOrarrayOfunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtype, false, true, 2);
+export const uriunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtypeOrarrayOfunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtypeFalseTrue2None = new _URILoader(unionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtypeOrarrayOfunionOfPrimitiveTypeLoaderOrRecordSchemaLoaderOrEnumSchemaLoaderOrArraySchemaLoaderOrstrtype, false, true, 2, undefined);
 export const enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader = new _EnumLoader((Object.keys(enum_d062602be0b4b8fd33e69e29a841317b6ab665bc) as Array<keyof typeof enum_d062602be0b4b8fd33e69e29a841317b6ab665bc>).map(key => enum_d062602be0b4b8fd33e69e29a841317b6ab665bc[key]));
 export const typedslenum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader2 = new _TypeDSLLoader(enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader, 2);
 export const unionOfundefinedtypeOrstrtype = new _UnionLoader([undefinedtype, strtype]);
-export const uriunionOfundefinedtypeOrstrtypeTrueFalseNone = new _URILoader(unionOfundefinedtypeOrstrtype, true, false, undefined);
+export const uriunionOfundefinedtypeOrstrtypeTrueFalseNoneNone = new _URILoader(unionOfundefinedtypeOrstrtype, true, false, undefined, undefined);
 export const unionOfundefinedtypeOranyType = new _UnionLoader([undefinedtype, anyType]);
 export const unionOfWorkflowInputParameterLoader = new _UnionLoader([WorkflowInputParameterLoader]);
 export const arrayOfunionOfWorkflowInputParameterLoader = new _ArrayLoader([unionOfWorkflowInputParameterLoader]);
@@ -111,8 +112,10 @@ export const idmapoutputsarrayOfunionOfWorkflowOutputParameterLoader = new _IdMa
 export const unionOfundefinedtypeOrStepPositionLoader = new _UnionLoader([undefinedtype, StepPositionLoader]);
 export const unionOffloattypeOrinttype = new _UnionLoader([floattype, inttype]);
 export const unionOfundefinedtypeOrToolShedRepositoryLoader = new _UnionLoader([undefinedtype, ToolShedRepositoryLoader]);
-export const unionOfGalaxyTypeLoaderOrstrtypeOrundefinedtype = new _UnionLoader([GalaxyTypeLoader, strtype, undefinedtype]);
-export const typedslunionOfGalaxyTypeLoaderOrstrtypeOrundefinedtype2 = new _TypeDSLLoader(unionOfGalaxyTypeLoaderOrstrtypeOrundefinedtype, 2);
+export const unionOfGalaxyTypeLoader = new _UnionLoader([GalaxyTypeLoader]);
+export const arrayOfunionOfGalaxyTypeLoader = new _ArrayLoader([unionOfGalaxyTypeLoader]);
+export const unionOfGalaxyTypeLoaderOrundefinedtypeOrarrayOfunionOfGalaxyTypeLoader = new _UnionLoader([GalaxyTypeLoader, undefinedtype, arrayOfunionOfGalaxyTypeLoader]);
+export const typedslunionOfGalaxyTypeLoaderOrundefinedtypeOrarrayOfunionOfGalaxyTypeLoader2 = new _TypeDSLLoader(unionOfGalaxyTypeLoaderOrundefinedtypeOrarrayOfunionOfGalaxyTypeLoader, 2);
 export const unionOfbooltypeOrundefinedtype = new _UnionLoader([booltype, undefinedtype]);
 export const unionOfundefinedtypeOrarrayOfstrtype = new _UnionLoader([undefinedtype, arrayOfstrtype]);
 export const unionOfundefinedtypeOrGalaxyTypeLoader = new _UnionLoader([undefinedtype, GalaxyTypeLoader]);
@@ -127,10 +130,10 @@ export const idmapoutunionOfarrayOfunionOfstrtypeOrWorkflowStepOutputLoaderOrund
 export const unionOfundefinedtypeOrWorkflowStepTypeLoader = new _UnionLoader([undefinedtype, WorkflowStepTypeLoader]);
 export const typedslunionOfundefinedtypeOrWorkflowStepTypeLoader2 = new _TypeDSLLoader(unionOfundefinedtypeOrWorkflowStepTypeLoader, 2);
 export const unionOfundefinedtypeOrGalaxyWorkflowLoader = new _UnionLoader([undefinedtype, GalaxyWorkflowLoader]);
-export const uriunionOfundefinedtypeOrGalaxyWorkflowLoaderFalseFalseNone = new _URILoader(unionOfundefinedtypeOrGalaxyWorkflowLoader, false, false, undefined);
-export const uriunionOfundefinedtypeOrstrtypeOrarrayOfstrtypeFalseFalse2 = new _URILoader(unionOfundefinedtypeOrstrtypeOrarrayOfstrtype, false, false, 2);
+export const uriunionOfundefinedtypeOrGalaxyWorkflowLoaderFalseFalseNoneNone = new _URILoader(unionOfundefinedtypeOrGalaxyWorkflowLoader, false, false, undefined, undefined);
+export const uriunionOfundefinedtypeOrstrtypeOrarrayOfstrtypeFalseFalse2None = new _URILoader(unionOfundefinedtypeOrstrtypeOrarrayOfstrtype, false, false, 2, undefined);
 export const unionOfundefinedtypeOrbooltype = new _UnionLoader([undefinedtype, booltype]);
-export const uristrtypeFalseTrueNone = new _URILoader(strtype, false, true, undefined);
+export const uristrtypeFalseTrueNoneNone = new _URILoader(strtype, false, true, undefined, undefined);
 export const arrayOfWorkflowInputParameterLoader = new _ArrayLoader([WorkflowInputParameterLoader]);
 export const idmapinputsarrayOfWorkflowInputParameterLoader = new _IdMapLoader(arrayOfWorkflowInputParameterLoader, 'id', 'type');
 export const arrayOfWorkflowOutputParameterLoader = new _ArrayLoader([WorkflowOutputParameterLoader]);

@@ -38,7 +38,7 @@ export interface WorkflowInputParameterProperties extends Internal.InputParamete
    * Specify valid types of data that may be assigned to this parameter.
    * 
    */
-  type?: Internal.GalaxyType | string | undefined
+  type?: Internal.GalaxyType | undefined | Array<Internal.GalaxyType>
 
   /**
    * If set to true, `WorkflowInputParameter` is not required to submit the workflow.

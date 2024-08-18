@@ -97,7 +97,7 @@ public class EnumSchemaImpl extends SaveableImpl implements EnumSchema {
     java.util.List<String> symbols;
     try {
       symbols =
-          LoaderInstances.uri_array_of_StringInstance_True_False_None.loadField(
+          LoaderInstances.uri_array_of_StringInstance_True_False_None_None.loadField(
               __doc.get("symbols"), __baseUri, __loadingOptions);
     } catch (ValidationException e) {
       symbols = null; // won't be used but prevents compiler from complaining.
