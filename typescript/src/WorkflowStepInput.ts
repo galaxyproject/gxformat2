@@ -78,7 +78,7 @@ export class WorkflowStepInput extends Saveable implements Internal.WorkflowStep
     let id
     if ('id' in _doc) {
       try {
-        id = await loadField(_doc.id, LoaderInstances.uriunionOfundefinedtypeOrstrtypeTrueFalseNone,
+        id = await loadField(_doc.id, LoaderInstances.uriunionOfundefinedtypeOrstrtypeTrueFalseNoneNone,
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
@@ -105,7 +105,7 @@ export class WorkflowStepInput extends Saveable implements Internal.WorkflowStep
     let source
     if ('source' in _doc) {
       try {
-        source = await loadField(_doc.source, LoaderInstances.uriunionOfundefinedtypeOrstrtypeOrarrayOfstrtypeFalseFalse2,
+        source = await loadField(_doc.source, LoaderInstances.uriunionOfundefinedtypeOrstrtypeOrarrayOfstrtypeFalseFalse2None,
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {

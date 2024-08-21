@@ -308,3 +308,13 @@ steps:
         - required
         - optional
 """
+
+MULTI_STRING_INPUT_WORKFLOW = """
+class: GalaxyWorkflow
+label: Multi-string input
+inputs:
+  multi-text:
+    optional: false
+    type: [string]
+steps: []
+"""

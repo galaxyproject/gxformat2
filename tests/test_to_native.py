@@ -11,6 +11,7 @@ from .example_wfs import (
     BASIC_WORKFLOW,
     INT_INPUT,
     MULTI_DATA_INPUT_WORKFLOW,
+    MULTI_STRING_INPUT_WORKFLOW,
 )
 
 EXAMPLES_DIR_NAME = "native"
@@ -62,6 +63,19 @@ def test_multi_data_input():
         as_native = json.load(f)
     multi_data_step = as_native["steps"]["2"]
     assert len(multi_data_step["input_connections"]["input1"]) == 2
+
+
+def test_multiple_string():
+    format2_path = to_example_path("multi_string_example", EXAMPLES_DIR_NAME, "gxwf.yml")
+    with open(format2_path, "w") as f:
+        f.write(MULTI_STRING_INPUT_WORKFLOW)
+    out = _run_example_path(format2_path)
+    with open(out) as f:
+        as_native = json.load(f)
+    multi_text_step = as_native["steps"]["0"]
+    tool_state = json.loads(multi_text_step["tool_state"])
+    assert tool_state["parameter_type"] == "text"
+    assert tool_state["multiple"]
 
 
 def _run_example_path(path):

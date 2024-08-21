@@ -1,0 +1,34 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "multi-text",
+    "steps": {
+        "0": {
+            "annotation": "",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [
+                {
+                    "description": "",
+                    "name": "multi-text"
+                }
+            ],
+            "label": "multi-text",
+            "name": "Input parameter",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 0
+            },
+            "tool_id": null,
+            "tool_state": "{\"multiple\": true, \"restrictOnConnections\": true, \"parameter_type\": \"text\", \"optional\": false}",
+            "tool_version": null,
+            "type": "parameter_input",
+            "uuid": "5410bc57-d24c-4818-9a0c-9f9ba6857584",
+            "when": null,
+            "workflow_outputs": []
+        }
+    }
+}

@@ -200,7 +200,7 @@ public class WorkflowInputParameterImpl extends SaveableImpl implements Workflow
     if (__doc.containsKey("id")) {
       try {
         id =
-            LoaderInstances.uri_optional_StringInstance_True_False_None.loadField(
+            LoaderInstances.uri_optional_StringInstance_True_False_None_None.loadField(
                 __doc.get("id"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         id = null; // won't be used but prevents compiler from complaining.
@@ -294,7 +294,7 @@ public class WorkflowInputParameterImpl extends SaveableImpl implements Workflow
     if (__doc.containsKey("type")) {
       try {
         type =
-            LoaderInstances.typedsl_union_of_GalaxyType_or_StringInstance_or_NullInstance_2
+            LoaderInstances.typedsl_union_of_GalaxyType_or_NullInstance_or_array_of_GalaxyType_2
                 .loadField(__doc.get("type"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         type = null; // won't be used but prevents compiler from complaining.

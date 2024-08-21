@@ -285,7 +285,7 @@ public class GalaxyWorkflowImpl extends SaveableImpl implements GalaxyWorkflow {
     if (__doc.containsKey("id")) {
       try {
         id =
-            LoaderInstances.uri_optional_StringInstance_True_False_None.loadField(
+            LoaderInstances.uri_optional_StringInstance_True_False_None_None.loadField(
                 __doc.get("id"), __baseUri, __loadingOptions);
       } catch (ValidationException e) {
         id = null; // won't be used but prevents compiler from complaining.
@@ -313,7 +313,7 @@ public class GalaxyWorkflowImpl extends SaveableImpl implements GalaxyWorkflow {
     String class_;
     try {
       class_ =
-          LoaderInstances.uri_StringInstance_False_True_None.loadField(
+          LoaderInstances.uri_StringInstance_False_True_None_None.loadField(
               __doc.get("class"), __baseUri, __loadingOptions);
     } catch (ValidationException e) {
       class_ = null; // won't be used but prevents compiler from complaining.
