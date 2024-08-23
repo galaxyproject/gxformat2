@@ -5,6 +5,17 @@ inputs:
   the_input:
     type: File
     doc: input doc
+  the_collection:
+    type: collection
+    collection_type: list
+  the_integer:
+    type: integer
+    min: 1
+    max: 3
+  # the_float:
+  #   type: float
+  #   min: 1
+  #   max: 3
 outputs:
   the_output:
     outputSource: cat/out_file1

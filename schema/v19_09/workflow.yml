@@ -28,20 +28,39 @@ $graph:
 
 - name: GalaxyType
   type: enum
-  extends: sld:PrimitiveType
+  extends: 
+   - sld:PrimitiveType
+   - GalaxyDataType
+   - GalaxyDataCollectionType
+   - GalaxyIntegerType
   symbols:
-    - integer
     - text
-    - File
-    - data
-    - collection
   doc:
     - "Extends primitive types with the native Galaxy concepts such datasets and collections."
-    - "integer: an alias for int type - matches syntax used by Galaxy tools"
     - "text: an alias for string type - matches syntax used by Galaxy tools"
-    - "File: an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future"
+
+- name: GalaxyIntegerType
+  type: enum
+  symbols:
+    - integer
+  doc:
+    - "integer: an alias for int type - matches syntax used by Galaxy tools"
+
+- name: GalaxyDataType
+  type: enum
+  symbols:
+    - data
+    - File
+  doc:
     - "data: a Galaxy dataset"
-    - "collection: a Galaxy dataset collection"
+    - "File: an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future"
+
+- name: GalaxyDataCollectionType
+  type: enum
+  symbols:
+    - collection
+  doc:
+   - "collection: a Galaxy dataset collection"
 
 - name: WorkflowStepType
   type: enum
@@ -57,28 +76,12 @@ $graph:
     - "subworkflow: Run a subworkflow."
     - "pause: Pause computation on this branch of workflow until user allows it to continue."
 
-- name: WorkflowInputParameter
+- name: BaseInputParameter
   type: record
   extends:
     - cwl:InputParameter
     - gxformat2common:HasStepPosition
-  docParent: "#GalaxyWorkflow"
   fields:
-    - name: type
-      type:
-      - GalaxyType
-      - "null"
-      - type: array
-        items:
-          - GalaxyType
-      default: data
-      jsonldPredicate:
-        "_id": "sld:type"
-        "_type": "@vocab"
-        refScope: 2
-        typeDSL: True
-      doc: |
-        Specify valid types of data that may be assigned to this parameter.
     - name: optional
       type:
       - boolean
@@ -86,6 +89,11 @@ $graph:
       default: false
       doc: |
         If set to true, `WorkflowInputParameter` is not required to submit the workflow.
+
+- name: BaseDataParameter
+  type: record
+  extends: [BaseInputParameter]
+  fields:
     - name: format
       doc: |
         Specify datatype extension for valid input datasets.
@@ -93,6 +101,36 @@ $graph:
         - "null"
         - type: array
           items: string
+
+- name: WorkflowDataParameter
+  type: record
+  extends:
+    - BaseDataParameter
+  docParent: "#GalaxyWorkflow"
+  fields:
+    - name: type
+      type:
+        - GalaxyDataType
+        - "null"
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+
+- name: WorkflowCollectionParameter
+  type: record
+  docParent: "#GalaxyWorkflow"
+  extends:
+    - BaseDataParameter
+  fields:
+    - name: type
+      type: GalaxyDataCollectionType
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
     - name: collection_type
       doc: |
         Collection type (defaults to `list` if `type` is `collection`). Nested
@@ -100,6 +138,105 @@ $graph:
       type:
         - "null"
         - string
+
+- name: MinMaxInt
+  type: record
+  fields:
+    - name: min
+      type:
+      - int
+      - "null"
+    - name: max
+      type:
+      - int
+      - "null"
+
+# - name: MinMaxFloat
+#   type: record
+#   fields:
+#     - name: min
+#       type:
+#       - int
+#       - float
+#       - "null"
+#     - name: max
+#       type:
+#       - int
+#       - float
+#       - "null"
+
+- name: WorkflowIntegerParameter
+  type: record
+  extends:
+    - BaseInputParameter
+    - MinMaxInt
+  docParent: "#GalaxyWorkflow"
+  fields:
+    - name: type
+      type:
+        - GalaxyIntegerType
+        - type: array
+          items:
+            - WorkflowIntegerParameter
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+
+
+- name: WorkflowFloatParameter
+  type: record
+  extends:
+    - BaseInputParameter
+    # - MinMaxFloat
+  docParent: "#GalaxyWorkflow"
+  fields:
+    - name: type
+      type:
+        - "float"
+        - "null"
+        - type: array
+          items:
+            - WorkflowFloatParameter
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+
+- name: WorkflowTextParameter
+  type: record
+  extends:
+    - BaseInputParameter
+  docParent: "#GalaxyWorkflow"
+  fields:
+    - name: type
+      type:
+        - string
+        - "null"
+        - type: array
+          items:
+            - WorkflowTextParameter
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+    - name: "regex"
+      type:
+        - string
+        - "null"
+
+- name: WorkflowInputParameter
+  type: union
+  names:
+    - WorkflowTextParameter
+    - WorkflowFloatParameter
+    - WorkflowIntegerParameter
+    - WorkflowDataParameter
+    - WorkflowCollectionParameter
+  docParent: "#GalaxyWorkflow"
 
 - name: WorkflowOutputParameter
   type: record
