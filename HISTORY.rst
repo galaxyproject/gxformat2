@@ -6,6 +6,13 @@ History
 .. to_doc
 
 ---------------------
+0.20.0 (2024-08-23)
+---------------------
+* Arrays of workflow input parameters (thanks to `@mvdbeek`_). `Pull Request
+  100`_
+* Design goals (thanks to `@jmchilton`_). `Pull Request 97`_
+
+---------------------
 0.19.0 (2024-07-23)
 ---------------------
 * Sync markdown_parse with Galaxy (thanks to `@mvdbeek`_). `Pull Request 99`_
@@ -269,6 +276,8 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 100: https://github.com/galaxyproject/gxformat2/pull/100
+.. _Pull Request 97: https://github.com/galaxyproject/gxformat2/pull/97
 .. _Pull Request 99: https://github.com/galaxyproject/gxformat2/pull/99
 .. _Pull Request 98: https://github.com/galaxyproject/gxformat2/pull/98
 .. _Pull Request 96: https://github.com/galaxyproject/gxformat2/pull/96
