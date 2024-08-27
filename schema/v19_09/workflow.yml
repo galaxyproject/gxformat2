@@ -206,6 +206,30 @@ $graph:
         refScope: 2
         typeDSL: True
 
+- name: ValidatorTypes
+  type: enum
+  symbols:
+    - regex_match
+
+- name: RegexMatch
+  type: record
+  fields:
+    - name: type
+      type:
+        - ValidatorTypes
+        - "null"
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+    - name: regex
+      type: [string]
+    - name: doc
+      type:
+        - string
+      jsonldPredicate: rdfs:comment
+
 - name: WorkflowTextParameter
   type: record
   extends:
@@ -224,10 +248,9 @@ $graph:
         "_type": "@vocab"
         refScope: 2
         typeDSL: True
-    - name: "regex"
+    - name: "validators"
       type:
-        - string
-        - "null"
+        - RegexMatch[]
 
 - name: WorkflowInputParameter
   type: union
