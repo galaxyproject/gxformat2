@@ -45,7 +45,8 @@ $graph:
     - text
     - xsd:string
   doc:
-    - "text: and alias for string type - matches syntax used by Galaxy tools"
+    - "text: an alias for string type - matches syntax used by Galaxy tools"
+    - "string: string type"
 
 - name: GalaxyIntegerType
   type: enum
@@ -110,7 +111,7 @@ $graph:
   fields:
     - name: format
       doc: |
-        Specify datatype extension for valid input datasets.
+        Specify datatype extensions for valid input datasets.
       type:
         - "null"
         - type: array
@@ -196,7 +197,6 @@ $graph:
     - name: type
       type:
         - GalaxyFloatType
-        - "null"
         - type: array
           items:
             - WorkflowFloatParameter
@@ -206,29 +206,23 @@ $graph:
         refScope: 2
         typeDSL: True
 
-- name: ValidatorTypes
-  type: enum
-  symbols:
-    - regex_match
+- name: TextValidators
+  type: record
+  fields:
+    regex_match:
+      type: [RegexMatch]
 
 - name: RegexMatch
   type: record
   fields:
-    - name: type
-      type:
-        - ValidatorTypes
-        - "null"
-      jsonldPredicate:
-        "_id": "sld:type"
-        "_type": "@vocab"
-        refScope: 2
-        typeDSL: True
     - name: regex
       type: [string]
+      doc:  Check if a regular expression matches the value. A value is only valid if a match is found.
     - name: doc
       type:
         - string
       jsonldPredicate: rdfs:comment
+      doc: Message to provide to user if validator did not succeed.
 
 - name: WorkflowTextParameter
   type: record
@@ -239,7 +233,6 @@ $graph:
     - name: type
       type:
         - GalaxyTextType
-        - "null"
         - type: array
           items:
             - WorkflowTextParameter
@@ -250,7 +243,8 @@ $graph:
         typeDSL: True
     - name: "validators"
       type:
-        - RegexMatch[]
+        - TextValidators[]?
+      doc: Apply one more validators to the input value. Input is valid if all validators succeed.
 
 - name: WorkflowInputParameter
   type: union

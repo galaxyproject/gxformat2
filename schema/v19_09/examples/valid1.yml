@@ -19,9 +19,9 @@ inputs:
   the string:
     type: text
     validators:
-      - type: regex_match
-        regex: ^(?!.*\s).+$
-        doc: String must not contain whitespace
+      - regex_match:
+          regex: ^(?!.*\s).+$
+          doc: String must not contain whitespace
 outputs:
   the_output:
     outputSource: cat/out_file1
