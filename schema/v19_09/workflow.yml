@@ -33,18 +33,32 @@ $graph:
    - GalaxyDataType
    - GalaxyDataCollectionType
    - GalaxyIntegerType
-  symbols:
-    - text
+   - GalaxyTextType
+  symbols: []
   doc:
     - "Extends primitive types with the native Galaxy concepts such datasets and collections."
     - "text: an alias for string type - matches syntax used by Galaxy tools"
+
+- name: GalaxyTextType
+  type: enum
+  symbols:
+    - text
+    - xsd:string
+  doc:
+    - "text: and alias for string type - matches syntax used by Galaxy tools"
 
 - name: GalaxyIntegerType
   type: enum
   symbols:
     - integer
+    - xsd:int
   doc:
     - "integer: an alias for int type - matches syntax used by Galaxy tools"
+
+- name: GalaxyFloatType
+  type: enum
+  symbols:
+    - xsd:float
 
 - name: GalaxyDataType
   type: enum
@@ -139,37 +153,25 @@ $graph:
         - "null"
         - string
 
-- name: MinMaxInt
+- name: MinMax
   type: record
   fields:
     - name: min
       type:
-      - int
-      - "null"
+        - int
+        - float
+        - "null"
     - name: max
       type:
-      - int
-      - "null"
-
-# - name: MinMaxFloat
-#   type: record
-#   fields:
-#     - name: min
-#       type:
-#       - int
-#       - float
-#       - "null"
-#     - name: max
-#       type:
-#       - int
-#       - float
-#       - "null"
+        - int
+        - float
+        - "null"
 
 - name: WorkflowIntegerParameter
   type: record
   extends:
     - BaseInputParameter
-    - MinMaxInt
+    - MinMax
   docParent: "#GalaxyWorkflow"
   fields:
     - name: type
@@ -184,17 +186,16 @@ $graph:
         refScope: 2
         typeDSL: True
 
-
 - name: WorkflowFloatParameter
   type: record
   extends:
     - BaseInputParameter
-    # - MinMaxFloat
+    - MinMax
   docParent: "#GalaxyWorkflow"
   fields:
     - name: type
       type:
-        - "float"
+        - GalaxyFloatType
         - "null"
         - type: array
           items:
@@ -213,7 +214,7 @@ $graph:
   fields:
     - name: type
       type:
-        - string
+        - GalaxyTextType
         - "null"
         - type: array
           items:
