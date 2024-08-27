@@ -42,7 +42,7 @@ export interface ProcessProperties extends Internal.IdentifiedProperties, Intern
    * of expressions.
    * 
    */
-  inputs: Array<Internal.WorkflowInputParameter>
+  inputs: Array<Internal.BaseInputParameter>
 
   /**
    * Defines the parameters representing the output of the process.  May be

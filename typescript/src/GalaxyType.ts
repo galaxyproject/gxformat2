@@ -1,15 +1,12 @@
 
 export enum GalaxyType {
-  NULL='null',
-  BOOLEAN='boolean',
-  INT='int',
-  LONG='long',
-  FLOAT='float',
-  DOUBLE='double',
+  DATA='data',
+  FILE='File',
+  COLLECTION='collection',
+  TEXT='text',
   STRING='string',
   INTEGER='integer',
-  TEXT='text',
-  FILE='File',
-  DATA='data',
-  COLLECTION='collection',
+  INT='int',
+  FLOAT='float',
+  BOOL='bool',
 }

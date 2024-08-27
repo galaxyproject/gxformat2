@@ -16,9 +16,9 @@ import * as Internal from './util/Internal'
 
 
 /**
- * Auto-generated class implementation for https://galaxyproject.org/gxformat2/v19_09#WorkflowInputParameter
+ * Auto-generated class implementation for https://galaxyproject.org/gxformat2/v19_09#WorkflowFloatParameter
  */
-export class WorkflowInputParameter extends Saveable implements Internal.WorkflowInputParameterProperties {
+export class WorkflowFloatParameter extends Saveable implements Internal.WorkflowFloatParameterProperties {
   extensionFields?: Internal.Dictionary<any>
 
   /**
@@ -47,32 +47,16 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
   position?: undefined | Internal.StepPosition
 
   /**
-   * Specify valid types of data that may be assigned to this parameter.
-   * 
-   */
-  type?: Internal.GalaxyType | undefined | Array<Internal.GalaxyType>
-
-  /**
    * If set to true, `WorkflowInputParameter` is not required to submit the workflow.
    * 
    */
   optional?: boolean | undefined
-
-  /**
-   * Specify datatype extension for valid input datasets.
-   * 
-   */
-  format?: undefined | Array<string>
-
-  /**
-   * Collection type (defaults to `list` if `type` is `collection`). Nested
-   * collection types are separated with colons, e.g. `list:list:paired`.
-   * 
-   */
-  collection_type?: undefined | string
+  min?: number | undefined
+  max?: number | undefined
+  type: Internal.GalaxyFloatType | Array<Internal.WorkflowFloatParameter>
 
 
-  constructor ({loadingOptions, extensionFields, id, label, doc, default_, position, type, optional, format, collection_type} : {loadingOptions?: LoadingOptions} & Internal.WorkflowInputParameterProperties) {
+  constructor ({loadingOptions, extensionFields, id, label, doc, default_, position, optional, min, max, type} : {loadingOptions?: LoadingOptions} & Internal.WorkflowFloatParameterProperties) {
     super(loadingOptions)
     this.extensionFields = extensionFields ?? {}
     this.id = id
@@ -80,20 +64,20 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
     this.doc = doc
     this.default_ = default_
     this.position = position
-    this.type = type
     this.optional = optional
-    this.format = format
-    this.collection_type = collection_type
+    this.min = min
+    this.max = max
+    this.type = type
   }
 
   /**
-   * Used to construct instances of {@link WorkflowInputParameter }.
+   * Used to construct instances of {@link WorkflowFloatParameter }.
    *
    * @param __doc                           Document fragment to load this record object from.
    * @param baseuri                         Base URI to generate child document IDs against.
    * @param loadingOptions                  Context for loading URIs and populating objects.
    * @param docRoot                         ID at this position in the document (if available)
-   * @returns                               An instance of {@link WorkflowInputParameter }
+   * @returns                               An instance of {@link WorkflowFloatParameter }
    * @throws {@link ValidationException}    If the document fragment is not a
    *                                        {@link Dictionary} or validation of fields fails.
    */
@@ -193,22 +177,6 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
       }
     }
 
-    let type
-    if ('type' in _doc) {
-      try {
-        type = await loadField(_doc.type, LoaderInstances.typedslunionOfGalaxyTypeLoaderOrundefinedtypeOrarrayOfunionOfGalaxyTypeLoader2,
-          baseuri, loadingOptions)
-      } catch (e) {
-        if (e instanceof ValidationException) {
-          __errors.push(
-            new ValidationException('the `type` field is not valid because: ', [e])
-          )
-        } else {
-          throw e
-        }
-      }
-    }
-
     let optional
     if ('optional' in _doc) {
       try {
@@ -225,15 +193,15 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
       }
     }
 
-    let format
-    if ('format' in _doc) {
+    let min
+    if ('min' in _doc) {
       try {
-        format = await loadField(_doc.format, LoaderInstances.unionOfundefinedtypeOrarrayOfstrtype,
+        min = await loadField(_doc.min, LoaderInstances.unionOfinttypeOrfloattypeOrundefinedtype,
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
           __errors.push(
-            new ValidationException('the `format` field is not valid because: ', [e])
+            new ValidationException('the `min` field is not valid because: ', [e])
           )
         } else {
           throw e
@@ -241,32 +209,46 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
       }
     }
 
-    let collection_type
-    if ('collection_type' in _doc) {
+    let max
+    if ('max' in _doc) {
       try {
-        collection_type = await loadField(_doc.collection_type, LoaderInstances.unionOfundefinedtypeOrstrtype,
+        max = await loadField(_doc.max, LoaderInstances.unionOfinttypeOrfloattypeOrundefinedtype,
           baseuri, loadingOptions)
       } catch (e) {
         if (e instanceof ValidationException) {
           __errors.push(
-            new ValidationException('the `collection_type` field is not valid because: ', [e])
+            new ValidationException('the `max` field is not valid because: ', [e])
           )
         } else {
           throw e
         }
+      }
+    }
+
+    let type
+    try {
+      type = await loadField(_doc.type, LoaderInstances.typedslunionOfGalaxyFloatTypeLoaderOrarrayOfunionOfWorkflowFloatParameterLoader2,
+        baseuri, loadingOptions)
+    } catch (e) {
+      if (e instanceof ValidationException) {
+        __errors.push(
+          new ValidationException('the `type` field is not valid because: ', [e])
+        )
+      } else {
+        throw e
       }
     }
 
     const extensionFields: Dictionary<any> = {}
     for (const [key, value] of Object.entries(_doc)) {
-      if (!WorkflowInputParameter.attr.has(key)) {
+      if (!WorkflowFloatParameter.attr.has(key)) {
         if ((key as string).includes(':')) {
           const ex = expandUrl(key, '', loadingOptions, false, false)
           extensionFields[ex] = value
         } else {
           __errors.push(
             new ValidationException(`invalid field ${key as string}, \
-            expected one of: \`label\`,\`doc\`,\`id\`,\`default\`,\`position\`,\`type\`,\`optional\`,\`format\`,\`collection_type\``)
+            expected one of: \`label\`,\`doc\`,\`id\`,\`default\`,\`position\`,\`optional\`,\`min\`,\`max\`,\`type\``)
           )
           break
         }
@@ -274,10 +256,10 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
     }
 
     if (__errors.length > 0) {
-      throw new ValidationException("Trying 'WorkflowInputParameter'", __errors)
+      throw new ValidationException("Trying 'WorkflowFloatParameter'", __errors)
     }
 
-    const schema = new WorkflowInputParameter({
+    const schema = new WorkflowFloatParameter({
       extensionFields: extensionFields,
       loadingOptions: loadingOptions,
       label: label,
@@ -285,10 +267,10 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
       id: id,
       default_: default_,
       position: position,
-      type: type,
       optional: optional,
-      format: format,
-      collection_type: collection_type
+      min: min,
+      max: max,
+      type: type
     })
     return schema
   }
@@ -324,20 +306,20 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
       r.position = save(this.position, false, this.id, relativeUris)
     }
                 
-    if (this.type != null) {
-      r.type = save(this.type, false, this.id, relativeUris)
-    }
-                
     if (this.optional != null) {
       r.optional = save(this.optional, false, this.id, relativeUris)
     }
                 
-    if (this.format != null) {
-      r.format = save(this.format, false, this.id, relativeUris)
+    if (this.min != null) {
+      r.min = save(this.min, false, this.id, relativeUris)
     }
                 
-    if (this.collection_type != null) {
-      r.collection_type = save(this.collection_type, false, this.id, relativeUris)
+    if (this.max != null) {
+      r.max = save(this.max, false, this.id, relativeUris)
+    }
+                
+    if (this.type != null) {
+      r.type = save(this.type, false, this.id, relativeUris)
     }
                 
     if (top) {
@@ -351,5 +333,5 @@ export class WorkflowInputParameter extends Saveable implements Internal.Workflo
     return r
   }
             
-  static attr: Set<string> = new Set(['label','doc','id','default','position','type','optional','format','collection_type'])
+  static attr: Set<string> = new Set(['label','doc','id','default','position','optional','min','max','type'])
 }

@@ -3,9 +3,9 @@ import * as Internal from './util/Internal'
 
 
 /**
- * Auto-generated interface for https://galaxyproject.org/gxformat2/v19_09#WorkflowInputParameter
+ * Auto-generated interface for https://galaxyproject.org/gxformat2/v19_09#WorkflowTextParameter
  */
-export interface WorkflowInputParameterProperties extends Internal.InputParameterProperties, Internal.HasStepPositionProperties {
+export interface WorkflowTextParameterProperties extends Internal.BaseInputParameterProperties {
                     
   extensionFields?: Internal.Dictionary<any>
 
@@ -35,27 +35,14 @@ export interface WorkflowInputParameterProperties extends Internal.InputParamete
   position?: undefined | Internal.StepPosition
 
   /**
-   * Specify valid types of data that may be assigned to this parameter.
-   * 
-   */
-  type?: Internal.GalaxyType | undefined | Array<Internal.GalaxyType>
-
-  /**
    * If set to true, `WorkflowInputParameter` is not required to submit the workflow.
    * 
    */
   optional?: boolean | undefined
+  type: Internal.GalaxyTextType | Array<Internal.WorkflowTextParameter>
 
   /**
-   * Specify datatype extension for valid input datasets.
-   * 
+   * Apply one more validators to the input value. Input is valid if all validators succeed.
    */
-  format?: undefined | Array<string>
-
-  /**
-   * Collection type (defaults to `list` if `type` is `collection`). Nested
-   * collection types are separated with colons, e.g. `list:list:paired`.
-   * 
-   */
-  collection_type?: undefined | string
+  validators?: undefined | Array<Internal.TextValidators>
 }

@@ -53,7 +53,7 @@ export interface GalaxyWorkflowProperties extends Internal.ProcessProperties, In
    * of expressions.
    * 
    */
-  inputs: Array<Internal.WorkflowInputParameter>
+  inputs: Array<any>
 
   /**
    * Defines the parameters representing the output of the process.  May be

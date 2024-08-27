@@ -65,7 +65,7 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
    * of expressions.
    * 
    */
-  inputs: Array<Internal.WorkflowInputParameter>
+  inputs: Array<any>
 
   /**
    * Defines the parameters representing the output of the process.  May be
