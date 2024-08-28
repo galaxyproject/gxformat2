@@ -2,9 +2,26 @@ class: GalaxyWorkflow
 doc: |
   Simple workflow that no-op cats a file.
 inputs:
-  the_input:
+  the input:
     type: File
     doc: input doc
+  the collection:
+    type: collection
+    collection_type: list
+  the integer:
+    type: int
+    min: 1
+    max: 3
+  the float:
+    type: float
+    min: 1.0
+    max: 3.0
+  the string:
+    type: text
+    validators:
+      - regex_match:
+          regex: ^(?!.*\s).+$
+          doc: String must not contain whitespace
 outputs:
   the_output:
     outputSource: cat/out_file1
@@ -13,4 +30,4 @@ steps:
     tool_id: cat1
     doc: cat doc
     in:
-      input1: the_input
+      input1: the input

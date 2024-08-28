@@ -15,9 +15,19 @@ import {
   Any,
   ArraySchema,
   ArraySchemaProperties,
+  BaseDataParameter,
+  BaseDataParameterProperties,
+  BaseInputParameter,
+  BaseInputParameterProperties,
   DocumentedProperties,
   EnumSchema,
   EnumSchemaProperties,
+  GalaxyBooleanType,
+  GalaxyDataCollectionType,
+  GalaxyDataType,
+  GalaxyFloatType,
+  GalaxyIntegerType,
+  GalaxyTextType,
   GalaxyType,
   GalaxyWorkflow,
   GalaxyWorkflowProperties,
@@ -27,6 +37,8 @@ import {
   IdentifiedProperties,
   InputParameterProperties,
   LabeledProperties,
+  MinMax,
+  MinMaxProperties,
   OutputParameterProperties,
   ParameterProperties,
   PrimitiveType,
@@ -36,15 +48,25 @@ import {
   RecordSchema,
   RecordSchemaProperties,
   ReferencesToolProperties,
+  RegexMatch,
+  RegexMatchProperties,
   Report,
   ReportProperties,
   SinkProperties,
   StepPosition,
   StepPositionProperties,
+  TextValidators,
+  TextValidatorsProperties,
   ToolShedRepository,
   ToolShedRepositoryProperties,
-  WorkflowInputParameter,
-  WorkflowInputParameterProperties,
+  WorkflowCollectionParameter,
+  WorkflowCollectionParameterProperties,
+  WorkflowDataParameter,
+  WorkflowDataParameterProperties,
+  WorkflowFloatParameter,
+  WorkflowFloatParameterProperties,
+  WorkflowIntegerParameter,
+  WorkflowIntegerParameterProperties,
   WorkflowOutputParameter,
   WorkflowOutputParameterProperties,
   WorkflowStep,
@@ -54,6 +76,8 @@ import {
   WorkflowStepOutputProperties,
   WorkflowStepProperties,
   WorkflowStepType,
+  WorkflowTextParameter,
+  WorkflowTextParameterProperties,
   enum_d062602be0b4b8fd33e69e29a841317b6ab665bc,
   enum_d961d79c225752b9fadb617367615ab176b47d77,
   enum_d9cba076fca539106791a4f46d198c7fcfbdb779
@@ -74,8 +98,24 @@ export const ArraySchemaLoader = new _RecordLoader(ArraySchema.fromDoc, undefine
 export const StepPositionLoader = new _RecordLoader(StepPosition.fromDoc, undefined, undefined);
 export const ToolShedRepositoryLoader = new _RecordLoader(ToolShedRepository.fromDoc, undefined, undefined);
 export const GalaxyTypeLoader = new _EnumLoader((Object.keys(GalaxyType) as Array<keyof typeof GalaxyType>).map(key => GalaxyType[key]));
+export const GalaxyTextTypeLoader = new _EnumLoader((Object.keys(GalaxyTextType) as Array<keyof typeof GalaxyTextType>).map(key => GalaxyTextType[key]));
+export const GalaxyIntegerTypeLoader = new _EnumLoader((Object.keys(GalaxyIntegerType) as Array<keyof typeof GalaxyIntegerType>).map(key => GalaxyIntegerType[key]));
+export const GalaxyFloatTypeLoader = new _EnumLoader((Object.keys(GalaxyFloatType) as Array<keyof typeof GalaxyFloatType>).map(key => GalaxyFloatType[key]));
+export const GalaxyBooleanTypeLoader = new _EnumLoader((Object.keys(GalaxyBooleanType) as Array<keyof typeof GalaxyBooleanType>).map(key => GalaxyBooleanType[key]));
+export const GalaxyDataTypeLoader = new _EnumLoader((Object.keys(GalaxyDataType) as Array<keyof typeof GalaxyDataType>).map(key => GalaxyDataType[key]));
+export const GalaxyDataCollectionTypeLoader = new _EnumLoader((Object.keys(GalaxyDataCollectionType) as Array<keyof typeof GalaxyDataCollectionType>).map(key => GalaxyDataCollectionType[key]));
 export const WorkflowStepTypeLoader = new _EnumLoader((Object.keys(WorkflowStepType) as Array<keyof typeof WorkflowStepType>).map(key => WorkflowStepType[key]));
-export const WorkflowInputParameterLoader = new _RecordLoader(WorkflowInputParameter.fromDoc, undefined, undefined);
+export const BaseInputParameterLoader = new _RecordLoader(BaseInputParameter.fromDoc, undefined, undefined);
+export const BaseDataParameterLoader = new _RecordLoader(BaseDataParameter.fromDoc, undefined, undefined);
+export const WorkflowDataParameterLoader = new _RecordLoader(WorkflowDataParameter.fromDoc, undefined, undefined);
+export const WorkflowCollectionParameterLoader = new _RecordLoader(WorkflowCollectionParameter.fromDoc, undefined, undefined);
+export const MinMaxLoader = new _RecordLoader(MinMax.fromDoc, undefined, undefined);
+export const WorkflowIntegerParameterLoader = new _RecordLoader(WorkflowIntegerParameter.fromDoc, undefined, undefined);
+export const WorkflowFloatParameterLoader = new _RecordLoader(WorkflowFloatParameter.fromDoc, undefined, undefined);
+export const TextValidatorsLoader = new _RecordLoader(TextValidators.fromDoc, undefined, undefined);
+export const RegexMatchLoader = new _RecordLoader(RegexMatch.fromDoc, undefined, undefined);
+export const WorkflowTextParameterLoader = new _RecordLoader(WorkflowTextParameter.fromDoc, undefined, undefined);
+export const WorkflowInputParameterLoader = new _UnionLoader([]);
 export const WorkflowOutputParameterLoader = new _RecordLoader(WorkflowOutputParameter.fromDoc, undefined, undefined);
 export const WorkflowStepLoader = new _RecordLoader(WorkflowStep.fromDoc, undefined, undefined);
 export const WorkflowStepInputLoader = new _RecordLoader(WorkflowStepInput.fromDoc, undefined, undefined);
@@ -103,21 +143,37 @@ export const typedslenum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader2 = new _
 export const unionOfundefinedtypeOrstrtype = new _UnionLoader([undefinedtype, strtype]);
 export const uriunionOfundefinedtypeOrstrtypeTrueFalseNoneNone = new _URILoader(unionOfundefinedtypeOrstrtype, true, false, undefined, undefined);
 export const unionOfundefinedtypeOranyType = new _UnionLoader([undefinedtype, anyType]);
-export const unionOfWorkflowInputParameterLoader = new _UnionLoader([WorkflowInputParameterLoader]);
-export const arrayOfunionOfWorkflowInputParameterLoader = new _ArrayLoader([unionOfWorkflowInputParameterLoader]);
-export const idmapinputsarrayOfunionOfWorkflowInputParameterLoader = new _IdMapLoader(arrayOfunionOfWorkflowInputParameterLoader, 'id', 'type');
+export const unionOfBaseInputParameterLoader = new _UnionLoader([BaseInputParameterLoader]);
+export const arrayOfunionOfBaseInputParameterLoader = new _ArrayLoader([unionOfBaseInputParameterLoader]);
+export const idmapinputsarrayOfunionOfBaseInputParameterLoader = new _IdMapLoader(arrayOfunionOfBaseInputParameterLoader, 'id', 'type');
 export const unionOfWorkflowOutputParameterLoader = new _UnionLoader([WorkflowOutputParameterLoader]);
 export const arrayOfunionOfWorkflowOutputParameterLoader = new _ArrayLoader([unionOfWorkflowOutputParameterLoader]);
 export const idmapoutputsarrayOfunionOfWorkflowOutputParameterLoader = new _IdMapLoader(arrayOfunionOfWorkflowOutputParameterLoader, 'id', 'type');
 export const unionOfundefinedtypeOrStepPositionLoader = new _UnionLoader([undefinedtype, StepPositionLoader]);
 export const unionOffloattypeOrinttype = new _UnionLoader([floattype, inttype]);
 export const unionOfundefinedtypeOrToolShedRepositoryLoader = new _UnionLoader([undefinedtype, ToolShedRepositoryLoader]);
-export const unionOfGalaxyTypeLoader = new _UnionLoader([GalaxyTypeLoader]);
-export const arrayOfunionOfGalaxyTypeLoader = new _ArrayLoader([unionOfGalaxyTypeLoader]);
-export const unionOfGalaxyTypeLoaderOrundefinedtypeOrarrayOfunionOfGalaxyTypeLoader = new _UnionLoader([GalaxyTypeLoader, undefinedtype, arrayOfunionOfGalaxyTypeLoader]);
-export const typedslunionOfGalaxyTypeLoaderOrundefinedtypeOrarrayOfunionOfGalaxyTypeLoader2 = new _TypeDSLLoader(unionOfGalaxyTypeLoaderOrundefinedtypeOrarrayOfunionOfGalaxyTypeLoader, 2);
 export const unionOfbooltypeOrundefinedtype = new _UnionLoader([booltype, undefinedtype]);
 export const unionOfundefinedtypeOrarrayOfstrtype = new _UnionLoader([undefinedtype, arrayOfstrtype]);
+export const unionOfGalaxyDataTypeLoaderOrundefinedtype = new _UnionLoader([GalaxyDataTypeLoader, undefinedtype]);
+export const typedslunionOfGalaxyDataTypeLoaderOrundefinedtype2 = new _TypeDSLLoader(unionOfGalaxyDataTypeLoaderOrundefinedtype, 2);
+export const typedslGalaxyDataCollectionTypeLoader2 = new _TypeDSLLoader(GalaxyDataCollectionTypeLoader, 2);
+export const unionOfinttypeOrfloattypeOrundefinedtype = new _UnionLoader([inttype, floattype, undefinedtype]);
+export const unionOfWorkflowIntegerParameterLoader = new _UnionLoader([WorkflowIntegerParameterLoader]);
+export const arrayOfunionOfWorkflowIntegerParameterLoader = new _ArrayLoader([unionOfWorkflowIntegerParameterLoader]);
+export const unionOfGalaxyIntegerTypeLoaderOrarrayOfunionOfWorkflowIntegerParameterLoader = new _UnionLoader([GalaxyIntegerTypeLoader, arrayOfunionOfWorkflowIntegerParameterLoader]);
+export const typedslunionOfGalaxyIntegerTypeLoaderOrarrayOfunionOfWorkflowIntegerParameterLoader2 = new _TypeDSLLoader(unionOfGalaxyIntegerTypeLoaderOrarrayOfunionOfWorkflowIntegerParameterLoader, 2);
+export const unionOfWorkflowFloatParameterLoader = new _UnionLoader([WorkflowFloatParameterLoader]);
+export const arrayOfunionOfWorkflowFloatParameterLoader = new _ArrayLoader([unionOfWorkflowFloatParameterLoader]);
+export const unionOfGalaxyFloatTypeLoaderOrarrayOfunionOfWorkflowFloatParameterLoader = new _UnionLoader([GalaxyFloatTypeLoader, arrayOfunionOfWorkflowFloatParameterLoader]);
+export const typedslunionOfGalaxyFloatTypeLoaderOrarrayOfunionOfWorkflowFloatParameterLoader2 = new _TypeDSLLoader(unionOfGalaxyFloatTypeLoaderOrarrayOfunionOfWorkflowFloatParameterLoader, 2);
+export const unionOfRegexMatchLoader = new _UnionLoader([RegexMatchLoader]);
+export const unionOfstrtype = new _UnionLoader([strtype]);
+export const unionOfWorkflowTextParameterLoader = new _UnionLoader([WorkflowTextParameterLoader]);
+export const arrayOfunionOfWorkflowTextParameterLoader = new _ArrayLoader([unionOfWorkflowTextParameterLoader]);
+export const unionOfGalaxyTextTypeLoaderOrarrayOfunionOfWorkflowTextParameterLoader = new _UnionLoader([GalaxyTextTypeLoader, arrayOfunionOfWorkflowTextParameterLoader]);
+export const typedslunionOfGalaxyTextTypeLoaderOrarrayOfunionOfWorkflowTextParameterLoader2 = new _TypeDSLLoader(unionOfGalaxyTextTypeLoaderOrarrayOfunionOfWorkflowTextParameterLoader, 2);
+export const arrayOfTextValidatorsLoader = new _ArrayLoader([TextValidatorsLoader]);
+export const unionOfundefinedtypeOrarrayOfTextValidatorsLoader = new _UnionLoader([undefinedtype, arrayOfTextValidatorsLoader]);
 export const unionOfundefinedtypeOrGalaxyTypeLoader = new _UnionLoader([undefinedtype, GalaxyTypeLoader]);
 export const typedslunionOfundefinedtypeOrGalaxyTypeLoader2 = new _TypeDSLLoader(unionOfundefinedtypeOrGalaxyTypeLoader, 2);
 export const arrayOfWorkflowStepInputLoader = new _ArrayLoader([WorkflowStepInputLoader]);
@@ -146,3 +202,5 @@ export const unionOfarrayOfstrtypeOrundefinedtype = new _UnionLoader([arrayOfstr
 export const unionOfGalaxyWorkflowLoader = new _UnionLoader([GalaxyWorkflowLoader]);
 export const arrayOfunionOfGalaxyWorkflowLoader = new _ArrayLoader([unionOfGalaxyWorkflowLoader]);
 export const unionOfGalaxyWorkflowLoaderOrarrayOfunionOfGalaxyWorkflowLoader = new _UnionLoader([GalaxyWorkflowLoader, arrayOfunionOfGalaxyWorkflowLoader]);
+
+WorkflowInputParameterLoader.addLoaders([WorkflowTextParameterLoader, WorkflowFloatParameterLoader, WorkflowIntegerParameterLoader, WorkflowDataParameterLoader, WorkflowCollectionParameterLoader]);
