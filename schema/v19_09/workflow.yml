@@ -29,15 +29,13 @@ $graph:
 - name: GalaxyType
   type: enum
   extends: 
-   - sld:PrimitiveType
    - GalaxyDataType
    - GalaxyDataCollectionType
-   - GalaxyIntegerType
    - GalaxyTextType
+   - GalaxyIntegerType
+   - GalaxyFloatType
+   - GalaxyBooleanType
   symbols: []
-  doc:
-    - "Extends primitive types with the native Galaxy concepts such datasets and collections."
-    - "text: an alias for string type - matches syntax used by Galaxy tools"
 
 - name: GalaxyTextType
   type: enum
@@ -60,6 +58,11 @@ $graph:
   type: enum
   symbols:
     - xsd:float
+
+- name: GalaxyBooleanType
+  type: enum
+  symbols:
+    - xsd:bool
 
 - name: GalaxyDataType
   type: enum
