@@ -69,14 +69,14 @@ def test_post_job_action_to_native(wf_template):
             expected_value = {'tags': 'tag'}
         elif isinstance(default_value, bool):
             action_value = 'true'
-            expected_value = True
+            expected_value = {}
         workflow_yaml = wf_template.format(action=action_key, action_value=action_value)
         native = to_native(workflow_yaml)
         pja_class = POST_JOB_ACTIONS[action_key]['action_class']
         expected_pja = {pja_class + 'out_file1': OrderedDict([
                 ("output_name", "out_file1"),
                 ("action_type", pja_class),
-                ("action_arguments", expected_value or action_value),
+                ("action_arguments", expected_value if expected_value is not None else action_value),
         ])}
         expected_pja = json.dumps(expected_pja, sort_keys=True)
         converted_pjas = json.dumps(native['steps']['1']['post_job_actions'], sort_keys=True)

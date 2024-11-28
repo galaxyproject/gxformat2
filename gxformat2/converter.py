@@ -36,7 +36,7 @@ POST_JOB_ACTIONS = {
     'hide': {
         'action_class': "HideDatasetAction",
         'default': False,
-        'arguments': lambda x: x,
+        'arguments': lambda x: {},
     },
     'rename': {
         'action_class': 'RenameDatasetAction',
@@ -46,7 +46,7 @@ POST_JOB_ACTIONS = {
     'delete_intermediate_datasets': {
         'action_class': 'DeleteIntermediatesAction',
         'default': False,
-        'arguments': lambda x: x,
+        'arguments': lambda x: {},
     },
     'change_datatype': {
         'action_class': 'ChangeDatatypeAction',
