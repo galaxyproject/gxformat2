@@ -10,18 +10,13 @@ from typing import (
     Union,
 )
 
-from typing_extensions import (
-    Literal,
-    TypedDict,
-)
+from typing_extensions import Literal
 
 log = logging.getLogger(__name__)
 
 DictOrList = Union[Dict, List]
 ConnectDict = dict
 
-
-EmbeddedLink = TypedDict("EmbeddedLink", {"$link": str})
 
 NativeGalaxyStepType = Literal[
     "subworkflow",
