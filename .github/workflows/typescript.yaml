@@ -2,9 +2,9 @@ name: TypeScript Continuous integration tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 concurrency:
   group: build-${{ github.event.pull_request.number || github.ref }}

@@ -123,7 +123,7 @@ new-version: ## Mint a new version
 release-local: commit-version release-aritfacts new-version
 
 push-release: ## Push a tagged release to github
-	git push $(UPSTREAM) master
+	git push $(UPSTREAM) main
 	git push --tags $(UPSTREAM)
 
 release: release-local push-release ## package, review, and upload a release

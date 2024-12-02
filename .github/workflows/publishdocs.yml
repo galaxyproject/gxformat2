@@ -20,7 +20,7 @@ jobs:
       run: |
         SKIP_JAVA=1 SKIP_TYPESCRIPT=1 bash build_schema.sh
     - name: Deploy Docs
-      if: github.event_name == 'push' && github.ref == 'refs/heads/master' && github.repository_owner == 'galaxyproject'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'galaxyproject'
       uses: JamesIves/github-pages-deploy-action@releases/v3
       with:
         ACCESS_TOKEN: ${{ secrets.GH_PAT }}
