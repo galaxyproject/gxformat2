@@ -359,11 +359,14 @@ $graph:
     #  doc: {$include: ../common/workflow_label_description.txt}
     #  # Legacy support - this may also be called 'name' and Galaxy will consume the workflow fine and treat this
     #  # attribute correctly - however in order to validate against this schema the attribute should be called label.
-    - name: "class"
+    - name: class
       jsonldPredicate:
         "_id": "@type"
         "_type": "@vocab"
-      type: string
+      type:
+        type: enum
+        name: GalaxyWorkflow_class
+        symbols: [ gxformat2:GalaxyWorkflow ]
     - name: steps
       doc: {$include: ../common/steps_description.txt}
       type:
