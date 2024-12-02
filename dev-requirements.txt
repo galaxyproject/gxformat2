@@ -14,7 +14,7 @@ coverage
 # For dev
 sphinx
 sphinx_rtd_theme
-recommonmark
+myst-parser
 
 # Used to check readme.
 readme
