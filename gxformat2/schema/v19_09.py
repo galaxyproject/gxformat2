@@ -11,10 +11,21 @@ import tempfile
 import uuid as _uuid__  # pylint: disable=unused-import # noqa: F401
 import xml.sax  # nosec
 from abc import ABC, abstractmethod
-from collections.abc import MutableMapping, MutableSequence, Sequence
 from io import StringIO
 from itertools import chain
-from typing import Any, Optional, Union, cast
+from typing import (
+    Any,
+    Dict,
+    List,
+    MutableMapping,
+    MutableSequence,
+    Optional,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+    cast,
+)
 from urllib.parse import quote, urldefrag, urlparse, urlsplit, urlunsplit
 from urllib.request import pathname2url
 
@@ -27,13 +38,13 @@ from schema_salad.fetcher import DefaultFetcher, Fetcher, MemoryCachingFetcher
 from schema_salad.sourceline import SourceLine, add_lc_filename
 from schema_salad.utils import CacheType, yaml_no_ts  # requires schema-salad v8.2+
 
-_vocab: dict[str, str] = {}
-_rvocab: dict[str, str] = {}
+_vocab: Dict[str, str] = {}
+_rvocab: Dict[str, str] = {}
 
 _logger = logging.getLogger("salad")
 
 
-IdxType = MutableMapping[str, tuple[Any, "LoadingOptions"]]
+IdxType = MutableMapping[str, Tuple[Any, "LoadingOptions"]]
 
 
 class LoadingOptions:
@@ -45,27 +56,27 @@ class LoadingOptions:
     original_doc: Optional[Any]
     addl_metadata: MutableMapping[str, Any]
     fetcher: Fetcher
-    vocab: dict[str, str]
-    rvocab: dict[str, str]
+    vocab: Dict[str, str]
+    rvocab: Dict[str, str]
     cache: CacheType
-    imports: list[str]
-    includes: list[str]
+    imports: List[str]
+    includes: List[str]
     no_link_check: Optional[bool]
     container: Optional[str]
 
     def __init__(
         self,
         fetcher: Optional[Fetcher] = None,
-        namespaces: Optional[dict[str, str]] = None,
-        schemas: Optional[list[str]] = None,
+        namespaces: Optional[Dict[str, str]] = None,
+        schemas: Optional[List[str]] = None,
         fileuri: Optional[str] = None,
         copyfrom: Optional["LoadingOptions"] = None,
         original_doc: Optional[Any] = None,
-        addl_metadata: Optional[dict[str, str]] = None,
+        addl_metadata: Optional[Dict[str, str]] = None,
         baseuri: Optional[str] = None,
         idx: Optional[IdxType] = None,
-        imports: Optional[list[str]] = None,
-        includes: Optional[list[str]] = None,
+        imports: Optional[List[str]] = None,
+        includes: Optional[List[str]] = None,
         no_link_check: Optional[bool] = None,
         container: Optional[str] = None,
     ) -> None:
@@ -205,16 +216,16 @@ class Saveable(ABC):
     @abstractmethod
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Convert this object to a JSON/YAML friendly dictionary."""
 
 
 def load_field(
-    val: Union[str, dict[str, str]],
+    val: Union[str, Dict[str, str]],
     fieldtype: "_Loader",
     baseuri: str,
     loadingOptions: LoadingOptions,
-    lc: Optional[list[Any]] = None,
+    lc: Optional[List[Any]] = None,
 ) -> Any:
     """Load field."""
     if isinstance(val, MutableMapping):
@@ -241,7 +252,7 @@ def load_field(
 save_type = Optional[Union[MutableMapping[str, Any], MutableSequence[Any], int, float, bool, str]]
 
 
-def extract_type(val_type: type[Any]) -> str:
+def extract_type(val_type: Type[Any]) -> str:
     """Take a type of value, and extracts the value as a string."""
     val_str = str(val_type)
     return val_str.split("'")[1]
@@ -260,7 +271,7 @@ def convert_typing(val_type: str) -> str:
     return val_type
 
 
-def parse_errors(error_message: str) -> tuple[str, str, str]:
+def parse_errors(error_message: str) -> Tuple[str, str, str]:
     """Parse error messages from several loaders into one error message."""
     if not error_message.startswith("Expected"):
         return error_message, "", ""
@@ -420,7 +431,7 @@ class _Loader:
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         pass
 
@@ -432,7 +443,7 @@ class _AnyLoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         if doc is not None:
             return doc
@@ -440,7 +451,7 @@ class _AnyLoader(_Loader):
 
 
 class _PrimitiveLoader(_Loader):
-    def __init__(self, tp: Union[type, tuple[type[str], type[str]]]) -> None:
+    def __init__(self, tp: Union[type, Tuple[Type[str], Type[str]]]) -> None:
         self.tp = tp
 
     def load(
@@ -449,7 +460,7 @@ class _PrimitiveLoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         if not isinstance(doc, self.tp):
             raise ValidationException(f"Expected a {self.tp} but got {doc.__class__.__name__}")
@@ -469,16 +480,16 @@ class _ArrayLoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         if not isinstance(doc, MutableSequence):
             raise ValidationException(
                 f"Value is a {convert_typing(extract_type(type(doc)))}, "
                 f"but valid type for this field is an array."
             )
-        r: list[Any] = []
-        errors: list[SchemaSaladException] = []
-        fields: list[str] = []
+        r: List[Any] = []
+        errors: List[SchemaSaladException] = []
+        fields: List[str] = []
         for i in range(0, len(doc)):
             try:
                 lf = load_field(
@@ -535,7 +546,7 @@ class _MapLoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         if not isinstance(doc, MutableMapping):
             raise ValidationException(f"Expected a map, was {type(doc)}")
@@ -543,8 +554,8 @@ class _MapLoader(_Loader):
             loadingOptions = LoadingOptions(
                 copyfrom=loadingOptions, container=self.container, no_link_check=self.no_link_check
             )
-        r: dict[str, Any] = {}
-        errors: list[SchemaSaladException] = []
+        r: Dict[str, Any] = {}
+        errors: List[SchemaSaladException] = []
         for k, v in doc.items():
             try:
                 lf = load_field(v, self.values, baseuri, loadingOptions, lc)
@@ -570,7 +581,7 @@ class _EnumLoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         if doc in self.symbols:
             return doc
@@ -590,9 +601,9 @@ class _SecondaryDSLLoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
-        r: list[dict[str, Any]] = []
+        r: List[Dict[str, Any]] = []
         if isinstance(doc, MutableSequence):
             for d in doc:
                 if isinstance(d, str):
@@ -601,7 +612,7 @@ class _SecondaryDSLLoader(_Loader):
                     else:
                         r.append({"pattern": d})
                 elif isinstance(d, dict):
-                    new_dict: dict[str, Any] = {}
+                    new_dict: Dict[str, Any] = {}
                     dict_copy = copy.deepcopy(d)
                     if "pattern" in dict_copy:
                         new_dict["pattern"] = dict_copy.pop("pattern")
@@ -655,7 +666,7 @@ class _SecondaryDSLLoader(_Loader):
 class _RecordLoader(_Loader):
     def __init__(
         self,
-        classtype: type[Saveable],
+        classtype: Type[Saveable],
         container: Optional[str] = None,
         no_link_check: Optional[bool] = None,
     ) -> None:
@@ -669,7 +680,7 @@ class _RecordLoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         if not isinstance(doc, MutableMapping):
             raise ValidationException(
@@ -687,7 +698,7 @@ class _RecordLoader(_Loader):
 
 
 class _ExpressionLoader(_Loader):
-    def __init__(self, items: type[str]) -> None:
+    def __init__(self, items: Type[str]) -> None:
         self.items = items
 
     def load(
@@ -696,7 +707,7 @@ class _ExpressionLoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         if not isinstance(doc, str):
             raise ValidationException(
@@ -720,7 +731,7 @@ class _UnionLoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         errors = []
 
@@ -817,7 +828,7 @@ class _URILoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         if self.no_link_check is not None:
             loadingOptions = LoadingOptions(
@@ -875,7 +886,7 @@ class _TypeDSLLoader(_Loader):
         doc: str,
         baseuri: str,
         loadingOptions: LoadingOptions,
-    ) -> Union[list[Union[dict[str, Any], str]], dict[str, Any], str]:
+    ) -> Union[List[Union[Dict[str, Any], str]], Dict[str, Any], str]:
         doc_ = doc
         optional = False
         if doc_.endswith("?"):
@@ -884,7 +895,7 @@ class _TypeDSLLoader(_Loader):
 
         if doc_.endswith("[]"):
             salad_versions = [int(v) for v in self.salad_version[1:].split(".")]
-            items: Union[list[Union[dict[str, Any], str]], dict[str, Any], str] = ""
+            items: Union[List[Union[Dict[str, Any], str]], Dict[str, Any], str] = ""
             rest = doc_[0:-2]
             if salad_versions < [1, 3]:
                 if rest.endswith("[]"):
@@ -896,7 +907,7 @@ class _TypeDSLLoader(_Loader):
                 items = self.resolve(rest, baseuri, loadingOptions)
                 if isinstance(items, str):
                     items = expand_url(items, baseuri, loadingOptions, False, True, self.refScope)
-            expanded: Union[dict[str, Any], str] = {"type": "array", "items": items}
+            expanded: Union[Dict[str, Any], str] = {"type": "array", "items": items}
         else:
             expanded = expand_url(doc_, baseuri, loadingOptions, False, True, self.refScope)
 
@@ -911,10 +922,10 @@ class _TypeDSLLoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         if isinstance(doc, MutableSequence):
-            r: list[Any] = []
+            r: List[Any] = []
             for d in doc:
                 if isinstance(d, str):
                     resolved = self.resolve(d, baseuri, loadingOptions)
@@ -946,10 +957,10 @@ class _IdMapLoader(_Loader):
         baseuri: str,
         loadingOptions: LoadingOptions,
         docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        lc: Optional[List[Any]] = None,
     ) -> Any:
         if isinstance(doc, MutableMapping):
-            r: list[Any] = []
+            r: List[Any] = []
             for k in sorted(doc.keys()):
                 val = doc[k]
                 if isinstance(val, CommentedMap):
@@ -979,7 +990,7 @@ def _document_load(
     baseuri: str,
     loadingOptions: LoadingOptions,
     addl_metadata_fields: Optional[MutableSequence[str]] = None,
-) -> tuple[Any, LoadingOptions]:
+) -> Tuple[Any, LoadingOptions]:
     if isinstance(doc, str):
         return _document_load_by_url(
             loader,
@@ -1048,7 +1059,7 @@ def _document_load_by_url(
     url: str,
     loadingOptions: LoadingOptions,
     addl_metadata_fields: Optional[MutableSequence[str]] = None,
-) -> tuple[Any, LoadingOptions]:
+) -> Tuple[Any, LoadingOptions]:
     if url in loadingOptions.idx:
         return loadingOptions.idx[url]
 
@@ -1090,7 +1101,7 @@ def file_uri(path: str, split_frag: bool = False) -> str:
     return f"file://{urlpath}{frag}"
 
 
-def prefix_url(url: str, namespaces: dict[str, str]) -> str:
+def prefix_url(url: str, namespaces: Dict[str, str]) -> str:
     """Expand short forms into full URLs using the given namespace dictionary."""
     for k, v in namespaces.items():
         if url.startswith(v):
@@ -1167,7 +1178,7 @@ class RecordField(Documented):
         name: Any,
         type_: Any,
         doc: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -1341,7 +1352,7 @@ class RecordField(Documented):
                             [e],
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -1377,8 +1388,8 @@ class RecordField(Documented):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -1414,7 +1425,7 @@ class RecordSchema(Saveable):
         self,
         type_: Any,
         fields: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -1533,7 +1544,7 @@ class RecordSchema(Saveable):
                             [e],
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -1567,8 +1578,8 @@ class RecordSchema(Saveable):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -1606,7 +1617,7 @@ class EnumSchema(Saveable):
         self,
         symbols: Any,
         type_: Any,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -1726,7 +1737,7 @@ class EnumSchema(Saveable):
                             [e],
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -1760,8 +1771,8 @@ class EnumSchema(Saveable):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -1793,7 +1804,7 @@ class ArraySchema(Saveable):
         self,
         items: Any,
         type_: Any,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -1913,7 +1924,7 @@ class ArraySchema(Saveable):
                             [e],
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -1947,8 +1958,8 @@ class ArraySchema(Saveable):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -2033,7 +2044,7 @@ class StepPosition(Saveable):
         self,
         top: Any,
         left: Any,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -2153,7 +2164,7 @@ class StepPosition(Saveable):
                             [e],
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -2187,8 +2198,8 @@ class StepPosition(Saveable):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -2227,7 +2238,7 @@ class ToolShedRepository(Saveable):
         name: Any,
         owner: Any,
         tool_shed: Any,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -2446,7 +2457,7 @@ class ToolShedRepository(Saveable):
                             [e],
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -2483,8 +2494,8 @@ class ToolShedRepository(Saveable):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -2537,7 +2548,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
         position: Optional[Any] = None,
         format: Optional[Any] = None,
         collection_type: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -2980,7 +2991,7 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
                                 [e],
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -3022,8 +3033,8 @@ class WorkflowInputParameter(InputParameter, HasStepPosition):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -3109,7 +3120,7 @@ class WorkflowOutputParameter(OutputParameter):
         id: Optional[Any] = None,
         outputSource: Optional[Any] = None,
         type_: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -3368,7 +3379,7 @@ class WorkflowOutputParameter(OutputParameter):
                                 [e],
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -3406,8 +3417,8 @@ class WorkflowOutputParameter(OutputParameter):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -3496,7 +3507,7 @@ class WorkflowStep(
         run: Optional[Any] = None,
         runtime_inputs: Optional[Any] = None,
         when: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -4293,7 +4304,7 @@ class WorkflowStep(
                                 [e],
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -4343,8 +4354,8 @@ class WorkflowStep(
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -4478,7 +4489,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
         source: Optional[Any] = None,
         label: Optional[Any] = None,
         default: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -4694,7 +4705,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
                                 [e],
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -4731,8 +4742,8 @@ class WorkflowStepInput(Identified, Sink, Labeled):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -4776,7 +4787,7 @@ class Report(Saveable):
     def __init__(
         self,
         markdown: Any,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -4853,7 +4864,7 @@ class Report(Saveable):
                             [e],
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -4884,8 +4895,8 @@ class Report(Saveable):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -4932,7 +4943,7 @@ class WorkflowStepOutput(Identified):
         remove_tags: Optional[Any] = None,
         rename: Optional[Any] = None,
         set_columns: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -5332,7 +5343,7 @@ class WorkflowStepOutput(Identified):
                                 [e],
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -5373,8 +5384,8 @@ class WorkflowStepOutput(Identified):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
@@ -5479,7 +5490,7 @@ class GalaxyWorkflow(Process, HasUUID):
         creator: Optional[Any] = None,
         license: Optional[Any] = None,
         release: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
+        extension_fields: Optional[Dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
     ) -> None:
         if extension_fields:
@@ -6066,7 +6077,7 @@ class GalaxyWorkflow(Process, HasUUID):
                                 [e],
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: Dict[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -6111,8 +6122,8 @@ class GalaxyWorkflow(Process, HasUUID):
 
     def save(
         self, top: bool = False, base_url: str = "", relative_uris: bool = True
-    ) -> dict[str, Any]:
-        r: dict[str, Any] = {}
+    ) -> Dict[str, Any]:
+        r: Dict[str, Any] = {}
 
         if relative_uris:
             for ef in self.extension_fields:
