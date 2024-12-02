@@ -14,6 +14,7 @@ Contents:
    readme
    installation
    conduct
+   design
    contributing
    developing
    history
