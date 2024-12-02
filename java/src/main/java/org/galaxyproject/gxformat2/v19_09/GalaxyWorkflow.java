@@ -52,7 +52,7 @@ public interface GalaxyWorkflow extends Process, HasUUID, Saveable {
   /**
    * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/class</I><br>
    */
-  String getClass_();
+  GalaxyWorkflow_class getClass_();
   /**
    * Getter for property <I>https://w3id.org/cwl/cwl#Labeled/label</I><br>
    *

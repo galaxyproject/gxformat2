@@ -39,7 +39,7 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
    * The unique identifier for this object.
    */
   id?: undefined | string
-  class_: string
+  class_: Internal.GalaxyWorkflow_class
 
   /**
    * A short, human-readable label of this object.
@@ -114,7 +114,7 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
   release?: undefined | string
 
 
-  constructor ({loadingOptions, extensionFields, id, class_ = 'GalaxyWorkflow', label, doc, inputs, outputs, uuid, steps, report, tags, creator, license, release} : {loadingOptions?: LoadingOptions} & Internal.GalaxyWorkflowProperties) {
+  constructor ({loadingOptions, extensionFields, id, class_ = Internal.GalaxyWorkflow_class.GALAXYWORKFLOW, label, doc, inputs, outputs, uuid, steps, report, tags, creator, license, release} : {loadingOptions?: LoadingOptions} & Internal.GalaxyWorkflowProperties) {
     super(loadingOptions)
     this.extensionFields = extensionFields ?? {}
     this.id = id
@@ -177,7 +177,7 @@ export class GalaxyWorkflow extends Saveable implements Internal.GalaxyWorkflowP
             
     let class_
     try {
-      class_ = await loadField(_doc.class, LoaderInstances.uristrtypeFalseTrueNoneNone,
+      class_ = await loadField(_doc.class, LoaderInstances.uriGalaxyWorkflow_classLoaderFalseTrueNoneNone,
         baseuri, loadingOptions)
     } catch (e) {
       if (e instanceof ValidationException) {

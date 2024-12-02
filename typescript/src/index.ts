@@ -12,6 +12,7 @@ export {
   GalaxyType,
   GalaxyWorkflow,
   GalaxyWorkflowProperties,
+  GalaxyWorkflow_class,
   HasStepErrorsProperties,
   HasStepPositionProperties,
   HasUUIDProperties,

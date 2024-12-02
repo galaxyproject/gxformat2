@@ -228,8 +228,10 @@ public class LoaderInstances {
               false,
               2,
               null);
-  public static Loader<String> uri_StringInstance_False_True_None_None =
-      new UriLoader(StringInstance, false, true, null, null);
+  public static Loader<GalaxyWorkflow_class> GalaxyWorkflow_class =
+      new EnumLoader(GalaxyWorkflow_class.class);
+  public static Loader<GalaxyWorkflow_class> uri_GalaxyWorkflow_class_False_True_None_None =
+      new UriLoader(GalaxyWorkflow_class, false, true, null, null);
   public static Loader<java.util.List<WorkflowStep>> array_of_WorkflowStep =
       new ArrayLoader(WorkflowStep);
   public static Loader<java.util.List<Object>> idmap_steps_array_of_WorkflowStep =
