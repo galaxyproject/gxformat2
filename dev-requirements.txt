@@ -3,7 +3,7 @@ schema-salad[pycodegen]
 # Needs to validate v1.2
 cwltool>=3.0.20200807132242
 
-
+# To check type annotations
 mypy
 
 # For testing
@@ -11,10 +11,8 @@ tox
 pytest
 coverage
 
-# For dev
-sphinx
-sphinx_rtd_theme
-myst-parser
+# To build docs
+-r docs/requirements.txt
 
 # Used to check readme.
 readme
