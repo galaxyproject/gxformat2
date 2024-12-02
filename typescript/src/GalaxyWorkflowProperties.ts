@@ -27,7 +27,7 @@ export interface GalaxyWorkflowProperties extends Internal.ProcessProperties, In
    * The unique identifier for this object.
    */
   id?: undefined | string
-  class_?: string
+  class_?: Internal.GalaxyWorkflow_class
 
   /**
    * A short, human-readable label of this object.

@@ -61,12 +61,12 @@ public class GalaxyWorkflowImpl extends SaveableImpl implements GalaxyWorkflow {
     return this.id;
   }
 
-  private String class_;
+  private GalaxyWorkflow_class class_;
 
   /**
    * Getter for property <I>https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/class</I><br>
    */
-  public String getClass_() {
+  public GalaxyWorkflow_class getClass_() {
     return this.class_;
   }
 
@@ -310,10 +310,10 @@ public class GalaxyWorkflowImpl extends SaveableImpl implements GalaxyWorkflow {
     } else {
       __baseUri = (String) id.orElse(null);
     }
-    String class_;
+    GalaxyWorkflow_class class_;
     try {
       class_ =
-          LoaderInstances.uri_StringInstance_False_True_None_None.loadField(
+          LoaderInstances.uri_GalaxyWorkflow_class_False_True_None_None.loadField(
               __doc.get("class"), __baseUri, __loadingOptions);
     } catch (ValidationException e) {
       class_ = null; // won't be used but prevents compiler from complaining.
@@ -487,7 +487,7 @@ public class GalaxyWorkflowImpl extends SaveableImpl implements GalaxyWorkflow {
     this.inputs = (java.util.List<Object>) inputs;
     this.outputs = (java.util.List<Object>) outputs;
     this.uuid = (java.util.Optional<String>) uuid;
-    this.class_ = (String) class_;
+    this.class_ = (GalaxyWorkflow_class) class_;
     this.steps = (java.util.List<Object>) steps;
     this.report = (java.util.Optional<Report>) report;
     this.tags = (java.util.Optional<java.util.List<String>>) tags;

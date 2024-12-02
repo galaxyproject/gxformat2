@@ -6613,7 +6613,10 @@ union_of_None_type_or_booltype = _UnionLoader(
         booltype,
     )
 )
-uri_strtype_False_True_None_None = _URILoader(strtype, False, True, None, None)
+GalaxyWorkflow_classLoader = _EnumLoader(("GalaxyWorkflow",), "GalaxyWorkflow_class")
+uri_GalaxyWorkflow_classLoader_False_True_None_None = _URILoader(
+    GalaxyWorkflow_classLoader, False, True, None, None
+)
 array_of_WorkflowInputParameterLoader = _ArrayLoader(WorkflowInputParameterLoader)
 idmap_inputs_array_of_WorkflowInputParameterLoader = _IdMapLoader(
     array_of_WorkflowInputParameterLoader, "id", "type"

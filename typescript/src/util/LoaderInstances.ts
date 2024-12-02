@@ -21,6 +21,7 @@ import {
   GalaxyType,
   GalaxyWorkflow,
   GalaxyWorkflowProperties,
+  GalaxyWorkflow_class,
   HasStepErrorsProperties,
   HasStepPositionProperties,
   HasUUIDProperties,
@@ -133,7 +134,8 @@ export const unionOfundefinedtypeOrGalaxyWorkflowLoader = new _UnionLoader([unde
 export const uriunionOfundefinedtypeOrGalaxyWorkflowLoaderFalseFalseNoneNone = new _URILoader(unionOfundefinedtypeOrGalaxyWorkflowLoader, false, false, undefined, undefined);
 export const uriunionOfundefinedtypeOrstrtypeOrarrayOfstrtypeFalseFalse2None = new _URILoader(unionOfundefinedtypeOrstrtypeOrarrayOfstrtype, false, false, 2, undefined);
 export const unionOfundefinedtypeOrbooltype = new _UnionLoader([undefinedtype, booltype]);
-export const uristrtypeFalseTrueNoneNone = new _URILoader(strtype, false, true, undefined, undefined);
+export const GalaxyWorkflow_classLoader = new _EnumLoader((Object.keys(GalaxyWorkflow_class) as Array<keyof typeof GalaxyWorkflow_class>).map(key => GalaxyWorkflow_class[key]));
+export const uriGalaxyWorkflow_classLoaderFalseTrueNoneNone = new _URILoader(GalaxyWorkflow_classLoader, false, true, undefined, undefined);
 export const arrayOfWorkflowInputParameterLoader = new _ArrayLoader([WorkflowInputParameterLoader]);
 export const idmapinputsarrayOfWorkflowInputParameterLoader = new _IdMapLoader(arrayOfWorkflowInputParameterLoader, 'id', 'type');
 export const arrayOfWorkflowOutputParameterLoader = new _ArrayLoader([WorkflowOutputParameterLoader]);
