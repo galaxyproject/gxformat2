@@ -45,3 +45,4 @@ tests/examples
 
 java/target
 java/.idea
+.aider*
