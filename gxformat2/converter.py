@@ -6,7 +6,7 @@ import json
 import os
 import sys
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from ._labels import Labels
 from .model import (
@@ -142,7 +142,7 @@ def _python_to_workflow(as_python, conversion_context):
 
     if isinstance(steps, list):
         append_step_id_to_step_list_elements(steps)
-        steps_as_dict: Dict[str, Any] = {}
+        steps_as_dict: dict[str, Any] = {}
         for i, step in enumerate(steps):
             steps_as_dict[str(i)] = step
             if "label" in step:
@@ -484,8 +484,8 @@ class ConversionContext(BaseConversionContext):
     def __init__(self, galaxy_interface, workflow_directory, import_options: Optional[ImportOptions] = None):
         super().__init__()
         self.import_options = import_options or ImportOptions()
-        self.graph_ids: Dict[str, Any] = {}
-        self.graph_id_subworkflow_conversion_contexts: Dict[str, Any] = {}
+        self.graph_ids: dict[str, Any] = {}
+        self.graph_id_subworkflow_conversion_contexts: dict[str, Any] = {}
         self.workflow_directory = workflow_directory
         self.galaxy_interface = galaxy_interface
 

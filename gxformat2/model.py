@@ -4,8 +4,6 @@ import os
 from typing import (
     Any,
     cast,
-    Dict,
-    List,
     Optional,
     Union,
 )
@@ -14,7 +12,7 @@ from typing_extensions import Literal
 
 log = logging.getLogger(__name__)
 
-DictOrList = Union[Dict, List]
+DictOrList = Union[dict, list]
 ConnectDict = dict
 
 
@@ -42,7 +40,7 @@ STEP_TYPES = [
     "pause",
     "parameter_input",
 ]
-STEP_TYPE_ALIASES: Dict[GxFormat2StepTypeAlias, NativeGalaxyStepType] = {
+STEP_TYPE_ALIASES: dict[GxFormat2StepTypeAlias, NativeGalaxyStepType] = {
     'input': 'data_input',
     'input_collection': 'data_collection_input',
     'parameter': 'parameter_input',
@@ -105,7 +103,7 @@ def pop_connect_from_step_dict(step: dict) -> ConnectDict:
     return connect
 
 
-def setup_connected_values(value, key: str = "", append_to: Optional[Dict[str, list]] = None) -> Any:
+def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, list]] = None) -> Any:
     """Replace links with connected value."""
 
     def append_link(key: str, value: dict):
@@ -129,13 +127,13 @@ def setup_connected_values(value, key: str = "", append_to: Optional[Dict[str, l
         # which should be further validated by Galaxy
         return _connected_value()
     if isinstance(value, dict):
-        new_dict_values: Dict[str, Any] = {}
+        new_dict_values: dict[str, Any] = {}
         for dict_k, dict_v in value.items():
             new_key = _join_prefix(key, dict_k)
             new_dict_values[dict_k] = recurse(dict_v, new_key)
         return new_dict_values
     elif isinstance(value, list):
-        new_list_values: List[Any] = []
+        new_list_values: list[Any] = []
         for i, list_v in enumerate(value):
             # If we are a repeat we need to modify the key
             # but not if values are actually $links.
@@ -235,7 +233,7 @@ def prune_position(step):
     return {k: v for k, v in step.get('position', {}).items() if k in ('left', 'top')}
 
 
-def native_input_to_format2_type(step: dict, tool_state: dict) -> Union[str, List[str]]:
+def native_input_to_format2_type(step: dict, tool_state: dict) -> Union[str, list[str]]:
     """Return a Format2 input type ('type') from a native input step dictionary."""
     module_type = step.get("type")
     if module_type == 'data_collection_input':
@@ -373,7 +371,7 @@ def outputs_as_list(as_python: dict) -> list:
     return outputs
 
 
-def steps_as_list(format2_workflow: dict, add_ids: bool = False, inputs_offset: int = 0, mutate: bool = False) -> List[Dict[str, Any]]:
+def steps_as_list(format2_workflow: dict, add_ids: bool = False, inputs_offset: int = 0, mutate: bool = False) -> list[dict[str, Any]]:
     """Return steps as a list, converting ID map to list representation if needed.
 
     This method does mutate the supplied steps, try to make progress toward not doing this.
@@ -392,7 +390,7 @@ def steps_as_list(format2_workflow: dict, add_ids: bool = False, inputs_offset: 
     return steps
 
 
-def append_step_id_to_step_list_elements(steps: List[Dict[str, Any]], inputs_offset: int = 0) -> None:
+def append_step_id_to_step_list_elements(steps: list[dict[str, Any]], inputs_offset: int = 0) -> None:
     """Ensure a list of steps each contains an 'id' element."""
     assert isinstance(steps, list)
     for i, step in enumerate(steps):

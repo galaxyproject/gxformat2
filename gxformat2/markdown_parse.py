@@ -9,8 +9,6 @@ projects (e.g. gxformat2).
 import re
 from typing import (
     cast,
-    Dict,
-    List,
     Union,
 )
 
@@ -25,8 +23,8 @@ class DynamicArguments:
 
 
 DYNAMIC_ARGUMENTS = DynamicArguments()
-SHARED_ARGUMENTS: List[str] = ["collapse"]
-VALID_ARGUMENTS: Dict[str, Union[List[str], DynamicArguments]] = {
+SHARED_ARGUMENTS: list[str] = ["collapse"]
+VALID_ARGUMENTS: dict[str, Union[list[str], DynamicArguments]] = {
     "history_link": ["history_id"],
     "history_dataset_display": ["input", "output", "history_dataset_id"],
     "history_dataset_embedded": ["input", "output", "history_dataset_id"],
@@ -144,7 +142,7 @@ def validate_galaxy_markdown(galaxy_markdown, internal=True):
                 valid_args_raw = VALID_ARGUMENTS[container]
                 if isinstance(valid_args_raw, DynamicArguments):
                     continue
-                valid_args = cast(List[str], valid_args_raw)
+                valid_args = cast(list[str], valid_args_raw)
 
                 first_arg_call = func_call_match.group("firstargcall")
 

@@ -1,7 +1,7 @@
 # Default tests run with make test and make quick-tests
 NOSE_TESTS?=tests gxformat2
 # Default environment for make tox
-ENV?=py36
+ENV?=py39
 # Extra arguments supplied to tox command
 ARGS?=
 # Location of virtualenv used for development.
