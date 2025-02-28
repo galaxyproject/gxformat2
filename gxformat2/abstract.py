@@ -1,7 +1,7 @@
 """Module for exporting Galaxy workflows to CWL abstract interface."""
 import argparse
 import sys
-from typing import Any, Dict
+from typing import Any
 
 from gxformat2._scripts import ensure_format2
 from gxformat2.converter import steps_as_list
@@ -32,8 +32,8 @@ def from_dict(workflow_dict: dict, subworkflow=False):
     normalized_workflow = NormalizedWorkflow(workflow_dict)
     workflow_dict = normalized_workflow.normalized_workflow_dict
 
-    requirements: Dict[str, Any] = {}
-    abstract_dict: Dict[str, Any] = {
+    requirements: dict[str, Any] = {}
+    abstract_dict: dict[str, Any] = {
         'class': 'Workflow',
     }
     for attr in ('doc', 'label'):

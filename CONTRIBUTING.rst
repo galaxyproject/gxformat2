@@ -102,8 +102,8 @@ Before you submit a pull request, check that it meets these guidelines:
 
 1. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring.
-2. The pull request should work for Python >=3.6. Check CI results on pull
-   request and make sure that the tests pass for all supported Python versions.
+2. The pull request should work for all supported Python versions. Check the CI
+   results on the pull request and make sure that the tests pass.
 
 Tox_
 ~~~~~~~~~~~
@@ -112,14 +112,14 @@ Tox_ is a tool to automate testing across different Python versions. The
 ``tox`` executable can be supplied with a ``-e`` argument to specify a
 testing environment. gxformat2 defines the following environments:
 
-``py37-lint``
-    Lint the gxformat2 code using Python 3.7.
+``lint``
+    Lint the gxformat2 code.
 
-``py37-lint_docstrings``
+``lintdocstrings``
     Lint the project Python docstrings.
 
-``py36-unit``
-    Run the unit tests with Python 3.6.
+``unit``
+    Run the unit tests.
 
 .. _Tox: https://tox.readthedocs.org/en/latest/
 
