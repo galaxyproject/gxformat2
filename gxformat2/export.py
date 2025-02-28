@@ -16,24 +16,25 @@ Convert a native Galaxy workflow description into a Format 2 description.
 """
 
 
-def _copy_common_properties(from_native_step, to_format2_step):
+def _copy_common_properties(from_native_step, to_format2_step, compact=False):
     annotation = from_native_step.get("annotation")
     if annotation:
         to_format2_step["doc"] = annotation
-    for prop in ("position", "when"):
+    props = ("when") if compact else ("position", "when")
+    for prop in props:
         value = from_native_step.get(prop)
         if value:
             to_format2_step[prop] = value
 
 
-def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=False):
+def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=False, compact=False):
     """Convert native .ga workflow definition to a format2 workflow.
 
     This is highly experimental and currently broken.
     """
     data = OrderedDict()
     data['class'] = 'GalaxyWorkflow'
-    _copy_common_properties(native_workflow_dict, data)
+    _copy_common_properties(native_workflow_dict, data, compact=compact)
     if "name" in native_workflow_dict:
         data["label"] = native_workflow_dict.pop("name")
     for top_level_key in ['creator', 'license', 'release', 'tags', 'uuid', 'report']:
@@ -59,9 +60,10 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
 
     # For each step, rebuild the form and encode the state
     for step in native_steps.values():
-        position = prune_position(step)
-        if position:
-            step['position'] = position
+        if not compact:
+            position = prune_position(step)
+            if position:
+                step['position'] = position
         for workflow_output in step.get("workflow_outputs", []):
             source = _to_source(workflow_output, label_map, output_id=step["id"])
             output_id = labels.ensure_new_output_label(workflow_output.get("label"))
@@ -79,7 +81,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
                 if tool_state_key in tool_state:
                     input_dict[tool_state_key] = tool_state[tool_state_key]
 
-            _copy_common_properties(step, input_dict)
+            _copy_common_properties(step, input_dict, compact=compact)
             # If we are only copying property - use the CWL-style short-hand
             if len(input_dict) == 1:
                 inputs[step_id] = input_dict["type"]
@@ -89,7 +91,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         elif module_type == "pause":
             step_dict = OrderedDict()
             optional_props = ['label']
-            _copy_common_properties(step, step_dict)
+            _copy_common_properties(step, step_dict, compact=compact)
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
             step_dict["type"] = "pause"
@@ -98,12 +100,12 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         elif module_type == 'subworkflow':
             step_dict = OrderedDict()
             optional_props = ['label']
-            _copy_common_properties(step, step_dict)
+            _copy_common_properties(step, step_dict, compact=compact)
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
             _convert_post_job_actions(step, step_dict)
             subworkflow_native_dict = step["subworkflow"]
-            subworkflow = from_galaxy_native(subworkflow_native_dict, tool_interface=tool_interface, json_wrapper=False)
+            subworkflow = from_galaxy_native(subworkflow_native_dict, tool_interface=tool_interface, json_wrapper=False, compact=compact)
             step_dict["run"] = subworkflow
             steps.append(step_dict)
 
@@ -112,7 +114,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             optional_props = ['label', 'tool_shed_repository']
             required_props = ['tool_id', 'tool_version']
             _copy_properties(step, step_dict, optional_props, required_props)
-            _copy_common_properties(step, step_dict)
+            _copy_common_properties(step, step_dict, compact=compact)
 
             tool_state = _tool_state(step)
             tool_state.pop("__page__", None)
@@ -270,7 +272,7 @@ def main(argv=None):
     with open(format2_path) as f:
         native_workflow_dict = json.load(f)
 
-    as_dict = from_galaxy_native(native_workflow_dict)
+    as_dict = from_galaxy_native(native_workflow_dict, compact=args.compact)
     with open(output_path, "w") as f:
         ordered_dump(as_dict, f)
 
@@ -281,6 +283,8 @@ def _parser():
                         help='input workflow path (.ga)')
     parser.add_argument('output_path', metavar='OUTPUT', type=str, nargs="?",
                         help='output workflow path (.gxfw.yml)')
+    parser.add_argument('--compact', action="store_true",
+                        help='Generate compact workflow without position information')
     return parser
 
 

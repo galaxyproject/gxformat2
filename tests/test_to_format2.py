@@ -30,9 +30,20 @@ def test_multiple_string_example():
     assert wf["inputs"]["multi-text"]["type"] == ["string"]
 
 
-def _run_example_path(path):
+def test_compact_workflow_example():
+    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    compact_path = _run_example_path(sars_example, compact=True)
+    with open(compact_path) as fh:
+        wf = safe_load(fh)
+    assert "position" not in wf["steps"][0]
+
+
+def _run_example_path(path, compact=False):
     out = _examples_path_for(path)
-    main(argv=[path, out])
+    argv = [path, out]
+    if compact:
+        argv.append("--compact")
+    main(argv=argv)
     return out
 
 
