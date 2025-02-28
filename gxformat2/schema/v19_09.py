@@ -5988,7 +5988,7 @@ class GalaxyWorkflow(Process, HasUUID):
 
             class_ = load_field(
                 _doc.get("class"),
-                uri_strtype_False_True_None_None,
+                uri_GalaxyWorkflow_classLoader_False_True_None_None,
                 baseuri,
                 loadingOptions,
                 lc=_doc.get("class")

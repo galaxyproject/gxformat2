@@ -1,4 +1,4 @@
 bioblend
 pyyaml
-schema-salad <= 8.7.20241010092723
+schema-salad > 8.7.20241010092723
 typing_extensions
