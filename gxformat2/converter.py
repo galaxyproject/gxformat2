@@ -298,7 +298,19 @@ def transform_input(context, step, default_name):
     })
     tool_state = step.get("tool_state", {})
     tool_state["name"] = name
-    for attrib in ["collection_type", "parameter_type", "optional", "default", "format", "restrictions", "restrictOnConnections", "suggestions"]:
+    known_fields = [
+        "collection_type",
+        "parameter_type",
+        "optional",
+        "default",
+        "format",
+        "restrictions",
+        "restrictOnConnections",
+        "suggestions",
+        "column_definitions",
+        "fields"
+    ]
+    for attrib in known_fields:
         if attrib in step:
             tool_state[attrib] = step[attrib]
 
