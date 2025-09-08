@@ -12,7 +12,7 @@ from ._helpers import (
     TEST_PATH,
     to_native,
 )
-from .example_wfs import OPTIONAL_INPUT, WHEN_EXAMPLE
+from .example_wfs import OPTIONAL_INPUT, WHEN_EXAMPLE, PAIRED_LIST_COLLECTION_INPUT
 
 
 def test_import_export():
@@ -312,6 +312,11 @@ def test_optional_inputs():
     as_dict = round_trip(OPTIONAL_INPUT)
     print(as_dict["inputs"])
     assert as_dict["inputs"]["the_input"]["optional"]
+
+
+def test_paired_list_inputs():
+    as_dict = round_trip(PAIRED_LIST_COLLECTION_INPUT)
+    assert as_dict["inputs"]["input_list"]["collection_type"] == "list:paired"
 
 
 def test_input_formats_single():

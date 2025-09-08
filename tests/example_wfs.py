@@ -265,6 +265,25 @@ steps:
 """
 
 
+PAIRED_LIST_COLLECTION_INPUT = """
+class: GalaxyWorkflow
+inputs:
+  input_list:
+    type: data_collection
+    collection_type: list:paired
+outputs:
+  out1:
+    outputSource: random_lines/out_file1
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      input: input_list
+    state:
+      num_lines: 5
+"""
+
+
 WHEN_EXAMPLE = """
 class: GalaxyWorkflow
 inputs:
