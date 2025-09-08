@@ -265,6 +265,52 @@ steps:
 """
 
 
+PAIRED_LIST_COLLECTION_INPUT = """
+class: GalaxyWorkflow
+inputs:
+  input_list:
+    type: data_collection
+    collection_type: list:paired
+outputs:
+  out1:
+    outputSource: random_lines/out_file1
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      input: input_list
+    state:
+      num_lines: 5
+"""
+
+
+SAMPLE_SHEET_COLLECTION_INPUT = """
+class: GalaxyWorkflow
+inputs:
+  input_sample_sheet:
+    type: data_collection
+    collection_type: sample_sheet
+    column_definitions:
+    - type: string
+      restrictions:
+        - treatment
+        - control
+      name: condition
+      default_value: treatment
+      optional: false
+outputs:
+  out1:
+    outputSource: random_lines/out_file1
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      input: input_sample_sheet
+    state:
+      num_lines: 5
+"""
+
+
 WHEN_EXAMPLE = """
 class: GalaxyWorkflow
 inputs:

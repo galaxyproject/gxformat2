@@ -12,7 +12,12 @@ from ._helpers import (
     TEST_PATH,
     to_native,
 )
-from .example_wfs import OPTIONAL_INPUT, WHEN_EXAMPLE
+from .example_wfs import (
+    OPTIONAL_INPUT,
+    PAIRED_LIST_COLLECTION_INPUT,
+    SAMPLE_SHEET_COLLECTION_INPUT,
+    WHEN_EXAMPLE,
+)
 
 
 def test_import_export():
@@ -312,6 +317,20 @@ def test_optional_inputs():
     as_dict = round_trip(OPTIONAL_INPUT)
     print(as_dict["inputs"])
     assert as_dict["inputs"]["the_input"]["optional"]
+
+
+def test_paired_list_inputs():
+    as_dict = round_trip(PAIRED_LIST_COLLECTION_INPUT)
+    assert as_dict["inputs"]["input_list"]["collection_type"] == "list:paired"
+
+
+def test_sample_sheet_inputs():
+    as_dict = round_trip(SAMPLE_SHEET_COLLECTION_INPUT)
+    assert as_dict["inputs"]["input_sample_sheet"]["collection_type"] == "sample_sheet"
+    column_descriptions = as_dict["inputs"]["input_sample_sheet"]["column_definitions"]
+    assert column_descriptions
+    assert len(column_descriptions) == 1
+    assert column_descriptions[0]["name"] == "condition"
 
 
 def test_input_formats_single():
