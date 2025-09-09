@@ -6,6 +6,24 @@ History
 .. to_doc
 
 ---------------------
+0.21.0.dev0
+---------------------
+
+* Fix gxformat2 to .ga conversion if ``hide: true`` specified on output (thanks to
+  `@mvdbeek`_). `Pull Request 106`_
+* Upgrade schema-salad version and auto-generated documents (thanks to
+  `@mvdbeek`_). `Pull Request 107`_
+* GalaxyWorkflow: improve parsing speed & codegen (thanks to `@mr-c`_). `Pull
+  Request 108`_
+* Fix docs building (thanks to `@nsoranzo`_). `Pull Request 109`_
+* Add myst-parser to docs requirements (thanks to `@nsoranzo`_). `Pull Request
+  111`_
+* Rebuild schema, bump up minimum Python version to 3.9 (thanks to
+  `@mvdbeek`_). `Pull Request 113`_
+* Support for sample sheets and records  (thanks to `@jmchilton`_). `Pull
+  Request 114`_
+
+---------------------
 0.20.0 (2024-08-23)
 ---------------------
 * Arrays of workflow input parameters (thanks to `@mvdbeek`_). `Pull Request
@@ -276,6 +294,13 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 106: https://github.com/galaxyproject/gxformat2/pull/106
+.. _Pull Request 107: https://github.com/galaxyproject/gxformat2/pull/107
+.. _Pull Request 108: https://github.com/galaxyproject/gxformat2/pull/108
+.. _Pull Request 109: https://github.com/galaxyproject/gxformat2/pull/109
+.. _Pull Request 111: https://github.com/galaxyproject/gxformat2/pull/111
+.. _Pull Request 113: https://github.com/galaxyproject/gxformat2/pull/113
+.. _Pull Request 114: https://github.com/galaxyproject/gxformat2/pull/114
 .. _Pull Request 100: https://github.com/galaxyproject/gxformat2/pull/100
 .. _Pull Request 97: https://github.com/galaxyproject/gxformat2/pull/97
 .. _Pull Request 99: https://github.com/galaxyproject/gxformat2/pull/99
