@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.21.0.dev0
+0.21.0 (2025-09-19)
 ---------------------
 
 * Fix gxformat2 to .ga conversion if ``hide: true`` specified on output (thanks to
