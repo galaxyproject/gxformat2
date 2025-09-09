@@ -9,7 +9,7 @@ History
 0.21.0.dev0
 ---------------------
 
-* Fix gxformat2 to .ga conversion if hide: true specified on output (thanks to
+* Fix gxformat2 to .ga conversion if ``hide: true`` specified on output (thanks to
   `@mvdbeek`_). `Pull Request 106`_
 * Upgrade schema-salad version and auto-generated documents (thanks to
   `@mvdbeek`_). `Pull Request 107`_
@@ -18,7 +18,7 @@ History
 * Fix docs building (thanks to `@nsoranzo`_). `Pull Request 109`_
 * Add myst-parser to docs requirements (thanks to `@nsoranzo`_). `Pull Request
   111`_
-* Rebuild schema, bump up minimum python version to 3.9 (thanks to
+* Rebuild schema, bump up minimum Python version to 3.9 (thanks to
   `@mvdbeek`_). `Pull Request 113`_
 * Support for sample sheets and records  (thanks to `@jmchilton`_). `Pull
   Request 114`_
