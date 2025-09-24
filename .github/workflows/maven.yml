@@ -18,7 +18,7 @@ jobs:
       run: |
         pytest tests/test_lint.py tests/test_cytoscape.py
     - name: Set up JDK
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v5
       with:
         java-version: 11.0.x
     - name: Run Java maven (mvn) tests for generated workflow examples.
