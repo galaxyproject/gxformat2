@@ -1,16 +1,10 @@
 name: TypeScript Continuous integration tests
 
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+on: [push, pull_request]
 
 concurrency:
   group: build-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-env:
-  NODE_VERSION: 17.x
 
 jobs:
 
@@ -23,7 +17,9 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
-           node-version: ${{ env.NODE_VERSION }}
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: typescript/package-lock.json
       - run: node --version
       - run: npm install
       - run: npm test
