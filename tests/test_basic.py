@@ -16,6 +16,8 @@ from .example_wfs import (
     OPTIONAL_INPUT,
     PAIRED_LIST_COLLECTION_INPUT,
     SAMPLE_SHEET_COLLECTION_INPUT,
+    TRS_URL_SUBWORKFLOW,
+    URL_SUBWORKFLOW,
     WHEN_EXAMPLE,
 )
 
@@ -415,6 +417,97 @@ steps:
         seed_source_selector: set_seed
 """)
     assert as_dict["inputs"]["text_input"]["restrictions"] == ['abc', 'def', 'ghi']
+
+
+def test_url_subworkflow_to_native():
+    """Test that run: <url> produces a native step with content_id."""
+    as_dict_native = to_native(URL_SUBWORKFLOW)
+    assert_valid_native(as_dict_native)
+    steps = as_dict_native["steps"]
+    assert len(steps) == 3  # input + cat + subworkflow
+    subworkflow_step = steps["2"]
+    assert subworkflow_step["type"] == "subworkflow"
+    assert subworkflow_step["content_id"] == "https://example.com/my_subworkflow.gxwf.yml"
+    assert "subworkflow" not in subworkflow_step
+
+
+def test_trs_url_subworkflow_to_native():
+    """Test that run: <trs_url> produces a native step with content_id."""
+    as_dict_native = to_native(TRS_URL_SUBWORKFLOW)
+    assert_valid_native(as_dict_native)
+    steps = as_dict_native["steps"]
+    subworkflow_step = steps["2"]
+    assert subworkflow_step["type"] == "subworkflow"
+    assert "dockstore.org" in subworkflow_step["content_id"]
+    assert "subworkflow" not in subworkflow_step
+
+
+def test_native_url_subworkflow_to_format2():
+    """Test that native steps with content_source/content_id export as run: <url>."""
+    native_workflow = {
+        "a_galaxy_workflow": "true",
+        "format-version": "0.1",
+        "name": "Test URL Export",
+        "steps": {
+            "0": {
+                "id": 0,
+                "type": "data_input",
+                "label": "outer_input",
+                "tool_state": '{"name": "outer_input"}',
+                "input_connections": {},
+                "workflow_outputs": [],
+            },
+            "1": {
+                "id": 1,
+                "type": "subworkflow",
+                "label": "nested_workflow",
+                "content_source": "url",
+                "content_id": "https://example.com/my_subworkflow.gxwf.yml",
+                "tool_state": "{}",
+                "input_connections": {
+                    "inner_input": [{"id": 0, "output_name": "output"}],
+                },
+                "workflow_outputs": [],
+            },
+        },
+    }
+    as_format2 = from_native(native_workflow)
+    assert as_format2["class"] == "GalaxyWorkflow"
+    assert as_format2["steps"]["nested_workflow"]["run"] == "https://example.com/my_subworkflow.gxwf.yml"
+
+
+def test_native_trs_url_subworkflow_to_format2():
+    """Test that native steps with content_source=trs_url export as run: <url>."""
+    trs_url = "https://dockstore.org/api/ga4gh/trs/v2/tools/%23workflow/versions/main/PLAIN-GALAXY/descriptor"
+    native_workflow = {
+        "a_galaxy_workflow": "true",
+        "format-version": "0.1",
+        "name": "Test TRS URL Export",
+        "steps": {
+            "0": {
+                "id": 0,
+                "type": "data_input",
+                "label": "outer_input",
+                "tool_state": '{"name": "outer_input"}',
+                "input_connections": {},
+                "workflow_outputs": [],
+            },
+            "1": {
+                "id": 1,
+                "type": "subworkflow",
+                "label": "nested_workflow",
+                "content_source": "trs_url",
+                "content_id": trs_url,
+                "tool_state": "{}",
+                "input_connections": {
+                    "inner_input": [{"id": 0, "output_name": "output"}],
+                },
+                "workflow_outputs": [],
+            },
+        },
+    }
+    as_format2 = from_native(native_workflow)
+    assert as_format2["steps"]["nested_workflow"]["run"] == trs_url
 
 
 def assert_valid_format2(as_dict_format2):
