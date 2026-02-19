@@ -115,9 +115,14 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
             _convert_post_job_actions(step, step_dict)
-            subworkflow_native_dict = step["subworkflow"]
-            subworkflow = from_galaxy_native(subworkflow_native_dict, tool_interface=tool_interface, json_wrapper=False, compact=compact)
-            step_dict["run"] = subworkflow
+            content_source = step.get("content_source")
+            content_id = step.get("content_id")
+            if content_source in ("url", "trs_url") and content_id:
+                step_dict["run"] = content_id
+            else:
+                subworkflow_native_dict = step["subworkflow"]
+                subworkflow = from_galaxy_native(subworkflow_native_dict, tool_interface=tool_interface, json_wrapper=False, compact=compact)
+                step_dict["run"] = subworkflow
             steps.append(step_dict)
 
         elif module_type == 'tool':

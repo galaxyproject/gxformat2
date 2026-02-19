@@ -364,3 +364,33 @@ inputs:
     type: [string]
 steps: []
 """
+
+URL_SUBWORKFLOW = """
+class: GalaxyWorkflow
+inputs:
+  outer_input: data
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: outer_input
+  nested_workflow:
+    run: https://example.com/my_subworkflow.gxwf.yml
+    in:
+      inner_input: first_cat/out_file1
+"""
+
+TRS_URL_SUBWORKFLOW = """
+class: GalaxyWorkflow
+inputs:
+  outer_input: data
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: outer_input
+  nested_workflow:
+    run: https://dockstore.org/api/ga4gh/trs/v2/tools/%23workflow%2Fgithub.com%2Fexample/versions/main/PLAIN-GALAXY/descriptor
+    in:
+      inner_input: first_cat/out_file1
+"""

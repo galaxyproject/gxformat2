@@ -262,8 +262,12 @@ def run_workflow_to_step(conversion_context, step, run_action):
         )
 
 
+def _is_url(value):
+    return isinstance(value, str) and value.startswith(("http://", "https://", "base64://"))
+
+
 def _is_graph_id_reference(run_action):
-    return run_action and not isinstance(run_action, dict)
+    return run_action and not isinstance(run_action, dict) and not _is_url(run_action)
 
 
 def transform_data_input(context, step):
@@ -475,7 +479,10 @@ class BaseConversionContext:
         return self.subworkflow_conversion_contexts[step_id]
 
     def get_runnable_description(self, run_action):
-        if "@import" in run_action:
+        if _is_url(run_action):
+            return run_action
+
+        if isinstance(run_action, dict) and "@import" in run_action:
             if len(run_action) > 1:
                 raise Exception("@import must be only key if present.")
 
