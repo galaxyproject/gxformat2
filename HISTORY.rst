@@ -6,9 +6,20 @@ History
 .. to_doc
 
 ---------------------
+0.22.0 (2026-02-20)
+---------------------
+* Support URL and TRS URL references in subworkflow run: fields (thanks to
+  `@mvdbeek`_). `Pull Request 130`_
+* Add ``--compact`` flag (thanks to `@mvdbeek`_). `Pull Request 112`_
+* Add support for Python 3.14 (thanks to `@nsoranzo`_). `Pull Request 117`_
+* Drop unmaintained codecov.io dependency (thanks to `@nsoranzo`_). `Pull
+  Request 125`_
+* Enable dependabot version updates for GitHub actions (thanks to
+  `@nsoranzo`_). `Pull Request 116`_
+
+---------------------
 0.21.0 (2025-09-19)
 ---------------------
-
 * Fix gxformat2 to .ga conversion if ``hide: true`` specified on output (thanks to
   `@mvdbeek`_). `Pull Request 106`_
 * Upgrade schema-salad version and auto-generated documents (thanks to
@@ -294,6 +305,11 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 130: https://github.com/galaxyproject/gxformat2/pull/130
+.. _Pull Request 112: https://github.com/galaxyproject/gxformat2/pull/112
+.. _Pull Request 117: https://github.com/galaxyproject/gxformat2/pull/117
+.. _Pull Request 125: https://github.com/galaxyproject/gxformat2/pull/125
+.. _Pull Request 116: https://github.com/galaxyproject/gxformat2/pull/116
 .. _Pull Request 106: https://github.com/galaxyproject/gxformat2/pull/106
 .. _Pull Request 107: https://github.com/galaxyproject/gxformat2/pull/107
 .. _Pull Request 108: https://github.com/galaxyproject/gxformat2/pull/108
