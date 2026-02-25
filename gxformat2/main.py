@@ -1,4 +1,5 @@
 """Module containing :func:`convert_and_import_workflow`."""
+
 import os
 
 from .converter import python_to_workflow, yaml_to_workflow
@@ -46,9 +47,7 @@ def convert_and_import_workflow(has_workflow, **kwds):
     publish = kwds.get("publish", False)
     exact_tools = kwds.get("exact_tools", False)
     fill_defaults = kwds.get("fill_defaults", True)
-    import_kwds = {
-        "fill_defaults": fill_defaults
-    }
+    import_kwds = {"fill_defaults": fill_defaults}
     if publish:
         import_kwds["publish"] = True
     if exact_tools:
@@ -56,6 +55,4 @@ def convert_and_import_workflow(has_workflow, **kwds):
     return galaxy_interface.import_workflow(workflow, **import_kwds)
 
 
-__all__ = (
-    'convert_and_import_workflow',
-)
+__all__ = ("convert_and_import_workflow",)

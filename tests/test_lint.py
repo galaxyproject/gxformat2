@@ -162,7 +162,7 @@ def setup_module(module):
     _dump_with_exit_code(invalid_format2_nested, 2, "format2_nested_no_steps")
 
     invalid_native_nested = _deep_copy(green_native_nested)
-    del invalid_native_nested["steps"]['2']['subworkflow']['steps']
+    del invalid_native_nested["steps"]["2"]["subworkflow"]["steps"]
     _dump_with_exit_code(invalid_native_nested, 2, "native_nested_no_steps")
 
     green_format2_runtime_inputs = ordered_load(RUNTIME_INPUTS)
@@ -172,14 +172,14 @@ def setup_module(module):
 
     green_format2_runtime_inputs = ordered_load(RUNTIME_INPUTS)
     invalid_format2_runtime_inputs_type = _deep_copy(green_format2_runtime_inputs)
-    invalid_format2_runtime_inputs_type['steps']['random']['runtime_inputs'][0] = 5
+    invalid_format2_runtime_inputs_type["steps"]["random"]["runtime_inputs"][0] = 5
     _dump_with_exit_code(invalid_format2_runtime_inputs_type, 2, "format2_runtime_inputs_invalid_type")
 
     green_format2_pja = ordered_load(PJA_1)
     _dump_with_exit_code(green_format2_runtime_inputs, 0, "format2_pja1")
 
     invalid_format2_pja_hide_type = _deep_copy(green_format2_pja)
-    invalid_format2_pja_hide_type['steps']['first_cat']['out']['out_file1']['hide'] = "moocow"
+    invalid_format2_pja_hide_type["steps"]["first_cat"]["out"]["out_file1"]["hide"] = "moocow"
     _dump_with_exit_code(invalid_format2_pja_hide_type, 2, "format2_pja_hide_invalid_type")
 
     green_format2_report = ordered_load(WITH_REPORT)
@@ -246,7 +246,7 @@ def setup_module(module):
     for file_name in os.listdir(TEST_LINT_EXAMPLES):
         if file_name.startswith("0_format2") and "roundtrip" not in file_name:
             roundtrip_contents = round_trip(open(os.path.join(TEST_LINT_EXAMPLES, file_name)).read())
-            base = os.path.splitext(file_name)[0][len("0_"):]
+            base = os.path.splitext(file_name)[0][len("0_") :]
             _dump_with_exit_code(roundtrip_contents, 0, base + "_roundtrip")
 
 

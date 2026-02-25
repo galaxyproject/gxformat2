@@ -1,4 +1,5 @@
 """Test exporting Galaxy workflow to abstract CWL syntax."""
+
 import os
 
 from cwltool.context import (

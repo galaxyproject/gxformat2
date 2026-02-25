@@ -1,4 +1,5 @@
 """Build standalone visualization for Galaxy workflows."""
+
 import argparse
 import json
 import os
@@ -8,7 +9,7 @@ import sys
 from gxformat2.model import ensure_step_position
 from gxformat2.normalize import steps_normalized
 
-CYTOSCAPE_JS_TEMPLATE = os.path.join(os.path.dirname(__file__), 'cytoscape.html')
+CYTOSCAPE_JS_TEMPLATE = os.path.join(os.path.dirname(__file__), "cytoscape.html")
 MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
 SCRIPT_DESCRIPTION = """
 This script converts an executable Galaxy workflow (in either format - Format 2
@@ -32,35 +33,44 @@ def to_cytoscape(workflow_path: str, output_path=None):
     elements = []
     for i, step in enumerate(steps):
         step_id = step.get("id") or step.get("label") or str(i)
-        step_type = step.get("type") or 'tool'
+        step_type = step.get("type") or "tool"
         classes = [f"type_{step_type}"]
-        if step_type in ['tool', 'subworkflow']:
+        if step_type in ["tool", "subworkflow"]:
             classes.append("runnable")
         else:
             classes.append("input")
 
         tool_id = step.get("tool_id")
         if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
-            tool_id = tool_id[len(MAIN_TS_PREFIX):]
+            tool_id = tool_id[len(MAIN_TS_PREFIX) :]
         label = step.get("id") or step.get("label") or (f"tool:{tool_id}" if tool_id else str(i))
         ensure_step_position(step, i)
         node_position = dict(x=int(step["position"]["left"]), y=int(step["position"]["top"]))
         repo_link = None
         if "tool_shed_repository" in step:
             repo = step["tool_shed_repository"]
-            repo_link = "https://" + repo["tool_shed"] + "/view/" + repo["owner"] + "/" + repo["name"] + "/" + repo["changeset_revision"]
+            repo_link = (
+                "https://"
+                + repo["tool_shed"]
+                + "/view/"
+                + repo["owner"]
+                + "/"
+                + repo["name"]
+                + "/"
+                + repo["changeset_revision"]
+            )
         node_data = {
             "id": step_id,
             "label": label,
             "doc": step.get("doc"),
             "tool_id": step.get("tool_id"),
             "step_type": step_type,
-            "repo_link": repo_link
+            "repo_link": repo_link,
         }
         elements.append({"group": "nodes", "data": node_data, "classes": classes, "position": node_position})
         for key, value in (step.get("in") or {}).items():
             # handle lists?
-            if isinstance(value, dict) and 'source' in value:
+            if isinstance(value, dict) and "source" in value:
                 value = value["source"]
             elif isinstance(value, dict):
                 continue
@@ -97,10 +107,8 @@ def main(argv=None):
 
 def _parser():
     parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
-    parser.add_argument('input_path', metavar='INPUT', type=str,
-                        help='input workflow path (.ga/gxwf.yml)')
-    parser.add_argument('output_path', metavar='OUTPUT', type=str, nargs="?",
-                        help='output viz path (.json/.html)')
+    parser.add_argument("input_path", metavar="INPUT", type=str, help="input workflow path (.ga/gxwf.yml)")
+    parser.add_argument("output_path", metavar="OUTPUT", type=str, nargs="?", help="output viz path (.json/.html)")
     return parser
 
 

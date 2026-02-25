@@ -82,10 +82,12 @@ steps:
 """
 
 
-@pytest.mark.parametrize("wf_text", [NESTED_WORKFLOW_AUTO_LABELS_LEGACY_SYNTAX, NESTED_WORKFLOW_AUTO_LABELS_NEWER_SYNTAX])
+@pytest.mark.parametrize(
+    "wf_text", [NESTED_WORKFLOW_AUTO_LABELS_LEGACY_SYNTAX, NESTED_WORKFLOW_AUTO_LABELS_NEWER_SYNTAX]
+)
 def test_round_trip_auto_labels(wf_text):
     result = round_trip(wf_text)
-    inputs = result['steps']['second_cat']['in']
+    inputs = result["steps"]["second_cat"]["in"]
     assert len(inputs) == 2
-    assert inputs['input1']['source'] == 'nested_workflow/1:out_file1'
-    assert inputs['queries_0|input2']['source'] == 'nested_workflow/1:out_file1'
+    assert inputs["input1"]["source"] == "nested_workflow/1:out_file1"
+    assert inputs["queries_0|input2"]["source"] == "nested_workflow/1:out_file1"

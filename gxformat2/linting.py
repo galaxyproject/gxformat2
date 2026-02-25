@@ -2,6 +2,7 @@
 
 Largely derived in large part from galaxy.tool_util.lint.
 """
+
 LEVEL_ALL = "all"
 LEVEL_WARN = "warn"
 LEVEL_ERROR = "error"

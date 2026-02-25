@@ -11,7 +11,7 @@ def test_sars_covid_example():
     converted_path = _run_example_path(sars_example)
     with open(converted_path) as fh:
         wf = safe_load(fh)
-    assert wf['steps'][1]['run']['inputs']['Paired Collection (fastqsanger)']['collection_type'] == 'list:paired'
+    assert wf["steps"][1]["run"]["inputs"]["Paired Collection (fastqsanger)"]["collection_type"] == "list:paired"
 
 
 def test_multi_data_example():

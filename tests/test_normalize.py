@@ -30,9 +30,9 @@ def test_inputs():
     for workflow_dict in _both_formats(RANDOM_LINES_EXAMPLE):
         inputs = Inputs(workflow_dict=workflow_dict)
         assert inputs.is_an_input(0)
-        assert inputs.is_an_input('int_input')
+        assert inputs.is_an_input("int_input")
         assert not inputs.is_an_input(2)
-        assert not inputs.is_an_input('random')
+        assert not inputs.is_an_input("random")
         assert inputs.count == 2
 
 

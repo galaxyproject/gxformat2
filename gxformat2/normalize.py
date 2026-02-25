@@ -1,4 +1,5 @@
 """Abstractions for uniform across formats."""
+
 import copy
 from typing import Union
 
@@ -97,7 +98,7 @@ def inputs_normalized(**kwd):
     steps = steps_normalized(**kwd)
     input_steps = []
     for step in steps:
-        step_type = step.get("type") or 'tool'
+        step_type = step.get("type") or "tool"
         if step_type in NON_INPUT_TYPES:
             continue
 

@@ -4,6 +4,7 @@ The interface is :class:`ImporterGalaxyInterface` and the default
 implementation based on `BioBlend <https://bioblend.readthedocs.io/>`__
 is :class:`BioBlendImporterGalaxyInterface`.
 """
+
 import abc
 
 import bioblend  # type: ignore
@@ -70,10 +71,7 @@ class BioBlendImporterGalaxyInterface:
 
     def import_workflow(self, workflow, **kwds):
         """Import Galaxy workflow using instance :class:`bioblend.GalaxyInstance` object."""
-        return self._user_gi.workflows.import_workflow_json(
-            workflow,
-            **kwds
-        )
+        return self._user_gi.workflows.import_workflow_json(workflow, **kwds)
 
     def import_tool(self, tool_representation):
         """Import Galaxy tool using instance :class:`bioblend.GalaxyInstance` object."""
