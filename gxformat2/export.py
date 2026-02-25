@@ -1,4 +1,5 @@
 """Functionality for converting a standard Galaxy workflow into a format 2 workflow."""
+
 import argparse
 import json
 import sys
@@ -33,11 +34,11 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
     This is highly experimental and currently broken.
     """
     data = OrderedDict()
-    data['class'] = 'GalaxyWorkflow'
+    data["class"] = "GalaxyWorkflow"
     _copy_common_properties(native_workflow_dict, data, compact=compact)
     if "name" in native_workflow_dict:
         data["label"] = native_workflow_dict.pop("name")
-    for top_level_key in ['creator', 'license', 'release', 'tags', 'uuid', 'report']:
+    for top_level_key in ["creator", "license", "release", "tags", "uuid", "report"]:
         value = native_workflow_dict.get(top_level_key)
         if value:
             data[top_level_key] = value
@@ -63,30 +64,30 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         if not compact:
             position = prune_position(step)
             if position:
-                step['position'] = position
+                step["position"] = position
         for workflow_output in step.get("workflow_outputs", []):
             source = _to_source(workflow_output, label_map, output_id=step["id"])
             output_id = labels.ensure_new_output_label(workflow_output.get("label"))
             outputs[output_id] = {"outputSource": source}
 
         module_type = step.get("type")
-        if module_type in ['data_input', 'data_collection_input', 'parameter_input']:
+        if module_type in ["data_input", "data_collection_input", "parameter_input"]:
             # If there's no step label we use the step id as the gxformat2 step id,
             # which then acts as the label. This does change workflows on a round-trip.
             step_id = step["label"] if step["label"] is not None else str(step["id"])
             input_dict = {}
             tool_state = _tool_state(step)
-            input_dict['type'] = native_input_to_format2_type(step, tool_state)
+            input_dict["type"] = native_input_to_format2_type(step, tool_state)
             known_fields = [
-                'collection_type',
-                'optional',
-                'format',
-                'default',
-                'restrictions',
-                'suggestions',
-                'restrictOnConnections',
-                'fields',
-                'column_definitions'
+                "collection_type",
+                "optional",
+                "format",
+                "default",
+                "restrictions",
+                "suggestions",
+                "restrictOnConnections",
+                "fields",
+                "column_definitions",
             ]
             for tool_state_key in known_fields:
                 if tool_state_key in tool_state:
@@ -101,16 +102,16 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
 
         elif module_type == "pause":
             step_dict = OrderedDict()
-            optional_props = ['label']
+            optional_props = ["label"]
             _copy_common_properties(step, step_dict, compact=compact)
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
             step_dict["type"] = "pause"
             steps.append(step_dict)
 
-        elif module_type == 'subworkflow':
+        elif module_type == "subworkflow":
             step_dict = OrderedDict()
-            optional_props = ['label']
+            optional_props = ["label"]
             _copy_common_properties(step, step_dict, compact=compact)
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
@@ -121,21 +122,23 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
                 step_dict["run"] = content_id
             else:
                 subworkflow_native_dict = step["subworkflow"]
-                subworkflow = from_galaxy_native(subworkflow_native_dict, tool_interface=tool_interface, json_wrapper=False, compact=compact)
+                subworkflow = from_galaxy_native(
+                    subworkflow_native_dict, tool_interface=tool_interface, json_wrapper=False, compact=compact
+                )
                 step_dict["run"] = subworkflow
             steps.append(step_dict)
 
-        elif module_type == 'tool':
+        elif module_type == "tool":
             step_dict = OrderedDict()
-            optional_props = ['label', 'tool_shed_repository']
-            required_props = ['tool_id', 'tool_version']
+            optional_props = ["label", "tool_shed_repository"]
+            required_props = ["tool_id", "tool_version"]
             _copy_properties(step, step_dict, optional_props, required_props)
             _copy_common_properties(step, step_dict, compact=compact)
 
             tool_state = _tool_state(step)
             tool_state.pop("__page__", None)
             tool_state.pop("__rerun_remap_job_id__", None)
-            step_dict['tool_state'] = tool_state
+            step_dict["tool_state"] = tool_state
 
             _convert_input_connections(step, step_dict, label_map)
             _convert_post_job_actions(step, step_dict)
@@ -144,28 +147,26 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         else:
             raise NotImplementedError(f"Unhandled module type {module_type}")
 
-    data['inputs'] = inputs
-    data['outputs'] = outputs
+    data["inputs"] = inputs
+    data["outputs"] = outputs
 
     if all_labeled:
         steps_dict = OrderedDict()
         for step in steps:
             label = step.pop("label")
             steps_dict[label] = step
-        data['steps'] = steps_dict
+        data["steps"] = steps_dict
     else:
-        data['steps'] = steps
+        data["steps"] = steps
 
     if json_wrapper:
-        return {
-            "yaml_content": ordered_dump(data)
-        }
+        return {"yaml_content": ordered_dump(data)}
 
     return data
 
 
 def _tool_state(step):
-    tool_state = json.loads(step['tool_state'])
+    tool_state = json.loads(step["tool_state"])
     return tool_state
 
 
@@ -181,7 +182,7 @@ def _copy_properties(from_native_step, to_format2_step, optional_props=None, req
 
 def _convert_input_connections(from_native_step, to_format2_step, label_map):
     in_dict = from_native_step.get("in", {}).copy()
-    input_connections = from_native_step['input_connections']
+    input_connections = from_native_step["input_connections"]
     for input_name, input_defs in input_connections.items():
         if not isinstance(input_defs, list):
             input_defs = [input_defs]
@@ -190,7 +191,7 @@ def _convert_input_connections(from_native_step, to_format2_step, label_map):
             if input_name == "__NO_INPUT_OUTPUT_NAME__":
                 input_name = "$step"
                 assert source.endswith("/__NO_INPUT_OUTPUT_NAME__")
-                source = source[:-len("/__NO_INPUT_OUTPUT_NAME__")]
+                source = source[: -len("/__NO_INPUT_OUTPUT_NAME__")]
             if input_name in in_dict:
                 existing_source = in_dict[input_name]["source"]
                 if not isinstance(existing_source, list):
@@ -198,9 +199,7 @@ def _convert_input_connections(from_native_step, to_format2_step, label_map):
                 existing_source.append(source)
                 in_dict[input_name]["source"] = existing_source
             else:
-                in_dict[input_name] = {
-                    "source": source
-                }
+                in_dict[input_name] = {"source": source}
     to_format2_step["in"] = in_dict
 
 
@@ -240,7 +239,7 @@ def _convert_post_job_actions(from_native_step, to_format2_step):
                 output_dict["delete_intermediate_datasets"] = True
             elif action_type == "ChangeDatatypeAction":
                 output_dict = _ensure_output_def(output_name)
-                output_dict['change_datatype'] = action_args["newtype"]
+                output_dict["change_datatype"] = action_args["newtype"]
                 handled = True
             elif action_type == "TagDatasetAction":
                 output_dict = _ensure_output_def(output_name)
@@ -265,9 +264,9 @@ def _convert_post_job_actions(from_native_step, to_format2_step):
 
 
 def _to_source(has_output_name, label_map, output_id=None):
-    output_id = output_id if output_id is not None else has_output_name['id']
+    output_id = output_id if output_id is not None else has_output_name["id"]
     output_id = str(output_id)
-    output_name = has_output_name['output_name']
+    output_name = has_output_name["output_name"]
     output_label = label_map.get(output_id) or output_id
     if output_name == "output":
         source = output_label
@@ -295,16 +294,13 @@ def main(argv=None):
 
 def _parser():
     parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
-    parser.add_argument('input_path', metavar='INPUT', type=str,
-                        help='input workflow path (.ga)')
-    parser.add_argument('output_path', metavar='OUTPUT', type=str, nargs="?",
-                        help='output workflow path (.gxfw.yml)')
-    parser.add_argument('--compact', action="store_true",
-                        help='Generate compact workflow without position information')
+    parser.add_argument("input_path", metavar="INPUT", type=str, help="input workflow path (.ga)")
+    parser.add_argument("output_path", metavar="OUTPUT", type=str, nargs="?", help="output workflow path (.gxfw.yml)")
+    parser.add_argument("--compact", action="store_true", help="Generate compact workflow without position information")
     return parser
 
 
 __all__ = (
-    'from_galaxy_native',
-    'main',
+    "from_galaxy_native",
+    "main",
 )

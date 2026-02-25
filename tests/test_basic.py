@@ -86,14 +86,14 @@ steps:
     in:
       input1: default_file_input
 """)
-    default_file_input_step = as_dict_native['steps']['0']
-    assert default_file_input_step['in']['default'] == {
-      'default': {
-        'class': 'File',
-        'basename': 'a file',
-        'format': 'txt',
-        'location': 'test.txt',
-      }
+    default_file_input_step = as_dict_native["steps"]["0"]
+    assert default_file_input_step["in"]["default"] == {
+        "default": {
+            "class": "File",
+            "basename": "a file",
+            "format": "txt",
+            "location": "test.txt",
+        }
     }
 
 
@@ -416,7 +416,7 @@ steps:
       seed_source:
         seed_source_selector: set_seed
 """)
-    assert as_dict["inputs"]["text_input"]["restrictions"] == ['abc', 'def', 'ghi']
+    assert as_dict["inputs"]["text_input"]["restrictions"] == ["abc", "def", "ghi"]
 
 
 def test_url_subworkflow_to_native():

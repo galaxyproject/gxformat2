@@ -1,4 +1,5 @@
 """Abstractions for dealing with Format2 data."""
+
 import logging
 import os
 from typing import (
@@ -41,9 +42,9 @@ STEP_TYPES = [
     "parameter_input",
 ]
 STEP_TYPE_ALIASES: dict[GxFormat2StepTypeAlias, NativeGalaxyStepType] = {
-    'input': 'data_input',
-    'input_collection': 'data_collection_input',
-    'parameter': 'parameter_input',
+    "input": "data_input",
+    "input_collection": "data_collection_input",
+    "parameter": "parameter_input",
 }
 
 
@@ -54,7 +55,7 @@ def get_native_step_type(gxformat2_step_dict: dict) -> NativeGalaxyStepType:
     raw_step_type = gxformat2_step_dict.get("type", step_type_default)
     if raw_step_type not in STEP_TYPES and raw_step_type not in STEP_TYPE_ALIASES:
         raise Exception(f"Unknown step type encountered {raw_step_type}")
-    step_type:  NativeGalaxyStepType
+    step_type: NativeGalaxyStepType
     if raw_step_type in STEP_TYPE_ALIASES:
         step_type = STEP_TYPE_ALIASES[cast(GxFormat2StepTypeAlias, raw_step_type)]
     else:
@@ -85,12 +86,12 @@ def pop_connect_from_step_dict(step: dict) -> ConnectDict:
         connection_keys = set()
         for key, value in step_in.items():
             # TODO: this can be a list right?
-            if isinstance(value, dict) and 'source' in value:
+            if isinstance(value, dict) and "source" in value:
                 value = value["source"]
-            elif isinstance(value, dict) and 'default' in value:
+            elif isinstance(value, dict) and "default" in value:
                 continue
             elif isinstance(value, dict):
-                raise KeyError(f'step input must define either source or default {value}')
+                raise KeyError(f"step input must define either source or default {value}")
             connect[key] = [value]
             connection_keys.add(key)
 
@@ -98,7 +99,7 @@ def pop_connect_from_step_dict(step: dict) -> ConnectDict:
             del step_in[key]
 
         if len(step_in) == 0:
-            del step['in']
+            del step["in"]
 
     return connect
 
@@ -222,24 +223,21 @@ def ensure_step_position(step: dict, order_index: int):
     Modifies the input step dictionary.
     """
     if "position" not in step:
-        step["position"] = {
-            "left": 10 * order_index,
-            "top": 10 * order_index
-        }
+        step["position"] = {"left": 10 * order_index, "top": 10 * order_index}
 
 
 def prune_position(step):
     """Keep only ``left`` and ``top`` keys in step position."""
-    return {k: v for k, v in step.get('position', {}).items() if k in ('left', 'top')}
+    return {k: v for k, v in step.get("position", {}).items() if k in ("left", "top")}
 
 
 def native_input_to_format2_type(step: dict, tool_state: dict) -> Union[str, list[str]]:
     """Return a Format2 input type ('type') from a native input step dictionary."""
     module_type = step.get("type")
-    if module_type == 'data_collection_input':
-        format2_type = 'collection'
-    elif module_type == 'data_input':
-        format2_type = 'data'
+    if module_type == "data_collection_input":
+        format2_type = "collection"
+    elif module_type == "data_input":
+        format2_type = "data"
     elif module_type == "parameter_input":
         native_type = cast(str, tool_state.get("parameter_type"))
         format2_type = native_type
@@ -288,10 +286,12 @@ def inputs_as_normalized_steps(workflow_dict):
             step_type = "string"
 
         step_def = input_def
-        step_def.update({
-            "type": step_type,
-            "id": label,
-        })
+        step_def.update(
+            {
+                "type": step_type,
+                "id": label,
+            }
+        )
         new_steps.append(step_def)
 
     return new_steps
@@ -350,15 +350,17 @@ def inputs_as_native_steps(workflow_dict: dict):
             raise Exception(f"Unknown input type [{input_type}] encountered.")
 
         step_def = input_def
-        step_def.update({
-            "type": step_type,
-            "label": label,
-        })
+        step_def.update(
+            {
+                "type": step_type,
+                "label": label,
+            }
+        )
         default = step_def.get("default")
-        if isinstance(default, dict) and default.get('class') == 'File':
+        if isinstance(default, dict) and default.get("class") == "File":
             # First 'default' is input name, hardcoded to default, second 'default'
             # is the actual default for the input name
-            step_def['in'] = {'default': {'default': step_def.pop('default')}}
+            step_def["in"] = {"default": {"default": step_def.pop("default")}}
         new_steps.append(step_def)
 
     return new_steps
@@ -371,7 +373,9 @@ def outputs_as_list(as_python: dict) -> list:
     return outputs
 
 
-def steps_as_list(format2_workflow: dict, add_ids: bool = False, inputs_offset: int = 0, mutate: bool = False) -> list[dict[str, Any]]:
+def steps_as_list(
+    format2_workflow: dict, add_ids: bool = False, inputs_offset: int = 0, mutate: bool = False
+) -> list[dict[str, Any]]:
     """Return steps as a list, converting ID map to list representation if needed.
 
     This method does mutate the supplied steps, try to make progress toward not doing this.

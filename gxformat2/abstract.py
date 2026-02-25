@@ -1,4 +1,5 @@
 """Module for exporting Galaxy workflows to CWL abstract interface."""
+
 import argparse
 import sys
 from typing import Any
@@ -34,9 +35,9 @@ def from_dict(workflow_dict: dict, subworkflow=False):
 
     requirements: dict[str, Any] = {}
     abstract_dict: dict[str, Any] = {
-        'class': 'Workflow',
+        "class": "Workflow",
     }
-    for attr in ('doc', 'label'):
+    for attr in ("doc", "label"):
         value = workflow_dict.get(attr)
         if value:
             abstract_dict[attr] = value
@@ -48,7 +49,9 @@ def from_dict(workflow_dict: dict, subworkflow=False):
     abstract_dict["inputs"] = _format2_inputs_to_abstract(workflow_dict.get("inputs", {}))
     abstract_dict["outputs"] = _format2_outputs_to_abstract(workflow_dict.get("outputs", {}))
     steps = {}
-    for format2_step in steps_as_list(workflow_dict, add_ids=True, inputs_offset=len(abstract_dict["inputs"]), mutate=False):
+    for format2_step in steps_as_list(
+        workflow_dict, add_ids=True, inputs_offset=len(abstract_dict["inputs"]), mutate=False
+    ):
         label = format2_step.get("label") or format2_step.get("id")
         assert label is not None
         label = str(label)
@@ -56,14 +59,14 @@ def from_dict(workflow_dict: dict, subworkflow=False):
 
     abstract_dict["steps"] = steps
     if requirements:
-        abstract_dict['requirements'] = requirements
+        abstract_dict["requirements"] = requirements
     return abstract_dict
 
 
 def _format2_step_to_abstract(format2_step, requirements):
     """Convert Format2 step CWL 1.2+ abstract operation."""
     abstract_step = {}
-    for attr in ('doc', ):
+    for attr in ("doc",):
         value = format2_step.get(attr)
         if value:
             abstract_step[attr] = value
@@ -129,7 +132,7 @@ def _format2_inputs_to_abstract(inputs):
 
         # Strip off Galaxy extensions
         input_def.pop("position", None)
-        input_def.pop('collection_type', None)
+        input_def.pop("collection_type", None)
         abstract_inputs[input_name] = input_def
 
     return abstract_inputs
@@ -181,10 +184,8 @@ def main(argv=None):
 
 def _parser():
     parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
-    parser.add_argument('input_path', metavar='INPUT', type=str,
-                        help='input workflow path (.ga/gxwf.yml)')
-    parser.add_argument('output_path', metavar='OUTPUT', type=str, nargs="?",
-                        help='output workflow path (.cwl)')
+    parser.add_argument("input_path", metavar="INPUT", type=str, help="input workflow path (.ga/gxwf.yml)")
+    parser.add_argument("output_path", metavar="OUTPUT", type=str, nargs="?", help="output workflow path (.cwl)")
     return parser
 
 
@@ -192,4 +193,4 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-__all__ = ('main', 'from_dict')
+__all__ = ("main", "from_dict")

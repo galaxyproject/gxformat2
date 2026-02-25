@@ -1,4 +1,5 @@
 """Workflow linting entry point - main script."""
+
 import argparse
 import os
 import sys
@@ -97,12 +98,13 @@ def lint_format2(lint_context, workflow_dict, path=None):
     """Lint a Format 2 Galaxy workflow and populate the corresponding LintContext."""
     from gxformat2.schema.v19_09 import load_document
     from schema_salad.exceptions import SchemaSaladException  # type: ignore
+
     try:
         load_document("file://" + os.path.abspath(path))
     except SchemaSaladException as e:
         lint_context.error("Validation failed " + str(e))
 
-    steps = ensure_key_if_present(lint_context, workflow_dict, 'steps', default={}, has_class=(dict, list))
+    steps = ensure_key_if_present(lint_context, workflow_dict, "steps", default={}, has_class=(dict, list))
     steps = steps.values() if isinstance(steps, dict) else steps
     for step in steps:
         _lint_step_errors(lint_context, step)
@@ -122,22 +124,24 @@ def _validate_input_types(lint_context: LintContext, workflow_dict: dict):
     for input_def in inputs._inputs:
         input_type = input_def.get("type")
         if "default" in input_def:
-            input_default = input_def['default']
+            input_default = input_def["default"]
             if input_type == "int":
                 if not isinstance(input_default, int):
-                    lint_context.error('Input default is of invalid type')
+                    lint_context.error("Input default is of invalid type")
             elif input_type == "float":
                 if not isinstance(input_default, (int, float)):
-                    lint_context.error('Input default is of invalid type')
+                    lint_context.error("Input default is of invalid type")
             elif input_type == "string":
                 if not isinstance(input_default, str):
-                    lint_context.error('Input default is of invalid type')
+                    lint_context.error("Input default is of invalid type")
 
 
 def _lint_tool_if_present(lint_context, step_dict):
-    tool_id = step_dict.get('tool_id')
-    if tool_id and 'testtoolshed' in tool_id:
-        lint_context.warn('Step references a tool from the test tool shed, this should be replaced with a production tool')
+    tool_id = step_dict.get("tool_id")
+    if tool_id and "testtoolshed" in tool_id:
+        lint_context.warn(
+            "Step references a tool from the test tool shed, this should be replaced with a production tool"
+        )
 
 
 def _validate_report(lint_context, workflow_dict):
@@ -195,11 +199,10 @@ def main(argv=None):
 
 def _parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--training-topic",
-                        required=False,
-                        help='If this is a training workflow, specify a training topic.')
-    parser.add_argument('path', metavar='PATH', type=str,
-                        help='workflow path')
+    parser.add_argument(
+        "--training-topic", required=False, help="If this is a training workflow, specify a training topic."
+    )
+    parser.add_argument("path", metavar="PATH", type=str, help="workflow path")
     return parser
 
 
@@ -207,4 +210,4 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-__all__ = ('main', 'lint_format2', 'lint_ga')
+__all__ = ("main", "lint_format2", "lint_ga")
