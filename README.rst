@@ -55,6 +55,8 @@ Checkout their help for more information.
     $ gxwf-lint --help
     $ gxwf-viz --help
     $ gxwf-abstract-export --help
+    $ gxwf-to-native --help
+    $ gxwf-to-format2 --help
 
 This library and associated scripts are licensed under the MIT License.
 
