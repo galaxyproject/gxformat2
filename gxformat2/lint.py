@@ -3,6 +3,7 @@
 import argparse
 import os
 import sys
+from pathlib import Path
 
 from gxformat2._scripts import ensure_format2
 from gxformat2.linting import LintContext
@@ -99,8 +100,9 @@ def lint_format2(lint_context, workflow_dict, path=None):
     from gxformat2.schema.v19_09 import load_document
     from schema_salad.exceptions import SchemaSaladException  # type: ignore
 
+    file_uri = Path(os.path.abspath(path)).as_uri()
     try:
-        load_document("file://" + os.path.abspath(path))
+        load_document(file_uri)
     except SchemaSaladException as e:
         lint_context.error("Validation failed " + str(e))
 
