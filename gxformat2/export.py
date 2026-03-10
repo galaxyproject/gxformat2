@@ -109,6 +109,21 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             step_dict["type"] = "pause"
             steps.append(step_dict)
 
+        elif module_type == "pick_value":
+            step_dict = OrderedDict()
+            optional_props = ["label"]
+            _copy_common_properties(step, step_dict, compact=compact)
+            _copy_properties(step, step_dict, optional_props=optional_props)
+            _convert_input_connections(step, step_dict, label_map)
+            step_dict["type"] = "pick_value"
+            tool_state = json.loads(step.get("tool_state", "{}"))
+            state = {}
+            if "mode" in tool_state:
+                state["mode"] = tool_state["mode"]
+            if state:
+                step_dict["state"] = state
+            steps.append(step_dict)
+
         elif module_type == "subworkflow":
             step_dict = OrderedDict()
             optional_props = ["label"]
