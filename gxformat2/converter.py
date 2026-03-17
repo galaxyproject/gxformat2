@@ -79,6 +79,7 @@ class ImportOptions:
 
     def __init__(self):
         self.deduplicate_subworkflows = False
+        self.encode_tool_state = True
 
 
 def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory, import_options=None):
@@ -322,7 +323,7 @@ def transform_input(context, step, default_name):
         if attrib in step:
             tool_state[attrib] = step[attrib]
 
-    _populate_tool_state(step, tool_state)
+    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state)
 
 
 def transform_pause(context, step, default_name="Pause for dataset review"):
@@ -350,7 +351,7 @@ def transform_pause(context, step, default_name="Pause for dataset review"):
 
     connect = pop_connect_from_step_dict(step)
     _populate_input_connections(context, step, connect)
-    _populate_tool_state(step, tool_state)
+    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state)
 
 
 def transform_subworkflow(context, step):
@@ -366,7 +367,7 @@ def transform_subworkflow(context, step):
 
     connect = pop_connect_from_step_dict(step)
     _populate_input_connections(context, step, connect)
-    _populate_tool_state(step, tool_state)
+    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state)
 
 
 def _runtime_value():
@@ -398,20 +399,21 @@ def transform_tool(context, step):
     # TODO: handle runtime inputs and state together.
     runtime_inputs = step.get("runtime_inputs", [])
     if "state" in step or runtime_inputs:
+        encode = context.import_options.encode_tool_state
         step_state = step.pop("state", {})
         step_state = setup_connected_values(step_state, append_to=connect)
 
         for key, value in step_state.items():
-            tool_state[key] = json.dumps(value)
+            tool_state[key] = json.dumps(value) if encode else value
         for runtime_input in runtime_inputs:
-            tool_state[runtime_input] = json.dumps(_runtime_value())
+            tool_state[runtime_input] = json.dumps(_runtime_value()) if encode else _runtime_value()
     elif "tool_state" in step:
         tool_state.update(step.get("tool_state"))
 
     # Fill in input connections
     _populate_input_connections(context, step, connect)
 
-    _populate_tool_state(step, tool_state)
+    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state)
 
     # Handle outputs.
     out = step.pop("out", None)
@@ -600,8 +602,8 @@ def _ensure_defaults(in_dict, defaults):
             in_dict[key] = value
 
 
-def _populate_tool_state(step, tool_state):
-    step["tool_state"] = json.dumps(tool_state)
+def _populate_tool_state(step, tool_state, encode=True):
+    step["tool_state"] = json.dumps(tool_state) if encode else tool_state
 
 
 def main(argv=None):

@@ -1,8 +1,9 @@
+import json
 import os
 
 from yaml import safe_load
 
-from gxformat2.export import main
+from gxformat2.export import from_galaxy_native, main
 from ._helpers import TEST_PATH, to_example_path
 
 
@@ -36,6 +37,23 @@ def test_compact_workflow_example():
     with open(compact_path) as fh:
         wf = safe_load(fh)
     assert "position" not in wf["steps"][0]
+
+
+def test_dict_tool_state_export():
+    """Test that from_galaxy_native handles dict-form tool_state (not JSON string)."""
+    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    with open(sars_example) as f:
+        native_wf = json.load(f)
+
+    # Convert all tool_state from JSON strings to dicts
+    for step in native_wf["steps"].values():
+        ts = step.get("tool_state")
+        if ts and isinstance(ts, str):
+            step["tool_state"] = json.loads(ts)
+
+    # Should not raise — export handles both formats
+    result = from_galaxy_native(native_wf)
+    assert "steps" in result
 
 
 def _run_example_path(path, compact=False):
