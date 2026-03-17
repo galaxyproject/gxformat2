@@ -374,6 +374,13 @@ def transform_pick_value(context, step, default_name="Pick Value"):
             "name": name,
         },
     )
+    _ensure_defaults(
+        step,
+        {
+            "post_job_actions": {},
+        },
+    )
+    post_job_actions = step["post_job_actions"]
     tool_state = step.pop("state", {})
     tool_state["name"] = name
 
@@ -384,6 +391,21 @@ def transform_pick_value(context, step, default_name="Pick Value"):
     if num_inputs > 0:
         tool_state["num_inputs"] = max(2, num_inputs)
     _populate_tool_state(step, tool_state)
+
+    # Handle output post job actions (same pattern as tool steps)
+    out = step.pop("out", None)
+    if out is None:
+        out = step.pop("outputs", [])
+    out = convert_dict_to_id_list_if_needed(out)
+    for output in out:
+        output_name = output["id"]
+        for action_key, action_dict in POST_JOB_ACTIONS.items():
+            action_argument = output.get(action_key, action_dict["default"])
+            if action_argument:
+                action_class = action_dict["action_class"]
+                action_name = action_class + output_name
+                action = _action(action_class, output_name, arguments=action_dict["arguments"](action_argument))
+                post_job_actions[action_name] = action
 
 
 def transform_subworkflow(context, step):

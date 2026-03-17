@@ -115,6 +115,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             _copy_common_properties(step, step_dict, compact=compact)
             _copy_properties(step, step_dict, optional_props=optional_props)
             _convert_input_connections(step, step_dict, label_map)
+            _convert_post_job_actions(step, step_dict)
             step_dict["type"] = "pick_value"
             tool_state = json.loads(step.get("tool_state", "{}"))
             state = {}
