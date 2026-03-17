@@ -20,6 +20,7 @@ from .model import (
     setup_connected_values,
     steps_as_list,
     SUPPORT_LEGACY_CONNECTIONS,
+    unflatten_comment_data,
 )
 from .yaml import ordered_load
 
@@ -183,6 +184,8 @@ def _python_to_workflow(as_python, conversion_context):
         step["type"] = step_type
         eval(f"transform_{step_type}")(conversion_context, step)
 
+    _convert_comments_to_native(as_python, conversion_context)
+
     outputs = as_python.pop("outputs", [])
     outputs = convert_dict_to_id_list_if_needed(outputs)
 
@@ -211,6 +214,55 @@ def _python_to_workflow(as_python, conversion_context):
         step["workflow_outputs"].append(workflow_output)
 
     return as_python
+
+
+def _convert_comments_to_native(as_python, conversion_context):
+    """Convert Format2 comments section to native format in-place."""
+    format2_comments = as_python.pop("comments", None)
+    if format2_comments is None:
+        return
+
+    if isinstance(format2_comments, dict):
+        comments_list = []
+        for label, comment in format2_comments.items():
+            comment = comment.copy()
+            comment["label"] = label
+            comments_list.append(comment)
+        format2_comments = comments_list
+    elif isinstance(format2_comments, list):
+        format2_comments = [c.copy() for c in format2_comments]
+
+    comment_label_map: dict[str, int] = {}
+    for i, comment in enumerate(format2_comments):
+        label = comment.get("label")
+        if label:
+            comment_label_map[label] = i
+
+    native_comments = []
+    for i, comment in enumerate(format2_comments):
+        native_comment = unflatten_comment_data(comment)
+        native_comment["id"] = i
+
+        if "child_steps" in native_comment:
+            native_comment["child_steps"] = [
+                conversion_context.step_id(ref) if isinstance(ref, str) else ref
+                for ref in native_comment["child_steps"]
+            ]
+
+        if "child_comments" in native_comment:
+            resolved = []
+            for ref in native_comment["child_comments"]:
+                if isinstance(ref, str):
+                    if ref not in comment_label_map:
+                        raise Exception(f"contains_comments references unknown comment label '{ref}'")
+                    resolved.append(comment_label_map[ref])
+                else:
+                    resolved.append(ref)
+            native_comment["child_comments"] = resolved
+
+        native_comments.append(native_comment)
+
+    as_python["comments"] = native_comments
 
 
 def _preprocess_graphs(as_python, conversion_context):

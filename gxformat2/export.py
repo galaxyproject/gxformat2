@@ -7,6 +7,7 @@ from collections import OrderedDict
 
 from ._labels import Labels
 from .model import (
+    flatten_comment_data,
     native_input_to_format2_type,
     prune_position,
 )
@@ -159,10 +160,57 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
     else:
         data["steps"] = steps
 
+    _convert_comments_to_format2(native_workflow_dict, data, label_map, compact)
+
     if json_wrapper:
         return {"yaml_content": ordered_dump(data)}
 
     return data
+
+
+def _convert_comments_to_format2(native_workflow_dict, data, label_map, compact):
+    """Convert native comments to Format2 representation and add to data dict."""
+    native_comments = native_workflow_dict.get("comments", [])
+    if not native_comments:
+        return
+
+    comment_label_map = {}
+    all_comments_labeled = True
+    for i, native_comment in enumerate(native_comments):
+        comment_label = native_comment.get("label")
+        if comment_label:
+            comment_label_map[i] = comment_label
+        else:
+            all_comments_labeled = False
+
+    format2_comments = []
+    for native_comment in native_comments:
+        fmt2_comment = flatten_comment_data(native_comment)
+
+        if compact:
+            fmt2_comment.pop("position", None)
+            fmt2_comment.pop("size", None)
+
+        if fmt2_comment.get("type") == "frame":
+            if "contains_steps" in fmt2_comment:
+                fmt2_comment["contains_steps"] = [
+                    label_map.get(str(idx)) or idx for idx in fmt2_comment["contains_steps"]
+                ]
+            if "contains_comments" in fmt2_comment:
+                fmt2_comment["contains_comments"] = [
+                    comment_label_map.get(idx, idx) for idx in fmt2_comment["contains_comments"]
+                ]
+
+        format2_comments.append(fmt2_comment)
+
+    if all_comments_labeled:
+        comments_dict = OrderedDict()
+        for comment in format2_comments:
+            label = comment.pop("label")
+            comments_dict[label] = comment
+        data["comments"] = comments_dict
+    else:
+        data["comments"] = format2_comments
 
 
 def _tool_state(step):
