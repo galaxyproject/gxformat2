@@ -396,6 +396,103 @@ def steps_as_list(
     return steps
 
 
+# Mapping from native comment data.* field names to Format2 top-level field names.
+# Key = native data field name, Value = format2 field name.
+COMMENT_DATA_FIELDS: dict[str, dict[str, str]] = {
+    "text": {"text": "text", "bold": "bold", "italic": "italic", "size": "text_size"},
+    "markdown": {"text": "text"},
+    "frame": {"title": "title"},
+    "freehand": {"thickness": "thickness", "line": "line"},
+}
+
+# Fields common to all comment types (preserved as-is, minus 'id' and 'data').
+COMMENT_COMMON_FIELDS = ("type", "position", "size", "color")
+
+
+def _tuples_to_lists(value):
+    """Recursively convert tuples to lists for YAML serialization.
+
+    Galaxy's Pydantic models use tuples for position/size/line coordinates,
+    but YAML's OrderedDumper can't serialize tuples.
+    """
+    if isinstance(value, tuple):
+        return [_tuples_to_lists(v) for v in value]
+    if isinstance(value, list):
+        return [_tuples_to_lists(v) for v in value]
+    return value
+
+
+def flatten_comment_data(native_comment: dict) -> dict:
+    """Convert a native comment dict to Format2 representation.
+
+    Hoists type-specific fields from nested ``data`` dict to top level.
+    Renames ``child_steps`` -> ``contains_steps`` and ``child_comments`` -> ``contains_comments``.
+    Drops the ``id`` field (order_index).
+    """
+    comment_type = native_comment["type"]
+    result: dict = {}
+
+    # Copy common fields
+    for field in COMMENT_COMMON_FIELDS:
+        if field in native_comment:
+            result[field] = _tuples_to_lists(native_comment[field])
+
+    # Preserve label if present
+    if "label" in native_comment:
+        result["label"] = native_comment["label"]
+
+    # Flatten data fields (convert tuples to lists for YAML serialization)
+    data = native_comment.get("data", {})
+    field_map = COMMENT_DATA_FIELDS.get(comment_type, {})
+    for native_name, format2_name in field_map.items():
+        if native_name in data:
+            result[format2_name] = _tuples_to_lists(data[native_name])
+
+    # Rename frame containment fields
+    if "child_steps" in native_comment:
+        result["contains_steps"] = native_comment["child_steps"]
+    if "child_comments" in native_comment:
+        result["contains_comments"] = native_comment["child_comments"]
+
+    return result
+
+
+def unflatten_comment_data(format2_comment: dict) -> dict:
+    """Convert a Format2 comment dict to native representation.
+
+    Collects type-specific top-level fields back into a nested ``data`` dict.
+    Renames ``contains_steps`` -> ``child_steps`` and ``contains_comments`` -> ``child_comments``.
+    """
+    comment_type = format2_comment["type"]
+    result: dict = {}
+
+    # Copy common fields
+    for field in COMMENT_COMMON_FIELDS:
+        if field in format2_comment:
+            result[field] = format2_comment[field]
+
+    # Preserve label if present
+    if "label" in format2_comment:
+        result["label"] = format2_comment["label"]
+
+    # Build data dict from flattened fields
+    data: dict = {}
+    field_map = COMMENT_DATA_FIELDS.get(comment_type, {})
+    # Invert: format2_name -> native_name
+    for native_name, format2_name in field_map.items():
+        if format2_name in format2_comment:
+            data[native_name] = format2_comment[format2_name]
+    result["data"] = data
+
+    # Rename frame containment fields back
+    if "contains_steps" in format2_comment:
+        result["child_steps"] = format2_comment["contains_steps"]
+    if "contains_comments" in format2_comment:
+        result["child_comments"] = format2_comment["contains_comments"]
+
+    return result
+
+
 def append_step_id_to_step_list_elements(steps: list[dict[str, Any]], inputs_offset: int = 0) -> None:
     """Ensure a list of steps each contains an 'id' element."""
     assert isinstance(steps, list)

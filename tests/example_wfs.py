@@ -394,3 +394,114 @@ steps:
     in:
       inner_input: first_cat/out_file1
 """
+
+WORKFLOW_WITH_COMMENTS_LIST = """
+class: GalaxyWorkflow
+inputs:
+  the_input: data
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: the_input
+comments:
+  - type: text
+    position: [100, 200]
+    size: [200, 50]
+    color: blue
+    text: "Check adapters"
+    text_size: 2
+    bold: true
+
+  - type: markdown
+    position: [300, 50]
+    size: [400, 300]
+    text: |
+      # Preprocessing Pipeline
+      Quality filtering and adapter trimming.
+
+  - type: freehand
+    position: [200, 300]
+    size: [100, 80]
+    color: red
+    thickness: 3
+    line: [[210, 310], [220, 330], [250, 360]]
+"""
+
+WORKFLOW_WITH_COMMENTS_DICT = """
+class: GalaxyWorkflow
+inputs:
+  the_input: data
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: the_input
+comments:
+  adapter_warning:
+    type: text
+    position: [100, 200]
+    size: [200, 50]
+    color: blue
+    text: "Check adapters"
+    text_size: 2
+    bold: true
+
+  preprocessing_docs:
+    type: markdown
+    position: [300, 50]
+    size: [400, 300]
+    text: |
+      # Preprocessing Pipeline
+      Quality filtering and adapter trimming.
+
+  preprocessing:
+    type: frame
+    position: [50, 50]
+    size: [600, 400]
+    color: green
+    title: Preprocessing
+    contains_steps:
+      - cat
+    contains_comments:
+      - adapter_warning
+      - preprocessing_docs
+"""
+
+WORKFLOW_WITH_FRAME_MIXED_REFS = """
+class: GalaxyWorkflow
+inputs:
+  the_input: data
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: the_input
+comments:
+  - label: my_note
+    type: text
+    position: [100, 200]
+    size: [200, 50]
+    color: none
+    text: "A note"
+    text_size: 1
+
+  - type: text
+    position: [150, 250]
+    size: [200, 50]
+    color: none
+    text: "Unlabeled note"
+    text_size: 1
+
+  - label: my_frame
+    type: frame
+    position: [50, 50]
+    size: [600, 400]
+    color: none
+    title: My Frame
+    contains_steps:
+      - cat
+    contains_comments:
+      - my_note
+      - 1
+"""
