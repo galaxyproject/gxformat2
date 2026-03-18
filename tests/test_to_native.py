@@ -2,11 +2,11 @@ import json
 import os
 
 from gxformat2._scripts import ensure_format2_from_path
-from gxformat2.converter import main
+from gxformat2.converter import ImportOptions, main, python_to_workflow
 from gxformat2.lint import lint_ga_path
 from gxformat2.linting import LintContext
-from gxformat2.yaml import ordered_dump
-from ._helpers import TEST_PATH, to_example_path
+from gxformat2.yaml import ordered_dump, ordered_load
+from ._helpers import MockGalaxyInterface, TEST_PATH, to_example_path
 from .example_wfs import (
     BASIC_WORKFLOW,
     INT_INPUT,
@@ -76,6 +76,40 @@ def test_multiple_string():
     tool_state = json.loads(multi_text_step["tool_state"])
     assert tool_state["parameter_type"] == "text"
     assert tool_state["multiple"]
+
+
+def test_unencoded_tool_state():
+    """Test that encode_tool_state=False produces dict tool_state instead of JSON string."""
+    import_options = ImportOptions()
+    import_options.encode_tool_state = False
+    format2_path = to_example_path("unencoded_basic", EXAMPLES_DIR_NAME, "gxwf.yml")
+    with open(format2_path, "w") as f:
+        f.write(BASIC_WORKFLOW)
+    with open(format2_path) as f:
+        as_python = ordered_load(f)
+    as_native = python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+
+    for step in as_native["steps"].values():
+        tool_state = step.get("tool_state")
+        if tool_state is not None:
+            assert isinstance(tool_state, dict), f"Expected dict tool_state, got {type(tool_state)}"
+
+
+def test_unencoded_int_input():
+    """Test that encode_tool_state=False preserves parameter values as dicts."""
+    import_options = ImportOptions()
+    import_options.encode_tool_state = False
+    format2_path = to_example_path("unencoded_int", EXAMPLES_DIR_NAME, "gxwf.yml")
+    with open(format2_path, "w") as f:
+        f.write(INT_INPUT)
+    with open(format2_path) as f:
+        as_python = ordered_load(f)
+    as_native = python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+
+    int_step = as_native["steps"]["1"]
+    tool_state = int_step["tool_state"]
+    assert isinstance(tool_state, dict)
+    assert tool_state["parameter_type"] == "integer"
 
 
 def _run_example_path(path):

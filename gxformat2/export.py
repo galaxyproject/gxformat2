@@ -166,7 +166,9 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
 
 
 def _tool_state(step):
-    tool_state = json.loads(step["tool_state"])
+    tool_state = step["tool_state"]
+    if isinstance(tool_state, str):
+        tool_state = json.loads(tool_state)
     return tool_state
 
 
