@@ -6,10 +6,22 @@ History
 .. to_doc
 
 ---------------------
-0.23.0.dev0
+0.23.0 (2026-03-18)
 ---------------------
+* Implement bidirectional workflow comment conversion (thanks to
+  `@jmchilton`_). `Pull Request 137`_
+* Support unencoded tool_state in native workflows (thanks to
+  `@jmchilton`_). `Pull Request 138`_
+* Add pick_value as valid step type with PJA support (thanks to
+  `@jmchilton`_). `Pull Request 136`_
+* Fix URI generation on Windows when linting (thanks to
+  `@loichuder`_). `Pull Request 134`_
+* Add to-native and to-format2 commands to README (thanks to
+  `@loichuder`_). `Pull Request 133`_
+* Lint code with black and ruff (thanks to `@nsoranzo`_). `Pull
+  Request 131`_
 
-    
+
 
 ---------------------
 0.22.0 (2026-02-20)
@@ -311,6 +323,12 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 137: https://github.com/galaxyproject/gxformat2/pull/137
+.. _Pull Request 138: https://github.com/galaxyproject/gxformat2/pull/138
+.. _Pull Request 136: https://github.com/galaxyproject/gxformat2/pull/136
+.. _Pull Request 134: https://github.com/galaxyproject/gxformat2/pull/134
+.. _Pull Request 133: https://github.com/galaxyproject/gxformat2/pull/133
+.. _Pull Request 131: https://github.com/galaxyproject/gxformat2/pull/131
 .. _Pull Request 130: https://github.com/galaxyproject/gxformat2/pull/130
 .. _Pull Request 112: https://github.com/galaxyproject/gxformat2/pull/112
 .. _Pull Request 117: https://github.com/galaxyproject/gxformat2/pull/117
@@ -336,3 +354,5 @@ History
 .. _@mr-c: https://github.com/mr-c
 .. _@nsoranzo: https://github.com/nsoranzo
 .. _@jmchilton: https://github.com/jmchilton
+.. _@loichuder: https://github.com/loichuder
+.. _@simleo: https://github.com/simleo

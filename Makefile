@@ -44,8 +44,18 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 setup-venv: ## setup a development virutalenv in current directory
-	if [ ! -d $(VENV) ]; then virtualenv $(VENV); exit; fi;
-	$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt
+	if [ ! -d $(VENV) ]; then \
+		if command -v uv > /dev/null 2>&1; then \
+			uv venv $(VENV); \
+		else \
+			virtualenv $(VENV); \
+		fi; \
+	fi
+	if command -v uv > /dev/null 2>&1; then \
+		$(IN_VENV) uv pip install -r requirements.txt && uv pip install -r dev-requirements.txt; \
+	else \
+		$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt; \
+	fi
 
 setup-git-hook-lint: ## setup precommit hook for linting project
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint .git/hooks/pre-commit
