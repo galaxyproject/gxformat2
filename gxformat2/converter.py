@@ -354,6 +354,61 @@ def transform_pause(context, step, default_name="Pause for dataset review"):
     _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state)
 
 
+def transform_pick_value(context, step, default_name="Pick Value"):
+    default_name = step.get("label", default_name)
+    _populate_annotation(step)
+
+    _ensure_inputs_connections(step)
+
+    if "inputs" not in step:
+        step["inputs"] = [{}]
+
+    step_inputs = step["inputs"][0]
+    if "name" in step_inputs:
+        name = step_inputs["name"]
+    else:
+        name = default_name
+
+    _ensure_defaults(
+        step_inputs,
+        {
+            "name": name,
+        },
+    )
+    _ensure_defaults(
+        step,
+        {
+            "post_job_actions": {},
+        },
+    )
+    post_job_actions = step["post_job_actions"]
+    tool_state = step.pop("state", {})
+    tool_state["name"] = name
+
+    connect = pop_connect_from_step_dict(step)
+    _populate_input_connections(context, step, connect)
+    # Set num_inputs from actual connection count so frontend shows correct terminal count
+    num_inputs = len(step.get("input_connections", {}))
+    if num_inputs > 0:
+        tool_state["num_inputs"] = max(2, num_inputs)
+    _populate_tool_state(step, tool_state)
+
+    # Handle output post job actions (same pattern as tool steps)
+    out = step.pop("out", None)
+    if out is None:
+        out = step.pop("outputs", [])
+    out = convert_dict_to_id_list_if_needed(out)
+    for output in out:
+        output_name = output["id"]
+        for action_key, action_dict in POST_JOB_ACTIONS.items():
+            action_argument = output.get(action_key, action_dict["default"])
+            if action_argument:
+                action_class = action_dict["action_class"]
+                action_name = action_class + output_name
+                action = _action(action_class, output_name, arguments=action_dict["arguments"](action_argument))
+                post_job_actions[action_name] = action
+
+
 def transform_subworkflow(context, step):
     if "when" in step and "source" in step["when"]:
         step_id, output_name = context.step_output(step["when"]["source"])

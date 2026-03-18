@@ -23,6 +23,7 @@ NativeGalaxyStepType = Literal[
     "data_collection_input",
     "tool",
     "pause",
+    "pick_value",
     "parameter_input",
 ]
 GxFormat2StepTypeAlias = Literal[
@@ -39,6 +40,7 @@ STEP_TYPES = [
     "data_collection_input",
     "tool",
     "pause",
+    "pick_value",
     "parameter_input",
 ]
 STEP_TYPE_ALIASES: dict[GxFormat2StepTypeAlias, NativeGalaxyStepType] = {
