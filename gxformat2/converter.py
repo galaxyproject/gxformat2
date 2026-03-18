@@ -222,15 +222,7 @@ def _convert_comments_to_native(as_python, conversion_context):
     if format2_comments is None:
         return
 
-    if isinstance(format2_comments, dict):
-        comments_list = []
-        for label, comment in format2_comments.items():
-            comment = comment.copy()
-            comment["label"] = label
-            comments_list.append(comment)
-        format2_comments = comments_list
-    elif isinstance(format2_comments, list):
-        format2_comments = [c.copy() for c in format2_comments]
+    format2_comments = convert_dict_to_id_list_if_needed(format2_comments, add_label=True)
 
     comment_label_map: dict[str, int] = {}
     for i, comment in enumerate(format2_comments):
