@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # Modify version...
 import os
+import os.path
 import re
 import subprocess
 import sys
@@ -49,7 +50,16 @@ def main(argv):
     else:
         mod = re.sub(f"dev{dev_version}", f"dev{new_dev_version}", mod, 1)
     mod = open(mod_path, "w").write(mod)
-    shell(["git", "commit", "-m", f"Starting work on {new_version}", "HISTORY.rst", f"{source_dir}/__init__.py"])
+    shell(
+        [
+            "git",
+            "commit",
+            "-m",
+            f"Starting work on {new_version}",
+            "HISTORY.rst",
+            os.path.join(source_dir, "__init__.py"),
+        ]
+    )
 
 
 def shell(cmds, **kwds):

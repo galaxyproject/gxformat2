@@ -1,5 +1,6 @@
 import ast
 import os
+import os.path
 import re
 import sys
 
@@ -10,12 +11,14 @@ source_dir = sys.argv[1]
 
 _version_re = re.compile(r"__version__\s+=\s+(.*)")
 
-with open(f"{source_dir}/__init__.py", "rb") as f:
-    version = str(ast.literal_eval(_version_re.search(f.read().decode("utf-8")).group(1)))
+with open(os.path.join(source_dir, "__init__.py")) as f:
+    version_match = _version_re.search(f.read())
+assert version_match
+version = ast.literal_eval(version_match.group(1))
 
 if not DEV_RELEASE:
+    version_obj = Version(version)
     # Strip .devN
-    v = Version(version)
-    print(f"{v.major}.{v.minor}.{v.micro}")
+    print(version_obj.base_version)
 else:
     print(version)

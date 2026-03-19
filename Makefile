@@ -48,13 +48,13 @@ setup-venv: ## setup a development virutalenv in current directory
 		if command -v uv > /dev/null 2>&1; then \
 			uv venv $(VENV); \
 		else \
-			virtualenv $(VENV); \
+			python3 -m venv $(VENV); \
 		fi; \
 	fi
 	if command -v uv > /dev/null 2>&1; then \
-		$(IN_VENV) uv pip install setuptools wheel && uv pip install -r requirements.txt && uv pip install -r dev-requirements.txt; \
+		$(IN_VENV) uv pip install -r requirements.txt && uv pip install -r dev-requirements.txt; \
 	else \
-		$(IN_VENV) pip install setuptools wheel && pip install -r requirements.txt && pip install -r dev-requirements.txt; \
+		$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt; \
 	fi
 
 setup-git-hook-lint: ## setup precommit hook for linting project
@@ -69,9 +69,6 @@ flake8: ## check style using flake8 for current Python (faster than lint)
 lint: ## check style using tox and flake8 for Python 2 and Python 3
 	$(IN_VENV) tox -e py36-lint && tox -e py39-lint
 
-lint-readme: ## check README formatting for PyPI
-	$(IN_VENV) python setup.py check -r -s
-
 lint-docs: ready-docs
 	$(IN_VENV) $(MAKE) -C $(DOCS_DIR) clean
 	$(IN_VENV) $(MAKE) -C $(DOCS_DIR) html 2>&1 | python $(BUILD_SCRIPTS_DIR)/lint_sphinx_output.py
@@ -83,7 +80,7 @@ tox: ## run tests with tox in the specified ENV
 	$(IN_VENV) tox -e $(ENV) -- $(ARGS)
 
 coverage: ## check code coverage quickly with the default Python
-	coverage run --source $(SOURCE_DIR) setup.py $(TEST_DIR)
+	coverage run --source $(SOURCE_DIR) -m pytest $(TEST_DIR)
 	coverage report -m
 	coverage html
 	open htmlcov/index.html || xdg-open htmlcov/index.html
@@ -109,7 +106,8 @@ open-project: ## open project on github
 	open $(PROJECT_URL) || xdg-open $(PROJECT_URL)
 
 dist: clean ## package
-	$(IN_VENV) python setup.py sdist bdist_wheel
+	$(IN_VENV) python -m build
+	$(IN_VENV) twine check dist/*
 	ls -l dist
 
 release-test-artifacts: dist

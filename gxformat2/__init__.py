@@ -3,11 +3,7 @@
 __version__ = "0.24.0.dev0"
 
 PROJECT_NAME = "gxformat2"
-PROJECT_OWNER = PROJECT_USERAME = "galaxyproject"
-PROJECT_AUTHOR = "Galaxy Project and Community"
-PROJECT_EMAIL = "jmchilton@gmail.com"
-PROJECT_URL = "https://github.com/galaxyproject/gxformat2"
-
+PROJECT_OWNER = "galaxyproject"
 
 from .converter import ImportOptions, python_to_workflow  # NOQA
 from .export import from_galaxy_native  # NOQA
