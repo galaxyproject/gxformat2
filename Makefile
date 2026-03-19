@@ -52,9 +52,9 @@ setup-venv: ## setup a development virutalenv in current directory
 		fi; \
 	fi
 	if command -v uv > /dev/null 2>&1; then \
-		$(IN_VENV) uv pip install -r requirements.txt && uv pip install -r dev-requirements.txt; \
+		$(IN_VENV) uv pip install setuptools wheel && uv pip install -r requirements.txt && uv pip install -r dev-requirements.txt; \
 	else \
-		$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt; \
+		$(IN_VENV) pip install setuptools wheel && pip install -r requirements.txt && pip install -r dev-requirements.txt; \
 	fi
 
 setup-git-hook-lint: ## setup precommit hook for linting project

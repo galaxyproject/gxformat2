@@ -4,10 +4,7 @@ import ast
 import os
 import re
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+from setuptools import setup
 
 SOURCE_DIR = "gxformat2"
 
