@@ -23,7 +23,7 @@ def main(argv):
         open(history_path, "w").write(history)
 
         mod = open(mod_path).read()
-        mod = re.sub(r"__version__ = '[\d\.]*\.dev0'", f"__version__ = '{version}'", mod)
+        mod = re.sub(r'__version__ = "[\d\.]*\.dev0"', f'__version__ = "{version}"', mod)
         mod = open(mod_path, "w").write(mod)
     shell(["git", "commit", "-m", f"Version {version}", "HISTORY.rst", f"{source_dir}/__init__.py"])
     shell(["git", "tag", version])

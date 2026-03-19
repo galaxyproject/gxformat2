@@ -45,7 +45,7 @@ def main(argv):
     mod_path = os.path.join(PROJECT_DIRECTORY, source_dir, "__init__.py")
     mod = open(mod_path).read()
     if not DEV_RELEASE:
-        mod = re.sub(r"__version__ = '[\d\.]+'", f"__version__ = '{new_version}.dev0'", mod, 1)
+        mod = re.sub(r'__version__ = "[\d\.]+"', f'__version__ = "{new_version}.dev0"', mod, 1)
     else:
         mod = re.sub(f"dev{dev_version}", f"dev{new_dev_version}", mod, 1)
     mod = open(mod_path, "w").write(mod)
