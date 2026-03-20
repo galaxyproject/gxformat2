@@ -2,8 +2,10 @@
 
 import argparse
 import json
+import logging
 import sys
 from collections import OrderedDict
+from typing import Any, Callable, Dict, Optional
 
 from ._labels import Labels, UNLABELED_INPUT_PREFIX, UNLABELED_STEP_PREFIX
 from .model import (
@@ -12,6 +14,15 @@ from .model import (
     prune_position,
 )
 from .yaml import ordered_dump
+
+log = logging.getLogger(__name__)
+
+ConvertToolStateFn = Optional[Callable[[dict], Optional[Dict[str, Any]]]]
+"""Callback to convert a native tool step's tool_state to format2 state.
+
+Accepts a native step dict (with tool_id, tool_version, tool_state).
+Returns a format2 state dict, or None to fall back to default tool_state passthrough.
+"""
 
 SCRIPT_DESCRIPTION = """
 Convert a native Galaxy workflow description into a Format 2 description.
@@ -29,12 +40,26 @@ def _copy_common_properties(from_native_step, to_format2_step, compact=False):
             to_format2_step[prop] = value
 
 
-def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=False, compact=False):
+def from_galaxy_native(
+    native_workflow_dict,
+    tool_interface=None,
+    json_wrapper=False,
+    compact=False,
+    convert_tool_state: ConvertToolStateFn = None,
+):
     """Convert native .ga workflow definition to a format2 workflow.
 
     This is highly experimental and currently broken.
+
+    If ``convert_tool_state`` is provided it should be a callable accepting a
+    native step dict and returning an optional dict representing the format2
+    ``state`` for that step.  When the callable returns a dict, the step will
+    carry ``state`` instead of ``tool_state``; when it returns ``None`` the
+    default ``tool_state`` passthrough is used.  This allows schema-aware
+    consumers to inject tool-definition-aware value conversion without
+    gxformat2 needing to know about tool definitions.
     """
-    data = OrderedDict()
+    data: OrderedDict[str, Any] = OrderedDict()
     data["class"] = "GalaxyWorkflow"
     _copy_common_properties(native_workflow_dict, data, compact=compact)
     if "name" in native_workflow_dict:
@@ -59,9 +84,10 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         else:
             label_map[str(key)] = label
 
-    inputs = OrderedDict()
-    outputs = OrderedDict()
-    steps = []
+    inputs: OrderedDict[str, Any] = OrderedDict()
+    outputs: OrderedDict[str, Any] = OrderedDict()
+    steps: list[OrderedDict[str, Any]] = []
+    step_dict: OrderedDict[str, Any]
 
     labels = Labels()
 
@@ -143,7 +169,11 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             else:
                 subworkflow_native_dict = step["subworkflow"]
                 subworkflow = from_galaxy_native(
-                    subworkflow_native_dict, tool_interface=tool_interface, json_wrapper=False, compact=compact
+                    subworkflow_native_dict,
+                    tool_interface=tool_interface,
+                    json_wrapper=False,
+                    compact=compact,
+                    convert_tool_state=convert_tool_state,
                 )
                 step_dict["run"] = subworkflow
             steps.append(step_dict)
@@ -155,10 +185,24 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
             _copy_properties(step, step_dict, optional_props, required_props)
             _copy_common_properties(step, step_dict, compact=compact)
 
-            tool_state = _tool_state(step)
-            tool_state.pop("__page__", None)
-            tool_state.pop("__rerun_remap_job_id__", None)
-            step_dict["tool_state"] = tool_state
+            converted_state = None
+            if convert_tool_state is not None:
+                try:
+                    converted_state = convert_tool_state(step)
+                except Exception:
+                    log.warning(
+                        "convert_tool_state callback failed for %s, falling back to default",
+                        step.get("tool_id"),
+                        exc_info=True,
+                    )
+
+            if converted_state is not None:
+                step_dict["state"] = converted_state
+            else:
+                tool_state = _tool_state(step)
+                tool_state.pop("__page__", None)
+                tool_state.pop("__rerun_remap_job_id__", None)
+                step_dict["tool_state"] = tool_state
 
             _convert_input_connections(step, step_dict, label_map)
             _convert_post_job_actions(step, step_dict)

@@ -102,6 +102,196 @@ def test_unlabeled_input_connections_round_trip():
         assert input_conn["id"] == 0
 
 
+def test_convert_tool_state_callback_called():
+    """Test that convert_tool_state callback is called for tool steps on export."""
+    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    with open(sars_example) as f:
+        native_wf = json.load(f)
+
+    called_tool_ids = []
+
+    def _callback(native_step):
+        called_tool_ids.append(native_step.get("tool_id"))
+        return {"custom_key": "custom_value"}
+
+    result = from_galaxy_native(native_wf, convert_tool_state=_callback)
+
+    # Callback should have been called for each tool step
+    assert len(called_tool_ids) > 0
+    # Tool steps should have "state" not "tool_state"
+    for step in _tool_steps(result):
+        assert "state" in step
+        assert "tool_state" not in step
+        assert step["state"] == {"custom_key": "custom_value"}
+
+
+def test_convert_tool_state_callback_none_fallback():
+    """Test that returning None from callback falls back to default tool_state."""
+    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    with open(sars_example) as f:
+        native_wf = json.load(f)
+
+    def _callback(native_step):
+        return None
+
+    result = from_galaxy_native(native_wf, convert_tool_state=_callback)
+
+    # All tool steps should have tool_state (default path)
+    for step in _tool_steps(result):
+        assert "tool_state" in step
+        assert "state" not in step
+
+
+def test_convert_tool_state_callback_exception_fallback():
+    """Test that callback exceptions fall back to default tool_state."""
+    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    with open(sars_example) as f:
+        native_wf = json.load(f)
+
+    def _callback(native_step):
+        raise ValueError("conversion failed")
+
+    result = from_galaxy_native(native_wf, convert_tool_state=_callback)
+
+    # All tool steps should have tool_state (fallback on exception)
+    for step in _tool_steps(result):
+        assert "tool_state" in step
+        assert "state" not in step
+
+
+def test_convert_tool_state_callback_selective():
+    """Test that callback can convert some steps and fall back on others."""
+    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    with open(sars_example) as f:
+        native_wf = json.load(f)
+
+    target_tool_id = "__MERGE_COLLECTION__"
+
+    def _callback(native_step):
+        if native_step.get("tool_id") == target_tool_id:
+            return {"converted": True}
+        return None
+
+    result = from_galaxy_native(native_wf, convert_tool_state=_callback)
+
+    tool_steps = list(_tool_steps(result))
+    converted_count = 0
+    fallback_count = 0
+    for step in tool_steps:
+        if step.get("state") == {"converted": True}:
+            converted_count += 1
+            assert "tool_state" not in step
+        else:
+            fallback_count += 1
+            assert "tool_state" in step
+            assert "state" not in step
+    assert converted_count >= 1
+    assert fallback_count >= 1
+
+
+def test_convert_tool_state_connections_always_present():
+    """Test that _convert_input_connections runs regardless of callback."""
+    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    with open(sars_example) as f:
+        native_wf = json.load(f)
+
+    def _callback(native_step):
+        return {"converted": True}
+
+    result = from_galaxy_native(native_wf, convert_tool_state=_callback)
+
+    # Tool steps with connections should still have "in" populated by _convert_input_connections
+    has_connections = False
+    for step in _tool_steps(result):
+        if step.get("in"):
+            has_connections = True
+            break
+    assert has_connections, "Expected at least one tool step with input connections"
+
+
+def test_convert_tool_state_no_callback_default_unchanged():
+    """Test that omitting convert_tool_state preserves original behavior."""
+    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    with open(sars_example) as f:
+        native_wf = json.load(f)
+
+    result_default = from_galaxy_native(copy.deepcopy(native_wf))
+    result_none = from_galaxy_native(copy.deepcopy(native_wf), convert_tool_state=None)
+
+    # Should be identical
+    assert json.dumps(result_default, sort_keys=True) == json.dumps(result_none, sort_keys=True)
+
+
+def test_convert_tool_state_subworkflow_recursion():
+    """Test that convert_tool_state callback is passed through to subworkflows."""
+    from gxformat2.yaml import ordered_load
+    from gxformat2.converter import python_to_workflow
+
+    nested_f2 = """
+class: GalaxyWorkflow
+inputs:
+  outer_input: data
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: outer_input
+  nested_workflow:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner_input: data
+      steps:
+        inner_cat:
+          tool_id: cat1
+          in:
+            input1: inner_input
+    in:
+      inner_input: first_cat/out_file1
+"""
+    # Build a native workflow with a subworkflow
+    f2 = ordered_load(nested_f2)
+    native_wf = python_to_workflow(f2, MockGalaxyInterface(), None)
+
+    called_tool_ids = []
+
+    def _callback(native_step):
+        called_tool_ids.append(native_step.get("tool_id"))
+        return {"from_callback": True}
+
+    result = from_galaxy_native(native_wf, convert_tool_state=_callback)
+
+    # Should have been called for outer tool AND inner subworkflow tool
+    assert len(called_tool_ids) == 2
+    assert all(tid == "cat1" for tid in called_tool_ids)
+
+    # Check inner subworkflow step also got state from callback
+    subworkflow_step = None
+    for step in result.get("steps", {}).values() if isinstance(result.get("steps"), dict) else result.get("steps", []):
+        if isinstance(step.get("run"), dict):
+            subworkflow_step = step
+            break
+    assert subworkflow_step is not None
+    inner_steps = subworkflow_step["run"].get("steps", {})
+    if isinstance(inner_steps, dict):
+        inner_tool = list(inner_steps.values())[0]
+    else:
+        inner_tool = inner_steps[0]
+    assert inner_tool.get("state") == {"from_callback": True}
+
+
+def _tool_steps(format2_wf):
+    """Yield tool steps from a format2 workflow (handles both dict and list steps)."""
+    steps = format2_wf.get("steps", {})
+    if isinstance(steps, dict):
+        step_list = steps.values()
+    else:
+        step_list = steps
+    for step in step_list:
+        if step.get("tool_id"):
+            yield step
+
+
 def _run_example_path(path, compact=False):
     out = _examples_path_for(path)
     argv = [path, out]

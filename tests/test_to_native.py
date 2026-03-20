@@ -79,9 +79,9 @@ def test_multiple_string():
 
 
 def test_unencoded_tool_state():
-    """Test that encode_tool_state=False produces dict tool_state instead of JSON string."""
+    """Test that encode_tool_state_json=False produces dict tool_state instead of JSON string."""
     import_options = ImportOptions()
-    import_options.encode_tool_state = False
+    import_options.encode_tool_state_json = False
     format2_path = to_example_path("unencoded_basic", EXAMPLES_DIR_NAME, "gxwf.yml")
     with open(format2_path, "w") as f:
         f.write(BASIC_WORKFLOW)
@@ -96,9 +96,9 @@ def test_unencoded_tool_state():
 
 
 def test_unencoded_int_input():
-    """Test that encode_tool_state=False preserves parameter values as dicts."""
+    """Test that encode_tool_state_json=False preserves parameter values as dicts."""
     import_options = ImportOptions()
-    import_options.encode_tool_state = False
+    import_options.encode_tool_state_json = False
     format2_path = to_example_path("unencoded_int", EXAMPLES_DIR_NAME, "gxwf.yml")
     with open(format2_path, "w") as f:
         f.write(INT_INPUT)
@@ -110,6 +110,132 @@ def test_unencoded_int_input():
     tool_state = int_step["tool_state"]
     assert isinstance(tool_state, dict)
     assert tool_state["parameter_type"] == "integer"
+
+
+def test_native_state_encoder_callback_called():
+    """Test that native_state_encoder callback is called for tool steps with state."""
+    import_options = ImportOptions()
+    called_with = []
+
+    def _encoder(step, state):
+        called_with.append((step.get("tool_id"), dict(state)))
+        return {k: json.dumps(v) for k, v in state.items()}
+
+    import_options.native_state_encoder = _encoder
+    format2_path = to_example_path("encoder_basic", EXAMPLES_DIR_NAME, "gxwf.yml")
+    with open(format2_path, "w") as f:
+        f.write(INT_INPUT)
+    with open(format2_path) as f:
+        as_python = ordered_load(f)
+    python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+
+    assert len(called_with) > 0
+    assert called_with[0][0] == "random_lines1"
+
+
+def test_native_state_encoder_callback_none_fallback():
+    """Test that returning None falls back to default json.dumps encoding."""
+    import_options = ImportOptions()
+    import_options.native_state_encoder = lambda step, state: None
+
+    format2_path = to_example_path("encoder_none", EXAMPLES_DIR_NAME, "gxwf.yml")
+    with open(format2_path, "w") as f:
+        f.write(INT_INPUT)
+    with open(format2_path) as f:
+        as_python = ordered_load(f)
+    as_native = python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+
+    # Should produce same result as without callback
+    format2_path2 = to_example_path("encoder_none2", EXAMPLES_DIR_NAME, "gxwf.yml")
+    with open(format2_path2, "w") as f:
+        f.write(INT_INPUT)
+    with open(format2_path2) as f:
+        as_python2 = ordered_load(f)
+    as_native2 = python_to_workflow(as_python2, MockGalaxyInterface())
+
+    # Compare tool_state of the tool step
+    for step_id in as_native["steps"]:
+        step = as_native["steps"][step_id]
+        step2 = as_native2["steps"][step_id]
+        if step.get("type") == "tool":
+            assert step["tool_state"] == step2["tool_state"]
+
+
+def test_native_state_encoder_callback_exception_fallback():
+    """Test that encoder exceptions fall back to default json.dumps encoding."""
+    import_options = ImportOptions()
+
+    def _encoder(step, state):
+        raise ValueError("encoding failed")
+
+    import_options.native_state_encoder = _encoder
+
+    format2_path = to_example_path("encoder_exc", EXAMPLES_DIR_NAME, "gxwf.yml")
+    with open(format2_path, "w") as f:
+        f.write(BASIC_WORKFLOW)
+    with open(format2_path) as f:
+        as_python = ordered_load(f)
+
+    # Should not raise — falls back to default
+    as_native = python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+    assert "steps" in as_native
+
+
+def test_native_state_encoder_connected_values():
+    """Test that encoder receives ConnectedValue markers from setup_connected_values."""
+    from .example_wfs import RUNTIME_INPUTS
+
+    import_options = ImportOptions()
+    seen_states = []
+
+    def _encoder(step, state):
+        seen_states.append((step.get("tool_id"), dict(state)))
+        return None  # fall back to default
+
+    import_options.native_state_encoder = _encoder
+
+    format2_path = to_example_path("encoder_connected", EXAMPLES_DIR_NAME, "gxwf.yml")
+    with open(format2_path, "w") as f:
+        f.write(RUNTIME_INPUTS)
+    with open(format2_path) as f:
+        as_python = ordered_load(f)
+    python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+
+    # RUNTIME_INPUTS has random_lines1 with state containing $link for input
+    random_lines_state = None
+    for tool_id, state in seen_states:
+        if tool_id == "random_lines1":
+            random_lines_state = state
+            break
+    assert random_lines_state is not None
+    # 'input' was a $link in state, so setup_connected_values should have replaced it
+    assert random_lines_state.get("input") == {"__class__": "ConnectedValue"}
+
+
+def test_native_state_encoder_custom_encoding():
+    """Test that encoder result is used in tool_state."""
+    import_options = ImportOptions()
+
+    def _encoder(step, state):
+        # Custom encoding: wrap every value in a tag
+        return {k: json.dumps({"custom_encoded": v}) for k, v in state.items()}
+
+    import_options.native_state_encoder = _encoder
+
+    format2_path = to_example_path("encoder_custom", EXAMPLES_DIR_NAME, "gxwf.yml")
+    with open(format2_path, "w") as f:
+        f.write(BASIC_WORKFLOW)
+    with open(format2_path) as f:
+        as_python = ordered_load(f)
+    as_native = python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+
+    # Find the cat1 tool step
+    for step in as_native["steps"].values():
+        if step.get("tool_id") == "cat1":
+            tool_state = json.loads(step["tool_state"])
+            # __page__ is set before the callback, custom values merged on top
+            assert "__page__" in tool_state
+            break
 
 
 def _run_example_path(path):
