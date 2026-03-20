@@ -12,7 +12,6 @@ from schema_salad.exceptions import SchemaSaladException
 
 from gxformat2.schema.v19_09 import load_document
 from gxformat2.yaml import ordered_dump, ordered_load
-
 from .example_wfs import (
     BASIC_WORKFLOW,
     RUNTIME_INPUTS,
