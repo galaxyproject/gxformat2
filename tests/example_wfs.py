@@ -468,6 +468,52 @@ comments:
       - preprocessing_docs
 """
 
+SLASH_IN_INPUT_LABEL = """
+class: GalaxyWorkflow
+inputs:
+  Host/Contaminant Genome: data
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: Host/Contaminant Genome
+"""
+
+SLASH_IN_STEP_LABEL_EXPLICIT_OUTPUT = """
+class: GalaxyWorkflow
+inputs:
+  the_input: data
+outputs:
+  the_output:
+    outputSource: Host/Contaminant Filter/out_file1
+steps:
+  Host/Contaminant Filter:
+    tool_id: cat1
+    in:
+      input1: the_input
+"""
+
+SLASH_IN_LABEL_CHAINED = """
+class: GalaxyWorkflow
+inputs:
+  Host/Contaminant Genome: data
+outputs:
+  the_output:
+    outputSource: second_cat/out_file1
+steps:
+  Host/Contaminant Filter:
+    tool_id: cat1
+    in:
+      input1: Host/Contaminant Genome
+  second_cat:
+    tool_id: cat1
+    in:
+      input1: Host/Contaminant Filter/out_file1
+"""
+
 WORKFLOW_WITH_FRAME_MIXED_REFS = """
 class: GalaxyWorkflow
 inputs:

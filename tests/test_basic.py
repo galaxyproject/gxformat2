@@ -16,6 +16,9 @@ from .example_wfs import (
     OPTIONAL_INPUT,
     PAIRED_LIST_COLLECTION_INPUT,
     SAMPLE_SHEET_COLLECTION_INPUT,
+    SLASH_IN_INPUT_LABEL,
+    SLASH_IN_LABEL_CHAINED,
+    SLASH_IN_STEP_LABEL_EXPLICIT_OUTPUT,
     TRS_URL_SUBWORKFLOW,
     URL_SUBWORKFLOW,
     WHEN_EXAMPLE,
@@ -508,6 +511,50 @@ def test_native_trs_url_subworkflow_to_format2():
     }
     as_format2 = from_native(native_workflow)
     assert as_format2["steps"]["nested_workflow"]["run"] == trs_url
+
+
+def test_slash_in_input_label():
+    """Input label containing '/' should round-trip without error."""
+    as_native = to_native(SLASH_IN_INPUT_LABEL)
+    assert_valid_native(as_native)
+    # Input step should be connected to the cat step
+    cat_step = as_native["steps"]["1"]
+    conn = cat_step["input_connections"]["input1"]
+    assert conn[0]["id"] == 0
+
+
+def test_slash_in_step_label_explicit_output():
+    """Step label containing '/' with explicit output should round-trip."""
+    as_native = to_native(SLASH_IN_STEP_LABEL_EXPLICIT_OUTPUT)
+    assert_valid_native(as_native)
+    steps = as_native["steps"]
+    assert len(steps) == 2
+
+
+def test_slash_in_label_chained():
+    """Both input and step labels with '/' and chained connections."""
+    as_native = to_native(SLASH_IN_LABEL_CHAINED)
+    assert_valid_native(as_native)
+    steps = as_native["steps"]
+    assert len(steps) == 3
+    # second_cat connects to Host/Contaminant Filter's out_file1
+    second_cat = steps["2"]
+    conn = second_cat["input_connections"]["input1"]
+    assert conn[0]["id"] == 1
+    assert conn[0]["output_name"] == "out_file1"
+
+
+def test_slash_in_input_label_round_trip():
+    """Full round-trip: input label with '/' survives native→format2."""
+    as_dict = round_trip(SLASH_IN_INPUT_LABEL)
+    assert "Host/Contaminant Genome" in str(as_dict["inputs"])
+
+
+def test_slash_in_label_chained_round_trip():
+    """Full round-trip: chained steps with '/' in labels."""
+    as_dict = round_trip(SLASH_IN_LABEL_CHAINED)
+    assert "Host/Contaminant Filter" in str(as_dict["steps"])
+    assert "Host/Contaminant Genome" in str(as_dict["inputs"])
 
 
 def assert_valid_format2(as_dict_format2):

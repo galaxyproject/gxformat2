@@ -6,7 +6,7 @@ import os
 import string
 import sys
 
-from gxformat2.model import ensure_step_position
+from gxformat2.model import ensure_step_position, resolve_source_reference
 from gxformat2.normalize import steps_normalized
 
 CYTOSCAPE_JS_TEMPLATE = os.path.join(os.path.dirname(__file__), "cytoscape.html")
@@ -30,6 +30,7 @@ def to_cytoscape(workflow_path: str, output_path=None):
         output_path += ".html"
 
     steps = steps_normalized(workflow_path=workflow_path)
+    known_labels = {str(s.get("id") or s.get("label") or i) for i, s in enumerate(steps)}
     elements = []
     for i, step in enumerate(steps):
         step_id = step.get("id") or step.get("label") or str(i)
@@ -74,10 +75,9 @@ def to_cytoscape(workflow_path: str, output_path=None):
                 value = value["source"]
             elif isinstance(value, dict):
                 continue
-            if "/" in value:
-                from_step, output = value.split("/", 1)
-            else:
-                from_step, output = value, None
+            from_step, output = resolve_source_reference(value, known_labels)
+            if output == "output":
+                output = None
             edge_id = f"{step_id}__to__{from_step}"
             edge_data = {"id": edge_id, "source": from_step, "target": step_id, "input": key, "output": output}
             elements.append({"group": "edges", "data": edge_data})
