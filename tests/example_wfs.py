@@ -399,6 +399,9 @@ WORKFLOW_WITH_COMMENTS_LIST = """
 class: GalaxyWorkflow
 inputs:
   the_input: data
+outputs:
+  the_output:
+    outputSource: cat/out_file1
 steps:
   cat:
     tool_id: cat1
@@ -432,6 +435,9 @@ WORKFLOW_WITH_COMMENTS_DICT = """
 class: GalaxyWorkflow
 inputs:
   the_input: data
+outputs:
+  the_output:
+    outputSource: cat/out_file1
 steps:
   cat:
     tool_id: cat1
@@ -472,6 +478,9 @@ WORKFLOW_WITH_FRAME_MIXED_REFS = """
 class: GalaxyWorkflow
 inputs:
   the_input: data
+outputs:
+  the_output:
+    outputSource: cat/out_file1
 steps:
   cat:
     tool_id: cat1
