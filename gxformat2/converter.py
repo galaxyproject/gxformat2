@@ -155,6 +155,8 @@ def _python_to_workflow(as_python, conversion_context):
             if "label" in step:
                 label = step["label"]
                 conversion_context.labels[label] = i
+                if Labels.is_unlabeled_input(label):
+                    step["label"] = None
 
             # TODO: this really should be optional in Galaxy API.
             ensure_step_position(step, i)

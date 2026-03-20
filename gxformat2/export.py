@@ -52,7 +52,10 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         label = step.get("label")
         if not label:
             all_labeled = False
-        label_map[str(key)] = label
+        if label is None and step.get("type") in ("data_input", "data_collection_input", "parameter_input"):
+            label_map[str(key)] = f"_unlabeled_input_{step['id']}"
+        else:
+            label_map[str(key)] = label
 
     inputs = OrderedDict()
     outputs = OrderedDict()
@@ -73,9 +76,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
 
         module_type = step.get("type")
         if module_type in ["data_input", "data_collection_input", "parameter_input"]:
-            # If there's no step label we use the step id as the gxformat2 step id,
-            # which then acts as the label. This does change workflows on a round-trip.
-            step_id = step["label"] if step["label"] is not None else str(step["id"])
+            step_id = step["label"] if step["label"] is not None else f"_unlabeled_input_{step['id']}"
             input_dict = {}
             tool_state = _tool_state(step)
             input_dict["type"] = native_input_to_format2_type(step, tool_state)
