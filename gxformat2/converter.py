@@ -17,6 +17,7 @@ from .model import (
     get_native_step_type,
     inputs_as_native_steps,
     pop_connect_from_step_dict,
+    resolve_source_reference,
     setup_connected_values,
     steps_as_list,
     SUPPORT_LEGACY_CONNECTIONS,
@@ -556,11 +557,8 @@ class BaseConversionContext:
         return int(id_)
 
     def step_output(self, value):
-        value_parts = str(value).split("/")
-        if len(value_parts) == 1:
-            value_parts.append("output")
-        id = self.step_id(value_parts[0])
-        return id, value_parts[1]
+        label_or_id, output_name = resolve_source_reference(str(value), self.labels)
+        return self.step_id(label_or_id), output_name
 
     def get_subworkflow_conversion_context(self, step):
         # TODO: sometimes this method takes format2 steps and some times converted native ones

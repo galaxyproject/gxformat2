@@ -152,6 +152,23 @@ def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, l
         return value
 
 
+def resolve_source_reference(value: str, known_labels: Union[set, dict]) -> tuple:
+    """Parse a source reference into (step_label_or_id, output_name).
+
+    Tries matching known labels first to handle labels containing '/'.
+    Falls back to split on '/' for numeric step IDs or unknown labels.
+    """
+    for label in sorted(known_labels, key=len, reverse=True):
+        if value == label:
+            return label, "output"
+        if value.startswith(label + "/"):
+            return label, value[len(label) + 1:]
+    if "/" in value:
+        parts = value.split("/", 1)
+        return parts[0], parts[1]
+    return value, "output"
+
+
 def clean_connection(value: str) -> str:
     """Convert legacy style connection targets with modern CWL-style ones."""
     if value and "#" in value and SUPPORT_LEGACY_CONNECTIONS:

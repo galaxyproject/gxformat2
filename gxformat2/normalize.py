@@ -10,6 +10,7 @@ from gxformat2.converter import (
 from gxformat2.model import (
     inputs_as_normalized_steps,
     outputs_as_list,
+    resolve_source_reference,
 )
 from gxformat2.yaml import ordered_load
 
@@ -127,6 +128,30 @@ def walk_id_list_or_dict(dict_or_list: Union[dict, list]):
             yield item
 
 
+def _collect_known_labels(workflow_dict: dict) -> set:
+    """Build a set of all step and input labels from a workflow dict."""
+    known_labels: set = set()
+    inputs = workflow_dict.get("inputs", {})
+    if isinstance(inputs, dict):
+        for key in inputs:
+            known_labels.add(str(key))
+    else:
+        for item in inputs:
+            label = item.get("label") or item.get("id")
+            if label is not None:
+                known_labels.add(str(label))
+    steps = workflow_dict.get("steps", {})
+    if isinstance(steps, dict):
+        for key in steps:
+            known_labels.add(str(key))
+    else:
+        for item in steps:
+            label = item.get("label") or item.get("id")
+            if label is not None:
+                known_labels.add(str(label))
+    return known_labels
+
+
 def _replace_anonymous_output_references(workflow_dict: dict):
     """Replace anonymous output referneces in a Format 2 representation.
 
@@ -135,6 +160,7 @@ def _replace_anonymous_output_references(workflow_dict: dict):
     and exporting to other formats that would benefit from or require an
     output label (e.g. abstract CWL).
     """
+    known_labels = _collect_known_labels(workflow_dict)
     runs_by_label = {}
     for step in steps_as_list(workflow_dict, add_ids=True, inputs_offset=len(workflow_dict["inputs"]), mutate=False):
         label = step.get("label")
@@ -149,7 +175,7 @@ def _replace_anonymous_output_references(workflow_dict: dict):
         if "outputSource" in output:
             output_source = output["outputSource"]
             if "/" in output_source:
-                step, output_name = output_source.split("/", 1)
+                step_label, output_name = resolve_source_reference(output_source, known_labels)
                 if ":" in output_name:
                     subworkflow_label, subworkflow_output = output_name.split(":", 1)
                     assert subworkflow_label in runs_by_label, f"{subworkflow_label} not in {runs_by_label.keys()}"
@@ -158,11 +184,12 @@ def _replace_anonymous_output_references(workflow_dict: dict):
                     assert isinstance(subworkflow_outputs, dict)
                     for subworkflow_output_name, output_def in subworkflow_outputs.items():
                         if output_def["outputSource"] == f"{subworkflow_label}/{subworkflow_output}":
-                            output["outputSource"] = f"{step}/{subworkflow_output_name}"
+                            output["outputSource"] = f"{step_label}/{subworkflow_output_name}"
 
 
 def _ensure_implicit_step_outs(workflow_dict: dict):
     """Ensure implicit 'out' dicts allowed by format2 are filled in for CWL."""
+    known_labels = _collect_known_labels(workflow_dict)
     outputs_by_label = {}
 
     def register_step_output(step_label, output_name):
@@ -173,15 +200,15 @@ def _ensure_implicit_step_outs(workflow_dict: dict):
 
     def register_output_source(output_source):
         if "/" in output_source:
-            step, output_name = output_source.split("/", 1)
-            register_step_output(step, output_name)
+            step_label, output_name = resolve_source_reference(output_source, known_labels)
+            register_step_output(step_label, output_name)
 
     for output_name, output in walk_id_list_or_dict(workflow_dict.get("outputs", {})):
         if "outputSource" in output:
             output_source = output["outputSource"]
             if "/" in output_source:
-                step, output_name = output_source.split("/", 1)
-                register_step_output(step, output_name)
+                step_label, output_name = resolve_source_reference(output_source, known_labels)
+                register_step_output(step_label, output_name)
 
     for step in steps_as_list(workflow_dict, mutate=False):
         step_in = step.get("in", {})
