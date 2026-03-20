@@ -18,7 +18,10 @@ def test_slash_in_label_no_output():
 
 def test_slash_in_label_with_output():
     labels = {"Host/Contaminant Filter", "cat"}
-    assert resolve_source_reference("Host/Contaminant Filter/out_file1", labels) == ("Host/Contaminant Filter", "out_file1")
+    assert resolve_source_reference("Host/Contaminant Filter/out_file1", labels) == (
+        "Host/Contaminant Filter",
+        "out_file1",
+    )
 
 
 def test_multiple_slashes_in_label():

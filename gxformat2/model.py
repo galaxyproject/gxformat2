@@ -162,7 +162,7 @@ def resolve_source_reference(value: str, known_labels: Union[set, dict]) -> tupl
         if value == label:
             return label, "output"
         if value.startswith(label + "/"):
-            return label, value[len(label) + 1:]
+            return label, value[len(label) + 1 :]
     if "/" in value:
         parts = value.split("/", 1)
         return parts[0], parts[1]
