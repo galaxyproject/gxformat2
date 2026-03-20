@@ -68,7 +68,7 @@ Ready to contribute? Here's how to set up `gxformat` for local development.
 
     $ git clone git@github.com:your_name_here/gxformat2.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. Install your local copy into a virtual environment. This is how you set up your fork for local development::
 
     $ make setup-venv
 

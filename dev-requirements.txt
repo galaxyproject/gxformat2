@@ -22,5 +22,5 @@ pyflakes
 flake8
 
 # For release
-wheel
+build
 twine

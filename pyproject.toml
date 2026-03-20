@@ -1,5 +1,59 @@
+[build-system]
+requires = ["setuptools>=77.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gxformat2"
+dynamic = ["version", "dependencies"]
+description = "Galaxy Workflow Format 2 Descriptions"
+readme = "README.rst"
+authors = [
+    {name = "Galaxy Project and Community", email = "jmchilton@gmail.com"},
+]
+license = "MIT"
+license-files = [
+    "LICENSE",
+]
+keywords = ["galaxy"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Software Development :: Testing",
+]
+requires-python = ">=3.9"
+
+[project.scripts]
+gxwf-to-native = "gxformat2.converter:main"
+gxwf-to-format2 = "gxformat2.export:main"
+gxwf-lint = "gxformat2.lint:main"
+gxwf-viz = "gxformat2.cytoscape:main"
+gxwf-abstract-export = "gxformat2.abstract:main"
+
+[project.urls]
+Homepage = "https://github.com/galaxyproject/gxformat2"
+
 [tool.black]
 line-length = 120
 extend-exclude = '''
 ^/gxformat2/schema/v19_09.py
 '''
+
+[tool.setuptools.dynamic]
+version = {attr = "gxformat2.__version__"}
+dependencies = {file = "requirements.txt"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gxformat2*"]
