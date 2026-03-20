@@ -49,6 +49,7 @@ $graph:
     - tool
     - subworkflow
     - pause
+    - pick_value
   doc:
     - |
         Module types used by Galaxy steps. Galaxy's native format allows additional types such as data_input, data_input_collection, and parameter_type
@@ -56,6 +57,7 @@ $graph:
     - "tool: Run a tool."
     - "subworkflow: Run a subworkflow."
     - "pause: Pause computation on this branch of workflow until user allows it to continue."
+    - "pick_value: Select the first non-null value from multiple inputs. Used to merge branches of conditional or optional workflow paths."
 
 - name: WorkflowInputParameter
   type: record
@@ -325,6 +327,98 @@ $graph:
         - type: array
           items: string
 
+- name: WorkflowComment
+  type: record
+  doc: |
+    A visual annotation in the workflow editor. Comments are non-functional
+    elements used for documentation and organization in the editor canvas.
+
+    Fields vary by comment type. Common fields (``type``, ``position``, ``size``,
+    ``color``) apply to all types. Type-specific fields are optional and only
+    relevant for their respective type.
+  fields:
+    - name: type
+      type: string
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        The type of comment. Valid values are ``text``, ``markdown``, ``frame``, and ``freehand``.
+    - name: position
+      type: Any?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition/position"
+      doc: |
+        Position of the comment on the editor canvas as ``[x, y]`` coordinates.
+    - name: size
+      type: Any?
+      doc: |
+        Size of the comment as ``[width, height]``.
+    - name: color
+      type: string?
+      doc: |
+        Display color of the comment (e.g. ``"none"``, ``"blue"``).
+    - name: label
+      type: string?
+      jsonldPredicate: "rdfs:label"
+      doc: |
+        Optional label for referencing this comment from frame ``contains_comments``
+        fields or for use as a map key when comments are represented as a mapping.
+    - name: text
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/text"
+      doc: |
+        Text content. Used by ``text`` and ``markdown`` comment types.
+    - name: bold
+      type: boolean?
+      doc: |
+        Whether the text is bold. Only used by ``text`` comments.
+    - name: italic
+      type: boolean?
+      doc: |
+        Whether the text is italic. Only used by ``text`` comments.
+    - name: text_size
+      type:
+        - "null"
+        - float
+        - int
+      doc: |
+        Font size of the text. Only used by ``text`` comments.
+    - name: title
+      type: string?
+      doc: |
+        Title displayed on the frame. Only used by ``frame`` comments.
+    - name: contains_steps
+      type: Any?
+      jsonldPredicate:
+        _id: "gxformat2:contains_steps"
+        noLinkCheck: true
+      doc: |
+        Step labels or indices contained within this frame. Only used by ``frame`` comments.
+    - name: contains_comments
+      type: Any?
+      jsonldPredicate:
+        _id: "gxformat2:contains_comments"
+        noLinkCheck: true
+      doc: |
+        Comment labels or indices contained within this frame. Only used by ``frame`` comments.
+    - name: thickness
+      type:
+        - "null"
+        - float
+        - int
+      doc: |
+        Line thickness. Only used by ``freehand`` comments.
+    - name: line
+      type: Any?
+      jsonldPredicate:
+        _id: "gxformat2:line"
+        noLinkCheck: true
+      doc: |
+        Array of ``[x, y]`` coordinate pairs defining the freehand line path.
+        Only used by ``freehand`` comments.
+
 - name: GalaxyWorkflow
   type: record
   extends:
@@ -384,6 +478,17 @@ $graph:
       - "null"
       doc: |
         Tags for the workflow.
+    - name: comments
+      type:
+        - "null"
+        - type: array
+          items: "#WorkflowComment"
+      jsonldPredicate:
+          mapSubject: label
+      doc: |
+        Visual annotations for the workflow editor canvas. Comments are non-functional
+        and do not affect workflow execution. May be specified as a list or as a mapping
+        keyed by label.
     - name: creator
       type: Any?
       doc: Can be a schema.org Person (https://schema.org/Person) or Organization (https://schema.org/Organization) entity
