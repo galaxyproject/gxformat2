@@ -5,20 +5,23 @@ Galaxy Workflow Format 2 - library for converting between Format2 (YAML) and nat
 ## Setup
 
 ```bash
-uv venv --clear && uv pip install -e . && uv pip install pytest
+uv sync --group test --group lint --group mypy
 ```
-
-For full dev deps: `uv pip install -r dev-requirements.txt`
 
 ## Running Tests
 
 ```bash
-.venv/bin/pytest tests/ -x -q --ignore=tests/test_export_abstract.py
+uv run --group test pytest tests/ -x -q
 ```
 
-`test_export_abstract.py` requires `cwltool` (optional heavy dep). Skip it for normal dev work.
+## Linting
 
-For CI-style runs: `tox -e py313-unit`
+```bash
+uv run --group lint ruff check
+uv run --group lint flake8
+uv run --group lint black --check --diff .
+uv run --group mypy mypy gxformat2
+```
 
 ## Project Structure
 
