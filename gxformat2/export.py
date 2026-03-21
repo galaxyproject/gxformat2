@@ -5,7 +5,7 @@ import json
 import sys
 from collections import OrderedDict
 
-from ._labels import Labels
+from ._labels import Labels, UNLABELED_INPUT_PREFIX, UNLABELED_STEP_PREFIX
 from .model import (
     flatten_comment_data,
     native_input_to_format2_type,
@@ -53,7 +53,9 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         if not label:
             all_labeled = False
         if label is None and step.get("type") in ("data_input", "data_collection_input", "parameter_input"):
-            label_map[str(key)] = f"_unlabeled_input_{step['id']}"
+            label_map[str(key)] = f"{UNLABELED_INPUT_PREFIX}{step['id']}"
+        elif label is None:
+            label_map[str(key)] = f"{UNLABELED_STEP_PREFIX}{step['id']}"
         else:
             label_map[str(key)] = label
 
@@ -76,7 +78,7 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
 
         module_type = step.get("type")
         if module_type in ["data_input", "data_collection_input", "parameter_input"]:
-            step_id = step["label"] if step["label"] is not None else f"_unlabeled_input_{step['id']}"
+            step_id = step["label"] if step["label"] is not None else f"{UNLABELED_INPUT_PREFIX}{step['id']}"
             input_dict = {}
             tool_state = _tool_state(step)
             input_dict["type"] = native_input_to_format2_type(step, tool_state)
@@ -164,6 +166,14 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
 
         else:
             raise NotImplementedError(f"Unhandled module type {module_type}")
+
+        # Ensure unlabeled non-input steps get a sentinel label so source
+        # references using label_map can resolve on reimport.
+        if module_type not in ("data_input", "data_collection_input", "parameter_input"):
+            if "label" not in step_dict:
+                sentinel = label_map.get(str(step["id"]))
+                if sentinel is not None:
+                    step_dict["label"] = sentinel
 
     data["inputs"] = inputs
     data["outputs"] = outputs

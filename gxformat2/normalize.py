@@ -3,6 +3,7 @@
 import copy
 from typing import Union
 
+from gxformat2._labels import UNLABELED_STEP_PREFIX
 from gxformat2._scripts import ensure_format2
 from gxformat2.converter import (
     steps_as_list,
@@ -178,12 +179,21 @@ def _replace_anonymous_output_references(workflow_dict: dict):
                 step_label, output_name = resolve_source_reference(output_source, known_labels)
                 if ":" in output_name:
                     subworkflow_label, subworkflow_output = output_name.split(":", 1)
-                    assert subworkflow_label in runs_by_label, f"{subworkflow_label} not in {runs_by_label.keys()}"
-                    run = runs_by_label[subworkflow_label]
+                    assert step_label in runs_by_label, f"{step_label} not in {runs_by_label.keys()}"
+                    run = runs_by_label[step_label]
                     subworkflow_outputs = run["outputs"]
                     assert isinstance(subworkflow_outputs, dict)
+                    inner_known_labels = _collect_known_labels(run) if isinstance(run, dict) else set()
                     for subworkflow_output_name, output_def in subworkflow_outputs.items():
-                        if output_def["outputSource"] == f"{subworkflow_label}/{subworkflow_output}":
+                        inner_source = output_def["outputSource"]
+                        if "/" in inner_source:
+                            inner_step, inner_output = resolve_source_reference(inner_source, inner_known_labels)
+                        else:
+                            inner_step, inner_output = inner_source, "output"
+                        if inner_output == subworkflow_output and inner_step in (
+                            subworkflow_label,
+                            f"{UNLABELED_STEP_PREFIX}{subworkflow_label}",
+                        ):
                             output["outputSource"] = f"{step_label}/{subworkflow_output_name}"
 
 

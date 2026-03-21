@@ -1,3 +1,4 @@
+from gxformat2.export import from_galaxy_native
 from gxformat2.normalize import Inputs, inputs_normalized, NormalizedWorkflow, outputs_normalized
 from gxformat2.yaml import ordered_load
 from ._helpers import (
@@ -63,6 +64,69 @@ def test_normalized_workflow():
         assert inputs[0]["type"] == "data"  # converted from File to data
         assert isinstance(inputs[1], dict)
         assert inputs[1]["type"] == "int"
+
+
+def test_unlabeled_subworkflow_step_anonymous_output():
+    """NormalizedWorkflow resolves anonymous output refs when inner subworkflow steps are unlabeled."""
+    native_workflow = {
+        "a_galaxy_workflow": "true",
+        "format-version": "0.1",
+        "name": "Subworkflow Anon Output Test",
+        "steps": {
+            "0": {
+                "id": 0,
+                "type": "data_input",
+                "label": "input_data",
+                "tool_state": '{"name": "input_data"}',
+                "input_connections": {},
+                "workflow_outputs": [],
+            },
+            "1": {
+                "id": 1,
+                "type": "subworkflow",
+                "label": "nested",
+                "tool_state": "{}",
+                "input_connections": {
+                    "inner_input": [{"id": 0, "output_name": "output"}],
+                },
+                "workflow_outputs": [
+                    {"output_name": "0:out_file1", "label": "subwf_output"},
+                ],
+                "subworkflow": {
+                    "a_galaxy_workflow": "true",
+                    "format-version": "0.1",
+                    "name": "Inner",
+                    "steps": {
+                        "0": {
+                            "id": 0,
+                            "type": "tool",
+                            "label": None,
+                            "tool_id": "cat1",
+                            "tool_version": "1.0",
+                            "tool_state": "{}",
+                            "input_connections": {},
+                            "workflow_outputs": [
+                                {"output_name": "out_file1", "label": None},
+                            ],
+                        },
+                    },
+                },
+            },
+        },
+    }
+    as_format2 = from_galaxy_native(native_workflow, tool_interface=None, json_wrapper=False)
+    # The outputSource should contain the anonymous subworkflow ref pattern
+    output_sources = [v["outputSource"] for v in as_format2["outputs"].values()]
+    # Should have a source referencing the subworkflow step
+    assert any("nested" in s for s in output_sources)
+
+    # NormalizedWorkflow should resolve without error
+    normalized = NormalizedWorkflow(as_format2)
+    norm_outputs = normalized.normalized_workflow_dict.get("outputs", {})
+    # The anonymous "0:out_file1" reference should be resolved to a proper output name
+    for output_def in norm_outputs.values():
+        source = output_def.get("outputSource", "")
+        assert ":" not in source, f"Unresolved anonymous subworkflow ref: {source}"
 
 
 def _both_formats(contents):
