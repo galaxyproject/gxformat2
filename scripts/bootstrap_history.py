@@ -34,9 +34,11 @@ def get_last_release_tag():
     parts = version.split(".")
     if len(parts) >= 3:
         major, minor, patch = parts[:3]
-        # Decrement patch version to get last release
-        last_patch = max(0, int(patch) - 1)
-        return f"{major}.{minor}.{last_patch}"
+        # Decrement patch to get last release; if patch is 0, decrement minor
+        if int(patch) > 0:
+            return f"{major}.{minor}.{max(0, int(patch) - 1)}"
+        else:
+            return f"{major}.{max(0, int(minor) - 1)}.0"
     return version
 
 
