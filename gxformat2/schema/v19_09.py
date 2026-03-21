@@ -6414,7 +6414,7 @@ class WorkflowComment(Saveable):
             try:
                 contains_steps = load_field(
                     _doc.get("contains_steps"),
-                    union_of_None_type_or_Any_type,
+                    union_of_None_type_or_array_of_union_of_strtype_or_inttype,
                     baseuri,
                     loadingOptions,
                     lc=_doc.get("contains_steps")
@@ -6461,7 +6461,7 @@ class WorkflowComment(Saveable):
             try:
                 contains_comments = load_field(
                     _doc.get("contains_comments"),
-                    union_of_None_type_or_Any_type,
+                    union_of_None_type_or_array_of_union_of_strtype_or_inttype,
                     baseuri,
                     loadingOptions,
                     lc=_doc.get("contains_comments")
@@ -8063,6 +8063,19 @@ union_of_None_type_or_floattype_or_inttype = _UnionLoader(
         None_type,
         floattype,
         inttype,
+    )
+)
+union_of_strtype_or_inttype = _UnionLoader(
+    (
+        strtype,
+        inttype,
+    )
+)
+array_of_union_of_strtype_or_inttype = _ArrayLoader(union_of_strtype_or_inttype)
+union_of_None_type_or_array_of_union_of_strtype_or_inttype = _UnionLoader(
+    (
+        None_type,
+        array_of_union_of_strtype_or_inttype,
     )
 )
 GalaxyWorkflow_classLoader = _EnumLoader(("GalaxyWorkflow",), "GalaxyWorkflow_class")

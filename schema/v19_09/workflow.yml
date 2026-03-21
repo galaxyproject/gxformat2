@@ -390,14 +390,24 @@ $graph:
       doc: |
         Title displayed on the frame. Only used by ``frame`` comments.
     - name: contains_steps
-      type: Any?
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - int
       jsonldPredicate:
         _id: "gxformat2:contains_steps"
         noLinkCheck: true
       doc: |
         Step labels or indices contained within this frame. Only used by ``frame`` comments.
     - name: contains_comments
-      type: Any?
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - int
       jsonldPredicate:
         _id: "gxformat2:contains_comments"
         noLinkCheck: true
