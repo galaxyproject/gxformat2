@@ -8,6 +8,13 @@ History
 ---------------------
 0.24.0.dev0
 ---------------------
+* Migrate from ``setup.py`` to ``pyproject.toml`` (thanks to `@nsoranzo`_). `Pull Request 142`_
+* Use _unlabeled_input_ sentinel to preserve label=None on round-trip (thanks to `@jmchilton`_). `Pull Request 144`_
+* Fix `/` in step labels breaking source reference parsing (thanks to `@jmchilton`_). `Pull Request 148`_
+* Add pick_value and comments to Format2 schema (thanks to `@jmchilton`_). `Pull Request 147`_
+* Fix unlabeled tool steps getting dangling numeric source refs after roundtrip (thanks to `@jmchilton`_). `Pull Request 149`_
+* Add uv dependency groups for lint, mypy, test; update dev docs (thanks to `@jmchilton`_). `Pull Request 150`_
+* More dev process updates - including history generation stuff, better uv usage, etc (thanks to `@jmchilton`_). `Pull Request 152`_
 
     
 
@@ -329,6 +336,13 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 142: https://github.com/galaxyproject/gxformat2/pull/142
+.. _Pull Request 144: https://github.com/galaxyproject/gxformat2/pull/144
+.. _Pull Request 148: https://github.com/galaxyproject/gxformat2/pull/148
+.. _Pull Request 147: https://github.com/galaxyproject/gxformat2/pull/147
+.. _Pull Request 149: https://github.com/galaxyproject/gxformat2/pull/149
+.. _Pull Request 150: https://github.com/galaxyproject/gxformat2/pull/150
+.. _Pull Request 152: https://github.com/galaxyproject/gxformat2/pull/152
 .. _Pull Request 137: https://github.com/galaxyproject/gxformat2/pull/137
 .. _Pull Request 138: https://github.com/galaxyproject/gxformat2/pull/138
 .. _Pull Request 136: https://github.com/galaxyproject/gxformat2/pull/136
