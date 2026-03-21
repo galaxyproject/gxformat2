@@ -6,6 +6,12 @@ History
 .. to_doc
 
 ---------------------
+0.25.0.dev0
+---------------------
+
+    
+
+---------------------
 0.24.0 (2026-03-21)
 ---------------------
 * Migrate from ``setup.py`` to ``pyproject.toml`` (thanks to `@nsoranzo`_). `Pull Request 142`_
