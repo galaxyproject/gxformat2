@@ -44,16 +44,12 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr htmlcov/
 
 setup-venv: ## setup a development virutalenv in current directory
-	if [ ! -d $(VENV) ]; then \
-		if command -v uv > /dev/null 2>&1; then \
-			uv venv $(VENV); \
-		else \
+	if command -v uv > /dev/null 2>&1; then \
+		uv sync --group test --group lint --group mypy; \
+	else \
+		if [ ! -d $(VENV) ]; then \
 			python3 -m venv $(VENV); \
 		fi; \
-	fi
-	if command -v uv > /dev/null 2>&1; then \
-		$(IN_VENV) uv pip install -r requirements.txt && uv pip install -r dev-requirements.txt; \
-	else \
 		$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt; \
 	fi
 
