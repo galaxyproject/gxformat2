@@ -9,7 +9,7 @@ VENV?=.venv
 # Source virtualenv to execute command (flake8, sphinx, twine, etc...)
 IN_VENV=if [ -f $(VENV)/bin/activate ]; then . $(VENV)/bin/activate; fi;
 # TODO: add this upstream as a remote if it doesn't already exist.
-UPSTREAM?=jmchilton
+UPSTREAM?=galaxyproject
 SOURCE_DIR?=gxformat2
 BUILD_SCRIPTS_DIR=scripts
 DEV_RELEASE?=0
@@ -133,7 +133,7 @@ push-release: ## Push a tagged release to github
 release: release-local push-release ## package, review, and upload a release
 
 add-history: ## Reformat HISTORY.rst with data from Github's API
-	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py $(ITEM)
+	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py --acknowledgements
 
 mypy:
 	MYPYPATH=mypy-stubs mypy gxformat2
