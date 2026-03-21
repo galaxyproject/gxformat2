@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.24.0.dev0
+0.24.0 (2026-03-21)
 ---------------------
 * Migrate from ``setup.py`` to ``pyproject.toml`` (thanks to `@nsoranzo`_). `Pull Request 142`_
 * Use _unlabeled_input_ sentinel to preserve label=None on round-trip (thanks to `@jmchilton`_). `Pull Request 144`_
