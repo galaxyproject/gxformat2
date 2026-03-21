@@ -44,6 +44,28 @@ gxwf-abstract-export = "gxformat2.abstract:main"
 [project.urls]
 Homepage = "https://github.com/galaxyproject/gxformat2"
 
+[dependency-groups]
+lint = [
+    "black",
+    "flake8",
+    "flake8-import-order",
+    "flake8-bugbear",
+    "ruff",
+]
+mypy = [
+    "mypy",
+    "types-PyYAML",
+    "types-requests",
+]
+test = [
+    "pytest",
+    {include-group = "dev"},
+]
+dev = [
+    "schema-salad[pycodegen]",
+    "cwltool>=3.0.20200807132242",
+]
+
 [tool.black]
 line-length = 120
 extend-exclude = '''

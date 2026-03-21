@@ -58,6 +58,35 @@ Checkout their help for more information.
     $ gxwf-to-native --help
     $ gxwf-to-format2 --help
 
+Development
+-----------
+
+Setup a development environment with `uv <https://docs.astral.sh/uv/>`__:
+
+::
+
+    $ uv sync --group test --group lint --group mypy
+
+Run tests:
+
+::
+
+    $ uv run --group test pytest tests/ -x -q
+
+Run linting:
+
+::
+
+    $ uv run --group lint ruff check
+    $ uv run --group lint flake8
+    $ uv run --group lint black --check --diff .
+
+Run type checking:
+
+::
+
+    $ uv run --group mypy mypy gxformat2
+
 This library and associated scripts are licensed under the MIT License.
 
 .. _Galaxy: https://galaxyproject.org/
