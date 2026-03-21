@@ -55,3 +55,27 @@ do
         cd "$PROJECT_DIRECTORY"/schema/"$schema"
     fi
 done
+
+# Native workflow format schema
+cd "${PROJECT_DIRECTORY}"/schema/native_v0_1
+schema-salad-tool --codegen python workflow.yml > "${PROJECT_DIRECTORY}/gxformat2/schema/native_v0_1.py"
+
+out="${DIST_DIRECTORY}/native_v0_1.html"
+schema-salad-doc \
+    --brandstyle '<link rel="stylesheet" href="galaxy_bootstrap.min.css">' \
+    --brandinverse \
+    --brand '<img src="icon.png" />' \
+    --brandlink '' \
+    --only "https://galaxyproject.org/gxformat2/native_v0_1#NativeWorkflowDoc" \
+    --only "https://galaxyproject.org/gxformat2/native_v0_1#NativeGalaxyWorkflow" \
+    workflow.yml > "$out"
+
+# Post-process: fix format_version -> format-version and remove artificial class row
+sed -i.bak 's/format_version/format-version/g' "$out"
+python3 -c "
+import re, sys
+html = open('$out').read()
+html = re.sub(r'<div class=\"row responsive-table-row\">\s*\n<div[^>]*><code>class</code></div>\n.*?</div>\n</div>\n', '', html, flags=re.DOTALL)
+open('$out', 'w').write(html)
+"
+rm -f "$out.bak"
