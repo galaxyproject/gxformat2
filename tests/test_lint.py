@@ -250,42 +250,45 @@ def setup_module(module):
             _dump_with_exit_code(roundtrip_contents, 0, base + "_roundtrip")
 
 
+SKIP_BP = "--skip-best-practices"
+
+
 def test_lint_ga_basic():
-    assert main(["lint", os.path.join(TEST_PATH, "wf3-shed-tools-raw.ga")]) == 1  # no outputs
+    assert main(["lint", SKIP_BP, os.path.join(TEST_PATH, "wf3-shed-tools-raw.ga")]) == 1  # no outputs
 
 
 def test_lint_ga_unicycler():
-    assert main(["lint", os.path.join(TEST_PATH, "unicycler.ga")]) == 0
+    assert main(["lint", SKIP_BP, os.path.join(TEST_PATH, "unicycler.ga")]) == 0
 
 
 def test_lint_ga_unicycler_training():
     # no tags, fails linting
-    assert main(["lint", "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler.ga")]) == 1
+    assert main(["lint", SKIP_BP, "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler.ga")]) == 1
     # correct tag passes linting
-    assert main(["lint", "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 0
+    assert main(["lint", SKIP_BP, "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 0
     # incorrect tag, fails linting
-    assert main(["lint", "--training-topic", "mapping", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 1
+    assert main(["lint", SKIP_BP, "--training-topic", "mapping", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 1
 
 
 def test_lint_ga_unicycler_missing_tools():
     # only difference is one missing tool.
-    assert main(["lint", os.path.join(TEST_PATH, "unicycler-hacked-no-tool.ga")]) == 1
+    assert main(["lint", SKIP_BP, os.path.join(TEST_PATH, "unicycler-hacked-no-tool.ga")]) == 1
 
 
 def test_lint_ga_unicycler_ts_tools():
     # only difference is testoolshed tool.
-    assert main(["lint", os.path.join(TEST_PATH, "unicycler-hacked-testtoolshed.ga")]) == 1
+    assert main(["lint", SKIP_BP, os.path.join(TEST_PATH, "unicycler-hacked-testtoolshed.ga")]) == 1
 
 
 def test_lint_ecoli_comparison():
-    assert main(["lint", os.path.join(TEST_PATH, "ecoli-comparison.ga")]) == 1  # no outputs
+    assert main(["lint", SKIP_BP, os.path.join(TEST_PATH, "ecoli-comparison.ga")]) == 1  # no outputs
 
 
 def test_lint_examples():
     for file_name in os.listdir(TEST_LINT_EXAMPLES):
         file_path = os.path.join(TEST_LINT_EXAMPLES, file_name)
         expected_exit_code = int(file_name[0])
-        actual_exit_code = main(["lint", file_path])
+        actual_exit_code = main(["lint", SKIP_BP, file_path])
         if actual_exit_code != expected_exit_code:
             contents = open(file_path).read()
             template = "File [%s] didn't lint properly - expected exit code [%d], got [%d]. Contents:\n%s"
