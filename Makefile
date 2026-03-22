@@ -135,5 +135,8 @@ release: release-local push-release ## package, review, and upload a release
 add-history: ## Reformat HISTORY.rst with data from Github's API
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py --acknowledgements
 
+format:
+	uv run --group lint black .
+
 mypy:
 	MYPYPATH=mypy-stubs mypy gxformat2

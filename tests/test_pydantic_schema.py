@@ -143,9 +143,7 @@ class TestNativePydantic:
 
     def test_tool_state_dict(self):
         native = dict(MINIMAL_NATIVE)
-        native["steps"] = {
-            "0": dict(MINIMAL_NATIVE["steps"]["0"], tool_state={"optional": False})
-        }
+        native["steps"] = {"0": dict(MINIMAL_NATIVE["steps"]["0"], tool_state={"optional": False})}
         wf = NativeGalaxyWorkflow.model_validate(native)
         step = wf.steps["0"]
         assert isinstance(step.tool_state, dict)
@@ -196,9 +194,7 @@ class TestNativePydantic:
         assert len(wf.comments) == 2
 
     def test_with_report(self):
-        wf = NativeGalaxyWorkflow.model_validate(
-            dict(MINIMAL_NATIVE, report={"markdown": "# Report\nContent."})
-        )
+        wf = NativeGalaxyWorkflow.model_validate(dict(MINIMAL_NATIVE, report={"markdown": "# Report\nContent."}))
         assert wf.report.markdown == "# Report\nContent."
 
     def test_with_source_metadata(self):
