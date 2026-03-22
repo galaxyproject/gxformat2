@@ -1,6 +1,6 @@
 # Optional dependencies
 schema-salad[pycodegen]
-schema-salad-plus-pydantic
+schema-salad-plus-pydantic>=0.1.3
 # Needs to validate v1.2
 cwltool>=3.0.20200807132242
 

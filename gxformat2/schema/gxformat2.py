@@ -370,6 +370,6 @@ def load_document(path: str | Path) -> GalaxyWorkflow | list[GalaxyWorkflow]:
     return _load_single(data)
 
 
-def _load_single(data: dict[str, Any]) -> GalaxyWorkflow | list[GalaxyWorkflow]:
+def _load_single(data: dict[str, Any]) -> GalaxyWorkflow:
     """Load a single document dict."""
     return GalaxyWorkflow.model_validate(data)

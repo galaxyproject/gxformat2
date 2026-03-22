@@ -55,20 +55,20 @@ pause: A manual pause point that halts execution until user intervention."""
 
 
 def _discriminate_creator(v: Any) -> str:
-    disc_map = {"Person": "NativeCreatorPerson", "Organization": "NativeCreatorOrganization"}
+    disc_map: dict[str, str] = {"Person": "NativeCreatorPerson", "Organization": "NativeCreatorOrganization"}
     if isinstance(v, dict):
-        disc_val = v.get("class")
+        disc_val: str = str(v.get("class", ""))
     else:
-        disc_val = getattr(v, "class", None)
+        disc_val = str(getattr(v, "class", ""))
     return disc_map.get(disc_val, disc_val)
 
 
 def _discriminate_comments(v: Any) -> str:
-    disc_map = {"text": "NativeTextComment", "markdown": "NativeMarkdownComment", "frame": "NativeFrameComment", "freehand": "NativeFreehandComment"}
+    disc_map: dict[str, str] = {"text": "NativeTextComment", "markdown": "NativeMarkdownComment", "frame": "NativeFrameComment", "freehand": "NativeFreehandComment"}
     if isinstance(v, dict):
-        disc_val = v.get("type")
+        disc_val: str = str(v.get("type", ""))
     else:
-        disc_val = getattr(v, "type", None)
+        disc_val = str(getattr(v, "type", ""))
     return disc_map.get(disc_val, disc_val)
 
 
@@ -452,6 +452,6 @@ def load_document(path: str | Path) -> NativeGalaxyWorkflow | list[NativeGalaxyW
     return _load_single(data)
 
 
-def _load_single(data: dict[str, Any]) -> NativeGalaxyWorkflow | list[NativeGalaxyWorkflow]:
+def _load_single(data: dict[str, Any]) -> NativeGalaxyWorkflow:
     """Load a single document dict."""
     return NativeGalaxyWorkflow.model_validate(data)
