@@ -265,9 +265,14 @@ def test_lint_ga_unicycler_training():
     # no tags, fails linting
     assert main(["lint", SKIP_BP, "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler.ga")]) == 1
     # correct tag passes linting
-    assert main(["lint", SKIP_BP, "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 0
+    assert (
+        main(["lint", SKIP_BP, "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")])
+        == 0
+    )
     # incorrect tag, fails linting
-    assert main(["lint", SKIP_BP, "--training-topic", "mapping", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 1
+    assert (
+        main(["lint", SKIP_BP, "--training-topic", "mapping", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 1
+    )
 
 
 def test_lint_ga_unicycler_missing_tools():

@@ -1,8 +1,9 @@
-"""Tests for best-practice linting checks."""
+"""Tests for best-practice linting and pydantic schema validation checks."""
 
 from gxformat2.lint import (
     lint_best_practices_format2,
     lint_best_practices_ga,
+    lint_pydantic_validation,
 )
 from gxformat2.linting import LintContext
 
@@ -466,3 +467,95 @@ class TestFormat2UntypedParams:
             },
         )
         assert any("untyped parameter in the post-job actions" in m for m in ctx.warn_messages)
+
+
+# --- Pydantic schema validation ---
+
+
+class TestPydanticValidationNative:
+    def test_valid_native(self):
+        ctx = _lint_ctx()
+        lint_pydantic_validation(
+            ctx,
+            {
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "steps": {},
+            },
+            format2=False,
+        )
+        assert not ctx.error_messages
+        assert not ctx.warn_messages
+
+    def test_missing_required_field(self):
+        ctx = _lint_ctx()
+        lint_pydantic_validation(ctx, {"steps": {}}, format2=False)
+        assert any("Schema validation:" in m for m in ctx.error_messages)
+
+    def test_extra_field_strict_only(self):
+        ctx = _lint_ctx()
+        lint_pydantic_validation(
+            ctx,
+            {
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "type": "tool",
+                        "some_unknown_field": "value",
+                    }
+                },
+            },
+            format2=False,
+        )
+        # Strict-only failure -> warnings, not errors
+        assert not ctx.error_messages
+        assert any("strict" in m for m in ctx.warn_messages)
+
+    def test_wrong_type(self):
+        ctx = _lint_ctx()
+        lint_pydantic_validation(
+            ctx,
+            {
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "steps": "not a dict",
+            },
+            format2=False,
+        )
+        assert any("Schema validation:" in m for m in ctx.error_messages)
+
+
+class TestPydanticValidationFormat2:
+    VALID_FORMAT2 = {
+        "class": "GalaxyWorkflow",
+        "inputs": {},
+        "outputs": {},
+        "steps": {},
+    }
+
+    def test_valid_format2(self):
+        ctx = _lint_ctx()
+        lint_pydantic_validation(ctx, self.VALID_FORMAT2, format2=True)
+        assert not ctx.error_messages
+        assert not ctx.warn_messages
+
+    def test_missing_steps(self):
+        ctx = _lint_ctx()
+        lint_pydantic_validation(
+            ctx,
+            {"class": "GalaxyWorkflow", "inputs": {}, "outputs": {}},
+            format2=True,
+        )
+        assert any("Schema validation:" in m for m in ctx.error_messages)
+
+    def test_extra_field_strict_only(self):
+        ctx = _lint_ctx()
+        lint_pydantic_validation(
+            ctx,
+            {**self.VALID_FORMAT2, "some_unknown_field": "value"},
+            format2=True,
+        )
+        assert not ctx.error_messages
+        assert any("strict" in m for m in ctx.warn_messages)

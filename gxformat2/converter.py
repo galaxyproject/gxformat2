@@ -513,7 +513,7 @@ def transform_tool(context, step):
     connect = pop_connect_from_step_dict(step)
 
     # TODO: handle runtime inputs and state together.
-    runtime_inputs = step.get("runtime_inputs", [])
+    runtime_inputs = step.pop("runtime_inputs", [])
     if "state" in step or runtime_inputs:
         encode = context.import_options.encode_tool_state_json
         encoder = context.import_options.native_state_encoder

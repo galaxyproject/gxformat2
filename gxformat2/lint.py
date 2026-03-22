@@ -179,6 +179,43 @@ def _lint_training(lint_context, workflow_dict):
         lint_context.warn("Empty workflow documentation (annotation or doc element)")
 
 
+def lint_pydantic_validation(lint_context, workflow_dict, format2=False):
+    """Validate workflow dict against pydantic schema models.
+
+    Tries strict model (extra=forbid) first. If strict fails, falls back to
+    the lax model (extra=allow) to distinguish fundamental type errors from
+    merely having extra/unknown fields.
+    """
+    from pydantic import ValidationError
+
+    if format2:
+        from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictModel
+        from gxformat2.schema.gxformat2 import GalaxyWorkflow as LaxModel
+    else:
+        from gxformat2.schema.native_strict import NativeGalaxyWorkflow as StrictModel
+        from gxformat2.schema.native import NativeGalaxyWorkflow as LaxModel
+
+    strict_errors = None
+    try:
+        StrictModel.model_validate(workflow_dict)
+        return  # strict passes — nothing to report
+    except ValidationError as e:
+        strict_errors = e.errors()
+
+    # Strict failed — try lax to see if the core schema is valid
+    try:
+        LaxModel.model_validate(workflow_dict)
+        # Lax passes: only extra/unknown fields caused strict failure
+        for error in strict_errors:
+            loc = " -> ".join(str(p) for p in error["loc"])
+            lint_context.warn(f"Schema validation (strict): {error['msg']} at {loc}")
+    except ValidationError as e:
+        # Lax also fails: fundamental schema errors
+        for error in e.errors():
+            loc = " -> ".join(str(p) for p in error["loc"])
+            lint_context.error(f"Schema validation: {error['msg']} at {loc}")
+
+
 SKIP_DISCONNECTED_CHECK_TYPES = {"data_input", "data_collection_input", "parameter_input", "pause"}
 
 
@@ -339,6 +376,7 @@ def main(argv=None):
     lint_func = lint_format2 if is_format2 else lint_ga
     lint_context = LintContext(training_topic=args.training_topic)
     lint_func(lint_context, workflow_dict, path=path)
+    lint_pydantic_validation(lint_context, workflow_dict, format2=is_format2)
     if not args.skip_best_practices:
         best_practices_func = lint_best_practices_format2 if is_format2 else lint_best_practices_ga
         best_practices_func(lint_context, workflow_dict)
@@ -376,4 +414,11 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-__all__ = ("main", "lint_format2", "lint_ga", "lint_best_practices_format2", "lint_best_practices_ga")
+__all__ = (
+    "main",
+    "lint_format2",
+    "lint_ga",
+    "lint_best_practices_format2",
+    "lint_best_practices_ga",
+    "lint_pydantic_validation",
+)
