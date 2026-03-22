@@ -70,12 +70,23 @@ schema-salad-doc \
     --only "https://galaxyproject.org/gxformat2/native_v0_1#NativeGalaxyWorkflow" \
     workflow.yml > "$out"
 
-# Post-process: fix format_version -> format-version and remove artificial class row
-sed -i.bak 's/format_version/format-version/g' "$out"
-python3 -c "
-import re, sys
+# Pydantic models and enhanced docs (requires schema-salad-plus-pydantic)
+# enhance-docs handles: pydantic:type overrides, pydantic:alias renames,
+# and removing artificial class rows from documentRoot records.
+SKIP_PYDANTIC=${SKIP_PYDANTIC:-0}
+if [ $SKIP_PYDANTIC -eq 0 ]; then
+    cd "${PROJECT_DIRECTORY}"
+    schema-salad-plus-pydantic generate schema/v19_09/workflow.yml -o gxformat2/schema/gxformat2.py
+    schema-salad-plus-pydantic generate schema/native_v0_1/workflow.yml -o gxformat2/schema/native.py
+    schema-salad-plus-pydantic enhance-docs schema/native_v0_1/workflow.yml "${DIST_DIRECTORY}/native_v0_1.html"
+else
+    # Fallback post-processing without schema-salad-plus-pydantic
+    sed -i.bak 's/format_version/format-version/g' "$out"
+    python3 -c "
+import re
 html = open('$out').read()
 html = re.sub(r'<div class=\"row responsive-table-row\">\s*\n<div[^>]*><code>class</code></div>\n.*?</div>\n</div>\n', '', html, flags=re.DOTALL)
 open('$out', 'w').write(html)
 "
-rm -f "$out.bak"
+    rm -f "$out.bak"
+fi

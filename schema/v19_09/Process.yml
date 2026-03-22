@@ -6,6 +6,7 @@ $namespaces:
   cwl: "https://w3id.org/cwl/cwl#"
   sld: "https://w3id.org/cwl/salad#"
   rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+  pydantic: "https://galaxyproject.org/gxformat2/pydantic#"
 
 $graph:
 
@@ -72,6 +73,7 @@ $graph:
       type:
         type: array
         items: InputParameter
+      pydantic:type: "list[WorkflowInputParameter] | dict[str, WorkflowInputParameter | str] | dict[str, Any]"
       jsonldPredicate:
         _id: "cwl:inputs"
         mapSubject: id
@@ -93,6 +95,7 @@ $graph:
       type:
         type: array
         items: OutputParameter
+      pydantic:type: "list[WorkflowOutputParameter] | dict[str, WorkflowOutputParameter | str] | dict[str, Any]"
       jsonldPredicate:
         _id: "cwl:outputs"
         mapSubject: id

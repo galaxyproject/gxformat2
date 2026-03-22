@@ -7,6 +7,7 @@ $namespaces:
   cwl: "https://w3id.org/cwl/cwl#"
   sld: "https://w3id.org/cwl/salad#"
   rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+  pydantic: "https://galaxyproject.org/gxformat2/pydantic#"
 
 $graph:
 - name: "WorkflowDoc"
@@ -166,6 +167,7 @@ $graph:
   fields:
     - name: in
       type:  WorkflowStepInput[]?
+      pydantic:type: "list[WorkflowStepInput] | dict[str, WorkflowStepInput | str] | None"
       jsonldPredicate:
         _id: "gxformat2:in"
         mapSubject: id
@@ -181,6 +183,7 @@ $graph:
         - type: array
           items: [string, WorkflowStepOutput]
         - "null"
+      pydantic:type: "list[WorkflowStepOutput | str] | dict[str, WorkflowStepOutput | str] | None"
       jsonldPredicate:
         _id: "gxformat2:out"
         mapSubject: id
@@ -193,6 +196,7 @@ $graph:
         workflow document is not a valid instance of this schema.
     - name: state
       type: Any?
+      pydantic:type: "dict[str, Any] | None"
       doc: |
         Structured tool state.
       jsonldPredicate:
@@ -200,6 +204,7 @@ $graph:
         noLinkCheck: true
     - name: tool_state
       type: Any?
+      pydantic:type: "str | dict[str, Any] | None"
       jsonldPredicate:
         _id: "gxformat2:tool_state"
         noLinkCheck: true
@@ -348,11 +353,13 @@ $graph:
         The type of comment. Valid values are ``text``, ``markdown``, ``frame``, and ``freehand``.
     - name: position
       type: Any?
+      pydantic:type: "list[float] | None"
       jsonldPredicate: "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition/position"
       doc: |
         Position of the comment on the editor canvas as ``[x, y]`` coordinates.
     - name: size
       type: Any?
+      pydantic:type: "list[float] | None"
       doc: |
         Size of the comment as ``[width, height]``.
     - name: color
@@ -422,6 +429,7 @@ $graph:
         Line thickness. Only used by ``freehand`` comments.
     - name: line
       type: Any?
+      pydantic:type: "list[list[float]] | None"
       jsonldPredicate:
         _id: "gxformat2:line"
         noLinkCheck: true
@@ -476,6 +484,7 @@ $graph:
       type:
         - type: array
           items: "#WorkflowStep"
+      pydantic:type: "list[WorkflowStep] | dict[str, WorkflowStep]"
       jsonldPredicate:
           mapSubject: id
     - name: report
@@ -493,6 +502,7 @@ $graph:
         - "null"
         - type: array
           items: "#WorkflowComment"
+      pydantic:type: "list[WorkflowComment] | dict[str, WorkflowComment] | None"
       jsonldPredicate:
           mapSubject: label
       doc: |
@@ -501,6 +511,7 @@ $graph:
         keyed by label.
     - name: creator
       type: Any?
+      pydantic:type: "list[dict[str, Any]] | None"
       doc: Can be a schema.org Person (https://schema.org/Person) or Organization (https://schema.org/Organization) entity
     - name: license
       type: string?

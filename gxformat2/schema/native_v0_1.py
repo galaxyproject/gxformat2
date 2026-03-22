@@ -6542,9 +6542,10 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
 
     # Tool State
 
-    The ``tool_state`` field is a JSON-encoded string containing the tool's
-    parameter configuration. Values within are double-encoded: each top-level
-    value is itself a JSON string. Connected parameters are represented as
+    The ``tool_state`` field contains the tool's parameter configuration.
+    Traditionally this is a JSON-encoded string (double-encoded: each top-level
+    value is itself a JSON string), but it may also be a plain dictionary when
+    unencoded tool state is used. Connected parameters are represented as
     ``{"__class__": "ConnectedValue"}``, runtime parameters as
     ``{"__class__": "RuntimeValue"}``.
 

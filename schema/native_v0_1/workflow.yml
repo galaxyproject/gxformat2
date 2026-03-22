@@ -6,6 +6,7 @@ $namespaces:
   gxformat2common: "https://galaxyproject.org/gxformat2/gxformat2common#"
   sld: "https://w3id.org/cwl/salad#"
   rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+  pydantic: "https://galaxyproject.org/gxformat2/pydantic#"
 
 $graph:
 - name: "NativeWorkflowDoc"
@@ -157,6 +158,7 @@ $graph:
         The step output this action applies to.
     - name: action_arguments
       type: Any?
+      pydantic:type: "dict[str, str] | None"
       jsonldPredicate:
         _id: "gxnative:NativePostJobAction/action_arguments"
         noLinkCheck: true
@@ -252,6 +254,7 @@ $graph:
   fields:
     - name: line
       type: Any?
+      pydantic:type: "list[list[float]] | None"
       jsonldPredicate:
         _id: "gxnative:NativeFreehandCommentData/line"
         noLinkCheck: true
@@ -281,11 +284,13 @@ $graph:
         Numeric identifier for this comment (order index).
     - name: position
       type: Any?
+      pydantic:type: "list[float] | None"
       jsonldPredicate: "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition/position"
       doc: |
         Position on the editor canvas as ``[x, y]`` coordinates.
     - name: size
       type: Any?
+      pydantic:type: "list[float] | None"
       jsonldPredicate:
         _id: "gxnative:NativeComment/size"
         noLinkCheck: true
@@ -506,6 +511,7 @@ $graph:
         - "null"
         - string
         - Any
+      pydantic:type: "str | dict[str, Any] | None"
       jsonldPredicate:
         _id: "gxnative:NativeStep/tool_state"
         noLinkCheck: true
@@ -520,6 +526,7 @@ $graph:
         UUID for dynamic (inline-defined) tools.
     - name: input_connections
       type: Any?
+      pydantic:type: "dict[str, NativeInputConnection | list[NativeInputConnection]] | None"
       jsonldPredicate:
         _id: "gxnative:NativeStep/input_connections"
         noLinkCheck: true
@@ -561,6 +568,7 @@ $graph:
         array have all their outputs hidden by default.
     - name: post_job_actions
       type: Any?
+      pydantic:type: "dict[str, NativePostJobAction] | None"
       jsonldPredicate:
         _id: "gxnative:NativeStep/post_job_actions"
         noLinkCheck: true
@@ -570,6 +578,7 @@ $graph:
         are NativePostJobAction objects.
     - name: subworkflow
       type: Any?
+      pydantic:type: "NativeGalaxyWorkflow | None"
       jsonldPredicate: "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/subworkflow"
       doc: |
         Embedded subworkflow definition. A complete native workflow document
@@ -577,6 +586,7 @@ $graph:
         nested inside this step.
     - name: in
       type: Any?
+      pydantic:type: "dict[str, Any] | None"
       jsonldPredicate:
         _id: "gxnative:NativeStep/in"
         noLinkCheck: true
@@ -808,6 +818,7 @@ $graph:
       type: string
       jsonldPredicate:
         _id: "gxnative:format_version"
+      pydantic:alias: "format-version"
       doc: |
         Format version. Always ``"0.1"`` currently.
         In the JSON document this field is written as ``format-version``.
@@ -845,6 +856,9 @@ $graph:
         Semantic version for published workflows.
     - name: creator
       type: Any?
+      pydantic:type: "list[NativeCreatorPerson | NativeCreatorOrganization] | None"
+      pydantic:discriminator_field: "class"
+      pydantic:discriminator_map: '{"Person": "NativeCreatorPerson", "Organization": "NativeCreatorOrganization"}'
       jsonldPredicate:
         _id: "gxnative:NativeGalaxyWorkflow/creator"
         noLinkCheck: true
@@ -887,6 +901,9 @@ $graph:
         - "null"
         - type: array
           items: "#NativeComment"
+      pydantic:type: "list[NativeTextComment | NativeMarkdownComment | NativeFrameComment | NativeFreehandComment] | None"
+      pydantic:discriminator_field: "type"
+      pydantic:discriminator_map: '{"text": "NativeTextComment", "markdown": "NativeMarkdownComment", "frame": "NativeFrameComment", "freehand": "NativeFreehandComment"}'
       jsonldPredicate:
         _id: "gxnative:NativeGalaxyWorkflow/comments"
         noLinkCheck: true
@@ -894,6 +911,7 @@ $graph:
         Visual annotations in the workflow editor.
     - name: steps
       type: Any?
+      pydantic:type: "dict[str, NativeStep] | None"
       jsonldPredicate:
         _id: "gxnative:NativeGalaxyWorkflow/steps"
         noLinkCheck: true
@@ -903,6 +921,7 @@ $graph:
         numeric order during import.
     - name: subworkflows
       type: Any?
+      pydantic:type: "dict[str, NativeGalaxyWorkflow] | None"
       jsonldPredicate:
         _id: "gxnative:NativeGalaxyWorkflow/subworkflows"
         noLinkCheck: true
