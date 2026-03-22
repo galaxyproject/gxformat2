@@ -73,13 +73,15 @@ exclude = [
     "gxformat2/schema/v19_09.py",
     "gxformat2/schema/native_v0_1.py",
     "gxformat2/schema/gxformat2.py",
+    "gxformat2/schema/gxformat2_strict.py",
     "gxformat2/schema/native.py",
+    "gxformat2/schema/native_strict.py",
 ]
 
 [tool.black]
 line-length = 120
 extend-exclude = '''
-^/gxformat2/schema/(v19_09|native_v0_1|gxformat2|native).py
+^/gxformat2/schema/(v19_09|native_v0_1|gxformat2|gxformat2_strict|native|native_strict).py
 '''
 
 [tool.setuptools.dynamic]

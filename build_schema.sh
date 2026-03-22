@@ -77,7 +77,9 @@ SKIP_PYDANTIC=${SKIP_PYDANTIC:-0}
 if [ $SKIP_PYDANTIC -eq 0 ]; then
     cd "${PROJECT_DIRECTORY}"
     schema-salad-plus-pydantic generate schema/v19_09/workflow.yml -o gxformat2/schema/gxformat2.py
+    schema-salad-plus-pydantic generate schema/v19_09/workflow.yml --strict -o gxformat2/schema/gxformat2_strict.py
     schema-salad-plus-pydantic generate schema/native_v0_1/workflow.yml -o gxformat2/schema/native.py
+    schema-salad-plus-pydantic generate schema/native_v0_1/workflow.yml --strict -o gxformat2/schema/native_strict.py
     schema-salad-plus-pydantic enhance-docs schema/native_v0_1/workflow.yml "${DIST_DIRECTORY}/native_v0_1.html"
 else
     # Fallback post-processing without schema-salad-plus-pydantic
