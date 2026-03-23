@@ -116,6 +116,13 @@ def normalized_format2(
             workflow = from_galaxy_native(workflow)
         elif "$graph" in workflow and "class" not in workflow:
             workflow = _resolve_graph(workflow)
+        # Ensure required fields have defaults for lenient parsing
+        if "inputs" not in workflow:
+            workflow = {**workflow, "inputs": {}}
+        if "outputs" not in workflow:
+            workflow = {**workflow, "outputs": {}}
+        if "steps" not in workflow:
+            workflow = {**workflow, "steps": {}}
         workflow = GalaxyWorkflow.model_validate(workflow)
     return _normalize_workflow(workflow)
 
