@@ -31,6 +31,7 @@ $graph:
     - tool
     - subworkflow
     - pause
+    - pick_value
   doc:
     - "Step module types in the native Galaxy workflow format."
     - "data_input: A single dataset input to the workflow."
@@ -39,6 +40,7 @@ $graph:
     - "tool: A Galaxy tool execution step."
     - "subworkflow: An embedded or referenced sub-workflow."
     - "pause: A manual pause point that halts execution until user intervention."
+    - "pick_value: Select the first non-null value from multiple inputs."
 
 - name: NativeStepInput
   type: record

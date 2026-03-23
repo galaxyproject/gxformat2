@@ -44,7 +44,8 @@ data_collection_input: A dataset collection input to the workflow.
 parameter_input: A typed parameter input (text, integer, float, boolean, color).
 tool: A Galaxy tool execution step.
 subworkflow: An embedded or referenced sub-workflow.
-pause: A manual pause point that halts execution until user intervention."""
+pause: A manual pause point that halts execution until user intervention.
+pick_value: Select the first non-null value from multiple inputs."""
 
     data_input = "data_input"
     data_collection_input = "data_collection_input"
@@ -52,6 +53,7 @@ pause: A manual pause point that halts execution until user intervention."""
     tool = "tool"
     subworkflow = "subworkflow"
     pause = "pause"
+    pick_value = "pick_value"
 
 
 def _discriminate_creator(v: Any) -> str:
