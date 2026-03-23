@@ -5,13 +5,21 @@ import json
 import logging
 import sys
 from collections import OrderedDict
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional, Union
+
+from pydantic import BaseModel as PydanticBaseModel
 
 from ._labels import Labels, UNLABELED_INPUT_PREFIX, UNLABELED_STEP_PREFIX
 from .model import (
     flatten_comment_data,
     native_input_to_format2_type,
-    prune_position,
+)
+from .native import load_native
+from .schema.native import (
+    NativeGalaxyWorkflow,
+    NativeInputConnection,
+    NativeStep,
+    NativeWorkflowOutput,
 )
 from .yaml import ordered_dump
 
@@ -28,82 +36,87 @@ SCRIPT_DESCRIPTION = """
 Convert a native Galaxy workflow description into a Format 2 description.
 """
 
+INPUT_STEP_TYPES = ("data_input", "data_collection_input", "parameter_input")
 
-def _copy_common_properties(from_native_step, to_format2_step, compact=False):
-    annotation = from_native_step.get("annotation")
-    if annotation:
-        to_format2_step["doc"] = annotation
-    props = ("when") if compact else ("position", "when")
-    for prop in props:
-        value = from_native_step.get(prop)
-        if value:
-            to_format2_step[prop] = value
+
+def _copy_common_properties(step: NativeStep, to_format2_step: dict, compact: bool = False) -> None:
+    if step.annotation:
+        to_format2_step["doc"] = step.annotation
+    if not compact and step.position:
+        to_format2_step["position"] = {"left": step.position.left, "top": step.position.top}
+    if step.when:
+        to_format2_step["when"] = step.when
 
 
 def from_galaxy_native(
-    native_workflow_dict,
+    native_workflow_dict: Union[dict[str, Any], NativeGalaxyWorkflow],
     tool_interface=None,
-    json_wrapper=False,
-    compact=False,
+    json_wrapper: bool = False,
+    compact: bool = False,
     convert_tool_state: ConvertToolStateFn = None,
 ):
     """Convert native .ga workflow definition to a format2 workflow.
-
-    This is highly experimental and currently broken.
 
     If ``convert_tool_state`` is provided it should be a callable accepting a
     native step dict and returning an optional dict representing the format2
     ``state`` for that step.  When the callable returns a dict, the step will
     carry ``state`` instead of ``tool_state``; when it returns ``None`` the
-    default ``tool_state`` passthrough is used.  This allows schema-aware
-    consumers to inject tool-definition-aware value conversion without
-    gxformat2 needing to know about tool definitions.
+    default ``tool_state`` passthrough is used.
     """
+    if isinstance(native_workflow_dict, dict):
+        workflow = load_native(native_workflow_dict, strict=False)
+    else:
+        workflow = native_workflow_dict
+
     data: OrderedDict[str, Any] = OrderedDict()
     data["class"] = "GalaxyWorkflow"
-    _copy_common_properties(native_workflow_dict, data, compact=compact)
-    if "name" in native_workflow_dict:
-        data["label"] = native_workflow_dict.pop("name")
-    for top_level_key in ["creator", "license", "release", "tags", "uuid", "report"]:
-        value = native_workflow_dict.get(top_level_key)
-        if value:
-            data[top_level_key] = value
 
-    native_steps = native_workflow_dict.get("steps")
+    # Workflow-level properties
+    if workflow.annotation:
+        data["doc"] = workflow.annotation
+    if workflow.name:
+        data["label"] = workflow.name
+    if workflow.creator:
+        data["creator"] = [c.model_dump(by_alias=True, exclude_none=True) for c in workflow.creator]
+    if workflow.license:
+        data["license"] = workflow.license
+    if workflow.release:
+        data["release"] = workflow.release
+    if workflow.tags:
+        data["tags"] = workflow.tags
+    if workflow.uuid:
+        data["uuid"] = workflow.uuid
+    if workflow.report:
+        data["report"] = workflow.report.model_dump(by_alias=True, exclude_none=True)
 
-    label_map = {}
+    native_steps = workflow.steps or {}
+
+    label_map: dict[str, str] = {}
     all_labeled = True
     for key, step in native_steps.items():
-        label = step.get("label")
-        if not label:
+        if not step.label:
             all_labeled = False
-        if label is None and step.get("type") in ("data_input", "data_collection_input", "parameter_input"):
-            label_map[str(key)] = f"{UNLABELED_INPUT_PREFIX}{step['id']}"
-        elif label is None:
-            label_map[str(key)] = f"{UNLABELED_STEP_PREFIX}{step['id']}"
+        if step.label is None and step.type_ in INPUT_STEP_TYPES:
+            label_map[str(key)] = f"{UNLABELED_INPUT_PREFIX}{step.id}"
+        elif step.label is None:
+            label_map[str(key)] = f"{UNLABELED_STEP_PREFIX}{step.id}"
         else:
-            label_map[str(key)] = label
+            label_map[str(key)] = step.label
 
     inputs: OrderedDict[str, Any] = OrderedDict()
     outputs: OrderedDict[str, Any] = OrderedDict()
     steps: list[OrderedDict[str, Any]] = []
-    step_dict: OrderedDict[str, Any]
 
     labels = Labels()
 
-    # For each step, rebuild the form and encode the state
     for step in native_steps.values():
-        if not compact:
-            position = prune_position(step)
-            if position:
-                step["position"] = position
-        for workflow_output in step.get("workflow_outputs", []):
-            source = _to_source(workflow_output, label_map, output_id=step["id"])
-            output_id = labels.ensure_new_output_label(workflow_output.get("label"))
+        for workflow_output in step.workflow_outputs or []:
+            source = _to_source(workflow_output, label_map, output_id=step.id)
+            output_id = labels.ensure_new_output_label(workflow_output.label)
             outputs[output_id] = {"outputSource": source}
 
-        module_type = step.get("type")
-        if module_type in ["data_input", "data_collection_input", "parameter_input"]:
+        module_type = step.type_
+        if module_type in INPUT_STEP_TYPES:
             _convert_input_step(step, inputs, compact)
         elif module_type == "pause":
             steps.append(_convert_pause_step(step, label_map, compact))
@@ -118,10 +131,10 @@ def from_galaxy_native(
 
         # Ensure unlabeled non-input steps get a sentinel label so source
         # references using label_map can resolve on reimport.
-        if module_type not in ("data_input", "data_collection_input", "parameter_input"):
+        if module_type not in INPUT_STEP_TYPES:
             step_dict = steps[-1]
             if "label" not in step_dict:
-                sentinel = label_map.get(str(step["id"]))
+                sentinel = label_map.get(str(step.id))
                 if sentinel is not None:
                     step_dict["label"] = sentinel
 
@@ -130,14 +143,14 @@ def from_galaxy_native(
 
     if all_labeled:
         steps_dict = OrderedDict()
-        for step in steps:
-            label = step.pop("label")
-            steps_dict[label] = step
+        for fmt2_step in steps:
+            label = fmt2_step.pop("label")
+            steps_dict[label] = fmt2_step
         data["steps"] = steps_dict
     else:
         data["steps"] = steps
 
-    _convert_comments_to_format2(native_workflow_dict, data, label_map, compact)
+    _convert_comments_to_format2(workflow, data, label_map, compact)
 
     if json_wrapper:
         return {"yaml_content": ordered_dump(data)}
@@ -145,11 +158,11 @@ def from_galaxy_native(
     return data
 
 
-def _convert_input_step(step, inputs, compact):
-    step_id = step["label"] if step["label"] is not None else f"{UNLABELED_INPUT_PREFIX}{step['id']}"
-    input_dict = {}
+def _convert_input_step(step: NativeStep, inputs: OrderedDict, compact: bool) -> None:
+    step_id = step.label if step.label is not None else f"{UNLABELED_INPUT_PREFIX}{step.id}"
+    input_dict: dict[str, Any] = {}
     tool_state = _tool_state(step)
-    input_dict["type"] = native_input_to_format2_type(step, tool_state)
+    input_dict["type"] = native_input_to_format2_type({"type": step.type_}, tool_state)
     known_fields = [
         "collection_type",
         "optional",
@@ -173,8 +186,8 @@ def _convert_input_step(step, inputs, compact):
         inputs[step_id] = input_dict
 
 
-def _convert_pause_step(step, label_map, compact):
-    step_dict = OrderedDict()
+def _convert_pause_step(step: NativeStep, label_map: dict, compact: bool) -> OrderedDict:
+    step_dict: OrderedDict[str, Any] = OrderedDict()
     _copy_common_properties(step, step_dict, compact=compact)
     _copy_properties(step, step_dict, optional_props=["label"])
     _convert_input_connections(step, step_dict, label_map)
@@ -182,15 +195,15 @@ def _convert_pause_step(step, label_map, compact):
     return step_dict
 
 
-def _convert_pick_value_step(step, label_map, compact):
-    step_dict = OrderedDict()
+def _convert_pick_value_step(step: NativeStep, label_map: dict, compact: bool) -> OrderedDict:
+    step_dict: OrderedDict[str, Any] = OrderedDict()
     _copy_common_properties(step, step_dict, compact=compact)
     _copy_properties(step, step_dict, optional_props=["label"])
     _convert_input_connections(step, step_dict, label_map)
     _convert_post_job_actions(step, step_dict)
     step_dict["type"] = "pick_value"
-    tool_state = json.loads(step.get("tool_state", "{}"))
-    state = {}
+    tool_state = _tool_state(step)
+    state: dict[str, Any] = {}
     if "mode" in tool_state:
         state["mode"] = tool_state["mode"]
     if state:
@@ -198,20 +211,24 @@ def _convert_pick_value_step(step, label_map, compact):
     return step_dict
 
 
-def _convert_subworkflow_step(step, label_map, compact, tool_interface, convert_tool_state):
-    step_dict = OrderedDict()
+def _convert_subworkflow_step(
+    step: NativeStep,
+    label_map: dict,
+    compact: bool,
+    tool_interface,
+    convert_tool_state: ConvertToolStateFn,
+) -> OrderedDict:
+    step_dict: OrderedDict[str, Any] = OrderedDict()
     _copy_common_properties(step, step_dict, compact=compact)
     _copy_properties(step, step_dict, optional_props=["label"])
     _convert_input_connections(step, step_dict, label_map)
     _convert_post_job_actions(step, step_dict)
-    content_source = step.get("content_source")
-    content_id = step.get("content_id")
-    if content_source in ("url", "trs_url") and content_id:
-        step_dict["run"] = content_id
+    content_source = getattr(step, "content_source", None)
+    if content_source in ("url", "trs_url") and step.content_id:
+        step_dict["run"] = step.content_id
     else:
-        subworkflow_native_dict = step["subworkflow"]
         subworkflow = from_galaxy_native(
-            subworkflow_native_dict,
+            step.subworkflow,
             tool_interface=tool_interface,
             json_wrapper=False,
             compact=compact,
@@ -221,25 +238,30 @@ def _convert_subworkflow_step(step, label_map, compact, tool_interface, convert_
     return step_dict
 
 
-def _convert_tool_step(step, label_map, compact, convert_tool_state):
-    tool_representation = step.get("tool_representation")
+def _convert_tool_step(
+    step: NativeStep,
+    label_map: dict,
+    compact: bool,
+    convert_tool_state: ConvertToolStateFn,
+) -> OrderedDict:
+    tool_representation = step.tool_representation
     if tool_representation and tool_representation.get("class") == "GalaxyUserTool":
         return _convert_user_defined_tool_step(step, tool_representation, label_map, compact)
 
-    step_dict = OrderedDict()
-    optional_props = ["label", "tool_shed_repository"]
-    required_props = ["tool_id", "tool_version"]
-    _copy_properties(step, step_dict, optional_props, required_props)
+    step_dict: OrderedDict[str, Any] = OrderedDict()
+    _copy_properties(
+        step, step_dict, optional_props=["label", "tool_shed_repository"], required_props=["tool_id", "tool_version"]
+    )
     _copy_common_properties(step, step_dict, compact=compact)
 
     converted_state = None
     if convert_tool_state is not None:
         try:
-            converted_state = convert_tool_state(step)
+            converted_state = convert_tool_state(step.model_dump(by_alias=True, exclude_none=True))
         except Exception:
             log.warning(
                 "convert_tool_state callback failed for %s, falling back to default",
-                step.get("tool_id"),
+                step.tool_id,
                 exc_info=True,
             )
 
@@ -256,8 +278,13 @@ def _convert_tool_step(step, label_map, compact, convert_tool_state):
     return step_dict
 
 
-def _convert_user_defined_tool_step(step, tool_representation, label_map, compact):
-    step_dict = OrderedDict()
+def _convert_user_defined_tool_step(
+    step: NativeStep,
+    tool_representation: dict[str, Any],
+    label_map: dict,
+    compact: bool,
+) -> OrderedDict:
+    step_dict: OrderedDict[str, Any] = OrderedDict()
     _copy_properties(step, step_dict, optional_props=["label"])
     _copy_common_properties(step, step_dict, compact=compact)
     step_dict["run"] = tool_representation
@@ -266,13 +293,20 @@ def _convert_user_defined_tool_step(step, tool_representation, label_map, compac
     return step_dict
 
 
-def _convert_comments_to_format2(native_workflow_dict, data, label_map, compact):
+def _convert_comments_to_format2(
+    workflow: NativeGalaxyWorkflow,
+    data: dict,
+    label_map: dict,
+    compact: bool,
+) -> None:
     """Convert native comments to Format2 representation and add to data dict."""
-    native_comments = native_workflow_dict.get("comments", [])
-    if not native_comments:
+    if not workflow.comments:
         return
 
-    comment_label_map = {}
+    # Dump to dicts for flatten_comment_data which does dict manipulation
+    native_comments = [c.model_dump(by_alias=True, exclude_none=True) for c in workflow.comments]
+
+    comment_label_map: dict[int, str] = {}
     all_comments_labeled = True
     for i, native_comment in enumerate(native_comments):
         comment_label = native_comment.get("label")
@@ -311,26 +345,35 @@ def _convert_comments_to_format2(native_workflow_dict, data, label_map, compact)
         data["comments"] = format2_comments
 
 
-def _tool_state(step):
-    tool_state = step["tool_state"]
+def _tool_state(step: NativeStep) -> dict[str, Any]:
+    tool_state = step.tool_state
     if isinstance(tool_state, str):
-        tool_state = json.loads(tool_state)
-    return tool_state
+        return json.loads(tool_state)
+    return tool_state if tool_state is not None else {}
 
 
-def _copy_properties(from_native_step, to_format2_step, optional_props=None, required_props=None):
+def _copy_properties(
+    step: NativeStep,
+    to_format2_step: dict,
+    optional_props: list[str] | None = None,
+    required_props: list[str] | None = None,
+) -> None:
     for prop in optional_props or []:
-        value = from_native_step.get(prop)
+        value = getattr(step, prop, None)
         if value:
+            if isinstance(value, PydanticBaseModel):
+                value = value.model_dump(by_alias=True, exclude_none=True)
             to_format2_step[prop] = value
     for prop in required_props or []:
-        value = from_native_step.get(prop)
+        value = getattr(step, prop, None)
+        if isinstance(value, PydanticBaseModel):
+            value = value.model_dump(by_alias=True, exclude_none=True)
         to_format2_step[prop] = value
 
 
-def _convert_input_connections(from_native_step, to_format2_step, label_map):
-    in_dict = from_native_step.get("in", {}).copy()
-    input_connections = from_native_step["input_connections"]
+def _convert_input_connections(step: NativeStep, to_format2_step: dict, label_map: dict) -> None:
+    in_dict: dict[str, Any] = dict(step.in_) if step.in_ else {}
+    input_connections = step.input_connections or {}
     for input_name, input_defs in input_connections.items():
         if not isinstance(input_defs, list):
             input_defs = [input_defs]
@@ -351,7 +394,7 @@ def _convert_input_connections(from_native_step, to_format2_step, label_map):
     to_format2_step["in"] = in_dict
 
 
-def _convert_post_job_actions(from_native_step, to_format2_step):
+def _convert_post_job_actions(step: NativeStep, to_format2_step: dict) -> None:
 
     def _ensure_output_def(key):
         if "outputs" in to_format2_step:
@@ -364,63 +407,61 @@ def _convert_post_job_actions(from_native_step, to_format2_step):
             outputs_dict[key] = {}
         return outputs_dict[key]
 
-    if "post_job_actions" in from_native_step:
-        post_job_actions = from_native_step["post_job_actions"].copy()
-        to_remove_keys = []
+    if not step.post_job_actions:
+        return
 
-        for post_job_action_key, post_job_action_value in post_job_actions.items():
-            action_type = post_job_action_value["action_type"]
-            output_name = post_job_action_value.get("output_name")
-            action_args = post_job_action_value.get("action_arguments", {})
+    remaining: dict[str, Any] = {}
+    for pja_key, pja in step.post_job_actions.items():
+        action_type = pja.action_type
+        output_name = pja.output_name
+        action_args = pja.action_arguments or {}
 
-            handled = True
-            if action_type == "RenameDatasetAction":
-                output_dict = _ensure_output_def(output_name)
-                output_dict["rename"] = action_args["newname"]
-                handled = True
-            elif action_type == "HideDatasetAction":
-                output_dict = _ensure_output_def(output_name)
-                output_dict["hide"] = True
-                handled = True
-            elif action_type == "DeleteIntermediatesAction":
-                output_dict = _ensure_output_def(output_name)
-                output_dict["delete_intermediate_datasets"] = True
-            elif action_type == "ChangeDatatypeAction":
-                output_dict = _ensure_output_def(output_name)
-                output_dict["change_datatype"] = action_args["newtype"]
-                handled = True
-            elif action_type == "TagDatasetAction":
-                output_dict = _ensure_output_def(output_name)
-                output_dict["add_tags"] = action_args["tags"].split(",")
-            elif action_type == "RemoveTagDatasetAction":
-                output_dict = _ensure_output_def(output_name)
-                output_dict["remove_tags"] = action_args["tags"].split(",")
-            elif action_type == "ColumnSetAction":
-                output_dict = _ensure_output_def(output_name)
-                output_dict["set_columns"] = action_args
-            else:
-                handled = False
+        handled = True
+        if action_type == "RenameDatasetAction":
+            output_dict = _ensure_output_def(output_name)
+            output_dict["rename"] = action_args["newname"]
+        elif action_type == "HideDatasetAction":
+            output_dict = _ensure_output_def(output_name)
+            output_dict["hide"] = True
+        elif action_type == "DeleteIntermediatesAction":
+            output_dict = _ensure_output_def(output_name)
+            output_dict["delete_intermediate_datasets"] = True
+        elif action_type == "ChangeDatatypeAction":
+            output_dict = _ensure_output_def(output_name)
+            output_dict["change_datatype"] = action_args["newtype"]
+        elif action_type == "TagDatasetAction":
+            output_dict = _ensure_output_def(output_name)
+            output_dict["add_tags"] = action_args["tags"].split(",")
+        elif action_type == "RemoveTagDatasetAction":
+            output_dict = _ensure_output_def(output_name)
+            output_dict["remove_tags"] = action_args["tags"].split(",")
+        elif action_type == "ColumnSetAction":
+            output_dict = _ensure_output_def(output_name)
+            output_dict["set_columns"] = action_args
+        else:
+            handled = False
 
-            if handled:
-                to_remove_keys.append(post_job_action_key)
+        if not handled:
+            remaining[pja_key] = pja.model_dump(by_alias=True, exclude_none=True)
 
-        for to_remove in to_remove_keys:
-            del post_job_actions[to_remove]
-
-        if post_job_actions:
-            to_format2_step["post_job_actions"] = post_job_actions
+    if remaining:
+        to_format2_step["post_job_actions"] = remaining
 
 
-def _to_source(has_output_name, label_map, output_id=None):
-    output_id = output_id if output_id is not None else has_output_name["id"]
-    output_id = str(output_id)
-    output_name = has_output_name["output_name"]
-    output_label = label_map.get(output_id) or output_id
+def _to_source(
+    has_output_name: Union[NativeWorkflowOutput, NativeInputConnection],
+    label_map: dict,
+    output_id: int | None = None,
+) -> str:
+    if output_id is None:
+        assert isinstance(has_output_name, NativeInputConnection)
+        output_id = has_output_name.id
+    output_id_str = str(output_id)
+    output_name = has_output_name.output_name
+    output_label = label_map.get(output_id_str) or output_id_str
     if output_name == "output":
-        source = output_label
-    else:
-        source = f"{output_label}/{output_name}"
-    return source
+        return output_label
+    return f"{output_label}/{output_name}"
 
 
 def main(argv=None):
