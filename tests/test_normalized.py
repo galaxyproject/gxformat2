@@ -1,6 +1,19 @@
 """Tests for gxformat2.normalized models."""
 
-from gxformat2.normalized import normalized_format2, normalized_native
+import base64
+
+import pytest
+import yaml
+
+from gxformat2.normalized import (
+    expanded_format2,
+    expanded_native,
+    ExpandedFormat2,
+    ExpandedNativeWorkflow,
+    normalized_format2,
+    normalized_native,
+)
+from gxformat2.options import ConversionOptions
 
 
 class TestNormalizedFormat2Graph:
@@ -192,3 +205,211 @@ class TestNormalizedFormat2Basics:
         }
         wf = normalized_format2(native)
         assert len(wf.inputs) >= 1
+
+    def test_url_run_passes_through(self):
+        wf = normalized_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {"nested": {"run": "https://example.com/wf.ga", "in": {"x": "x"}}},
+            }
+        )
+        assert wf.steps[0].run == "https://example.com/wf.ga"
+
+
+INNER_WORKFLOW = {
+    "class": "GalaxyWorkflow",
+    "inputs": {"inner_input": "data"},
+    "outputs": {},
+    "steps": {"inner_tool": {"tool_id": "random_lines1", "in": {"input": "inner_input"}}},
+}
+
+INNER_NATIVE = {
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Inner",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "data_input",
+            "label": "inner_input",
+            "tool_state": "{}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+        },
+        "1": {
+            "id": 1,
+            "type": "tool",
+            "tool_id": "random_lines1",
+            "input_connections": {"input": {"id": 0, "output_name": "output"}},
+        },
+    },
+}
+
+
+class TestExpandedFormat2:
+    """expanded_format2 resolves references."""
+
+    def test_inline_subworkflow_preserved(self):
+        wf = expanded_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {"nested": {"run": INNER_WORKFLOW, "in": {"x": "x"}}},
+            }
+        )
+        assert isinstance(wf, ExpandedFormat2)
+        assert wf.steps[0].run is not None
+        assert wf.steps[0].run.steps[0].tool_id == "random_lines1"
+
+    def test_url_resolved_via_resolver(self):
+        def mock_resolver(url):
+            assert url == "https://example.com/wf.yml"
+            return INNER_WORKFLOW.copy()
+
+        opts = ConversionOptions(url_resolver=mock_resolver)
+        wf = expanded_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {"nested": {"run": "https://example.com/wf.yml", "in": {"x": "x"}}},
+            },
+            options=opts,
+        )
+        assert isinstance(wf, ExpandedFormat2)
+        assert wf.steps[0].run is not None
+        assert wf.steps[0].run.steps[0].tool_id == "random_lines1"
+
+    def test_base64_url_resolved(self):
+        encoded = base64.b64encode(yaml.dump(INNER_WORKFLOW).encode()).decode()
+        wf = expanded_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {"nested": {"run": f"base64://{encoded}", "in": {"x": "x"}}},
+            },
+        )
+        assert wf.steps[0].run is not None
+        assert wf.steps[0].run.steps[0].tool_id == "random_lines1"
+
+    def test_import_resolved(self, tmp_path):
+        inner_path = tmp_path / "inner.gxwf.yml"
+        inner_path.write_text(yaml.dump(INNER_WORKFLOW))
+
+        opts = ConversionOptions(workflow_directory=str(tmp_path))
+        wf = expanded_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {"nested": {"run": {"@import": "inner.gxwf.yml"}, "in": {"x": "x"}}},
+            },
+            options=opts,
+        )
+        assert wf.steps[0].run is not None
+        assert wf.steps[0].run.steps[0].tool_id == "random_lines1"
+
+    def test_cycle_detection(self):
+        call_count = 0
+
+        def cyclic_resolver(url):
+            nonlocal call_count
+            call_count += 1
+            return {
+                "class": "GalaxyWorkflow",
+                "inputs": {},
+                "outputs": {},
+                "steps": {"s": {"run": url}},
+            }
+
+        opts = ConversionOptions(url_resolver=cyclic_resolver)
+        with pytest.raises(ValueError, match="Circular"):
+            expanded_format2(
+                {
+                    "class": "GalaxyWorkflow",
+                    "inputs": {},
+                    "outputs": {},
+                    "steps": {"s": {"run": "https://example.com/cyclic.yml"}},
+                },
+                options=opts,
+            )
+
+    def test_steps_without_run_unchanged(self):
+        wf = expanded_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {"cat": {"tool_id": "cat1", "in": {"input1": "x"}}},
+            }
+        )
+        assert wf.steps[0].run is None
+        assert wf.steps[0].tool_id == "cat1"
+
+
+class TestExpandedNative:
+    """expanded_native resolves subworkflow references."""
+
+    def test_inline_subworkflow_expanded(self):
+        native = {
+            "a_galaxy_workflow": "true",
+            "format-version": "0.1",
+            "name": "Outer",
+            "steps": {
+                "0": {"id": 0, "type": "data_input", "label": "inp", "tool_state": "{}"},
+                "1": {
+                    "id": 1,
+                    "type": "subworkflow",
+                    "subworkflow": INNER_NATIVE,
+                },
+            },
+        }
+        wf = expanded_native(native)
+        assert isinstance(wf, ExpandedNativeWorkflow)
+        assert wf.steps["1"].subworkflow is not None
+        assert wf.steps["1"].subworkflow.steps["1"].tool_id == "random_lines1"
+
+    def test_url_content_id_resolved(self):
+        def mock_resolver(url):
+            return INNER_NATIVE.copy()
+
+        opts = ConversionOptions(url_resolver=mock_resolver)
+        native = {
+            "a_galaxy_workflow": "true",
+            "format-version": "0.1",
+            "name": "Outer",
+            "steps": {
+                "0": {"id": 0, "type": "data_input", "label": "inp", "tool_state": "{}"},
+                "1": {
+                    "id": 1,
+                    "type": "subworkflow",
+                    "content_id": "https://example.com/inner.ga",
+                },
+            },
+        }
+        wf = expanded_native(native, options=opts)
+        assert wf.steps["1"].subworkflow is not None
+        assert wf.steps["1"].subworkflow.steps["1"].tool_id == "random_lines1"
+
+    def test_non_url_content_id_unchanged(self):
+        native = {
+            "a_galaxy_workflow": "true",
+            "format-version": "0.1",
+            "name": "Outer",
+            "steps": {
+                "0": {
+                    "id": 0,
+                    "type": "subworkflow",
+                    "content_id": "$local_ref",
+                },
+            },
+        }
+        wf = expanded_native(native)
+        assert wf.steps["0"].subworkflow is None
+        assert wf.steps["0"].content_id == "$local_ref"

@@ -636,6 +636,8 @@ dependencies = [
     { name = "eval-type-backport", marker = "python_full_version < '3.10'" },
     { name = "pydantic" },
     { name = "pyyaml" },
+    { name = "requests", version = "2.32.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "requests", version = "2.33.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "schema-salad", version = "8.8.20250205075315", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "schema-salad", version = "8.9.20251102115403", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "typing-extensions" },
@@ -693,6 +695,7 @@ requires-dist = [
     { name = "eval-type-backport", marker = "python_full_version < '3.10'" },
     { name = "pydantic", specifier = ">=2.0" },
     { name = "pyyaml" },
+    { name = "requests" },
     { name = "schema-salad", specifier = ">8.7.20241010092723" },
     { name = "typing-extensions" },
 ]
