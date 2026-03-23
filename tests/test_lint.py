@@ -1,11 +1,23 @@
 import copy
+import json
 import os
 
-from gxformat2.lint import main
+import pytest
+
+from gxformat2.lint import (
+    lint_best_practices_ga,
+    lint_ga,
+    lint_pydantic_validation,
+    main,
+)
+from gxformat2.linting import LintContext
 from gxformat2.yaml import ordered_dump, ordered_load
 from ._helpers import (
     assert_valid_native,
     copy_without_workflow_output_labels,
+    find_iwc_ga_files,
+    IWC_DIR,
+    iwc_fixture_ids,
     round_trip,
     TEST_INTEROP_EXAMPLES,
     TEST_PATH,
@@ -306,3 +318,39 @@ def _dump_with_exit_code(as_dict, exit_code, description):
     with open(os.path.join(TEST_LINT_EXAMPLES, "%d_%s.yml" % (exit_code, description)), "w") as fd:
         ordered_dump(as_dict, fd)
         fd.flush()
+
+
+# --- IWC integration tests ---
+
+GA_FILES = find_iwc_ga_files()
+
+
+@pytest.mark.skipif(IWC_DIR is None, reason="GXFORMAT2_TEST_IWC_DIRECTORY not set")
+class TestIWCLint:
+
+    @pytest.fixture(
+        params=GA_FILES,
+        ids=iwc_fixture_ids(GA_FILES),
+    )
+    def ga_path_and_dict(self, request):
+        with open(request.param) as f:
+            return request.param, json.load(f)
+
+    def test_structural_lint(self, ga_path_and_dict):
+        path, workflow_dict = ga_path_and_dict
+        ctx = LintContext()
+        lint_ga(ctx, workflow_dict, path=path)
+        assert not ctx.error_messages, f"Structural lint errors in {os.path.basename(path)}: {ctx.error_messages}"
+
+    def test_pydantic_validation(self, ga_path_and_dict):
+        _, workflow_dict = ga_path_and_dict
+        ctx = LintContext()
+        lint_pydantic_validation(ctx, workflow_dict, format2=False)
+        assert not ctx.error_messages, f"Pydantic validation errors: {ctx.error_messages}"
+
+    def test_best_practices(self, ga_path_and_dict):
+        _, workflow_dict = ga_path_and_dict
+        ctx = LintContext()
+        lint_best_practices_ga(ctx, workflow_dict)
+        # Best practices produce warnings, not errors — just ensure no crash.
+        # Warnings are expected for many IWC workflows.
