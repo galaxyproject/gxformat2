@@ -80,6 +80,7 @@ class NormalizedNativeStep(BaseModel):
     workflow_outputs: list[NativeWorkflowOutput] = Field(default_factory=list)
     post_job_actions: dict[str, NativePostJobAction] = Field(default_factory=dict)
     subworkflow: NormalizedNativeWorkflow | None = Field(default=None)
+    tool_representation: dict[str, Any] | None = Field(default=None)
     in_: dict[str, Any] | None = Field(default=None, alias="in")
 
 
@@ -199,5 +200,6 @@ def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
         workflow_outputs=step.workflow_outputs or [],
         post_job_actions=step.post_job_actions or {},
         subworkflow=subworkflow,
+        tool_representation=step.tool_representation,
         in_=step.in_,
     )
