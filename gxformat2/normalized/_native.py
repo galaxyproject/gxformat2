@@ -66,6 +66,7 @@ class NormalizedNativeStep(BaseModel):
     annotation: str | None = Field(default=None)
     when: str | None = Field(default=None)
     content_id: str | None = Field(default=None)
+    content_source: str | None = Field(default=None)
     tool_state: dict[str, Any] = Field(default_factory=dict, description="Always a parsed dict, never a JSON string.")
     tool_id: str | None = Field(default=None)
     tool_version: str | None = Field(default=None)
@@ -186,6 +187,7 @@ def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
         annotation=step.annotation,
         when=step.when,
         content_id=step.content_id,
+        content_source=getattr(step, "content_source", None),
         tool_state=tool_state,
         tool_id=step.tool_id,
         tool_version=step.tool_version,

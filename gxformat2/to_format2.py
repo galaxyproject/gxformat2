@@ -144,25 +144,16 @@ def _build_input_param(step: NormalizedNativeStep) -> WorkflowInputParameter:
     tool_state = step.tool_state
     input_type = native_input_to_format2_type({"type": step.type_}, tool_state)
 
-    kwargs: dict[str, Any] = {"id": step_id}
-    if isinstance(input_type, list):
-        kwargs["type_"] = input_type
-    else:
-        kwargs["type_"] = input_type
+    kwargs: dict[str, Any] = {"id": step_id, "type_": input_type}
 
     for key in ("collection_type", "optional", "format", "default", "restrictions",
                 "suggestions", "restrictOnConnections", "fields", "column_definitions"):
         if key in tool_state:
-            # Map to model field names where different
-            if key == "optional":
-                kwargs["optional"] = tool_state[key]
-            elif key == "format":
+            if key == "format":
                 fmt = tool_state[key]
                 kwargs["format"] = [fmt] if isinstance(fmt, str) else fmt
-            elif key == "collection_type":
-                kwargs["collection_type"] = tool_state[key]
-            elif key == "default":
-                kwargs["default"] = tool_state[key]
+            else:
+                kwargs[key] = tool_state[key]
 
     if step.annotation:
         kwargs["doc"] = step.annotation
@@ -275,7 +266,7 @@ def _build_subworkflow_format2_step(
     out_list = _build_step_outputs(step)
 
     run: NormalizedFormat2 | str | None = None
-    content_source = getattr(step, "content_source", None)
+    content_source = step.content_source
     if content_source in ("url", "trs_url") and step.content_id:
         run = step.content_id
     elif step.subworkflow is not None:

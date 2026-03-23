@@ -395,37 +395,25 @@ def _build_subworkflow_step(
     subworkflow: NormalizedNativeWorkflow | None = None
     content_id: str | None = None
 
+    subworkflow_child_ctx: _ConversionContext | None = None
     if isinstance(step.run, NormalizedFormat2):
-        child_ctx = ctx.child_context()
-        # Register subworkflow labels
-        for i, inp in enumerate(step.run.inputs):
-            if inp.id:
-                child_ctx.labels[inp.id] = i
-        for j, sub_step in enumerate(step.run.steps):
-            sub_label = sub_step.label or sub_step.id
-            if sub_label:
-                child_ctx.labels[sub_label] = len(step.run.inputs) + j
-        subworkflow = _build_native_workflow(step.run, child_ctx)
+        subworkflow_child_ctx = ctx.child_context()
+        _register_subworkflow_labels(step.run, subworkflow_child_ctx)
+        subworkflow = _build_native_workflow(step.run, subworkflow_child_ctx)
     elif isinstance(step.run, str):
         # URL reference — pass through as content_id
         content_id = step.run
     elif isinstance(step.run, dict):
         # Dict subworkflow — normalize and convert
-        child_ctx = ctx.child_context()
+        subworkflow_child_ctx = ctx.child_context()
         sub_fmt2 = normalized_format2(step.run)
-        for i, inp in enumerate(sub_fmt2.inputs):
-            if inp.id:
-                child_ctx.labels[inp.id] = i
-        for j, sub_step in enumerate(sub_fmt2.steps):
-            sub_label = sub_step.label or sub_step.id
-            if sub_label:
-                child_ctx.labels[sub_label] = len(sub_fmt2.inputs) + j
-        subworkflow = _build_native_workflow(sub_fmt2, child_ctx)
+        _register_subworkflow_labels(sub_fmt2, subworkflow_child_ctx)
+        subworkflow = _build_native_workflow(sub_fmt2, subworkflow_child_ctx)
 
     connect = _extract_connections(step)
     is_subworkflow = subworkflow is not None
     input_connections = _build_input_connections(
-        connect, ctx, is_subworkflow=is_subworkflow, subworkflow_ctx=ctx.child_context() if is_subworkflow else None
+        connect, ctx, is_subworkflow=is_subworkflow, subworkflow_ctx=subworkflow_child_ctx
     )
     post_job_actions = _build_post_job_actions(step.out)
     position = _default_position(step.position, order_index)
@@ -657,6 +645,17 @@ def _build_native_comments(
         native_comments.append(native_comment)
 
     return native_comments
+
+
+def _register_subworkflow_labels(sub_wf: NormalizedFormat2, child_ctx: _ConversionContext) -> None:
+    """Register input and step labels from a subworkflow into a child context."""
+    for i, inp in enumerate(sub_wf.inputs):
+        if inp.id:
+            child_ctx.labels[inp.id] = i
+    for j, sub_step in enumerate(sub_wf.steps):
+        sub_label = sub_step.label or sub_step.id
+        if sub_label:
+            child_ctx.labels[sub_label] = len(sub_wf.inputs) + j
 
 
 def _default_position(position: StepPosition | None, order_index: int) -> StepPosition:
