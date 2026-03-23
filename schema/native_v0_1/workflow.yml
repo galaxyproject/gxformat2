@@ -1,0 +1,929 @@
+saladVersion: v1.1
+$base: "https://galaxyproject.org/gxformat2/native_v0_1#"
+
+$namespaces:
+  gxnative: "https://galaxyproject.org/gxformat2/native_v0_1#"
+  gxformat2common: "https://galaxyproject.org/gxformat2/gxformat2common#"
+  sld: "https://w3id.org/cwl/salad#"
+  rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+  pydantic: "https://galaxyproject.org/gxformat2/pydantic#"
+
+$graph:
+- name: "NativeWorkflowDoc"
+  type: documentation
+  doc:
+    - |
+      # Galaxy Native Workflow Format (.ga)
+
+      The Galaxy native workflow format is a JSON document (conventionally with `.ga`` extension)
+      that fully describes a workflow's structure, tools, connections, metadata, and visual layout.
+      It is the canonical serialization format used internally by Galaxy.
+
+- $import: "../common/metaschema/metaschema_base.yml"
+- $import: "../common/common.yml"
+
+- name: NativeStepType
+  type: enum
+  symbols:
+    - data_input
+    - data_collection_input
+    - parameter_input
+    - tool
+    - subworkflow
+    - pause
+  doc:
+    - "Step module types in the native Galaxy workflow format."
+    - "data_input: A single dataset input to the workflow."
+    - "data_collection_input: A dataset collection input to the workflow."
+    - "parameter_input: A typed parameter input (text, integer, float, boolean, color)."
+    - "tool: A Galaxy tool execution step."
+    - "subworkflow: An embedded or referenced sub-workflow."
+    - "pause: A manual pause point that halts execution until user intervention."
+
+- name: NativeStepInput
+  type: record
+  docParent: "#NativeStep"
+  doc: |
+    Describes an input parameter on a step. This is metadata about the input,
+    not the connection wiring (which is in ``input_connections``).
+  fields:
+    - name: name
+      type: string
+      jsonldPredicate: "@id"
+      doc: |
+        Name of the input parameter.
+    - name: description
+      type: string?
+      doc: |
+        Human-readable description of this input.
+
+- name: NativeStepOutput
+  type: record
+  docParent: "#NativeStep"
+  doc: |
+    Declares an output produced by a step, with its name and datatype.
+  fields:
+    - name: name
+      type: string
+      jsonldPredicate: "@id"
+      doc: |
+        Name of the output.
+    - name: type
+      type: string?
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Galaxy datatype extension for the output (e.g. ``bam``, ``txt``, ``tabular``).
+        The value ``input`` means the type is determined at runtime from the input data.
+
+- name: NativeWorkflowOutput
+  type: record
+  docParent: "#NativeStep"
+  doc: |
+    Designates a step output as a workflow-level output. These appear in the
+    ``workflow_outputs`` array on each step.
+  fields:
+    - name: label
+      type: string?
+      jsonldPredicate: "rdfs:label"
+      doc: |
+        User-visible label for this workflow output. Must be unique across the workflow.
+    - name: output_name
+      type: string
+      jsonldPredicate:
+        _id: "gxnative:output_name"
+      doc: |
+        Name of the step output to expose as a workflow output.
+    - name: uuid
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/gxformat2common#HasUUID/uuid"
+      doc: |
+        UUID for this workflow output.
+
+- name: NativeInputConnection
+  type: record
+  docParent: "#NativeStep"
+  doc: |
+    Describes a connection from one step's output to another step's input.
+    These objects appear as values in the ``input_connections`` dictionary.
+
+    For multi-valued inputs, the value is an array of these objects rather
+    than a single object.
+  fields:
+    - name: id
+      type: int
+      jsonldPredicate:
+        _id: "gxnative:id"
+      doc: |
+        Step ID of the source step providing the data.
+    - name: output_name
+      type: string
+      jsonldPredicate:
+        _id: "gxnative:output_name"
+      doc: |
+        Name of the output on the source step (typically ``"output"`` for
+        input steps).
+    - name: input_subworkflow_step_id
+      type: int?
+      doc: |
+        For subworkflow steps, the internal step ID within the subworkflow
+        that this connection routes to. Maps the parent connection to the
+        correct input step inside the subworkflow.
+
+- name: NativePostJobAction
+  type: record
+  docParent: "#NativeStep"
+  doc: |
+    An action applied to a step's output after tool execution. These objects
+    appear as values in the ``post_job_actions`` dictionary, keyed by
+    compound strings of the form ``{ActionType}{OutputName}``
+    (e.g. ``HideDatasetActionout_pairs``).
+
+    Common action types: ``HideDatasetAction``, ``RenameDatasetAction``,
+    ``DeleteIntermediatesAction``, ``ChangeDatatypeAction``,
+    ``TagDatasetAction``, ``ColumnSetAction``.
+  fields:
+    - name: action_type
+      type: string
+      doc: |
+        The action type identifier (e.g. ``HideDatasetAction``).
+    - name: output_name
+      type: string
+      jsonldPredicate:
+        _id: "gxnative:output_name"
+      doc: |
+        The step output this action applies to.
+    - name: action_arguments
+      type: Any?
+      pydantic:type: "dict[str, str] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativePostJobAction/action_arguments"
+        noLinkCheck: true
+      doc: |
+        Action-specific arguments. For ``RenameDatasetAction``:
+        ``{"newname": "..."}``; for ``ChangeDatatypeAction``:
+        ``{"newtype": "tabular"}``; for ``TagDatasetAction``:
+        ``{"tags": "name:tag"}``. Empty object ``{}`` for actions
+        without arguments.
+
+# --- Comment type discriminator enums ---
+
+- name: NativeTextCommentType
+  type: enum
+  symbols:
+    - text
+  doc: "Discriminator for text comments."
+
+- name: NativeMarkdownCommentType
+  type: enum
+  symbols:
+    - markdown
+  doc: "Discriminator for markdown comments."
+
+- name: NativeFrameCommentType
+  type: enum
+  symbols:
+    - frame
+  doc: "Discriminator for frame comments."
+
+- name: NativeFreehandCommentType
+  type: enum
+  symbols:
+    - freehand
+  doc: "Discriminator for freehand comments."
+
+# --- Comment data records (per-type) ---
+
+- name: NativeTextCommentData
+  type: record
+  doc: |
+    Data payload for a text comment.
+  fields:
+    - name: text
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextCommentType/text"
+      doc: |
+        The text content.
+    - name: bold
+      type: boolean?
+      doc: |
+        Whether the text is displayed in bold.
+    - name: italic
+      type: boolean?
+      doc: |
+        Whether the text is displayed in italic.
+    - name: size
+      type:
+        - "null"
+        - float
+        - int
+      jsonldPredicate:
+        _id: "gxnative:NativeComment/size"
+        noLinkCheck: true
+      doc: |
+        Font size of the text.
+
+- name: NativeMarkdownCommentData
+  type: record
+  doc: |
+    Data payload for a markdown comment.
+  fields:
+    - name: text
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextCommentType/text"
+      doc: |
+        Markdown content.
+
+- name: NativeFrameCommentData
+  type: record
+  doc: |
+    Data payload for a frame comment.
+  fields:
+    - name: title
+      type: string?
+      doc: |
+        Title displayed on the frame header.
+
+- name: NativeFreehandCommentData
+  type: record
+  doc: |
+    Data payload for a freehand comment.
+  fields:
+    - name: line
+      type: Any?
+      pydantic:type: "list[list[float]] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativeFreehandCommentData/line"
+        noLinkCheck: true
+      doc: |
+        Array of ``[x, y]`` coordinate pairs defining the freehand line path.
+    - name: thickness
+      type:
+        - "null"
+        - float
+        - int
+      doc: |
+        Line thickness.
+
+# --- Base comment record ---
+
+- name: BaseNativeComment
+  type: record
+  abstract: true
+  doc: |
+    Base fields shared by all comment types.
+  fields:
+    - name: id
+      type: int
+      jsonldPredicate:
+        _id: "gxnative:id"
+      doc: |
+        Numeric identifier for this comment (order index).
+    - name: position
+      type: Any?
+      pydantic:type: "list[float] | None"
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition/position"
+      doc: |
+        Position on the editor canvas as ``[x, y]`` coordinates.
+    - name: size
+      type: Any?
+      pydantic:type: "list[float] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativeComment/size"
+        noLinkCheck: true
+      doc: |
+        Size as ``[width, height]``.
+    - name: color
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:NativeComment/color"
+      doc: |
+        Display color (e.g. ``"none"``, ``"blue"``).
+
+# --- Per-type comment records ---
+
+- name: NativeTextComment
+  type: record
+  extends: BaseNativeComment
+  docParent: "#NativeGalaxyWorkflow"
+  doc: |
+    A plain text annotation in the workflow editor.
+  fields:
+    - name: type
+      type: NativeTextCommentType
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Comment type (``text``).
+    - name: data
+      type: NativeTextCommentData?
+      jsonldPredicate:
+        _id: "gxnative:NativeComment/data"
+        noLinkCheck: true
+      doc: |
+        Text content data: ``text``, ``bold``, ``italic``, ``size``.
+
+- name: NativeMarkdownComment
+  type: record
+  extends: BaseNativeComment
+  docParent: "#NativeGalaxyWorkflow"
+  doc: |
+    A Markdown-rendered annotation in the workflow editor.
+  fields:
+    - name: type
+      type: NativeMarkdownCommentType
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Comment type (``markdown``).
+    - name: data
+      type: NativeMarkdownCommentData?
+      jsonldPredicate:
+        _id: "gxnative:NativeComment/data"
+        noLinkCheck: true
+      doc: |
+        Markdown content data: ``text``.
+
+- name: NativeFrameComment
+  type: record
+  extends: BaseNativeComment
+  docParent: "#NativeGalaxyWorkflow"
+  doc: |
+    A rectangular grouping box that visually contains steps and other comments.
+  fields:
+    - name: type
+      type: NativeFrameCommentType
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Comment type (``frame``).
+    - name: data
+      type: NativeFrameCommentData?
+      jsonldPredicate:
+        _id: "gxnative:NativeComment/data"
+        noLinkCheck: true
+      doc: |
+        Frame content data: ``title``.
+    - name: child_steps
+      type:
+        - "null"
+        - type: array
+          items: int
+      jsonldPredicate:
+        _id: "gxnative:NativeComment/child_steps"
+        noLinkCheck: true
+      doc: |
+        Step IDs contained within this frame.
+    - name: child_comments
+      type:
+        - "null"
+        - type: array
+          items: int
+      jsonldPredicate:
+        _id: "gxnative:NativeComment/child_comments"
+        noLinkCheck: true
+      doc: |
+        Comment IDs contained within this frame.
+
+- name: NativeFreehandComment
+  type: record
+  extends: BaseNativeComment
+  docParent: "#NativeGalaxyWorkflow"
+  doc: |
+    A freehand drawn line on the editor canvas.
+  fields:
+    - name: type
+      type: NativeFreehandCommentType
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Comment type (``freehand``).
+    - name: data
+      type: NativeFreehandCommentData?
+      jsonldPredicate:
+        _id: "gxnative:NativeComment/data"
+        noLinkCheck: true
+      doc: |
+        Freehand content data: ``line``, ``thickness``.
+
+# --- Comment union ---
+
+- name: NativeComment
+  type: union
+  names:
+    - NativeTextComment
+    - NativeMarkdownComment
+    - NativeFrameComment
+    - NativeFreehandComment
+  docParent: "#NativeGalaxyWorkflow"
+  doc: |
+    A visual annotation in the workflow editor. Dispatches to the
+    appropriate comment type based on the ``type`` field.
+
+- name: NativeStep
+  type: record
+  docParent: "#NativeGalaxyWorkflow"
+  extends:
+    - gxformat2common:HasStepErrors
+    - gxformat2common:HasStepPosition
+    - gxformat2common:HasUUID
+    - gxformat2common:ReferencesTool
+  doc: |
+    A step in a native Galaxy workflow. Steps are keyed by string integers
+    (``"0"``, ``"1"``, ...) in the ``steps`` dictionary. The key serves as
+    an external ID for connection wiring.
+
+    The ``type`` field determines the step's behavior. All step types share
+    common fields; type-specific fields are optional and only relevant for
+    their respective type.
+
+    # Tool State
+
+    The ``tool_state`` field contains the tool's parameter configuration.
+    Traditionally this is a JSON-encoded string (double-encoded: each top-level
+    value is itself a JSON string), but it may also be a plain dictionary when
+    unencoded tool state is used. Connected parameters are represented as
+    ``{"__class__": "ConnectedValue"}``, runtime parameters as
+    ``{"__class__": "RuntimeValue"}``.
+  fields:
+    - name: id
+      type: int?
+      jsonldPredicate:
+        _id: "gxnative:id"
+      doc: |
+        Step ID. Matches the dictionary key in the ``steps`` object.
+    - name: type
+      type: NativeStepType?
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Step module type.
+    - name: name
+      type: string?
+      jsonldPredicate: "@id"
+      doc: |
+        Display name. For tool steps this is the tool's name; for input steps
+        it is the generic type name (e.g. "Input dataset").
+    - name: label
+      type: string?
+      jsonldPredicate: "rdfs:label"
+      doc: |
+        User-friendly step label. Must be unique within the workflow.
+    - name: annotation
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:annotation"
+      doc: |
+        Human-readable step description.
+    - name: when
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/when"
+        noLinkCheck: true
+      doc: |
+        Conditional execution expression. Typically ``$(inputs.when)``
+        paired with a boolean input connection on the ``when`` key.
+    - name: content_id
+      type: string?
+      doc: |
+        Tool ID or content identifier. Same as ``tool_id`` for tool steps;
+        may reference a subworkflow key for subworkflow steps.
+    - name: tool_state
+      type:
+        - "null"
+        - string
+        - Any
+      pydantic:type: "str | dict[str, Any] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/tool_state"
+        noLinkCheck: true
+      doc: |
+        Tool parameter configuration. Traditionally a JSON-encoded string
+        (double-encoded: each top-level value is itself a JSON string), but
+        may also be a plain dict when ``encode_tool_state`` is disabled
+        during Format2-to-native conversion.
+    - name: tool_uuid
+      type: string?
+      doc: |
+        UUID for dynamic (inline-defined) tools.
+    - name: input_connections
+      type: Any?
+      pydantic:type: "dict[str, NativeInputConnection | list[NativeInputConnection]] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/input_connections"
+        noLinkCheck: true
+      doc: |
+        Connection wiring from other steps' outputs to this step's inputs.
+        Keys are input parameter names (using ``|`` for nested parameters).
+        Values are a NativeInputConnection object or an array of them for
+        multi-valued inputs.
+    - name: inputs
+      type:
+        - "null"
+        - type: array
+          items: NativeStepInput
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/inputs"
+        noLinkCheck: true
+      doc: |
+        Input parameter metadata (descriptions, not connections).
+    - name: outputs
+      type:
+        - "null"
+        - type: array
+          items: NativeStepOutput
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/outputs"
+        noLinkCheck: true
+      doc: |
+        Output declarations with names and datatypes.
+    - name: workflow_outputs
+      type:
+        - "null"
+        - type: array
+          items: NativeWorkflowOutput
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/workflow_outputs"
+        noLinkCheck: true
+      doc: |
+        Outputs designated as workflow-level outputs. Steps with an empty
+        array have all their outputs hidden by default.
+    - name: post_job_actions
+      type: Any?
+      pydantic:type: "dict[str, NativePostJobAction] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/post_job_actions"
+        noLinkCheck: true
+      doc: |
+        Post-job actions applied to outputs after tool execution. Keys are
+        compound strings of the form ``{ActionType}{OutputName}``. Values
+        are NativePostJobAction objects.
+    - name: subworkflow
+      type: Any?
+      pydantic:type: "NativeGalaxyWorkflow | None"
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/subworkflow"
+      doc: |
+        Embedded subworkflow definition. A complete native workflow document
+        (with ``a_galaxy_workflow``, ``format-version``, ``steps``, etc.)
+        nested inside this step.
+    - name: in
+      type: Any?
+      pydantic:type: "dict[str, Any] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/in"
+        noLinkCheck: true
+      doc: |
+        Default values for step inputs. Keys are parameter names, values
+        are objects with a ``default`` key.
+
+- name: NativeReport
+  type: record
+  docParent: "#NativeGalaxyWorkflow"
+  doc: |
+    Workflow invocation report template.
+  fields:
+    - name: markdown
+      type: string
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownCommentType/markdown"
+      doc: |
+        Galaxy-flavored Markdown content for the invocation report. Supports
+        template directives like ``history_dataset_as_image(output="...")``.
+
+# --- Creator types (schema.org Person / Organization) ---
+
+- name: NativeCreatorPersonType
+  type: enum
+  symbols:
+    - Person
+  doc: "Discriminator for schema.org Person creators."
+
+- name: NativeCreatorOrganizationType
+  type: enum
+  symbols:
+    - Organization
+  doc: "Discriminator for schema.org Organization creators."
+
+- name: BaseNativeCreator
+  type: record
+  abstract: true
+  doc: |
+    Base fields shared by all creator types, corresponding to schema.org
+    Thing properties common to both Person and Organization.
+  fields:
+    - name: name
+      type: string?
+      jsonldPredicate: "@id"
+      doc: |
+        Full name of the person or organization.
+    - name: identifier
+      type: string?
+      doc: |
+        Persistent identifier, typically an ORCID URL
+        (e.g. ``https://orcid.org/0000-0001-2345-6789``) or bare ORCID.
+    - name: url
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:url"
+      doc: |
+        Website or profile URL.
+    - name: email
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:NativeCreator/email"
+      doc: |
+        Email address. May include a ``mailto:`` prefix.
+    - name: image
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:NativeCreator/image"
+      doc: |
+        URL to an image or avatar.
+    - name: address
+      type: string?
+      doc: |
+        Physical or mailing address.
+    - name: alternateName
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:NativeCreator/alternateName"
+      doc: |
+        An alternate name or alias.
+    - name: telephone
+      type: string?
+      doc: |
+        Telephone number.
+    - name: faxNumber
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:NativeCreator/faxNumber"
+      doc: |
+        Fax number.
+
+- name: NativeCreatorPerson
+  type: record
+  extends: BaseNativeCreator
+  docParent: "#NativeGalaxyWorkflow"
+  doc: |
+    A person who created or contributed to the workflow.
+    Corresponds to a `schema.org Person <https://schema.org/Person>`_.
+  fields:
+    - name: class
+      type: NativeCreatorPersonType
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      doc: |
+        Creator type discriminator (``Person``).
+    - name: givenName
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:NativeCreatorPerson/givenName"
+      doc: |
+        Given (first) name.
+    - name: familyName
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:NativeCreatorPerson/familyName"
+      doc: |
+        Family (last) name.
+    - name: honorificPrefix
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:NativeCreatorPerson/honorificPrefix"
+      doc: |
+        Honorific prefix (e.g. ``Dr``, ``Prof``).
+    - name: honorificSuffix
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:NativeCreatorPerson/honorificSuffix"
+      doc: |
+        Honorific suffix (e.g. ``M.D.``, ``PhD``).
+    - name: jobTitle
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:NativeCreatorPerson/jobTitle"
+      doc: |
+        Job title or role.
+
+- name: NativeCreatorOrganization
+  type: record
+  extends: BaseNativeCreator
+  docParent: "#NativeGalaxyWorkflow"
+  doc: |
+    An organization that created or contributed to the workflow.
+    Corresponds to a `schema.org Organization <https://schema.org/Organization>`_.
+  fields:
+    - name: class
+      type: NativeCreatorOrganizationType
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      doc: |
+        Creator type discriminator (``Organization``).
+
+- name: NativeCreator
+  type: union
+  names:
+    - NativeCreatorPerson
+    - NativeCreatorOrganization
+  docParent: "#NativeGalaxyWorkflow"
+  doc: |
+    A workflow creator, either a person or organization. Dispatched via
+    the ``class`` field (``Person`` or ``Organization``).
+
+- name: NativeSourceMetadata
+  type: record
+  docParent: "#NativeGalaxyWorkflow"
+  doc: |
+    Provenance tracking for workflows imported from external sources.
+    Contains either a direct URL or TRS (Tool Registry Service) metadata,
+    depending on how the workflow was imported.
+
+    For URL imports, only ``url`` is set. For TRS imports (Dockstore,
+    WorkflowHub), ``trs_tool_id``, ``trs_version_id``, and ``trs_url``
+    are set, with ``trs_server`` optionally identifying the server.
+  fields:
+    - name: url
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:url"
+      doc: |
+        URL from which the workflow was directly imported.
+    - name: trs_tool_id
+      type: string?
+      doc: |
+        Tool identifier in the Tool Registry Service
+        (e.g. ``"#workflow/github.com/user/repo/workflow"`` or ``"109"``).
+    - name: trs_version_id
+      type: string?
+      doc: |
+        Version identifier in the TRS (e.g. ``"master"``, ``"5"``).
+    - name: trs_server
+      type: string?
+      doc: |
+        TRS server name (e.g. ``"dockstore"``, ``"workflowhub"``).
+        Optional even for TRS imports.
+    - name: trs_url
+      type: string?
+      doc: |
+        Complete TRS API endpoint URL for this workflow version.
+
+- name: NativeGalaxyWorkflow
+  type: record
+  extends:
+    - gxformat2common:HasUUID
+  documentRoot: true
+  doc: |
+    A Galaxy native workflow document (.ga format). This is the canonical
+    serialization format used internally by Galaxy.
+
+    The native format mirrors the database schema directly -- steps are keyed
+    by numeric IDs, connections reference step IDs, and tool state is stored
+    as double-encoded JSON strings.
+
+    The format version has been ``"0.1"`` since inception. New features are
+    added without version bumps.
+  fields:
+    - name: class
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      type:
+        type: enum
+        name: NativeGalaxyWorkflow_class
+        symbols: [ gxnative:NativeGalaxyWorkflow ]
+    - name: a_galaxy_workflow
+      type: string
+      doc: |
+        Format marker. Always the string ``"true"``.
+    - name: format_version
+      type: string
+      jsonldPredicate:
+        _id: "gxnative:format_version"
+      pydantic:alias: "format-version"
+      doc: |
+        Format version. Always ``"0.1"`` currently.
+        In the JSON document this field is written as ``format-version``.
+    - name: name
+      type: string?
+      jsonldPredicate: "@id"
+      doc: |
+        Workflow display name.
+    - name: annotation
+      type: string?
+      jsonldPredicate:
+        _id: "gxnative:annotation"
+      doc: |
+        Human-readable workflow description.
+    - name: tags
+      type:
+        - "null"
+        - type: array
+          items: string
+      doc: |
+        Classification tags for the workflow.
+    - name: version
+      type: int?
+      jsonldPredicate:
+        _id: "gxnative:NativeGalaxyWorkflow/version"
+      doc: |
+        Internal revision counter.
+    - name: license
+      type: string?
+      doc: |
+        SPDX license identifier (e.g. ``"MIT"``, ``"CC-BY-4.0"``).
+    - name: release
+      type: string?
+      doc: |
+        Semantic version for published workflows.
+    - name: creator
+      type: Any?
+      pydantic:type: "list[NativeCreatorPerson | NativeCreatorOrganization] | None"
+      pydantic:discriminator_field: "class"
+      pydantic:discriminator_map: '{"Person": "NativeCreatorPerson", "Organization": "NativeCreatorOrganization"}'
+      jsonldPredicate:
+        _id: "gxnative:NativeGalaxyWorkflow/creator"
+        noLinkCheck: true
+      doc: |
+        Creator(s) of this workflow. An array of schema.org
+        NativeCreatorPerson or NativeCreatorOrganization objects,
+        dispatched via the ``class`` field (``Person`` or ``Organization``).
+    - name: report
+      type: NativeReport?
+      doc: |
+        Workflow invocation report template.
+    - name: readme
+      type: string?
+      doc: |
+        Detailed workflow description in Markdown.
+    - name: help
+      type: string?
+      doc: |
+        Help text in Markdown.
+    - name: logo_url
+      type: string?
+      doc: |
+        URL to workflow logo image.
+    - name: doi
+      type:
+        - "null"
+        - type: array
+          items: string
+      doc: |
+        Associated DOIs.
+    - name: source_metadata
+      type: NativeSourceMetadata?
+      jsonldPredicate:
+        _id: "gxnative:NativeGalaxyWorkflow/source_metadata"
+        noLinkCheck: true
+      doc: |
+        Provenance tracking metadata for workflows imported from TRS or URLs.
+    - name: comments
+      type:
+        - "null"
+        - type: array
+          items: "#NativeComment"
+      pydantic:type: "list[NativeTextComment | NativeMarkdownComment | NativeFrameComment | NativeFreehandComment] | None"
+      pydantic:discriminator_field: "type"
+      pydantic:discriminator_map: '{"text": "NativeTextComment", "markdown": "NativeMarkdownComment", "frame": "NativeFrameComment", "freehand": "NativeFreehandComment"}'
+      jsonldPredicate:
+        _id: "gxnative:NativeGalaxyWorkflow/comments"
+        noLinkCheck: true
+      doc: |
+        Visual annotations in the workflow editor.
+    - name: steps
+      type: Any?
+      pydantic:type: "dict[str, NativeStep] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativeGalaxyWorkflow/steps"
+        noLinkCheck: true
+      doc: |
+        Step dictionary keyed by string integers (``"0"``, ``"1"``, ...).
+        Values are NativeStep objects. Steps are processed in sorted
+        numeric order during import.
+    - name: subworkflows
+      type: Any?
+      pydantic:type: "dict[str, NativeGalaxyWorkflow] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativeGalaxyWorkflow/subworkflows"
+        noLinkCheck: true
+      doc: |
+        Map of locally-defined subworkflow dicts, used during format conversion.

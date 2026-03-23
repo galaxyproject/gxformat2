@@ -55,3 +55,40 @@ do
         cd "$PROJECT_DIRECTORY"/schema/"$schema"
     fi
 done
+
+# Native workflow format schema
+cd "${PROJECT_DIRECTORY}"/schema/native_v0_1
+schema-salad-tool --codegen python workflow.yml > "${PROJECT_DIRECTORY}/gxformat2/schema/native_v0_1.py"
+
+out="${DIST_DIRECTORY}/native_v0_1.html"
+schema-salad-doc \
+    --brandstyle '<link rel="stylesheet" href="galaxy_bootstrap.min.css">' \
+    --brandinverse \
+    --brand '<img src="icon.png" />' \
+    --brandlink '' \
+    --only "https://galaxyproject.org/gxformat2/native_v0_1#NativeWorkflowDoc" \
+    --only "https://galaxyproject.org/gxformat2/native_v0_1#NativeGalaxyWorkflow" \
+    workflow.yml > "$out"
+
+# Pydantic models and enhanced docs (requires schema-salad-plus-pydantic)
+# enhance-docs handles: pydantic:type overrides, pydantic:alias renames,
+# and removing artificial class rows from documentRoot records.
+SKIP_PYDANTIC=${SKIP_PYDANTIC:-0}
+if [ $SKIP_PYDANTIC -eq 0 ]; then
+    cd "${PROJECT_DIRECTORY}"
+    schema-salad-plus-pydantic generate schema/v19_09/workflow.yml -o gxformat2/schema/gxformat2.py
+    schema-salad-plus-pydantic generate schema/v19_09/workflow.yml --strict -o gxformat2/schema/gxformat2_strict.py
+    schema-salad-plus-pydantic generate schema/native_v0_1/workflow.yml -o gxformat2/schema/native.py
+    schema-salad-plus-pydantic generate schema/native_v0_1/workflow.yml --strict -o gxformat2/schema/native_strict.py
+    schema-salad-plus-pydantic enhance-docs schema/native_v0_1/workflow.yml "${DIST_DIRECTORY}/native_v0_1.html"
+else
+    # Fallback post-processing without schema-salad-plus-pydantic
+    sed -i.bak 's/format_version/format-version/g' "$out"
+    python3 -c "
+import re
+html = open('$out').read()
+html = re.sub(r'<div class=\"row responsive-table-row\">\s*\n<div[^>]*><code>class</code></div>\n.*?</div>\n</div>\n', '', html, flags=re.DOTALL)
+open('$out', 'w').write(html)
+"
+    rm -f "$out.bak"
+fi

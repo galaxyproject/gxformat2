@@ -177,3 +177,15 @@ class TestCommentsSchema:
         wf = ordered_load(BASIC_WORKFLOW)
         wf["comments"] = []
         _load_format2_dict(wf)
+
+    def test_comment_and_step_label_overlap(self):
+        """A comment and a step can share the same label without conflict."""
+        wf = ordered_load(BASIC_WORKFLOW)
+        wf["comments"] = [
+            {
+                "type": "text",
+                "label": "cat",
+                "text": "Same label as the step",
+            },
+        ]
+        _load_format2_dict(wf)
