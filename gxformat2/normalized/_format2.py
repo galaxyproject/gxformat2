@@ -54,7 +54,10 @@ class NormalizedWorkflowStep(BaseModel):
         default_factory=list, alias="in", description="Always a list, shorthands expanded."
     )
     out: list[WorkflowStepOutput] = Field(default_factory=list, description="Always a list, shorthands expanded.")
-    run: NormalizedFormat2 | None = Field(default=None, description="Embedded subworkflow, recursively normalized.")
+    run: NormalizedFormat2 | str | dict[str, Any] | None = Field(
+        default=None,
+        description="Inline subworkflow (NormalizedFormat2), unresolved reference (str/dict), or absent.",
+    )
 
 
 class NormalizedFormat2(BaseModel):
@@ -246,9 +249,12 @@ def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
     in_list = _normalize_step_inputs(step.in_)
     out_list = _normalize_step_outputs(step.out)
 
-    run: NormalizedFormat2 | None = None
-    if step.run is not None:
+    run: NormalizedFormat2 | str | dict[str, Any] | None = None
+    if isinstance(step.run, GalaxyWorkflow):
         run = _normalize_workflow(step.run)
+    elif step.run is not None:
+        # Unresolved reference (URL string, @import dict) — pass through
+        run = step.run
 
     return NormalizedWorkflowStep(
         id=step.id or "0",

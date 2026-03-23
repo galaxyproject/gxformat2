@@ -235,7 +235,7 @@ to representing `state` this way is defining inputs with default values."""
     state: dict[str, Any] | None = Field(default=None, description="Structured tool state.")
     tool_state: str | dict[str, Any] | None = Field(default=None, description="Unstructured tool state.")
     type_: None | WorkflowStepType = Field(default=None, alias="type", description="Workflow step module's type (defaults to 'tool').")
-    run: None | GalaxyWorkflow = Field(default=None, description="Specifies a subworkflow to run.")
+    run: GalaxyWorkflow | str | dict[str, Any] | None = Field(default=None, description="Specifies a subworkflow to run. May be an inline workflow definition, a URL string, or an @import reference dict.")
     runtime_inputs: None | list[str] = Field(default=None)
     when: None | str = Field(default=None, description="If defined, only run the step when the expression evaluates to `true`.  If `false` the step is skipped.  A skipped step produces a `null` on each output.  Expression should be an ecma5.1 expression.")
 

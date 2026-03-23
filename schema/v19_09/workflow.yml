@@ -221,15 +221,15 @@ $graph:
       doc: |
         Workflow step module's type (defaults to 'tool').
     - name: run
-      type:
-        - "null"
-        - GalaxyWorkflow
+      type: Any?
+      pydantic:type: "GalaxyWorkflow | str | dict[str, Any] | None"
       jsonldPredicate:
         _id: "cwl:run"
         _type: "@id"
         subscope: run
       doc: |
-        Specifies a subworkflow to run.
+        Specifies a subworkflow to run. May be an inline workflow definition,
+        a URL string, or an @import reference dict.
     - name: runtime_inputs
       type:
         - "null"
