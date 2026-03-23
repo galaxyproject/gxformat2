@@ -1,0 +1,203 @@
+"""Normalized native Galaxy workflow models.
+
+These models narrow the loose types from the auto-generated
+``gxformat2.schema.native`` models into a form where every optional
+container is guaranteed non-None, tool_state is always a parsed dict,
+and subworkflows are recursively normalized.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Annotated, Any
+
+from pydantic import BaseModel, ConfigDict, Discriminator, Field, Tag
+
+from gxformat2.native import load_native
+from gxformat2.schema.native import (
+    _discriminate_comments,
+    _discriminate_creator,
+    NativeCreatorOrganization,
+    NativeCreatorPerson,
+    NativeFrameComment,
+    NativeFreehandComment,
+    NativeGalaxyWorkflow,
+    NativeInputConnection,
+    NativeMarkdownComment,
+    NativePostJobAction,
+    NativeReport,
+    NativeSourceMetadata,
+    NativeStep,
+    NativeStepInput,
+    NativeStepOutput,
+    NativeStepType,
+    NativeTextComment,
+    NativeWorkflowOutput,
+    StepPosition,
+    ToolShedRepository,
+)
+
+NativeComment = Annotated[
+    Annotated[NativeTextComment, Tag("NativeTextComment")]
+    | Annotated[NativeMarkdownComment, Tag("NativeMarkdownComment")]
+    | Annotated[NativeFrameComment, Tag("NativeFrameComment")]
+    | Annotated[NativeFreehandComment, Tag("NativeFreehandComment")],
+    Discriminator(_discriminate_comments),
+]
+
+NativeCreator = Annotated[
+    Annotated[NativeCreatorPerson, Tag("NativeCreatorPerson")]
+    | Annotated[NativeCreatorOrganization, Tag("NativeCreatorOrganization")],
+    Discriminator(_discriminate_creator),
+]
+
+
+class NormalizedNativeStep(BaseModel):
+    """A native workflow step with all optional containers resolved to empty defaults
+    and tool_state guaranteed to be a parsed dict."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    id: int = Field(description="Step ID.")
+    name: str | None = Field(default=None)
+    type_: NativeStepType | None = Field(default=None, alias="type")
+    label: str | None = Field(default=None)
+    annotation: str | None = Field(default=None)
+    when: str | None = Field(default=None)
+    content_id: str | None = Field(default=None)
+    tool_state: dict[str, Any] = Field(default_factory=dict, description="Always a parsed dict, never a JSON string.")
+    tool_id: str | None = Field(default=None)
+    tool_version: str | None = Field(default=None)
+    tool_shed_repository: ToolShedRepository | None = Field(default=None)
+    tool_uuid: str | None = Field(default=None)
+    uuid: str | None = Field(default=None)
+    errors: str | None = Field(default=None)
+    position: StepPosition | None = Field(default=None)
+    input_connections: dict[str, NativeInputConnection | list[NativeInputConnection]] = Field(default_factory=dict)
+    inputs: list[NativeStepInput] = Field(default_factory=list)
+    outputs: list[NativeStepOutput] = Field(default_factory=list)
+    workflow_outputs: list[NativeWorkflowOutput] = Field(default_factory=list)
+    post_job_actions: dict[str, NativePostJobAction] = Field(default_factory=dict)
+    subworkflow: NormalizedNativeWorkflow | None = Field(default=None)
+    in_: dict[str, Any] | None = Field(default=None, alias="in")
+
+
+class NormalizedNativeWorkflow(BaseModel):
+    """A native Galaxy workflow with all optional containers resolved to empty
+    defaults and steps containing NormalizedNativeStep instances."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    name: str | None = Field(default=None)
+    a_galaxy_workflow: str = Field(default="true")
+    format_version: str = Field(default="0.1", alias="format-version")
+    annotation: str | None = Field(default=None)
+    tags: list[str] = Field(default_factory=list)
+    version: int | None = Field(default=None)
+    license: str | None = Field(default=None)
+    release: str | None = Field(default=None)
+    uuid: str | None = Field(default=None)
+    creator: list[NativeCreator] | None = Field(default=None)
+    report: NativeReport | None = Field(default=None)
+    readme: str | None = Field(default=None)
+    help: str | None = Field(default=None)
+    logo_url: str | None = Field(default=None)
+    doi: list[str] | None = Field(default=None)
+    source_metadata: NativeSourceMetadata | None = Field(default=None)
+    comments: list[NativeComment] = Field(default_factory=list)
+    steps: dict[str, NormalizedNativeStep] = Field(default_factory=dict)
+    subworkflows: dict[str, NormalizedNativeWorkflow] | None = Field(default=None)
+
+
+NormalizedNativeStep.model_rebuild()
+NormalizedNativeWorkflow.model_rebuild()
+
+
+def normalized_native(
+    workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow,
+) -> NormalizedNativeWorkflow:
+    """Normalize a native Galaxy workflow into a fully typed model.
+
+    Accepts a raw dict, a file path, or an already-parsed
+    ``NativeGalaxyWorkflow``.  Returns a ``NormalizedNativeWorkflow``
+    where tool_state is always a dict, and all optional containers are
+    resolved to empty defaults.
+    """
+    if isinstance(workflow, (str, Path)):
+        with open(workflow) as f:
+            workflow = json.load(f)
+    if isinstance(workflow, dict):
+        workflow = load_native(workflow, strict=False)
+    return _normalize_workflow(workflow)
+
+
+def _normalize_workflow(wf: NativeGalaxyWorkflow) -> NormalizedNativeWorkflow:
+    steps: dict[str, NormalizedNativeStep] = {}
+    for key, step in (wf.steps or {}).items():
+        steps[key] = _normalize_step(step)
+
+    subworkflows: dict[str, NormalizedNativeWorkflow] | None = None
+    if wf.subworkflows:
+        subworkflows = {k: _normalize_workflow(v) for k, v in wf.subworkflows.items()}
+
+    return NormalizedNativeWorkflow(
+        name=wf.name,
+        a_galaxy_workflow=wf.a_galaxy_workflow,
+        format_version=wf.format_version,
+        annotation=wf.annotation,
+        tags=wf.tags or [],
+        version=wf.version,
+        license=wf.license,
+        release=wf.release,
+        uuid=wf.uuid,
+        creator=wf.creator,
+        report=wf.report,
+        readme=wf.readme,
+        help=wf.help,
+        logo_url=wf.logo_url,
+        doi=wf.doi,
+        source_metadata=wf.source_metadata,
+        comments=wf.comments or [],
+        steps=steps,
+        subworkflows=subworkflows,
+    )
+
+
+def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
+    tool_state: dict[str, Any]
+    if isinstance(step.tool_state, str):
+        tool_state = json.loads(step.tool_state)
+    elif step.tool_state is not None:
+        tool_state = step.tool_state
+    else:
+        tool_state = {}
+
+    subworkflow: NormalizedNativeWorkflow | None = None
+    if step.subworkflow is not None:
+        subworkflow = _normalize_workflow(step.subworkflow)
+
+    return NormalizedNativeStep(
+        id=step.id or 0,
+        name=step.name,
+        type_=step.type_,
+        label=step.label,
+        annotation=step.annotation,
+        when=step.when,
+        content_id=step.content_id,
+        tool_state=tool_state,
+        tool_id=step.tool_id,
+        tool_version=step.tool_version,
+        tool_shed_repository=step.tool_shed_repository,
+        tool_uuid=step.tool_uuid,
+        uuid=step.uuid,
+        errors=step.errors,
+        position=step.position,
+        input_connections=step.input_connections or {},
+        inputs=step.inputs or [],
+        outputs=step.outputs or [],
+        workflow_outputs=step.workflow_outputs or [],
+        post_job_actions=step.post_job_actions or {},
+        subworkflow=subworkflow,
+        in_=step.in_,
+    )
