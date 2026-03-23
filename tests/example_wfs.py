@@ -560,3 +560,26 @@ comments:
       - my_note
       - 1
 """
+
+USER_DEFINED_TOOL_WORKFLOW = """
+class: GalaxyWorkflow
+inputs:
+  the_input: data
+outputs:
+  the_output:
+    outputSource: my_tool/output1
+steps:
+  my_tool:
+    run:
+      class: GalaxyUserTool
+      name: My Custom Tool
+      command: cat '$input1' > '$output1'
+      inputs:
+        - name: input1
+          type: data
+      outputs:
+        - name: output1
+          type: data
+    in:
+      input1: the_input
+"""

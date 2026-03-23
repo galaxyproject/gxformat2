@@ -586,6 +586,19 @@ $graph:
         Embedded subworkflow definition. A complete native workflow document
         (with ``a_galaxy_workflow``, ``format-version``, ``steps``, etc.)
         nested inside this step.
+    - name: tool_representation
+      type: Any?
+      pydantic:type: "dict[str, Any] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/tool_representation"
+        noLinkCheck: true
+      doc: |
+        Embedded tool definition for user-defined (dynamic) tools.
+        Present when the step uses a ``GalaxyUserTool`` instead of a
+        registered tool. Contains the full tool definition including
+        ``class: GalaxyUserTool``, ``name``, ``command``, ``inputs``,
+        and ``outputs``. When present, ``tool_id`` and ``tool_uuid``
+        are typically null.
     - name: in
       type: Any?
       pydantic:type: "dict[str, Any] | None"

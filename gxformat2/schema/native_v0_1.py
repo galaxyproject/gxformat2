@@ -6576,6 +6576,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
         workflow_outputs: Optional[Any] = None,
         post_job_actions: Optional[Any] = None,
         subworkflow: Optional[Any] = None,
+        tool_representation: Optional[Any] = None,
         in_: Optional[Any] = None,
         extension_fields: Optional[dict[str, Any]] = None,
         loadingOptions: Optional[LoadingOptions] = None,
@@ -6609,6 +6610,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
         self.workflow_outputs = workflow_outputs
         self.post_job_actions = post_job_actions
         self.subworkflow = subworkflow
+        self.tool_representation = tool_representation
         self.in_ = in_
 
     def __eq__(self, other: Any) -> bool:
@@ -6635,6 +6637,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
                 and self.workflow_outputs == other.workflow_outputs
                 and self.post_job_actions == other.post_job_actions
                 and self.subworkflow == other.subworkflow
+                and self.tool_representation == other.tool_representation
                 and self.in_ == other.in_
             )
         return False
@@ -6663,6 +6666,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
                 self.workflow_outputs,
                 self.post_job_actions,
                 self.subworkflow,
+                self.tool_representation,
                 self.in_,
             )
         )
@@ -7677,6 +7681,53 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
                                 "is not valid because:",
                             )
                         )
+        tool_representation = None
+        if "tool_representation" in _doc:
+            try:
+                tool_representation = load_field(
+                    _doc.get("tool_representation"),
+                    union_of_None_type_or_Any_type,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("tool_representation")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `tool_representation`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("tool_representation")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `tool_representation` field is not valid because:",
+                                SourceLine(_doc, "tool_representation", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `tool_representation` field is not valid because:",
+                                SourceLine(_doc, "tool_representation", str),
+                                [e],
+                                detailed_message=f"the `tool_representation` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
         in_ = None
         if "in" in _doc:
             try:
@@ -7739,7 +7790,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `{}`, expected one of: `errors`, `position`, `uuid`, `tool_id`, `tool_shed_repository`, `tool_version`, `id`, `type`, `name`, `label`, `annotation`, `when`, `content_id`, `tool_state`, `tool_uuid`, `input_connections`, `inputs`, `outputs`, `workflow_outputs`, `post_job_actions`, `subworkflow`, `in`".format(
+                            "invalid field `{}`, expected one of: `errors`, `position`, `uuid`, `tool_id`, `tool_shed_repository`, `tool_version`, `id`, `type`, `name`, `label`, `annotation`, `when`, `content_id`, `tool_state`, `tool_uuid`, `input_connections`, `inputs`, `outputs`, `workflow_outputs`, `post_job_actions`, `subworkflow`, `tool_representation`, `in`".format(
                                 k
                             ),
                             SourceLine(_doc, k, str),
@@ -7770,6 +7821,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
             workflow_outputs=workflow_outputs,
             post_job_actions=post_job_actions,
             subworkflow=subworkflow,
+            tool_representation=tool_representation,
             in_=in_,
             extension_fields=extension_fields,
             loadingOptions=loadingOptions,
@@ -7904,6 +7956,13 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
                 base_url=self.name,
                 relative_uris=relative_uris,
             )
+        if self.tool_representation is not None:
+            r["tool_representation"] = save(
+                self.tool_representation,
+                top=False,
+                base_url=self.name,
+                relative_uris=relative_uris,
+            )
         if self.in_ is not None:
             r["in"] = save(
                 self.in_, top=False, base_url=self.name, relative_uris=relative_uris
@@ -7940,6 +7999,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
             "workflow_outputs",
             "post_job_actions",
             "subworkflow",
+            "tool_representation",
             "in",
         ]
     )
@@ -11447,6 +11507,7 @@ _vocab = {
     "null": "https://w3id.org/cwl/salad#null",
     "parameter_input": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/parameter_input",
     "pause": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/pause",
+    "pick_value": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/pick_value",
     "record": "https://w3id.org/cwl/salad#record",
     "string": "http://www.w3.org/2001/XMLSchema#string",
     "subworkflow": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/subworkflow",
@@ -11514,6 +11575,7 @@ _rvocab = {
     "https://w3id.org/cwl/salad#null": "null",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/parameter_input": "parameter_input",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/pause": "pause",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/pick_value": "pick_value",
     "https://w3id.org/cwl/salad#record": "record",
     "http://www.w3.org/2001/XMLSchema#string": "string",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/subworkflow": "subworkflow",
@@ -11570,6 +11632,7 @@ NativeStepTypeLoader = _EnumLoader(
         "tool",
         "subworkflow",
         "pause",
+        "pick_value",
     ),
     "NativeStepType",
 )
@@ -11581,6 +11644,7 @@ parameter_input: A typed parameter input (text, integer, float, boolean, color).
 tool: A Galaxy tool execution step.
 subworkflow: An embedded or referenced sub-workflow.
 pause: A manual pause point that halts execution until user intervention.
+pick_value: Select the first non-null value from multiple inputs.
 """
 NativeStepInputLoader = _RecordLoader(NativeStepInput, None, None)
 NativeStepOutputLoader = _RecordLoader(NativeStepOutput, None, None)

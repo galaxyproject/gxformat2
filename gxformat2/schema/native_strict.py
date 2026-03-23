@@ -312,6 +312,7 @@ unencoded tool state is used. Connected parameters are represented as
     workflow_outputs: None | list[NativeWorkflowOutput] = Field(default=None, description="Outputs designated as workflow-level outputs. Steps with an empty array have all their outputs hidden by default.")
     post_job_actions: dict[str, NativePostJobAction] | None = Field(default=None, description="Post-job actions applied to outputs after tool execution. Keys are compound strings of the form ``{ActionType}{OutputName}``. Values are NativePostJobAction objects.")
     subworkflow: NativeGalaxyWorkflow | None = Field(default=None, description="Embedded subworkflow definition. A complete native workflow document (with ``a_galaxy_workflow``, ``format-version``, ``steps``, etc.) nested inside this step.")
+    tool_representation: dict[str, Any] | None = Field(default=None, description="Embedded tool definition for user-defined (dynamic) tools. Present when the step uses a ``GalaxyUserTool`` instead of a registered tool. Contains the full tool definition including ``class: GalaxyU...")
     in_: dict[str, Any] | None = Field(default=None, alias="in", description="Default values for step inputs. Keys are parameter names, values are objects with a ``default`` key.")
 
 class NativeReport(BaseModel):

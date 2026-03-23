@@ -21,6 +21,7 @@ from .example_wfs import (
     SLASH_IN_STEP_LABEL_EXPLICIT_OUTPUT,
     TRS_URL_SUBWORKFLOW,
     URL_SUBWORKFLOW,
+    USER_DEFINED_TOOL_WORKFLOW,
     WHEN_EXAMPLE,
 )
 
@@ -667,6 +668,81 @@ def test_unlabeled_pause_step_round_trip():
     # Step 1 should be a pause, not reassigned
     assert as_native_rt["steps"]["1"]["type"] == "pause"
     assert as_native_rt["steps"]["1"]["label"] is None
+
+
+def test_user_defined_tool_to_native():
+    """Format2 workflow with GalaxyUserTool converts to native with tool_representation."""
+    as_dict_native = to_native(USER_DEFINED_TOOL_WORKFLOW)
+    assert_valid_native(as_dict_native)
+    steps = as_dict_native["steps"]
+    assert len(steps) == 2  # input + tool
+    tool_step = steps["1"]
+    assert tool_step["type"] == "tool"
+    assert "tool_representation" in tool_step
+    tool_rep = tool_step["tool_representation"]
+    assert tool_rep["class"] == "GalaxyUserTool"
+    assert tool_rep["name"] == "My Custom Tool"
+    # tool_id and tool_uuid should be None for user-defined tools
+    assert tool_step.get("tool_id") is None
+    assert tool_step.get("tool_uuid") is None
+
+
+def test_user_defined_tool_round_trip():
+    """GalaxyUserTool survives Format2 -> native -> Format2 round-trip."""
+    as_dict = round_trip(USER_DEFINED_TOOL_WORKFLOW)
+    step = as_dict["steps"]["my_tool"]
+    assert "run" in step
+    run = step["run"]
+    assert run["class"] == "GalaxyUserTool"
+    assert run["name"] == "My Custom Tool"
+    # Should not have tool_id since it's a user-defined tool
+    assert "tool_id" not in step
+
+
+def test_native_user_defined_tool_to_format2():
+    """Native workflow with tool_representation exports as run: {class: GalaxyUserTool, ...}."""
+    native_workflow = {
+        "a_galaxy_workflow": "true",
+        "format-version": "0.1",
+        "name": "User Tool Test",
+        "steps": {
+            "0": {
+                "id": 0,
+                "type": "data_input",
+                "label": "the_input",
+                "tool_state": '{"name": "the_input"}',
+                "input_connections": {},
+                "workflow_outputs": [],
+            },
+            "1": {
+                "id": 1,
+                "type": "tool",
+                "label": "my_tool",
+                "tool_id": None,
+                "tool_version": None,
+                "tool_uuid": None,
+                "tool_representation": {
+                    "class": "GalaxyUserTool",
+                    "name": "My Custom Tool",
+                    "command": "cat '$input1' > '$output1'",
+                    "inputs": [{"name": "input1", "type": "data"}],
+                    "outputs": [{"name": "output1", "type": "data"}],
+                },
+                "tool_state": "{}",
+                "input_connections": {
+                    "input1": [{"id": 0, "output_name": "output"}],
+                },
+                "workflow_outputs": [{"output_name": "output1", "label": "the_output"}],
+            },
+        },
+    }
+    as_format2 = from_native(native_workflow)
+    step = as_format2["steps"]["my_tool"]
+    assert "run" in step
+    assert step["run"]["class"] == "GalaxyUserTool"
+    assert step["run"]["name"] == "My Custom Tool"
+    assert "tool_id" not in step
+    assert "tool_version" not in step
 
 
 def assert_valid_format2(as_dict_format2):

@@ -43,7 +43,7 @@ Convert a Format 2 Galaxy workflow description into a native format.
 
 RUN_ACTIONS_TO_STEPS = {
     "GalaxyWorkflow": "run_workflow_to_step",
-    "GalaxyTool": "run_tool_to_step",
+    "GalaxyUserTool": "run_user_tool_to_step",
 }
 
 POST_JOB_ACTIONS = {
@@ -490,13 +490,14 @@ def _runtime_value():
 
 
 def transform_tool(context, step):
-    if "tool_id" not in step:
+    is_user_defined_tool = "tool_representation" in step
+    if "tool_id" not in step and not is_user_defined_tool:
         raise Exception("Tool steps must define a tool_id.")
 
     _ensure_defaults(
         step,
         {
-            "name": step["tool_id"],
+            "name": step.get("tool_id") or step.get("tool_representation", {}).get("name", "User Defined Tool"),
             "post_job_actions": {},
             "tool_version": None,
         },
@@ -562,13 +563,12 @@ def transform_tool(context, step):
                 post_job_actions[action_name] = action
 
 
-def run_tool_to_step(conversion_context, step, run_action):
-    tool_description = conversion_context.galaxy_interface.import_tool(run_action)
+def run_user_tool_to_step(conversion_context, step, run_action):
     step["type"] = "tool"
-    step["tool_id"] = tool_description["tool_id"]
-    step["tool_version"] = tool_description["tool_version"]
-    step["tool_hash"] = tool_description.get("tool_hash")
-    step["tool_uuid"] = tool_description.get("uuid")
+    step["tool_representation"] = run_action
+    step["tool_id"] = None
+    step["tool_version"] = None
+    step["tool_uuid"] = None
 
 
 class BaseConversionContext:
