@@ -13,8 +13,8 @@ import tempfile
 
 import pytest
 
-from ._helpers import find_iwc_ga_files, IWC_DIR, iwc_fixture_ids
 from gxformat2.schema.native_v0_1 import load_document
+from ._helpers import find_iwc_ga_files, IWC_DIR, iwc_fixture_ids
 
 
 def _load_native(workflow_dict):

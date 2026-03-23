@@ -8,7 +8,6 @@ import json
 
 import pytest
 
-from ._helpers import find_iwc_ga_files, IWC_DIR, iwc_fixture_ids
 from gxformat2.export import from_galaxy_native
 from gxformat2.schema.gxformat2 import (
     GalaxyWorkflow,
@@ -22,6 +21,7 @@ from gxformat2.schema.native import (
     NativeStepType,
 )
 from gxformat2.yaml import ordered_load
+from ._helpers import find_iwc_ga_files, IWC_DIR, iwc_fixture_ids
 
 MINIMAL_NATIVE = {
     "a_galaxy_workflow": "true",
