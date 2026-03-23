@@ -54,7 +54,7 @@ class NormalizedWorkflowStep(BaseModel):
         default_factory=list, alias="in", description="Always a list, shorthands expanded."
     )
     out: list[WorkflowStepOutput] = Field(default_factory=list, description="Always a list, shorthands expanded.")
-    run: NormalizedFormat2 | str | dict[str, Any] | None = Field(
+    run: Any = Field(
         default=None,
         description="Inline subworkflow (NormalizedFormat2), unresolved reference (str/dict), or absent.",
     )

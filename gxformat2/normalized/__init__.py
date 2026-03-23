@@ -6,6 +6,8 @@ want typed access without handling representational flexibility.
 """
 
 from ._expanded import (
+    expanded_format2,
+    expanded_native,
     ExpandedFormat2,
     ExpandedNativeStep,
     ExpandedNativeWorkflow,
@@ -23,6 +25,8 @@ from ._native import (
 )
 
 __all__ = (
+    "expanded_format2",
+    "expanded_native",
     "ExpandedFormat2",
     "ExpandedNativeStep",
     "ExpandedNativeWorkflow",
