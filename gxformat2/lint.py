@@ -9,10 +9,16 @@ from collections import OrderedDict
 from pathlib import Path
 from urllib.parse import urlparse
 
+from pydantic import ValidationError
+
 from gxformat2._scripts import ensure_format2
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
 from gxformat2.normalize import Inputs, walk_id_list_or_dict
+from gxformat2.schema.gxformat2 import GalaxyWorkflow as Format2LaxModel
+from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as Format2StrictModel
+from gxformat2.schema.native import NativeGalaxyWorkflow as NativeLaxModel
+from gxformat2.schema.native_strict import NativeGalaxyWorkflow as NativeStrictModel
 from gxformat2.yaml import ordered_load, ordered_load_path
 
 EXIT_CODE_SUCCESS = 0
@@ -186,15 +192,8 @@ def lint_pydantic_validation(lint_context, workflow_dict, format2=False):
     the lax model (extra=allow) to distinguish fundamental type errors from
     merely having extra/unknown fields.
     """
-    from pydantic import ValidationError
-
-    if format2:
-        from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictModel
-        from gxformat2.schema.gxformat2 import GalaxyWorkflow as LaxModel
-    else:
-        from gxformat2.schema.native_strict import NativeGalaxyWorkflow as StrictModel
-        from gxformat2.schema.native import NativeGalaxyWorkflow as LaxModel
-
+    StrictModel = Format2StrictModel if format2 else NativeStrictModel
+    LaxModel = Format2LaxModel if format2 else NativeLaxModel
     strict_errors = None
     try:
         StrictModel.model_validate(workflow_dict)
