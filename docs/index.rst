@@ -13,6 +13,7 @@ Contents:
 
    readme
    installation
+   cli
    conduct
    design
    contributing

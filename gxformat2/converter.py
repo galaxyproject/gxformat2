@@ -756,8 +756,8 @@ def main(argv=None):
 
 def _parser():
     parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
-    parser.add_argument("input_path", metavar="INPUT", type=str, help="input workflow path (.ga)")
-    parser.add_argument("output_path", metavar="OUTPUT", type=str, nargs="?", help="output workflow path (.gxfw.yml)")
+    parser.add_argument("input_path", metavar="INPUT", type=str, help="input workflow path (.gxwf.yml)")
+    parser.add_argument("output_path", metavar="OUTPUT", type=str, nargs="?", help="output workflow path (.ga)")
     return parser
 
 
