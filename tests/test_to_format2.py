@@ -6,7 +6,7 @@ from yaml import safe_load
 from gxformat2.converter import python_to_workflow
 from gxformat2.export import from_galaxy_native, main
 from gxformat2.yaml import ordered_load
-from ._helpers import example_path, MockGalaxyInterface, to_example_path
+from ._helpers import example_path, to_example_path
 
 
 def test_sars_covid_example():
@@ -74,7 +74,7 @@ def test_unlabeled_input_round_trip():
     assert "_unlabeled_input_0" in format2["inputs"]
 
     # Re-import to native
-    native_rt = python_to_workflow(copy.deepcopy(format2), MockGalaxyInterface(), None)
+    native_rt = python_to_workflow(copy.deepcopy(format2))
 
     # The round-tripped step should have label=None, not "0" or "_unlabeled_input_0"
     assert native_rt["steps"]["0"]["label"] is None
@@ -93,7 +93,7 @@ def test_unlabeled_input_connections_round_trip():
     assert "_unlabeled_input_0" in str(cat_step["in"]["input1"]["source"])
 
     # Re-import and verify connection still works
-    native_rt = python_to_workflow(copy.deepcopy(format2), MockGalaxyInterface(), None)
+    native_rt = python_to_workflow(copy.deepcopy(format2))
     cat_step_rt = native_rt["steps"]["1"]
     input_conn = cat_step_rt["input_connections"]["input1"]
     if isinstance(input_conn, list):
@@ -248,7 +248,7 @@ steps:
 """
     # Build a native workflow with a subworkflow
     f2 = ordered_load(nested_f2)
-    native_wf = python_to_workflow(f2, MockGalaxyInterface(), None)
+    native_wf = python_to_workflow(f2)
 
     called_tool_ids = []
 

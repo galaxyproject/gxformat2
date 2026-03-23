@@ -5,7 +5,7 @@ from gxformat2.converter import ImportOptions, main, python_to_workflow
 from gxformat2.lint import lint_ga_path
 from gxformat2.linting import LintContext
 from gxformat2.yaml import ordered_dump, ordered_load
-from ._helpers import example_path, MockGalaxyInterface, to_example_path
+from ._helpers import example_path, to_example_path
 from .example_wfs import (
     BASIC_WORKFLOW,
     INT_INPUT,
@@ -86,7 +86,7 @@ def test_unencoded_tool_state():
         f.write(BASIC_WORKFLOW)
     with open(format2_path) as f:
         as_python = ordered_load(f)
-    as_native = python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+    as_native = python_to_workflow(as_python, import_options=import_options)
 
     for step in as_native["steps"].values():
         tool_state = step.get("tool_state")
@@ -103,7 +103,7 @@ def test_unencoded_int_input():
         f.write(INT_INPUT)
     with open(format2_path) as f:
         as_python = ordered_load(f)
-    as_native = python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+    as_native = python_to_workflow(as_python, import_options=import_options)
 
     int_step = as_native["steps"]["1"]
     tool_state = int_step["tool_state"]
@@ -126,7 +126,7 @@ def test_native_state_encoder_callback_called():
         f.write(INT_INPUT)
     with open(format2_path) as f:
         as_python = ordered_load(f)
-    python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+    python_to_workflow(as_python, import_options=import_options)
 
     assert len(called_with) > 0
     assert called_with[0][0] == "random_lines1"
@@ -142,7 +142,7 @@ def test_native_state_encoder_callback_none_fallback():
         f.write(INT_INPUT)
     with open(format2_path) as f:
         as_python = ordered_load(f)
-    as_native = python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+    as_native = python_to_workflow(as_python, import_options=import_options)
 
     # Should produce same result as without callback
     format2_path2 = to_example_path("encoder_none2", EXAMPLES_DIR_NAME, "gxwf.yml")
@@ -150,7 +150,7 @@ def test_native_state_encoder_callback_none_fallback():
         f.write(INT_INPUT)
     with open(format2_path2) as f:
         as_python2 = ordered_load(f)
-    as_native2 = python_to_workflow(as_python2, MockGalaxyInterface())
+    as_native2 = python_to_workflow(as_python2)
 
     # Compare tool_state of the tool step
     for step_id in as_native["steps"]:
@@ -176,7 +176,7 @@ def test_native_state_encoder_callback_exception_fallback():
         as_python = ordered_load(f)
 
     # Should not raise — falls back to default
-    as_native = python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+    as_native = python_to_workflow(as_python, import_options=import_options)
     assert "steps" in as_native
 
 
@@ -198,7 +198,7 @@ def test_native_state_encoder_connected_values():
         f.write(RUNTIME_INPUTS)
     with open(format2_path) as f:
         as_python = ordered_load(f)
-    python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+    python_to_workflow(as_python, import_options=import_options)
 
     # RUNTIME_INPUTS has random_lines1 with state containing $link for input
     random_lines_state = None
@@ -226,7 +226,7 @@ def test_native_state_encoder_custom_encoding():
         f.write(BASIC_WORKFLOW)
     with open(format2_path) as f:
         as_python = ordered_load(f)
-    as_native = python_to_workflow(as_python, MockGalaxyInterface(), import_options=import_options)
+    as_native = python_to_workflow(as_python, import_options=import_options)
 
     # Find the cat1 tool step
     for step in as_native["steps"].values():

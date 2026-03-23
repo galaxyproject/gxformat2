@@ -98,13 +98,13 @@ class ImportOptions:
         self.native_state_encoder: NativeStateEncoderFn = None
 
 
-def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory, import_options=None):
+def yaml_to_workflow(has_yaml, galaxy_interface=None, workflow_directory=None, import_options=None):
     """Convert a Format 2 workflow into standard Galaxy format from supplied stream."""
     as_python = ordered_load(has_yaml)
-    return python_to_workflow(as_python, galaxy_interface, workflow_directory, import_options=import_options)
+    return python_to_workflow(as_python, galaxy_interface=galaxy_interface, workflow_directory=workflow_directory, import_options=import_options)
 
 
-def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, import_options=None):
+def python_to_workflow(as_python, galaxy_interface=None, workflow_directory=None, import_options=None):
     """Convert a Format 2 workflow into standard Galaxy format from supplied dictionary."""
     if "yaml_content" in as_python:
         as_python = ordered_load(as_python["yaml_content"])
@@ -113,7 +113,6 @@ def python_to_workflow(as_python, galaxy_interface, workflow_directory=None, imp
         workflow_directory = os.path.abspath(".")
 
     conversion_context = ConversionContext(
-        galaxy_interface,
         workflow_directory,
         import_options,
     )
@@ -625,13 +624,12 @@ class BaseConversionContext:
 
 class ConversionContext(BaseConversionContext):
 
-    def __init__(self, galaxy_interface, workflow_directory, import_options: Optional[ImportOptions] = None):
+    def __init__(self, workflow_directory, import_options: Optional[ImportOptions] = None):
         super().__init__()
         self.import_options = import_options or ImportOptions()
         self.graph_ids: dict[str, Any] = {}
         self.graph_id_subworkflow_conversion_contexts: dict[str, Any] = {}
         self.workflow_directory = workflow_directory
-        self.galaxy_interface = galaxy_interface
 
     def register_runnable(self, run_action):
         assert "id" in run_action
@@ -661,10 +659,6 @@ class SubworkflowConversionContext(BaseConversionContext):
     @property
     def import_options(self):
         return self.parent_context.import_options
-
-    @property
-    def galaxy_interface(self):
-        return self.parent_context.galaxy_interface
 
     def get_subworkflow_conversion_context_graph(self, graph_id):
         return self.parent_context.get_subworkflow_conversion_context_graph(graph_id)
@@ -741,12 +735,11 @@ def main(argv=None):
     output_path = args.output_path or (format2_path + ".gxwf.yml")
 
     workflow_directory = os.path.abspath(format2_path)
-    galaxy_interface = None
 
     with open(format2_path) as f:
         has_workflow = ordered_load(f)
 
-    output = python_to_workflow(has_workflow, galaxy_interface=galaxy_interface, workflow_directory=workflow_directory)
+    output = python_to_workflow(has_workflow, workflow_directory=workflow_directory)
     with open(output_path, "w") as f:
         json.dump(output, f, indent=4)
 
