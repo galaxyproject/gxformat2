@@ -21,7 +21,7 @@
                     "name": "forward_reads",
                     "description": ""
                 }
-            ], 
+            ],
             "position": {
                 "top": 346,
                 "left": 160.98333740234375
@@ -431,6 +431,6 @@
             "type": "tool"
         }
     },
-    "annotation": "",
+    "annotation": "Unicycler genome assembly workflow from Galaxy Training Materials.",
     "a_galaxy_workflow": "true"
 }

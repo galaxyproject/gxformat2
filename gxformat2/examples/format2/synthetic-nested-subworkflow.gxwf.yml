@@ -1,4 +1,6 @@
 class: GalaxyWorkflow
+doc: |
+  Workflow with an embedded subworkflow that runs random_lines inside a nested workflow step.
 inputs:
   outer_input: data
 outputs:

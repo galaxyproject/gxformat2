@@ -1,7 +1,12 @@
-Example Workflows
+Workflow Fixtures
 =================
 
-Galaxy workflow examples shipped with gxformat2 for testing and downstream use (e.g. Planemo).
+.. warning::
+
+   These workflows are **test fixtures**, not examples of best-practice Galaxy workflows.
+   They are designed to exercise specific code paths, edge cases, and linting checks.
+   Many deliberately omit metadata, contain invalid references, or trigger warnings.
+   Projects like Planemo can depend on these fixtures for shared test data.
 
 Usage
 -----
@@ -53,8 +58,9 @@ Pattern: ``{origin}-{description}[-{variant}].{ext}``
 Catalog
 -------
 
-The authoritative catalog is ``gxformat2/examples/catalog.yml``. Workflow metadata
-(label, annotation) is read from the workflow files themselves. A test validates
-that all catalog entries point to existing files and all example files appear in the catalog.
+The authoritative catalog is
+`gxformat2/examples/catalog.yml <https://github.com/galaxyproject/gxformat2/blob/main/gxformat2/examples/catalog.yml>`_.
+Workflow metadata (label, annotation) is read from the workflow files themselves.
+A test validates that all catalog entries point to existing files and all example files appear in the catalog.
 
 .. examples-catalog::

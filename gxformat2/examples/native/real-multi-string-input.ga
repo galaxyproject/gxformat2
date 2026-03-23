@@ -30,5 +30,6 @@
             "when": null,
             "workflow_outputs": []
         }
-    }
+    },
+    "annotation": "Workflow demonstrating multi-string parameter input."
 }

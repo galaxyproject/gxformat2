@@ -70,5 +70,5 @@
     "format-version": "0.1",
     "name": "Multi-data input",
     "uuid": "23584e0c-59c3-4849-b703-853ef8883c99",
-    "annotation": ""
+    "annotation": "Workflow demonstrating multi-file dataset input."
 }
