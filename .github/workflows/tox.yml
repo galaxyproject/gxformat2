@@ -16,6 +16,14 @@ jobs:
     - uses: actions/checkout@v6
       with:
         persist-credentials: false
+    - name: Clone IWC
+      if: matrix.python-version == '3.13'
+      uses: actions/checkout@v6
+      with:
+        repository: galaxyproject/iwc
+        ref: main
+        path: iwc
+        persist-credentials: false
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v6
       with:
@@ -28,3 +36,5 @@ jobs:
         pip install tox tox-gh-actions
     - name: Test with tox
       run: tox
+      env:
+        GXFORMAT2_TEST_IWC_DIRECTORY: ${{ matrix.python-version == '3.13' && 'iwc' || '' }}
