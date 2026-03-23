@@ -16,6 +16,7 @@ Contents:
    cli
    conduct
    design
+   examples
    contributing
    developing
    history

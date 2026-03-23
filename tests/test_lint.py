@@ -15,6 +15,7 @@ from gxformat2.yaml import ordered_dump, ordered_load
 from ._helpers import (
     assert_valid_native,
     copy_without_workflow_output_labels,
+    example_path,
     find_iwc_ga_files,
     IWC_DIR,
     iwc_fixture_ids,
@@ -266,39 +267,56 @@ SKIP_BP = "--skip-best-practices"
 
 
 def test_lint_ga_basic():
-    assert main(["lint", SKIP_BP, os.path.join(TEST_PATH, "wf3-shed-tools-raw.ga")]) == 1  # no outputs
+    assert main(["lint", SKIP_BP, example_path("real-shed-tools-raw.ga")]) == 1  # no outputs
 
 
 def test_lint_ga_unicycler():
-    assert main(["lint", SKIP_BP, os.path.join(TEST_PATH, "unicycler.ga")]) == 0
+    assert main(["lint", SKIP_BP, example_path("real-unicycler-assembly.ga")]) == 0
 
 
 def test_lint_ga_unicycler_training():
     # no tags, fails linting
-    assert main(["lint", SKIP_BP, "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler.ga")]) == 1
+    assert main(["lint", SKIP_BP, "--training-topic", "assembly", example_path("real-unicycler-assembly.ga")]) == 1
     # correct tag passes linting
     assert (
-        main(["lint", SKIP_BP, "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")])
+        main(
+            [
+                "lint",
+                SKIP_BP,
+                "--training-topic",
+                "assembly",
+                example_path("real-hacked-unicycler-assembly-with-tags.ga"),
+            ]
+        )
         == 0
     )
     # incorrect tag, fails linting
     assert (
-        main(["lint", SKIP_BP, "--training-topic", "mapping", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 1
+        main(
+            [
+                "lint",
+                SKIP_BP,
+                "--training-topic",
+                "mapping",
+                example_path("real-hacked-unicycler-assembly-with-tags.ga"),
+            ]
+        )
+        == 1
     )
 
 
 def test_lint_ga_unicycler_missing_tools():
     # only difference is one missing tool.
-    assert main(["lint", SKIP_BP, os.path.join(TEST_PATH, "unicycler-hacked-no-tool.ga")]) == 1
+    assert main(["lint", SKIP_BP, example_path("real-hacked-unicycler-assembly-no-tool.ga")]) == 1
 
 
 def test_lint_ga_unicycler_ts_tools():
     # only difference is testoolshed tool.
-    assert main(["lint", SKIP_BP, os.path.join(TEST_PATH, "unicycler-hacked-testtoolshed.ga")]) == 1
+    assert main(["lint", SKIP_BP, example_path("real-hacked-unicycler-assembly-testtoolshed.ga")]) == 1
 
 
 def test_lint_ecoli_comparison():
-    assert main(["lint", SKIP_BP, os.path.join(TEST_PATH, "ecoli-comparison.ga")]) == 1  # no outputs
+    assert main(["lint", SKIP_BP, example_path("real-ecoli-comparison.ga")]) == 1  # no outputs
 
 
 def test_lint_examples():

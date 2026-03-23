@@ -15,7 +15,7 @@ from cwltool.main import (
 
 from gxformat2.abstract import CWL_VERSION, from_dict
 from gxformat2.yaml import ordered_dump, ordered_load
-from ._helpers import TEST_PATH, to_example_path
+from ._helpers import example_path, TEST_PATH, to_example_path
 from .example_wfs import (
     BASIC_WORKFLOW,
     FLOAT_INPUT_DEFAULT,
@@ -87,12 +87,12 @@ def test_nested_workflow():
 
 
 def test_sars_covid_example():
-    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    sars_example = example_path("real-sars-cov2-variant-calling.ga")
     _run_example_path(sars_example)
 
 
 def test_no_input_label_example():
-    no_input_label = os.path.join(TEST_PATH, "basic_without_step_input_label.ga")
+    no_input_label = example_path("real-basic-without-step-input-label.ga")
     _run_example_path(no_input_label)
 
 

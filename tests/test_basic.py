@@ -6,6 +6,7 @@ from gxformat2.yaml import ordered_load
 from ._helpers import (
     assert_valid_native,
     copy_without_workflow_output_labels,
+    example_path,
     from_native,
     native_workflow_outputs,
     round_trip,
@@ -299,7 +300,7 @@ def test_round_trip_whens():
 
 def test_export_native_no_labels():
     # Ensure outputs don't get mapped to 'null' key and ensure
-    native_unicycler = ordered_load(open(os.path.join(TEST_PATH, "unicycler.ga")).read())
+    native_unicycler = ordered_load(open(example_path("real-unicycler-assembly.ga")).read())
     before_output_count = 0
     for _ in native_workflow_outputs(native_unicycler):
         before_output_count += 1

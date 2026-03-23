@@ -2,6 +2,7 @@
 
 import pytest
 
+from gxformat2.examples import load
 from gxformat2.lint import (
     lint_best_practices_format2,
     lint_best_practices_ga,
@@ -246,3 +247,46 @@ class TestPydanticValidationFormat2:
         ctx = lint_pydantic({**VALID_FORMAT2, "unknown": "x"}, format2=True)
         assert not ctx.error_messages
         assert has_warning(ctx, "strict")
+
+
+# --- Integration tests using example workflow files ---
+
+EXPECTED_NATIVE_UNLINTED = [
+    "not annotated",
+    "does not specify a creator",
+    "does not specify a license",
+    "disconnected",
+    "has no annotation",
+    "has no label",
+    "untyped parameter as an input",
+    "untyped parameter in the post-job",
+]
+
+
+class TestUnlintedNative:
+    def test_all_best_practice_warnings(self):
+        ctx = lint_native(load("synthetic-unlinted-best-practices.ga"))
+        for expected in EXPECTED_NATIVE_UNLINTED:
+            assert has_warning(ctx, expected), f"missing warning: {expected}"
+
+    def test_dict_tool_state_variant(self):
+        ctx = lint_native(load("synthetic-unlinted-best-practices-dict-tool-state.ga"))
+        for expected in EXPECTED_NATIVE_UNLINTED:
+            assert has_warning(ctx, expected), f"missing warning: {expected}"
+
+    def test_bad_identifier(self):
+        ctx = lint_native(load("synthetic-unlinted-best-practices-bad-identifier.ga"))
+        assert has_warning(ctx, "fully qualified URI")
+        # Should still have a creator (just a bad identifier)
+        assert not has_warning(ctx, "does not specify a creator")
+
+
+class TestUnlintedFormat2:
+    def test_all_best_practice_warnings(self):
+        ctx = lint_format2(load("synthetic-unlinted-best-practices.gxwf.yml"))
+        assert has_warning(ctx, "not annotated")
+        assert has_warning(ctx, "does not specify a creator")
+        assert has_warning(ctx, "does not specify a license")
+        assert has_warning(ctx, "has no annotation")
+        assert has_warning(ctx, "untyped parameter as an input")
+        assert has_warning(ctx, "untyped parameter in the post-job")
