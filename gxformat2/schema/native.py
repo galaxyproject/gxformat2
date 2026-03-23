@@ -199,7 +199,7 @@ Common action types: ``HideDatasetAction``, ``RenameDatasetAction``,
 
     action_type: str = Field(description="The action type identifier (e.g. ``HideDatasetAction``).")
     output_name: str = Field(description="The step output this action applies to.")
-    action_arguments: dict[str, str] | None = Field(default=None, description="Action-specific arguments. For ``RenameDatasetAction``: ``{\"newname\": \"...\"}``; for ``ChangeDatatypeAction``: ``{\"newtype\": \"tabular\"}``; for ``TagDatasetAction``: ``{\"tags\": \"name:tag\"...")
+    action_arguments: dict[str, Any] | None = Field(default=None, description="Action-specific arguments. For ``RenameDatasetAction``: ``{\"newname\": \"...\"}``; for ``ChangeDatatypeAction``: ``{\"newtype\": \"tabular\"}``; for ``TagDatasetAction``: ``{\"tags\": \"name:tag\"...")
 
 class NativeTextCommentData(BaseModel):
     """Data payload for a text comment."""

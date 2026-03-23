@@ -111,33 +111,45 @@ def yaml_to_workflow(has_yaml, galaxy_interface=None, workflow_directory=None, i
 
 def python_to_workflow(as_python, galaxy_interface=None, workflow_directory=None, import_options=None):
     """Convert a Format 2 workflow into standard Galaxy format from supplied dictionary."""
+    from .options import ConversionOptions
+    from .to_native import to_native
+
     if "yaml_content" in as_python:
         as_python = ordered_load(as_python["yaml_content"])
 
     if workflow_directory is None:
         workflow_directory = os.path.abspath(".")
 
-    conversion_context = ConversionContext(
-        workflow_directory,
-        import_options,
+    import_options = import_options or ImportOptions()
+
+    options = ConversionOptions(
+        workflow_directory=workflow_directory,
+        deduplicate_subworkflows=import_options.deduplicate_subworkflows,
+        native_state_encoder=import_options.native_state_encoder,
     )
-    as_python = _preprocess_graphs(as_python, conversion_context)
-    subworkflows = None
-    if conversion_context.import_options.deduplicate_subworkflows:
-        # TODO: import only required workflows...
-        # TODO: dag sort these...
-        subworkflows = {}
-        for graph_id, subworkflow_content in conversion_context.graph_ids.items():
-            if graph_id == "main":
-                continue
-            subworkflow_conversion_context = conversion_context.get_subworkflow_conversion_context_graph("#" + graph_id)
-            subworkflows[graph_id] = _python_to_workflow(
-                copy.deepcopy(subworkflow_content), subworkflow_conversion_context
-            )
-    converted = _python_to_workflow(as_python, conversion_context)
-    if subworkflows is not None:
-        converted["subworkflows"] = subworkflows
-    return converted
+    result = to_native(as_python, options)
+    data = result.model_dump(by_alias=True, exclude_none=True, mode="json")
+    _compat_fixup_native(data, import_options)
+    return data
+
+
+def _compat_fixup_native(data: dict, import_options: ImportOptions) -> None:
+    """Post-process native dict for backward compat with old converter output."""
+    for step in data.get("steps", {}).values():
+        # JSON-encode tool_state if requested
+        if import_options.encode_tool_state_json and isinstance(step.get("tool_state"), dict):
+            step["tool_state"] = json.dumps(step["tool_state"])
+        # Ensure label key exists (old converter always set it)
+        if "label" not in step:
+            step["label"] = None
+        # Wrap single input_connections in lists (old converter always used lists)
+        ic = step.get("input_connections", {})
+        for key, value in ic.items():
+            if isinstance(value, dict):
+                ic[key] = [value]
+        # Recurse into subworkflows
+        if isinstance(step.get("subworkflow"), dict):
+            _compat_fixup_native(step["subworkflow"], import_options)
 
 
 def _python_to_workflow(as_python, conversion_context):

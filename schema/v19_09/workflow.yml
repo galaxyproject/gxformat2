@@ -317,10 +317,8 @@ $graph:
     change_datatype:
       type: string?
     set_columns:
-      type:
-        - "null"
-        - type: array
-          items: string
+      type: Any?
+      pydantic:type: "dict[str, Any] | None"
     add_tags:
       type:
         - "null"

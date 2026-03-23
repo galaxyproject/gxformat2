@@ -48,6 +48,7 @@ from .schema.native import (
     NativeStepType,
     NativeWorkflowOutput,
     StepPosition,
+    ToolShedRepository,
 )
 
 log = logging.getLogger(__name__)
@@ -119,26 +120,52 @@ def to_native(
     all URL/TRS/@import subworkflow references).
     """
     options = options or ConversionOptions()
+
+    # Handle $graph + deduplicate_subworkflows before normalization
+    deduplicated_subworkflows: dict[str, NormalizedNativeWorkflow] | None = None
+    if isinstance(workflow, dict) and "$graph" in workflow and "class" not in workflow:
+        if options.deduplicate_subworkflows:
+            deduplicated_subworkflows = {}
+            graph = workflow["$graph"]
+            main_dict = None
+            for entry in graph:
+                graph_id = entry.get("id")
+                if graph_id == "main":
+                    main_dict = entry
+                elif graph_id:
+                    sub_wf = normalized_format2(entry)
+                    sub_ctx = _ConversionContext(options)
+                    _register_labels(sub_wf, sub_ctx)
+                    deduplicated_subworkflows[graph_id] = _build_native_workflow(sub_wf, sub_ctx)
+            if main_dict is None:
+                raise Exception("$graph has no 'main' workflow")
+            workflow = main_dict
+
     if not isinstance(workflow, NormalizedFormat2):
         workflow = normalized_format2(workflow)
 
     ctx = _ConversionContext(options)
-    # Register labels: inputs first, then steps
-    for i, inp in enumerate(workflow.inputs):
-        label = inp.id
-        if label:
-            ctx.labels[label] = i
-    for j, step in enumerate(workflow.steps):
-        idx = len(workflow.inputs) + j
-        label = step.label or step.id
-        if label:
-            ctx.labels[label] = idx
+    _register_labels(workflow, ctx)
 
     result = _build_native_workflow(workflow, ctx)
+    if deduplicated_subworkflows is not None:
+        result = result.model_copy(update={"subworkflows": deduplicated_subworkflows})
 
     if expand:
         return expanded_native(result, options)
     return result
+
+
+def _register_labels(wf: NormalizedFormat2, ctx: _ConversionContext) -> None:
+    """Register input and step labels in the conversion context."""
+    for i, inp in enumerate(wf.inputs):
+        if inp.id:
+            ctx.labels[inp.id] = i
+    for j, step in enumerate(wf.steps):
+        idx = len(wf.inputs) + j
+        label = step.label or step.id
+        if label:
+            ctx.labels[label] = idx
 
 
 class _ConversionContext:
@@ -193,7 +220,7 @@ def _build_native_workflow(
         license=wf.license,
         release=wf.release,
         creator=wf.creator,
-        report=wf.report,
+        report={"markdown": wf.report.markdown} if wf.report else None,
         steps=native_steps,
         comments=comments,
     )
@@ -204,7 +231,8 @@ def _build_input_step(
     order_index: int,
     ctx: _ConversionContext,
 ) -> NormalizedNativeStep:
-    label = inp.id or f"Input {order_index}"
+    raw_label = inp.id or f"Input {order_index}"
+    label = None if Labels.is_unlabeled(raw_label) else raw_label
     input_type = inp.type_
     if isinstance(input_type, list):
         if len(input_type) != 1:
@@ -224,7 +252,7 @@ def _build_input_step(
     else:
         raise Exception(f"Unknown input type [{type_str}] encountered.")
 
-    tool_state: dict[str, Any] = {"name": label}
+    tool_state: dict[str, Any] = {"name": raw_label}
     if step_type == NativeStepType.parameter_input:
         native_type = type_str
         if native_type == "int":
@@ -261,11 +289,11 @@ def _build_input_step(
         id=order_index,
         type_=step_type,
         label=label,
-        name=label,
+        name=raw_label,
         annotation=_join_doc(inp.doc) or "",
         tool_state=tool_state,
         position=position,
-        inputs=[{"name": label, "description": ""}],
+        inputs=[{"name": raw_label, "description": ""}],
         in_=in_,
     )
 
@@ -369,12 +397,12 @@ def _build_tool_step(
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.tool,
-        label=step.label,
+        label=_step_label(step),
         name=tool_id or (tool_representation or {}).get("name", "User Defined Tool"),
         annotation=step.doc or "",
         tool_id=tool_id,
         tool_version=step.tool_version,
-        tool_shed_repository=step.tool_shed_repository,
+        tool_shed_repository=_convert_tool_shed_repo(step.tool_shed_repository),
         tool_state=tool_state,
         tool_representation=tool_representation,
         input_connections=input_connections,
@@ -395,37 +423,25 @@ def _build_subworkflow_step(
     subworkflow: NormalizedNativeWorkflow | None = None
     content_id: str | None = None
 
+    subworkflow_child_ctx: _ConversionContext | None = None
     if isinstance(step.run, NormalizedFormat2):
-        child_ctx = ctx.child_context()
-        # Register subworkflow labels
-        for i, inp in enumerate(step.run.inputs):
-            if inp.id:
-                child_ctx.labels[inp.id] = i
-        for j, sub_step in enumerate(step.run.steps):
-            sub_label = sub_step.label or sub_step.id
-            if sub_label:
-                child_ctx.labels[sub_label] = len(step.run.inputs) + j
-        subworkflow = _build_native_workflow(step.run, child_ctx)
+        subworkflow_child_ctx = ctx.child_context()
+        _register_subworkflow_labels(step.run, subworkflow_child_ctx)
+        subworkflow = _build_native_workflow(step.run, subworkflow_child_ctx)
     elif isinstance(step.run, str):
         # URL reference — pass through as content_id
         content_id = step.run
     elif isinstance(step.run, dict):
         # Dict subworkflow — normalize and convert
-        child_ctx = ctx.child_context()
+        subworkflow_child_ctx = ctx.child_context()
         sub_fmt2 = normalized_format2(step.run)
-        for i, inp in enumerate(sub_fmt2.inputs):
-            if inp.id:
-                child_ctx.labels[inp.id] = i
-        for j, sub_step in enumerate(sub_fmt2.steps):
-            sub_label = sub_step.label or sub_step.id
-            if sub_label:
-                child_ctx.labels[sub_label] = len(sub_fmt2.inputs) + j
-        subworkflow = _build_native_workflow(sub_fmt2, child_ctx)
+        _register_subworkflow_labels(sub_fmt2, subworkflow_child_ctx)
+        subworkflow = _build_native_workflow(sub_fmt2, subworkflow_child_ctx)
 
     connect = _extract_connections(step)
     is_subworkflow = subworkflow is not None
     input_connections = _build_input_connections(
-        connect, ctx, is_subworkflow=is_subworkflow, subworkflow_ctx=ctx.child_context() if is_subworkflow else None
+        connect, ctx, is_subworkflow=is_subworkflow, subworkflow_ctx=subworkflow_child_ctx
     )
     post_job_actions = _build_post_job_actions(step.out)
     position = _default_position(step.position, order_index)
@@ -433,7 +449,7 @@ def _build_subworkflow_step(
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.subworkflow,
-        label=step.label,
+        label=_step_label(step),
         annotation=step.doc or "",
         tool_state={},
         subworkflow=subworkflow,
@@ -459,7 +475,7 @@ def _build_pause_step(
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.pause,
-        label=step.label,
+        label=_step_label(step),
         name=name,
         annotation=step.doc or "",
         tool_state={"name": name},
@@ -492,7 +508,7 @@ def _build_pick_value_step(
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.pick_value,
-        label=step.label,
+        label=_step_label(step),
         name=name,
         annotation=step.doc or "",
         tool_state=tool_state,
@@ -659,9 +675,52 @@ def _build_native_comments(
     return native_comments
 
 
-def _default_position(position: StepPosition | None, order_index: int) -> StepPosition:
+def _register_subworkflow_labels(sub_wf: NormalizedFormat2, child_ctx: _ConversionContext) -> None:
+    """Register input and step labels from a subworkflow into a child context."""
+    for i, inp in enumerate(sub_wf.inputs):
+        if inp.id:
+            child_ctx.labels[inp.id] = i
+    for j, sub_step in enumerate(sub_wf.steps):
+        sub_label = sub_step.label or sub_step.id
+        if sub_label:
+            child_ctx.labels[sub_label] = len(sub_wf.inputs) + j
+
+
+def _step_label(step: NormalizedWorkflowStep) -> str | None:
+    """Extract the user label from a Format2 step.
+
+    For dict-keyed steps, the key is stored in ``id`` and ``label`` is None.
+    Non-numeric ids are user labels; numeric ids are auto-assigned indices.
+    Sentinel labels (``_unlabeled_*``) are cleared to None.
+    """
+    if step.label is not None:
+        if Labels.is_unlabeled(step.label):
+            return None
+        return step.label
+    if step.id and not step.id.isdigit():
+        if Labels.is_unlabeled(step.id):
+            return None
+        return step.id
+    return None
+
+
+def _convert_tool_shed_repo(repo) -> ToolShedRepository | None:
+    if repo is None:
+        return None
+    if isinstance(repo, ToolShedRepository):
+        return repo
+    return ToolShedRepository(
+        name=repo.name, changeset_revision=repo.changeset_revision,
+        owner=repo.owner, tool_shed=repo.tool_shed,
+    )
+
+
+def _default_position(position: Any, order_index: int) -> StepPosition:
     if position is not None:
-        return position
+        # Convert from any StepPosition-like object (Format2 or native)
+        if isinstance(position, StepPosition):
+            return position
+        return StepPosition(left=position.left, top=position.top)
     return StepPosition(left=10 * order_index, top=10 * order_index)
 
 

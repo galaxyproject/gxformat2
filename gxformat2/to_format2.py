@@ -31,6 +31,9 @@ from .normalized._native import (
 )
 from .options import ConversionOptions
 from .schema.gxformat2 import (
+    Report,
+    StepPosition as Format2StepPosition,
+    ToolShedRepository as Format2ToolShedRepository,
     WorkflowComment,
     WorkflowInputParameter,
     WorkflowOutputParameter,
@@ -38,11 +41,26 @@ from .schema.gxformat2 import (
     WorkflowStepOutput,
     WorkflowStepType,
 )
-from .schema.native import NativeGalaxyWorkflow
+from .schema.native import NativeGalaxyWorkflow, StepPosition as NativeStepPosition
 
 log = logging.getLogger(__name__)
 
 INPUT_STEP_TYPES = ("data_input", "data_collection_input", "parameter_input")
+
+
+def _convert_position(position: NativeStepPosition | None) -> Format2StepPosition | None:
+    if position is None:
+        return None
+    return Format2StepPosition(left=position.left, top=position.top)
+
+
+def _convert_tool_shed_repo(repo) -> Format2ToolShedRepository | None:
+    if repo is None:
+        return None
+    return Format2ToolShedRepository(
+        name=repo.name, changeset_revision=repo.changeset_revision,
+        owner=repo.owner, tool_shed=repo.tool_shed,
+    )
 
 
 @overload
@@ -132,7 +150,7 @@ def _build_format2_workflow(
         outputs=output_params,
         steps=fmt2_steps,
         comments=comments,
-        report=wf.report,
+        report=Report(markdown=wf.report.markdown) if wf.report else None,
         tags=wf.tags,
         creator=[c.model_dump(by_alias=True, exclude_none=True) for c in wf.creator] if wf.creator else None,
         license=wf.license,
@@ -146,11 +164,7 @@ def _build_input_param(step: NormalizedNativeStep) -> WorkflowInputParameter:
     tool_state = step.tool_state
     input_type = native_input_to_format2_type({"type": step.type_}, tool_state)
 
-    kwargs: dict[str, Any] = {"id": step_id}
-    if isinstance(input_type, list):
-        kwargs["type_"] = input_type
-    else:
-        kwargs["type_"] = input_type
+    kwargs: dict[str, Any] = {"id": step_id, "type_": input_type}
 
     for key in (
         "collection_type",
@@ -164,21 +178,16 @@ def _build_input_param(step: NormalizedNativeStep) -> WorkflowInputParameter:
         "column_definitions",
     ):
         if key in tool_state:
-            # Map to model field names where different
-            if key == "optional":
-                kwargs["optional"] = tool_state[key]
-            elif key == "format":
+            if key == "format":
                 fmt = tool_state[key]
                 kwargs["format"] = [fmt] if isinstance(fmt, str) else fmt
-            elif key == "collection_type":
-                kwargs["collection_type"] = tool_state[key]
-            elif key == "default":
-                kwargs["default"] = tool_state[key]
+            else:
+                kwargs[key] = tool_state[key]
 
     if step.annotation:
         kwargs["doc"] = step.annotation
     if step.position:
-        kwargs["position"] = step.position
+        kwargs["position"] = _convert_position(step.position)
 
     return WorkflowInputParameter(**kwargs)
 
@@ -235,22 +244,22 @@ def _build_tool_format2_step(
         ts.pop("__rerun_remap_job_id__", None)
         tool_state = ts
 
-    label = step.label or label_map.get(str(step.id))
-    if label and Labels.is_unlabeled(label):
-        label = None
+    raw_label = step.label or label_map.get(str(step.id))
+    step_id = raw_label or str(step.id)
+    display_label = None if (raw_label and Labels.is_unlabeled(raw_label)) else raw_label
 
     return NormalizedWorkflowStep(
-        id=label or str(step.id),
-        label=label,
+        id=step_id,
+        label=display_label,
         doc=step.annotation or None,
         tool_id=step.tool_id,
         tool_version=step.tool_version,
-        tool_shed_repository=step.tool_shed_repository,
+        tool_shed_repository=_convert_tool_shed_repo(step.tool_shed_repository),
         state=state,
         tool_state=tool_state,
         in_=in_list,
         out=out_list,
-        position=step.position if not options.compact else None,
+        position=_convert_position(step.position) if not options.compact else None,
         when=step.when,
         uuid=step.uuid,
         errors=step.errors,
@@ -264,16 +273,17 @@ def _build_user_tool_format2_step(
 ) -> NormalizedWorkflowStep:
     in_list = _build_step_inputs(step, label_map)
     out_list = _build_step_outputs(step)
-    label = step.label or label_map.get(str(step.id))
+    raw_label = step.label or label_map.get(str(step.id))
+    step_id = raw_label or str(step.id)
 
     return NormalizedWorkflowStep(
-        id=label or str(step.id),
-        label=label,
+        id=step_id,
+        label=raw_label,
         doc=step.annotation or None,
         run=step.tool_representation,
         in_=in_list,
         out=out_list,
-        position=step.position if not compact else None,
+        position=_convert_position(step.position) if not compact else None,
     )
 
 
@@ -286,7 +296,7 @@ def _build_subworkflow_format2_step(
     out_list = _build_step_outputs(step)
 
     run: NormalizedFormat2 | str | None = None
-    content_source = getattr(step, "content_source", None)
+    content_source = step.content_source
     if content_source in ("url", "trs_url") and step.content_id:
         run = step.content_id
     elif step.subworkflow is not None:
@@ -294,18 +304,18 @@ def _build_subworkflow_format2_step(
     elif step.content_id:
         run = step.content_id
 
-    label = step.label or label_map.get(str(step.id))
-    if label and Labels.is_unlabeled(label):
-        label = None
+    raw_label = step.label or label_map.get(str(step.id))
+    step_id = raw_label or str(step.id)
+    display_label = None if (raw_label and Labels.is_unlabeled(raw_label)) else raw_label
 
     return NormalizedWorkflowStep(
-        id=label or str(step.id),
-        label=label,
+        id=step_id,
+        label=display_label,
         doc=step.annotation or None,
         run=run,
         in_=in_list,
         out=out_list,
-        position=step.position if not options.compact else None,
+        position=_convert_position(step.position) if not options.compact else None,
         when=step.when,
         uuid=step.uuid,
     )
@@ -317,17 +327,17 @@ def _build_pause_format2_step(
     compact: bool,
 ) -> NormalizedWorkflowStep:
     in_list = _build_step_inputs(step, label_map)
-    label = step.label or label_map.get(str(step.id))
-    if label and Labels.is_unlabeled(label):
-        label = None
+    raw_label = step.label or label_map.get(str(step.id))
+    step_id = raw_label or str(step.id)
+    display_label = None if (raw_label and Labels.is_unlabeled(raw_label)) else raw_label
 
     return NormalizedWorkflowStep(
-        id=label or str(step.id),
-        label=label,
+        id=step_id,
+        label=display_label,
         doc=step.annotation or None,
         type_=WorkflowStepType.pause,
         in_=in_list,
-        position=step.position if not compact else None,
+        position=_convert_position(step.position) if not compact else None,
     )
 
 
@@ -345,19 +355,19 @@ def _build_pick_value_format2_step(
     if "mode" in tool_state:
         state = {"mode": tool_state["mode"]}
 
-    label = step.label or label_map.get(str(step.id))
-    if label and Labels.is_unlabeled(label):
-        label = None
+    raw_label = step.label or label_map.get(str(step.id))
+    step_id = raw_label or str(step.id)
+    display_label = None if (raw_label and Labels.is_unlabeled(raw_label)) else raw_label
 
     return NormalizedWorkflowStep(
-        id=label or str(step.id),
-        label=label,
+        id=step_id,
+        label=display_label,
         doc=step.annotation or None,
         type_=WorkflowStepType.pick_value,
         state=state,
         in_=in_list,
         out=out_list,
-        position=step.position if not compact else None,
+        position=_convert_position(step.position) if not compact else None,
     )
 
 
@@ -440,7 +450,8 @@ def _build_step_outputs(step: NormalizedNativeStep) -> list[WorkflowStepOutput]:
         elif action_type == "RemoveTagDatasetAction":
             output_dict["remove_tags"] = action_args["tags"].split(",")
         elif action_type == "ColumnSetAction":
-            output_dict["set_columns"] = action_args
+            if action_args:
+                output_dict["set_columns"] = action_args
         else:
             handled = False
 

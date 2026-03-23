@@ -90,7 +90,8 @@ def test_unlabeled_input_connections_round_trip():
     format2 = from_galaxy_native(copy.deepcopy(native_wf))
 
     # The cat step should reference the unlabeled input via sentinel
-    cat_step = format2["steps"][0]
+    steps = format2["steps"]
+    cat_step = steps["cat"] if isinstance(steps, dict) else steps[0]
     assert "_unlabeled_input_0" in str(cat_step["in"]["input1"]["source"])
 
     # Re-import and verify connection still works

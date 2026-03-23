@@ -1,8 +1,6 @@
 import json
 from collections import OrderedDict
 
-import pytest
-
 from gxformat2.converter import (
     POST_JOB_ACTIONS,
 )
@@ -13,27 +11,7 @@ from .test_basic import (
     to_native,
 )
 
-WORKFLOW_PJA_TEMPLATE_1905_FORMAT = """
-class: GalaxyWorkflow
-doc: |
-  Workflow with post job actions.
-inputs:
-  the_input:
-    type: File
-    doc: input doc
-steps:
-  cat:
-    tool_id: cat1
-    doc: cat doc
-    in:
-      input1: the_input
-    outputs:
-      out_file1:
-        {action}: {action_value}
-"""
-
-
-WORKFLOW_PJA_TEMPLATE_1909_FORMAT = """
+WORKFLOW_PJA_TEMPLATE = """
 class: GalaxyWorkflow
 doc: |
   Workflow with post job actions.
@@ -53,8 +31,7 @@ steps:
 """
 
 
-@pytest.mark.parametrize("wf_template", [WORKFLOW_PJA_TEMPLATE_1905_FORMAT, WORKFLOW_PJA_TEMPLATE_1909_FORMAT])
-def test_post_job_action_to_native(wf_template):
+def test_post_job_action_to_native():
     for action_key in POST_JOB_ACTIONS:
         default_value = POST_JOB_ACTIONS[action_key]["default"]
         expected_value = None
@@ -64,13 +41,16 @@ def test_post_job_action_to_native(wf_template):
                 expected_value = {"newname": action_value}
             elif action_key == "change_datatype":
                 expected_value = {"newtype": action_value}
+            elif action_key == "set_columns":
+                action_value = "{chromCol: 1, startCol: 2}"
+                expected_value = {"chromCol": 1, "startCol": 2}
         elif isinstance(default_value, list):
             action_value = "[tag]"
             expected_value = {"tags": "tag"}
         elif isinstance(default_value, bool):
             action_value = "true"
             expected_value = {}
-        workflow_yaml = wf_template.format(action=action_key, action_value=action_value)
+        workflow_yaml = WORKFLOW_PJA_TEMPLATE.format(action=action_key, action_value=action_value)
         native = to_native(workflow_yaml)
         pja_class = POST_JOB_ACTIONS[action_key]["action_class"]
         expected_pja = {

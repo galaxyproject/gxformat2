@@ -277,7 +277,7 @@ to connect the output value to downstream parameters."""
     hide: None | bool = Field(default=None)
     remove_tags: None | list[str] = Field(default=None)
     rename: None | str = Field(default=None)
-    set_columns: None | list[str] = Field(default=None)
+    set_columns: dict[str, Any] | None = Field(default=None)
 
 class WorkflowComment(BaseModel):
     """A visual annotation in the workflow editor. Comments are non-functional
