@@ -3,10 +3,11 @@
 import argparse
 import copy
 import json
+import logging
 import os
 import sys
 import uuid
-from typing import Any, Optional
+from typing import Any, Callable, Dict, Optional
 
 from ._labels import Labels
 from .model import (
@@ -24,6 +25,17 @@ from .model import (
     unflatten_comment_data,
 )
 from .yaml import ordered_load
+
+log = logging.getLogger(__name__)
+
+NativeStateEncoderFn = Optional[Callable[[dict, Dict[str, Any]], Optional[Dict[str, Any]]]]
+"""Callback to encode format2 state back to native tool_state.
+
+Accepts (step, state) where step is the partially-built native step dict
+and state is the format2 state dict after setup_connected_values processing.
+Returns {param_name: encoded_value} for native tool_state, or None to fall
+back to default json.dumps encoding.
+"""
 
 SCRIPT_DESCRIPTION = """
 Convert a Format 2 Galaxy workflow description into a native format.
@@ -81,7 +93,8 @@ class ImportOptions:
 
     def __init__(self):
         self.deduplicate_subworkflows = False
-        self.encode_tool_state = True
+        self.encode_tool_state_json = True
+        self.native_state_encoder: NativeStateEncoderFn = None
 
 
 def yaml_to_workflow(has_yaml, galaxy_interface, workflow_directory, import_options=None):
@@ -370,7 +383,7 @@ def transform_input(context, step, default_name):
         if attrib in step:
             tool_state[attrib] = step[attrib]
 
-    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state)
+    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state_json)
 
 
 def transform_pause(context, step, default_name="Pause for dataset review"):
@@ -398,7 +411,7 @@ def transform_pause(context, step, default_name="Pause for dataset review"):
 
     connect = pop_connect_from_step_dict(step)
     _populate_input_connections(context, step, connect)
-    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state)
+    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state_json)
 
 
 def transform_pick_value(context, step, default_name="Pick Value"):
@@ -469,7 +482,7 @@ def transform_subworkflow(context, step):
 
     connect = pop_connect_from_step_dict(step)
     _populate_input_connections(context, step, connect)
-    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state)
+    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state_json)
 
 
 def _runtime_value():
@@ -501,12 +514,27 @@ def transform_tool(context, step):
     # TODO: handle runtime inputs and state together.
     runtime_inputs = step.get("runtime_inputs", [])
     if "state" in step or runtime_inputs:
-        encode = context.import_options.encode_tool_state
+        encode = context.import_options.encode_tool_state_json
+        encoder = context.import_options.native_state_encoder
         step_state = step.pop("state", {})
         step_state = setup_connected_values(step_state, append_to=connect)
 
-        for key, value in step_state.items():
-            tool_state[key] = json.dumps(value) if encode else value
+        encoded = None
+        if encoder is not None:
+            try:
+                encoded = encoder(step, step_state)
+            except Exception:
+                log.warning(
+                    "native_state_encoder callback failed for %s, falling back to default",
+                    step.get("tool_id"),
+                    exc_info=True,
+                )
+
+        if encoded is not None:
+            tool_state.update(encoded)
+        else:
+            for key, value in step_state.items():
+                tool_state[key] = json.dumps(value) if encode else value
         for runtime_input in runtime_inputs:
             tool_state[runtime_input] = json.dumps(_runtime_value()) if encode else _runtime_value()
     elif "tool_state" in step:
@@ -515,7 +543,7 @@ def transform_tool(context, step):
     # Fill in input connections
     _populate_input_connections(context, step, connect)
 
-    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state)
+    _populate_tool_state(step, tool_state, encode=context.import_options.encode_tool_state_json)
 
     # Handle outputs.
     out = step.pop("out", None)

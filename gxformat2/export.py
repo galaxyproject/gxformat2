@@ -2,8 +2,10 @@
 
 import argparse
 import json
+import logging
 import sys
 from collections import OrderedDict
+from typing import Any, Callable, Dict, Optional
 
 from ._labels import Labels, UNLABELED_INPUT_PREFIX, UNLABELED_STEP_PREFIX
 from .model import (
@@ -12,6 +14,15 @@ from .model import (
     prune_position,
 )
 from .yaml import ordered_dump
+
+log = logging.getLogger(__name__)
+
+ConvertToolStateFn = Optional[Callable[[dict], Optional[Dict[str, Any]]]]
+"""Callback to convert a native tool step's tool_state to format2 state.
+
+Accepts a native step dict (with tool_id, tool_version, tool_state).
+Returns a format2 state dict, or None to fall back to default tool_state passthrough.
+"""
 
 SCRIPT_DESCRIPTION = """
 Convert a native Galaxy workflow description into a Format 2 description.
@@ -29,12 +40,26 @@ def _copy_common_properties(from_native_step, to_format2_step, compact=False):
             to_format2_step[prop] = value
 
 
-def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=False, compact=False):
+def from_galaxy_native(
+    native_workflow_dict,
+    tool_interface=None,
+    json_wrapper=False,
+    compact=False,
+    convert_tool_state: ConvertToolStateFn = None,
+):
     """Convert native .ga workflow definition to a format2 workflow.
 
     This is highly experimental and currently broken.
+
+    If ``convert_tool_state`` is provided it should be a callable accepting a
+    native step dict and returning an optional dict representing the format2
+    ``state`` for that step.  When the callable returns a dict, the step will
+    carry ``state`` instead of ``tool_state``; when it returns ``None`` the
+    default ``tool_state`` passthrough is used.  This allows schema-aware
+    consumers to inject tool-definition-aware value conversion without
+    gxformat2 needing to know about tool definitions.
     """
-    data = OrderedDict()
+    data: OrderedDict[str, Any] = OrderedDict()
     data["class"] = "GalaxyWorkflow"
     _copy_common_properties(native_workflow_dict, data, compact=compact)
     if "name" in native_workflow_dict:
@@ -59,9 +84,10 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         else:
             label_map[str(key)] = label
 
-    inputs = OrderedDict()
-    outputs = OrderedDict()
-    steps = []
+    inputs: OrderedDict[str, Any] = OrderedDict()
+    outputs: OrderedDict[str, Any] = OrderedDict()
+    steps: list[OrderedDict[str, Any]] = []
+    step_dict: OrderedDict[str, Any]
 
     labels = Labels()
 
@@ -78,98 +104,22 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
 
         module_type = step.get("type")
         if module_type in ["data_input", "data_collection_input", "parameter_input"]:
-            step_id = step["label"] if step["label"] is not None else f"{UNLABELED_INPUT_PREFIX}{step['id']}"
-            input_dict = {}
-            tool_state = _tool_state(step)
-            input_dict["type"] = native_input_to_format2_type(step, tool_state)
-            known_fields = [
-                "collection_type",
-                "optional",
-                "format",
-                "default",
-                "restrictions",
-                "suggestions",
-                "restrictOnConnections",
-                "fields",
-                "column_definitions",
-            ]
-            for tool_state_key in known_fields:
-                if tool_state_key in tool_state:
-                    input_dict[tool_state_key] = tool_state[tool_state_key]
-
-            _copy_common_properties(step, input_dict, compact=compact)
-            # If we are only copying property - use the CWL-style short-hand
-            if len(input_dict) == 1:
-                inputs[step_id] = input_dict["type"]
-            else:
-                inputs[step_id] = input_dict
-
+            _convert_input_step(step, inputs, compact)
         elif module_type == "pause":
-            step_dict = OrderedDict()
-            optional_props = ["label"]
-            _copy_common_properties(step, step_dict, compact=compact)
-            _copy_properties(step, step_dict, optional_props=optional_props)
-            _convert_input_connections(step, step_dict, label_map)
-            step_dict["type"] = "pause"
-            steps.append(step_dict)
-
+            steps.append(_convert_pause_step(step, label_map, compact))
         elif module_type == "pick_value":
-            step_dict = OrderedDict()
-            optional_props = ["label"]
-            _copy_common_properties(step, step_dict, compact=compact)
-            _copy_properties(step, step_dict, optional_props=optional_props)
-            _convert_input_connections(step, step_dict, label_map)
-            _convert_post_job_actions(step, step_dict)
-            step_dict["type"] = "pick_value"
-            tool_state = json.loads(step.get("tool_state", "{}"))
-            state = {}
-            if "mode" in tool_state:
-                state["mode"] = tool_state["mode"]
-            if state:
-                step_dict["state"] = state
-            steps.append(step_dict)
-
+            steps.append(_convert_pick_value_step(step, label_map, compact))
         elif module_type == "subworkflow":
-            step_dict = OrderedDict()
-            optional_props = ["label"]
-            _copy_common_properties(step, step_dict, compact=compact)
-            _copy_properties(step, step_dict, optional_props=optional_props)
-            _convert_input_connections(step, step_dict, label_map)
-            _convert_post_job_actions(step, step_dict)
-            content_source = step.get("content_source")
-            content_id = step.get("content_id")
-            if content_source in ("url", "trs_url") and content_id:
-                step_dict["run"] = content_id
-            else:
-                subworkflow_native_dict = step["subworkflow"]
-                subworkflow = from_galaxy_native(
-                    subworkflow_native_dict, tool_interface=tool_interface, json_wrapper=False, compact=compact
-                )
-                step_dict["run"] = subworkflow
-            steps.append(step_dict)
-
+            steps.append(_convert_subworkflow_step(step, label_map, compact, tool_interface, convert_tool_state))
         elif module_type == "tool":
-            step_dict = OrderedDict()
-            optional_props = ["label", "tool_shed_repository"]
-            required_props = ["tool_id", "tool_version"]
-            _copy_properties(step, step_dict, optional_props, required_props)
-            _copy_common_properties(step, step_dict, compact=compact)
-
-            tool_state = _tool_state(step)
-            tool_state.pop("__page__", None)
-            tool_state.pop("__rerun_remap_job_id__", None)
-            step_dict["tool_state"] = tool_state
-
-            _convert_input_connections(step, step_dict, label_map)
-            _convert_post_job_actions(step, step_dict)
-            steps.append(step_dict)
-
+            steps.append(_convert_tool_step(step, label_map, compact, convert_tool_state))
         else:
             raise NotImplementedError(f"Unhandled module type {module_type}")
 
         # Ensure unlabeled non-input steps get a sentinel label so source
         # references using label_map can resolve on reimport.
         if module_type not in ("data_input", "data_collection_input", "parameter_input"):
+            step_dict = steps[-1]
             if "label" not in step_dict:
                 sentinel = label_map.get(str(step["id"]))
                 if sentinel is not None:
@@ -193,6 +143,113 @@ def from_galaxy_native(native_workflow_dict, tool_interface=None, json_wrapper=F
         return {"yaml_content": ordered_dump(data)}
 
     return data
+
+
+def _convert_input_step(step, inputs, compact):
+    step_id = step["label"] if step["label"] is not None else f"{UNLABELED_INPUT_PREFIX}{step['id']}"
+    input_dict = {}
+    tool_state = _tool_state(step)
+    input_dict["type"] = native_input_to_format2_type(step, tool_state)
+    known_fields = [
+        "collection_type",
+        "optional",
+        "format",
+        "default",
+        "restrictions",
+        "suggestions",
+        "restrictOnConnections",
+        "fields",
+        "column_definitions",
+    ]
+    for tool_state_key in known_fields:
+        if tool_state_key in tool_state:
+            input_dict[tool_state_key] = tool_state[tool_state_key]
+
+    _copy_common_properties(step, input_dict, compact=compact)
+    # If we are only copying property - use the CWL-style short-hand
+    if len(input_dict) == 1:
+        inputs[step_id] = input_dict["type"]
+    else:
+        inputs[step_id] = input_dict
+
+
+def _convert_pause_step(step, label_map, compact):
+    step_dict = OrderedDict()
+    _copy_common_properties(step, step_dict, compact=compact)
+    _copy_properties(step, step_dict, optional_props=["label"])
+    _convert_input_connections(step, step_dict, label_map)
+    step_dict["type"] = "pause"
+    return step_dict
+
+
+def _convert_pick_value_step(step, label_map, compact):
+    step_dict = OrderedDict()
+    _copy_common_properties(step, step_dict, compact=compact)
+    _copy_properties(step, step_dict, optional_props=["label"])
+    _convert_input_connections(step, step_dict, label_map)
+    _convert_post_job_actions(step, step_dict)
+    step_dict["type"] = "pick_value"
+    tool_state = json.loads(step.get("tool_state", "{}"))
+    state = {}
+    if "mode" in tool_state:
+        state["mode"] = tool_state["mode"]
+    if state:
+        step_dict["state"] = state
+    return step_dict
+
+
+def _convert_subworkflow_step(step, label_map, compact, tool_interface, convert_tool_state):
+    step_dict = OrderedDict()
+    _copy_common_properties(step, step_dict, compact=compact)
+    _copy_properties(step, step_dict, optional_props=["label"])
+    _convert_input_connections(step, step_dict, label_map)
+    _convert_post_job_actions(step, step_dict)
+    content_source = step.get("content_source")
+    content_id = step.get("content_id")
+    if content_source in ("url", "trs_url") and content_id:
+        step_dict["run"] = content_id
+    else:
+        subworkflow_native_dict = step["subworkflow"]
+        subworkflow = from_galaxy_native(
+            subworkflow_native_dict,
+            tool_interface=tool_interface,
+            json_wrapper=False,
+            compact=compact,
+            convert_tool_state=convert_tool_state,
+        )
+        step_dict["run"] = subworkflow
+    return step_dict
+
+
+def _convert_tool_step(step, label_map, compact, convert_tool_state):
+    step_dict = OrderedDict()
+    optional_props = ["label", "tool_shed_repository"]
+    required_props = ["tool_id", "tool_version"]
+    _copy_properties(step, step_dict, optional_props, required_props)
+    _copy_common_properties(step, step_dict, compact=compact)
+
+    converted_state = None
+    if convert_tool_state is not None:
+        try:
+            converted_state = convert_tool_state(step)
+        except Exception:
+            log.warning(
+                "convert_tool_state callback failed for %s, falling back to default",
+                step.get("tool_id"),
+                exc_info=True,
+            )
+
+    if converted_state is not None:
+        step_dict["state"] = converted_state
+    else:
+        tool_state = _tool_state(step)
+        tool_state.pop("__page__", None)
+        tool_state.pop("__rerun_remap_job_id__", None)
+        step_dict["tool_state"] = tool_state
+
+    _convert_input_connections(step, step_dict, label_map)
+    _convert_post_job_actions(step, step_dict)
+    return step_dict
 
 
 def _convert_comments_to_format2(native_workflow_dict, data, label_map, compact):
