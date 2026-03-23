@@ -6,6 +6,7 @@ from yaml import safe_load
 
 from gxformat2.converter import python_to_workflow
 from gxformat2.export import from_galaxy_native, main
+from gxformat2.yaml import ordered_load
 from ._helpers import MockGalaxyInterface, TEST_PATH, to_example_path
 
 
@@ -224,9 +225,6 @@ def test_convert_tool_state_no_callback_default_unchanged():
 
 def test_convert_tool_state_subworkflow_recursion():
     """Test that convert_tool_state callback is passed through to subworkflows."""
-    from gxformat2.yaml import ordered_load
-    from gxformat2.converter import python_to_workflow
-
     nested_f2 = """
 class: GalaxyWorkflow
 inputs:
