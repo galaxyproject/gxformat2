@@ -8,6 +8,7 @@ All step/input ids are populated.
 
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 from typing import Any
 
@@ -95,6 +96,9 @@ def normalized_format2(
     model, or a native workflow dict (auto-detected by
     ``a_galaxy_workflow`` key and converted via ``from_galaxy_native``).
 
+    Handles ``$graph`` multi-workflow documents by extracting the
+    ``main`` workflow and inlining ``#ref`` subworkflow references.
+
     Returns a ``NormalizedFormat2`` where steps/inputs/outputs are always
     lists, shorthands are expanded, and ids are populated.
     """
@@ -107,6 +111,8 @@ def normalized_format2(
             from gxformat2.export import from_galaxy_native
 
             workflow = from_galaxy_native(workflow)
+        elif "$graph" in workflow and "class" not in workflow:
+            workflow = _resolve_graph(workflow)
         workflow = GalaxyWorkflow.model_validate(workflow)
     return _normalize_workflow(workflow)
 
@@ -347,3 +353,52 @@ def _normalize_comments(
         else:
             result.append(comment)
     return result
+
+
+def _resolve_graph(raw: dict[str, Any]) -> dict[str, Any]:
+    """Extract main workflow from a ``$graph`` document and inline ``#ref`` subworkflows.
+
+    A ``$graph`` document contains multiple workflows as a list under the
+    ``$graph`` key.  The workflow with ``id: main`` is the primary workflow.
+    Steps with ``run: '#subworkflow_id'`` are resolved by inlining the
+    referenced subworkflow from the same ``$graph``.
+    """
+    graph = raw["$graph"]
+    lookup: dict[str, dict[str, Any]] = {}
+    main: dict[str, Any] | None = None
+    for entry in graph:
+        if not isinstance(entry, dict):
+            raise Exception("Malformed workflow content in $graph")
+        if "id" not in entry:
+            raise Exception("No subworkflow ID found for entry in $graph.")
+        graph_id = entry["id"]
+        lookup[graph_id] = entry
+        if graph_id == "main":
+            main = entry
+    if main is None:
+        raise Exception("$graph has no 'main' workflow")
+    main = copy.deepcopy(main)
+    _inline_graph_refs(main, lookup)
+    return main
+
+
+def _is_graph_id_reference(run_action: Any) -> bool:
+    """Check if a ``run`` value is a ``$graph`` reference (e.g. ``'#subworkflow1'``)."""
+    return isinstance(run_action, str) and run_action.startswith("#")
+
+
+def _inline_graph_refs(workflow: dict[str, Any], lookup: dict[str, dict[str, Any]]) -> None:
+    """Recursively replace ``#ref`` run values with the referenced subworkflow."""
+    steps = workflow.get("steps", {})
+    step_iter = steps.values() if isinstance(steps, dict) else steps
+    for step in step_iter:
+        if not isinstance(step, dict):
+            continue
+        run = step.get("run")
+        if _is_graph_id_reference(run):
+            ref_id = run[1:]
+            if ref_id not in lookup:
+                raise Exception(f"$graph reference '{run}' not found in graph entries")
+            resolved = copy.deepcopy(lookup[ref_id])
+            _inline_graph_refs(resolved, lookup)
+            step["run"] = resolved

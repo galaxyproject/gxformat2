@@ -24,6 +24,7 @@ from .model import (
     SUPPORT_LEGACY_CONNECTIONS,
     unflatten_comment_data,
 )
+from .normalized._format2 import _is_graph_id_reference
 from .yaml import ordered_load
 
 log = logging.getLogger(__name__)
@@ -326,10 +327,6 @@ def run_workflow_to_step(conversion_context, step, run_action):
 
 def _is_url(value):
     return isinstance(value, str) and value.startswith(("http://", "https://", "base64://"))
-
-
-def _is_graph_id_reference(run_action):
-    return run_action and not isinstance(run_action, dict) and not _is_url(run_action)
 
 
 def transform_data_input(context, step):
