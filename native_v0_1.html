@@ -1,0 +1,1254 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="galaxy_bootstrap.min.css">
+    <script>
+    // Picture element HTML5 shiv
+    document.createElement( "picture" );
+    </script>
+    <script src="https://cdn.rawgit.com/scottjehl/picturefill/3.0.2/dist/picturefill.min.js"
+        integrity="sha384-ZJsVW8YHHxQHJ+SJDncpN90d0EfAhPP+yA94n+EhSRzhcxfo84yMnNk+v37RGlWR"
+        crossorigin="anonymous" async></script>
+    <title>Galaxy Native Workflow Format (.ga)</title>
+    <style>
+    :target {
+      padding-top: 61px;
+      margin-top: -61px;
+    }
+    .tocnav ol {
+      list-style: none
+    }
+    pre {
+      margin: 0 2em 10px 2em;
+      padding: 9.5px;
+      line-height: 1.42857143;
+      color: #333;
+      word-break: break-all;
+      word-wrap: break-word;
+      background-color: #f5f5f5;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    pre code {
+      padding: 0;
+      font-size: inherit;
+      color: inherit;
+      white-space: pre-wrap;
+      background-color: transparent;
+      border-radius: 0;
+    }
+    code {
+      background-color: #f9f2f4;
+      border-radius: 4px;
+      padding: 2px 4px;
+      color: #c7254e;
+    }
+    blockquote {
+      padding: 10px 20px 1px 20px;
+      border-left: 5px solid #eee;
+    }
+    a {
+      text-decoration: none;
+    }
+    a code {
+      color: #c7254e;
+    }
+    .section a {
+      visibility: hidden;
+    }
+    .section:hover a {
+      visibility: visible;
+      color: rgb(201, 201, 201);
+    }
+    .responsive-table-header {
+      text-align: left;
+      padding: 8px;
+      vertical-align: top;
+      font-weight: bold;
+      border-top-color: rgb(221, 221, 221);
+      border-top-style: solid;
+      border-top-width: 1px;
+      background-color: #f9f9f9
+    }
+    .responsive-table > .responsive-table-row {
+      text-align: left;
+      padding: 8px;
+      vertical-align: top;
+      border-top-color: rgb(221, 221, 221);
+      border-top-style: solid;
+      border-top-width: 1px;
+    }
+    @media (min-width: 0px), print {
+      .description-header {
+        display: none;
+      }
+      .description-col {
+        margin-top: 1em;
+        margin-left: 1.5em;
+      }
+    }
+    @media (min-width: 1170px) {
+      .description-header {
+        display: inline;
+      }
+      .description-col {
+        margin-top: 0px;
+        margin-left: 0px;
+      }
+    }
+    .responsive-table-row:nth-of-type(odd) {
+       background-color: #f9f9f9
+    }
+    </style>
+    </head>
+    <body>
+    
+      <nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light navbar-inverse">
+        <div class="container">
+          <a class="navbar-brand" href=""><img src="icon.png" /></a>
+    
+        </div>
+      </nav>
+    
+    <div class="container mt-4">
+    
+    <div class="row">
+    
+    <div class="col-md-12" role="main" id="main"><h1 id="Galaxy_Native_Workflow_Format_(.ga)" class="section">Galaxy Native Workflow Format (.ga) <a href="#Galaxy_Native_Workflow_Format_(.ga)">&sect;</a></h1><p>The Galaxy native workflow format is a JSON document (conventionally with `.ga`` extension)
+that fully describes a workflow's structure, tools, connections, metadata, and visual layout.
+It is the canonical serialization format used internally by Galaxy.</p>
+<h1 id="NativeGalaxyWorkflow" class="section">NativeGalaxyWorkflow <a href="#NativeGalaxyWorkflow">&sect;</a></h1><p>A Galaxy native workflow document (.ga format). This is the canonical
+serialization format used internally by Galaxy.</p>
+<p>The native format mirrors the database schema directly -- steps are keyed
+by numeric IDs, connections reference step IDs, and tool state is stored
+as double-encoded JSON strings.</p>
+<p>The format version has been <code>&quot;0.1&quot;</code> since inception. New features are
+added without version bumps.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>a_galaxy_workflow</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Format marker. Always the string <code>&quot;true&quot;</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>format-version</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Format version. Always <code>&quot;0.1&quot;</code> currently.
+In the JSON document this field is written as <code>format-version</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>uuid</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>UUID uniquely representing this element.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Workflow display name.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>annotation</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Human-readable workflow description.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tags</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Classification tags for the workflow.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>version</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Internal revision counter.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>license</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>SPDX license identifier (e.g. <code>&quot;MIT&quot;</code>, <code>&quot;CC-BY-4.0&quot;</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>release</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Semantic version for published workflows.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>creator</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[<a href="#NativeCreatorPerson">NativeCreatorPerson</a> | <a href="#NativeCreatorOrganization">NativeCreatorOrganization</a>] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Creator(s) of this workflow. An array of schema.org
+NativeCreatorPerson or NativeCreatorOrganization objects,
+dispatched via the <code>class</code> field (<code>Person</code> or <code>Organization</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>report</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeReport">NativeReport</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Workflow invocation report template.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>readme</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Detailed workflow description in Markdown.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>help</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Help text in Markdown.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>logo_url</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>URL to workflow logo image.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>doi</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Associated DOIs.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>source_metadata</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeSourceMetadata">NativeSourceMetadata</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Provenance tracking metadata for workflows imported from TRS or URLs.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>comments</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#NativeComment">NativeComment</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Visual annotations in the workflow editor.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>steps</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>dict[str, <a href="#NativeStep">NativeStep</a>] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Step dictionary keyed by string integers (<code>&quot;0&quot;</code>, <code>&quot;1&quot;</code>, ...).
+Values are NativeStep objects. Steps are processed in sorted
+numeric order during import.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>subworkflows</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>dict[str, <a href="#NativeGalaxyWorkflow">NativeGalaxyWorkflow</a>] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Map of locally-defined subworkflow dicts, used during format conversion.</p>
+</div>
+</div></div><h2 id="NativeTextComment" class="section">NativeTextComment <a href="#NativeTextComment">&sect;</a></h2><p>A plain text annotation in the workflow editor.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Numeric identifier for this comment (order index).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeTextCommentType">NativeTextCommentType</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Comment type (<code>text</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[float] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Position on the editor canvas as <code>[x, y]</code> coordinates.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>size</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[float] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Size as <code>[width, height]</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>color</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Display color (e.g. <code>&quot;none&quot;</code>, <code>&quot;blue&quot;</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>data</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeTextCommentData">NativeTextCommentData</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Text content data: <code>text</code>, <code>bold</code>, <code>italic</code>, <code>size</code>.</p>
+</div>
+</div></div><h3 id="Any" class="section">Any <a href="#Any">&sect;</a></h3><p>The <strong>Any</strong> type validates for any non-null value.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Any</code></td><td></td></tr></table><h3 id="NativeTextCommentType" class="section">NativeTextCommentType <a href="#NativeTextCommentType">&sect;</a></h3><p>Discriminator for text comments.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>text</code></td><td></td></tr></table><h3 id="NativeTextCommentData" class="section">NativeTextCommentData <a href="#NativeTextCommentData">&sect;</a></h3><p>Data payload for a text comment.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>text</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The text content.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>bold</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Whether the text is displayed in bold.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>italic</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Whether the text is displayed in italic.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>size</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Font size of the text.</p>
+</div>
+</div></div><h2 id="NativeMarkdownComment" class="section">NativeMarkdownComment <a href="#NativeMarkdownComment">&sect;</a></h2><p>A Markdown-rendered annotation in the workflow editor.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Numeric identifier for this comment (order index).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeMarkdownCommentType">NativeMarkdownCommentType</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Comment type (<code>markdown</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[float] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Position on the editor canvas as <code>[x, y]</code> coordinates.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>size</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[float] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Size as <code>[width, height]</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>color</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Display color (e.g. <code>&quot;none&quot;</code>, <code>&quot;blue&quot;</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>data</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeMarkdownCommentData">NativeMarkdownCommentData</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Markdown content data: <code>text</code>.</p>
+</div>
+</div></div><h3 id="NativeMarkdownCommentType" class="section">NativeMarkdownCommentType <a href="#NativeMarkdownCommentType">&sect;</a></h3><p>Discriminator for markdown comments.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>markdown</code></td><td></td></tr></table><h3 id="NativeMarkdownCommentData" class="section">NativeMarkdownCommentData <a href="#NativeMarkdownCommentData">&sect;</a></h3><p>Data payload for a markdown comment.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>text</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Markdown content.</p>
+</div>
+</div></div><h2 id="NativeFrameComment" class="section">NativeFrameComment <a href="#NativeFrameComment">&sect;</a></h2><p>A rectangular grouping box that visually contains steps and other comments.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Numeric identifier for this comment (order index).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeFrameCommentType">NativeFrameCommentType</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Comment type (<code>frame</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[float] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Position on the editor canvas as <code>[x, y]</code> coordinates.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>size</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[float] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Size as <code>[width, height]</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>color</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Display color (e.g. <code>&quot;none&quot;</code>, <code>&quot;blue&quot;</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>data</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeFrameCommentData">NativeFrameCommentData</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Frame content data: <code>title</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>child_steps</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">int</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Step IDs contained within this frame.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>child_comments</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">int</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Comment IDs contained within this frame.</p>
+</div>
+</div></div><h3 id="NativeFrameCommentType" class="section">NativeFrameCommentType <a href="#NativeFrameCommentType">&sect;</a></h3><p>Discriminator for frame comments.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>frame</code></td><td></td></tr></table><h3 id="NativeFrameCommentData" class="section">NativeFrameCommentData <a href="#NativeFrameCommentData">&sect;</a></h3><p>Data payload for a frame comment.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>title</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Title displayed on the frame header.</p>
+</div>
+</div></div><h2 id="NativeFreehandComment" class="section">NativeFreehandComment <a href="#NativeFreehandComment">&sect;</a></h2><p>A freehand drawn line on the editor canvas.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Numeric identifier for this comment (order index).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeFreehandCommentType">NativeFreehandCommentType</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Comment type (<code>freehand</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[float] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Position on the editor canvas as <code>[x, y]</code> coordinates.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>size</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[float] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Size as <code>[width, height]</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>color</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Display color (e.g. <code>&quot;none&quot;</code>, <code>&quot;blue&quot;</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>data</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeFreehandCommentData">NativeFreehandCommentData</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Freehand content data: <code>line</code>, <code>thickness</code>.</p>
+</div>
+</div></div><h3 id="NativeFreehandCommentType" class="section">NativeFreehandCommentType <a href="#NativeFreehandCommentType">&sect;</a></h3><p>Discriminator for freehand comments.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>freehand</code></td><td></td></tr></table><h3 id="NativeFreehandCommentData" class="section">NativeFreehandCommentData <a href="#NativeFreehandCommentData">&sect;</a></h3><p>Data payload for a freehand comment.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>line</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[list[float]] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Array of <code>[x, y]</code> coordinate pairs defining the freehand line path.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>thickness</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Line thickness.</p>
+</div>
+</div></div><h2 id="NativeComment" class="section">NativeComment <a href="#NativeComment">&sect;</a></h2><p>A visual annotation in the workflow editor. Dispatches to the
+appropriate comment type based on the <code>type</code> field.</p>
+<h2 id="NativeStep" class="section">NativeStep <a href="#NativeStep">&sect;</a></h2><p>A step in a native Galaxy workflow. Steps are keyed by string integers
+(<code>&quot;0&quot;</code>, <code>&quot;1&quot;</code>, ...) in the <code>steps</code> dictionary. The key serves as
+an external ID for connection wiring.</p>
+<p>The <code>type</code> field determines the step's behavior. All step types share
+common fields; type-specific fields are optional and only relevant for
+their respective type.</p>
+<h3 id="Tool_State" class="section">Tool State <a href="#Tool_State">&sect;</a></h3><p>The <code>tool_state</code> field contains the tool's parameter configuration.
+Traditionally this is a JSON-encoded string (double-encoded: each top-level
+value is itself a JSON string), but it may also be a plain dictionary when
+unencoded tool state is used. Connected parameters are represented as
+<code>{&quot;__class__&quot;: &quot;ConnectedValue&quot;}</code>, runtime parameters as
+<code>{&quot;__class__&quot;: &quot;RuntimeValue&quot;}</code>.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>errors</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>During Galaxy export there may be some problem validating the tool state, tool used, etc..
+that will be indicated by this field. The Galaxy user should be warned of these problems before
+the workflow can be used in Galaxy.</p>
+<p>This field should not be used in human written Galaxy workflow files.</p>
+<p>A typical problem is the referenced tool is not installed, this can be fixed by installed the tool
+and re-saving the workflow and then re-exporting it.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>uuid</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>UUID uniquely representing this element.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tool_id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The tool ID used to run this step of the workflow (e.g. 'cat1' or 'toolshed.g2.bx.psu.edu/repos/nml/collapse_collections/collapse_dataset/4.0').</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tool_shed_repository</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#ToolShedRepository">ToolShedRepository</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The Galaxy Tool Shed repository that should be installed in order to use this tool.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tool_version</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The tool version corresponding used to run this step of the workflow. For tool shed installed tools, the ID generally uniquely specifies a version
+and this field is optional.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Step ID. Matches the dictionary key in the <code>steps</code> object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeStepType">NativeStepType</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Step module type.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Display name. For tool steps this is the tool's name; for input steps
+it is the generic type name (e.g. "Input dataset").</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>User-friendly step label. Must be unique within the workflow.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>annotation</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Human-readable step description.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>when</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Conditional execution expression. Typically <code>$(inputs.when)</code>
+paired with a boolean input connection on the <code>when</code> key.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>content_id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Tool ID or content identifier. Same as <code>tool_id</code> for tool steps;
+may reference a subworkflow key for subworkflow steps.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tool_state</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | <code>str | dict[str, Any] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Tool parameter configuration. Traditionally a JSON-encoded string
+(double-encoded: each top-level value is itself a JSON string), but
+may also be a plain dict when <code>encode_tool_state</code> is disabled
+during Format2-to-native conversion.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tool_uuid</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>UUID for dynamic (inline-defined) tools.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>input_connections</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>dict[str, <a href="#NativeInputConnection">NativeInputConnection</a> | list[<a href="#NativeInputConnection">NativeInputConnection</a>]] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Connection wiring from other steps' outputs to this step's inputs.
+Keys are input parameter names (using <code>|</code> for nested parameters).
+Values are a NativeInputConnection object or an array of them for
+multi-valued inputs.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>inputs</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#NativeStepInput">NativeStepInput</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Input parameter metadata (descriptions, not connections).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>outputs</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#NativeStepOutput">NativeStepOutput</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Output declarations with names and datatypes.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>workflow_outputs</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#NativeWorkflowOutput">NativeWorkflowOutput</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Outputs designated as workflow-level outputs. Steps with an empty
+array have all their outputs hidden by default.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>post_job_actions</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>dict[str, <a href="#NativePostJobAction">NativePostJobAction</a>] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Post-job actions applied to outputs after tool execution. Keys are
+compound strings of the form <code>{ActionType}{OutputName}</code>. Values
+are NativePostJobAction objects.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>subworkflow</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code><a href="#NativeGalaxyWorkflow">NativeGalaxyWorkflow</a> | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Embedded subworkflow definition. A complete native workflow document
+(with <code>a_galaxy_workflow</code>, <code>format-version</code>, <code>steps</code>, etc.)
+nested inside this step.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>in</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>dict[str, Any] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Default values for step inputs. Keys are parameter names, values
+are objects with a <code>default</code> key.</p>
+</div>
+</div></div><h3 id="NativeStepInput" class="section">NativeStepInput <a href="#NativeStepInput">&sect;</a></h3><p>Describes an input parameter on a step. This is metadata about the input,
+not the connection wiring (which is in <code>input_connections</code>).</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Name of the input parameter.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>description</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Human-readable description of this input.</p>
+</div>
+</div></div><h3 id="NativeStepOutput" class="section">NativeStepOutput <a href="#NativeStepOutput">&sect;</a></h3><p>Declares an output produced by a step, with its name and datatype.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Name of the output.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Galaxy datatype extension for the output (e.g. <code>bam</code>, <code>txt</code>, <code>tabular</code>).
+The value <code>input</code> means the type is determined at runtime from the input data.</p>
+</div>
+</div></div><h3 id="NativeWorkflowOutput" class="section">NativeWorkflowOutput <a href="#NativeWorkflowOutput">&sect;</a></h3><p>Designates a step output as a workflow-level output. These appear in the
+<code>workflow_outputs</code> array on each step.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>output_name</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Name of the step output to expose as a workflow output.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>User-visible label for this workflow output. Must be unique across the workflow.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>uuid</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>UUID for this workflow output.</p>
+</div>
+</div></div><h3 id="NativeInputConnection" class="section">NativeInputConnection <a href="#NativeInputConnection">&sect;</a></h3><p>Describes a connection from one step's output to another step's input.
+These objects appear as values in the <code>input_connections</code> dictionary.</p>
+<p>For multi-valued inputs, the value is an array of these objects rather
+than a single object.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Step ID of the source step providing the data.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>output_name</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Name of the output on the source step (typically <code>&quot;output&quot;</code> for
+input steps).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>input_subworkflow_step_id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>For subworkflow steps, the internal step ID within the subworkflow
+that this connection routes to. Maps the parent connection to the
+correct input step inside the subworkflow.</p>
+</div>
+</div></div><h3 id="NativePostJobAction" class="section">NativePostJobAction <a href="#NativePostJobAction">&sect;</a></h3><p>An action applied to a step's output after tool execution. These objects
+appear as values in the <code>post_job_actions</code> dictionary, keyed by
+compound strings of the form <code>{ActionType}{OutputName}</code>
+(e.g. <code>HideDatasetActionout_pairs</code>).</p>
+<p>Common action types: <code>HideDatasetAction</code>, <code>RenameDatasetAction</code>,
+<code>DeleteIntermediatesAction</code>, <code>ChangeDatatypeAction</code>,
+<code>TagDatasetAction</code>, <code>ColumnSetAction</code>.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>action_type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The action type identifier (e.g. <code>HideDatasetAction</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>output_name</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The step output this action applies to.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>action_arguments</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>dict[str, str] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Action-specific arguments. For <code>RenameDatasetAction</code>:
+<code>{&quot;newname&quot;: &quot;...&quot;}</code>; for <code>ChangeDatatypeAction</code>:
+<code>{&quot;newtype&quot;: &quot;tabular&quot;}</code>; for <code>TagDatasetAction</code>:
+<code>{&quot;tags&quot;: &quot;name:tag&quot;}</code>. Empty object <code>{}</code> for actions
+without arguments.</p>
+</div>
+</div></div><h3 id="StepPosition" class="section">StepPosition <a href="#StepPosition">&sect;</a></h3><p>This field specifies the location of the step's node when rendered in the workflow editor.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>top</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Relative vertical position of the step's node when rendered in the workflow editor.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>left</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">int</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Relative horizontal position of the step's node when rendered in the workflow editor.</p>
+</div>
+</div></div><h3 id="ToolShedRepository" class="section">ToolShedRepository <a href="#ToolShedRepository">&sect;</a></h3><h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>changeset_revision</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The revision of the tool shed repository this tool can be found in.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The name of the tool shed repository this tool can be found in.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>owner</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The owner of the tool shed repository this tool can be found in.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>tool_shed</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The URI of the tool shed containing the repository this tool can be found in - typically this should be toolshed.g2.bx.psu.edu.</p>
+</div>
+</div></div><h3 id="NativeStepType" class="section">NativeStepType <a href="#NativeStepType">&sect;</a></h3><p>Step module types in the native Galaxy workflow format.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>data_input</code></td><td> A single dataset input to the workflow.</td></tr><tr><td><code>data_collection_input</code></td><td> A dataset collection input to the workflow.</td></tr><tr><td><code>parameter_input</code></td><td> A typed parameter input (text, integer, float, boolean, color).</td></tr><tr><td><code>tool</code></td><td> A Galaxy tool execution step.</td></tr><tr><td><code>subworkflow</code></td><td> An embedded or referenced sub-workflow.</td></tr><tr><td><code>pause</code></td><td> A manual pause point that halts execution until user intervention.</td></tr></table><h2 id="NativeReport" class="section">NativeReport <a href="#NativeReport">&sect;</a></h2><p>Workflow invocation report template.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>markdown</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Galaxy-flavored Markdown content for the invocation report. Supports
+template directives like <code>history_dataset_as_image(output=&quot;...&quot;)</code>.</p>
+</div>
+</div></div><h2 id="NativeCreatorPerson" class="section">NativeCreatorPerson <a href="#NativeCreatorPerson">&sect;</a></h2><p>A person who created or contributed to the workflow.
+Corresponds to a <code>schema.org Person &lt;https://schema.org/Person&gt;</code>_.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>class</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeCreatorPersonType">NativeCreatorPersonType</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Creator type discriminator (<code>Person</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Full name of the person or organization.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>identifier</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Persistent identifier, typically an ORCID URL
+(e.g. <code>https://orcid.org/0000-0001-2345-6789</code>) or bare ORCID.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>url</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Website or profile URL.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>email</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Email address. May include a <code>mailto:</code> prefix.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>image</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>URL to an image or avatar.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>address</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Physical or mailing address.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>alternateName</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>An alternate name or alias.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>telephone</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Telephone number.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>faxNumber</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Fax number.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>givenName</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Given (first) name.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>familyName</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Family (last) name.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>honorificPrefix</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Honorific prefix (e.g. <code>Dr</code>, <code>Prof</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>honorificSuffix</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Honorific suffix (e.g. <code>M.D.</code>, <code>PhD</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>jobTitle</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Job title or role.</p>
+</div>
+</div></div><h2 id="NativeCreatorPersonType" class="section">NativeCreatorPersonType <a href="#NativeCreatorPersonType">&sect;</a></h2><p>Discriminator for schema.org Person creators.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Person</code></td><td></td></tr></table><h2 id="NativeCreatorOrganization" class="section">NativeCreatorOrganization <a href="#NativeCreatorOrganization">&sect;</a></h2><p>An organization that created or contributed to the workflow.
+Corresponds to a <code>schema.org Organization &lt;https://schema.org/Organization&gt;</code>_.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>class</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#NativeCreatorOrganizationType">NativeCreatorOrganizationType</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Creator type discriminator (<code>Organization</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Full name of the person or organization.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>identifier</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Persistent identifier, typically an ORCID URL
+(e.g. <code>https://orcid.org/0000-0001-2345-6789</code>) or bare ORCID.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>url</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Website or profile URL.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>email</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Email address. May include a <code>mailto:</code> prefix.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>image</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>URL to an image or avatar.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>address</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Physical or mailing address.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>alternateName</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>An alternate name or alias.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>telephone</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Telephone number.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>faxNumber</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Fax number.</p>
+</div>
+</div></div><h2 id="NativeCreatorOrganizationType" class="section">NativeCreatorOrganizationType <a href="#NativeCreatorOrganizationType">&sect;</a></h2><p>Discriminator for schema.org Organization creators.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Organization</code></td><td></td></tr></table><h2 id="NativeCreator" class="section">NativeCreator <a href="#NativeCreator">&sect;</a></h2><p>A workflow creator, either a person or organization. Dispatched via
+the <code>class</code> field (<code>Person</code> or <code>Organization</code>).</p>
+<h2 id="NativeSourceMetadata" class="section">NativeSourceMetadata <a href="#NativeSourceMetadata">&sect;</a></h2><p>Provenance tracking for workflows imported from external sources.
+Contains either a direct URL or TRS (Tool Registry Service) metadata,
+depending on how the workflow was imported.</p>
+<p>For URL imports, only <code>url</code> is set. For TRS imports (Dockstore,
+WorkflowHub), <code>trs_tool_id</code>, <code>trs_version_id</code>, and <code>trs_url</code>
+are set, with <code>trs_server</code> optionally identifying the server.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>url</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>URL from which the workflow was directly imported.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>trs_tool_id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Tool identifier in the Tool Registry Service
+(e.g. <code>&quot;#workflow/github.com/user/repo/workflow&quot;</code> or <code>&quot;109&quot;</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>trs_version_id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Version identifier in the TRS (e.g. <code>&quot;master&quot;</code>, <code>&quot;5&quot;</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>trs_server</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>TRS server name (e.g. <code>&quot;dockstore&quot;</code>, <code>&quot;workflowhub&quot;</code>).
+Optional even for TRS imports.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>trs_url</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Complete TRS API endpoint URL for this workflow version.</p>
+</div>
+</div></div></div>
+    </div>
+    </div>
+    </body>
+    </html>
