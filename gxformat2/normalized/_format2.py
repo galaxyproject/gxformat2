@@ -20,7 +20,6 @@ from gxformat2.schema.gxformat2 import (
     CreatorPerson,
     FrameComment,
     FreehandComment,
-    GalaxyType,
     GalaxyWorkflow,
     MarkdownComment,
     Report,
@@ -208,11 +207,7 @@ def _normalize_inputs(
         if isinstance(value, str):
             # Shorthand: input_name: "data"
             normalized_type = _normalize_input_type(value)
-            result.append(
-                WorkflowInputParameter(
-                    id=key, type_=GalaxyType(normalized_type) if normalized_type in GalaxyType.__members__ else None
-                )
-            )
+            result.append(WorkflowInputParameter.model_validate({"id": key, "type": normalized_type}))
         elif isinstance(value, WorkflowInputParameter):
             if value.id is None:
                 value = value.model_copy(update={"id": key})
