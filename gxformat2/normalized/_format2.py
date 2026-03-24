@@ -205,6 +205,7 @@ def normalized_format2(
             workflow = {**workflow, "outputs": {}}
         if "steps" not in workflow:
             workflow = {**workflow, "steps": {}}
+        workflow = _pre_clean_steps(workflow)
         workflow = GalaxyWorkflow.model_validate(workflow)
     assert isinstance(workflow, GalaxyWorkflow)
     return _normalize_workflow(workflow)
@@ -325,6 +326,67 @@ def _normalize_outputs(
     return result
 
 
+def _pre_clean_steps(workflow: dict[str, Any]) -> dict[str, Any]:
+    """Resolve non-schema connection conventions in step dicts before model validation.
+
+    Handles two conventions not in the Format2 schema:
+    - ``connect`` key on steps → merged into ``in`` as source references
+    - ``$link`` entries in ``state`` → replaced with ConnectedValue, source added to ``in``
+
+    This runs on the raw dict so that model validation sees only schema-compliant data.
+    """
+    steps = workflow.get("steps", {})
+    if isinstance(steps, dict):
+        cleaned = {k: _pre_clean_step(v) if isinstance(v, dict) else v for k, v in steps.items()}
+    elif isinstance(steps, list):
+        cleaned = [_pre_clean_step(s) if isinstance(s, dict) else s for s in steps]
+    else:
+        return workflow
+    return {**workflow, "steps": cleaned}
+
+
+def _pre_clean_step(step: dict[str, Any]) -> dict[str, Any]:
+    """Resolve connect and $link on a single step dict."""
+    step = dict(step)
+    in_dict: dict[str, Any] = dict(step.get("in", {})) if isinstance(step.get("in"), dict) else {}
+    in_list: list | None = step.get("in") if isinstance(step.get("in"), list) else None
+    extra_inputs: list[dict[str, Any]] = []
+
+    # Resolve connect key → in entries
+    connect = step.pop("connect", None)
+    if isinstance(connect, dict):
+        for key, sources in connect.items():
+            if in_list is not None:
+                extra_inputs.append({"id": key, "source": sources})
+            else:
+                in_dict[key] = {"source": sources} if isinstance(sources, list) else sources
+
+    # Resolve $link in state → ConnectedValue + in entries
+    state = step.get("state")
+    if isinstance(state, dict):
+        clean_state, link_connections = _resolve_links(state)
+        step["state"] = clean_state
+        for key, sources in link_connections.items():
+            source = sources if len(sources) > 1 else sources[0]
+            if in_list is not None:
+                extra_inputs.append({"id": key, "source": source})
+            else:
+                in_dict[key] = {"source": source} if isinstance(source, list) else source
+
+    # Recursively clean subworkflow runs
+    run = step.get("run")
+    if isinstance(run, dict) and run.get("class") == "GalaxyWorkflow":
+        step["run"] = _pre_clean_steps(run)
+
+    # Write back in
+    if in_list is not None:
+        step["in"] = in_list + extra_inputs
+    elif in_dict:
+        step["in"] = in_dict
+
+    return step
+
+
 def _normalize_steps(
     steps: list[WorkflowStep] | dict[str, WorkflowStep],
     inputs_offset: int = 0,
@@ -370,22 +432,6 @@ def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
     in_list = _normalize_step_inputs(step.in_)
     out_list = _normalize_step_outputs(step.out)
 
-    # Resolve connect key (extra field, not in schema) into in_
-    connect_extra = getattr(step, "connect", None) or (step.model_extra or {}).get("connect")
-    if isinstance(connect_extra, dict):
-        for key, sources in connect_extra.items():
-            if isinstance(sources, list):
-                in_list.append(WorkflowStepInput(id=key, source=sources))
-            else:
-                in_list.append(WorkflowStepInput(id=key, source=sources))
-
-    # Resolve $link entries in state → ConnectedValue + connections in in_
-    state = step.state
-    if state is not None:
-        state, link_connections = _resolve_links(state)
-        for key, sources in link_connections.items():
-            in_list.append(WorkflowStepInput(id=key, source=sources if len(sources) > 1 else sources[0]))
-
     run: NormalizedFormat2 | GalaxyUserToolStub | ImportReference | str | None = None
     if isinstance(step.run, GalaxyWorkflow):
         run = _normalize_workflow(step.run)
@@ -410,7 +456,7 @@ def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
         tool_shed_repository=step.tool_shed_repository,
         position=step.position,
         when=step.when,
-        state=state,
+        state=step.state,
         tool_state=step.tool_state,
         runtime_inputs=step.runtime_inputs,
         errors=step.errors,
