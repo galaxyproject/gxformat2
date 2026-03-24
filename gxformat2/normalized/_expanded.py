@@ -92,7 +92,7 @@ def expanded_format2(
     fields.  Uses ``options.url_resolver`` (or the built-in default) for
     HTTP fetches.
     """
-    options = options or ConversionOptions(expand=True)
+    options = options or ConversionOptions()
     if not isinstance(workflow, NormalizedFormat2):
         workflow = normalized_format2(workflow)
     ctx = _ExpansionContext(options)
@@ -109,7 +109,7 @@ def expanded_native(
     them.  Uses ``options.url_resolver`` (or the built-in default) for
     HTTP fetches.
     """
-    options = options or ConversionOptions(expand=True)
+    options = options or ConversionOptions()
     if not isinstance(workflow, NormalizedNativeWorkflow):
         workflow = normalized_native(workflow)
     ctx = _ExpansionContext(options)

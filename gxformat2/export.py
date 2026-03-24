@@ -48,7 +48,7 @@ def from_galaxy_native(
 
     options = ConversionOptions(
         compact=compact,
-        convert_tool_state=convert_tool_state,
+        state_encode_to_format2=convert_tool_state,
     )
     result = to_format2(native_workflow_dict, options)
     data = result.model_dump(by_alias=True, exclude_none=True, mode="json")

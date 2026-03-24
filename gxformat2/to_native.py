@@ -441,14 +441,14 @@ def _build_tool_step(
         step_state = dict(step.state) if step.state else {}
         step_state = setup_connected_values(step_state, append_to=connect)
 
-        encoder = ctx.options.native_state_encoder
+        encoder = ctx.options.state_encode_to_native
         encoded = None
         if encoder is not None:
             try:
                 step_as_dict = {"tool_id": tool_id, "tool_version": step.tool_version}
                 encoded = encoder(step_as_dict, step_state)
             except Exception:
-                log.warning("native_state_encoder failed for %s, falling back to default", tool_id, exc_info=True)
+                log.warning("state_encode_to_native failed for %s, falling back to default", tool_id, exc_info=True)
 
         if encoded is not None:
             tool_state.update(encoded)
