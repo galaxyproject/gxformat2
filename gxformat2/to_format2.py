@@ -11,11 +11,8 @@ import logging
 from pathlib import Path
 from typing import Any, Literal, overload
 
+from ._comment_helpers import flatten_comment_data
 from ._labels import Labels, UNLABELED_INPUT_PREFIX, UNLABELED_STEP_PREFIX
-from .model import (
-    flatten_comment_data,
-    native_input_to_format2_type,
-)
 from .normalized._expanded import (
     expanded_format2,
     ExpandedFormat2,
@@ -54,6 +51,25 @@ from .schema.native import NativeGalaxyWorkflow, StepPosition as NativeStepPosit
 log = logging.getLogger(__name__)
 
 INPUT_STEP_TYPES = ("data_input", "data_collection_input", "parameter_input")
+
+
+def native_input_to_format2_type(step: dict, tool_state: dict) -> str | list[str]:
+    """Return a Format2 input type ('type') from a native input step dictionary."""
+    module_type = step.get("type")
+    if module_type == "data_collection_input":
+        format2_type = "collection"
+    elif module_type == "data_input":
+        format2_type = "data"
+    elif module_type == "parameter_input":
+        native_type = tool_state.get("parameter_type", "")
+        format2_type = native_type
+        if native_type == "integer":
+            format2_type = "int"
+        elif native_type == "text":
+            format2_type = "string"
+        if tool_state.get("multiple", False):
+            return [format2_type]
+    return format2_type
 
 
 def _convert_position(position: NativeStepPosition | None) -> Format2StepPosition | None:

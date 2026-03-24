@@ -14,10 +14,10 @@ from pathlib import Path
 from typing import Any, Literal, overload
 
 from ._labels import Labels
+from ._comment_helpers import unflatten_comment_data
 from .model import (
     resolve_source_reference,
     setup_connected_values,
-    unflatten_comment_data,
 )
 from .normalized._expanded import (
     expanded_native,
