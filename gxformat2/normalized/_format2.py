@@ -116,6 +116,9 @@ def normalized_format2(
             workflow = from_galaxy_native(workflow)
         elif "$graph" in workflow and "class" not in workflow:
             workflow = _resolve_graph(workflow)
+        # Migrate legacy 'name' to 'label'
+        if "name" in workflow and "label" not in workflow:
+            workflow = {**workflow, "label": workflow["name"]}
         # Ensure required fields have defaults for lenient parsing
         if "inputs" not in workflow:
             workflow = {**workflow, "inputs": {}}

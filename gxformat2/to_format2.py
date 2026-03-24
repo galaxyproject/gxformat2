@@ -31,6 +31,9 @@ from .normalized._native import (
 )
 from .options import ConversionOptions
 from .schema.gxformat2 import (
+    Report,
+    StepPosition as Format2StepPosition,
+    ToolShedRepository as Format2ToolShedRepository,
     WorkflowComment,
     WorkflowInputParameter,
     WorkflowOutputParameter,
@@ -38,11 +41,26 @@ from .schema.gxformat2 import (
     WorkflowStepOutput,
     WorkflowStepType,
 )
-from .schema.native import NativeGalaxyWorkflow
+from .schema.native import NativeGalaxyWorkflow, StepPosition as NativeStepPosition
 
 log = logging.getLogger(__name__)
 
 INPUT_STEP_TYPES = ("data_input", "data_collection_input", "parameter_input")
+
+
+def _convert_position(position: NativeStepPosition | None) -> Format2StepPosition | None:
+    if position is None:
+        return None
+    return Format2StepPosition(left=position.left, top=position.top)
+
+
+def _convert_tool_shed_repo(repo) -> Format2ToolShedRepository | None:
+    if repo is None:
+        return None
+    return Format2ToolShedRepository(
+        name=repo.name, changeset_revision=repo.changeset_revision,
+        owner=repo.owner, tool_shed=repo.tool_shed,
+    )
 
 
 @overload
@@ -130,7 +148,7 @@ def _build_format2_workflow(
         outputs=output_params,
         steps=fmt2_steps,
         comments=comments,
-        report=wf.report,
+        report=Report(markdown=wf.report.markdown) if wf.report else None,
         tags=wf.tags,
         creator=[c.model_dump(by_alias=True, exclude_none=True) for c in wf.creator] if wf.creator else None,
         license=wf.license,
@@ -158,7 +176,7 @@ def _build_input_param(step: NormalizedNativeStep) -> WorkflowInputParameter:
     if step.annotation:
         kwargs["doc"] = step.annotation
     if step.position:
-        kwargs["position"] = step.position
+        kwargs["position"] = _convert_position(step.position)
 
     return WorkflowInputParameter(**kwargs)
 
@@ -225,12 +243,12 @@ def _build_tool_format2_step(
         doc=step.annotation or None,
         tool_id=step.tool_id,
         tool_version=step.tool_version,
-        tool_shed_repository=step.tool_shed_repository,
+        tool_shed_repository=_convert_tool_shed_repo(step.tool_shed_repository),
         state=state,
         tool_state=tool_state,
         in_=in_list,
         out=out_list,
-        position=step.position if not options.compact else None,
+        position=_convert_position(step.position) if not options.compact else None,
         when=step.when,
         uuid=step.uuid,
         errors=step.errors,
@@ -253,7 +271,7 @@ def _build_user_tool_format2_step(
         run=step.tool_representation,
         in_=in_list,
         out=out_list,
-        position=step.position if not compact else None,
+        position=_convert_position(step.position) if not compact else None,
     )
 
 
@@ -285,7 +303,7 @@ def _build_subworkflow_format2_step(
         run=run,
         in_=in_list,
         out=out_list,
-        position=step.position if not options.compact else None,
+        position=_convert_position(step.position) if not options.compact else None,
         when=step.when,
         uuid=step.uuid,
     )
@@ -307,7 +325,7 @@ def _build_pause_format2_step(
         doc=step.annotation or None,
         type_=WorkflowStepType.pause,
         in_=in_list,
-        position=step.position if not compact else None,
+        position=_convert_position(step.position) if not compact else None,
     )
 
 
@@ -337,7 +355,7 @@ def _build_pick_value_format2_step(
         state=state,
         in_=in_list,
         out=out_list,
-        position=step.position if not compact else None,
+        position=_convert_position(step.position) if not compact else None,
     )
 
 

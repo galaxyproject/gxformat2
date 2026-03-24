@@ -63,99 +63,70 @@ def from_galaxy_native(
     carry ``state`` instead of ``tool_state``; when it returns ``None`` the
     default ``tool_state`` passthrough is used.
     """
-    if isinstance(native_workflow_dict, dict):
-        workflow = load_native(native_workflow_dict, strict=False)
-    else:
-        workflow = native_workflow_dict
+    from .options import ConversionOptions
+    from .to_format2 import to_format2
 
-    data: OrderedDict[str, Any] = OrderedDict()
+    options = ConversionOptions(
+        compact=compact,
+        convert_tool_state=convert_tool_state,
+    )
+    result = to_format2(native_workflow_dict, options)
+    data = result.model_dump(by_alias=True, exclude_none=True, mode="json")
     data["class"] = "GalaxyWorkflow"
 
-    # Workflow-level properties
-    if workflow.annotation:
-        data["doc"] = workflow.annotation
-    if workflow.name:
-        data["label"] = workflow.name
-    if workflow.creator:
-        data["creator"] = [c.model_dump(by_alias=True, exclude_none=True) for c in workflow.creator]
-    if workflow.license:
-        data["license"] = workflow.license
-    if workflow.release:
-        data["release"] = workflow.release
-    if workflow.tags:
-        data["tags"] = workflow.tags
-    if workflow.uuid:
-        data["uuid"] = workflow.uuid
-    if workflow.report:
-        data["report"] = workflow.report.model_dump(by_alias=True, exclude_none=True)
+    # Convert lists to dicts keyed by id/label for Format2 idmap representation
+    _listify_to_idmap(data, "inputs")
+    _listify_to_idmap(data, "outputs")
+    _steps_to_idmap(data)
+    _listify_to_idmap(data, "comments", key_field="label")
 
-    native_steps = workflow.steps or {}
-
-    label_map: dict[str, str] = {}
-    all_labeled = True
-    for key, step in native_steps.items():
-        if not step.label:
-            all_labeled = False
-        if step.label is None and step.type_ in INPUT_STEP_TYPES:
-            label_map[str(key)] = f"{UNLABELED_INPUT_PREFIX}{step.id}"
-        elif step.label is None:
-            label_map[str(key)] = f"{UNLABELED_STEP_PREFIX}{step.id}"
-        else:
-            label_map[str(key)] = step.label
-
-    inputs: OrderedDict[str, Any] = OrderedDict()
-    outputs: OrderedDict[str, Any] = OrderedDict()
-    steps: list[OrderedDict[str, Any]] = []
-
-    labels = Labels()
-
-    for step in native_steps.values():
-        for workflow_output in step.workflow_outputs or []:
-            source = _to_source(workflow_output, label_map, output_id=step.id)
-            output_id = labels.ensure_new_output_label(workflow_output.label)
-            outputs[output_id] = {"outputSource": source}
-
-        module_type = step.type_
-        if module_type in INPUT_STEP_TYPES:
-            _convert_input_step(step, inputs, compact)
-        elif module_type == "pause":
-            steps.append(_convert_pause_step(step, label_map, compact))
-        elif module_type == "pick_value":
-            steps.append(_convert_pick_value_step(step, label_map, compact))
-        elif module_type == "subworkflow":
-            steps.append(_convert_subworkflow_step(step, label_map, compact, tool_interface, convert_tool_state))
-        elif module_type == "tool":
-            steps.append(_convert_tool_step(step, label_map, compact, convert_tool_state))
-        else:
-            raise NotImplementedError(f"Unhandled module type {module_type}")
-
-        # Ensure unlabeled non-input steps get a sentinel label so source
-        # references using label_map can resolve on reimport.
-        if module_type not in INPUT_STEP_TYPES:
-            step_dict = steps[-1]
-            if "label" not in step_dict:
-                sentinel = label_map.get(str(step.id))
-                if sentinel is not None:
-                    step_dict["label"] = sentinel
-
-    data["inputs"] = inputs
-    data["outputs"] = outputs
-
-    if all_labeled:
-        steps_dict = OrderedDict()
-        for fmt2_step in steps:
-            label = fmt2_step.pop("label")
-            steps_dict[label] = fmt2_step
-        data["steps"] = steps_dict
-    else:
-        data["steps"] = steps
-
-    _convert_comments_to_format2(workflow, data, label_map, compact)
+    # Convert step in/out from lists to dicts
+    steps = data.get("steps", {})
+    step_iter = steps.values() if isinstance(steps, dict) else steps
+    for step in step_iter:
+        if isinstance(step, dict):
+            _listify_to_idmap(step, "in")
+            _listify_to_idmap(step, "out")
+            # Recurse into subworkflow run
+            run = step.get("run")
+            if isinstance(run, dict) and run.get("steps") is not None:
+                _listify_to_idmap(run, "inputs")
+                _listify_to_idmap(run, "outputs")
+                _steps_to_idmap(run)
+                _listify_to_idmap(run, "comments", key_field="label")
 
     if json_wrapper:
         return {"yaml_content": ordered_dump(data)}
 
     return data
+
+
+def _listify_to_idmap(data: dict, key: str, key_field: str = "id") -> None:
+    """Convert a list of dicts to a dict keyed by id/label, if all items have the key."""
+    items = data.get(key)
+    if not isinstance(items, list) or not items:
+        return
+    if not all(isinstance(item, dict) and item.get(key_field) for item in items):
+        return
+    result = OrderedDict()
+    for item in items:
+        item_key = item.pop(key_field)
+        result[item_key] = item
+    data[key] = result
+
+
+def _steps_to_idmap(data: dict) -> None:
+    """Convert steps list to dict keyed by label if all steps are labeled."""
+    steps = data.get("steps")
+    if not isinstance(steps, list) or not steps:
+        return
+    if not all(isinstance(s, dict) and s.get("label") for s in steps):
+        return
+    result = OrderedDict()
+    for step in steps:
+        label = step.pop("label")
+        result[label] = step
+    data["steps"] = result
 
 
 def _convert_input_step(step: NativeStep, inputs: OrderedDict, compact: bool) -> None:
