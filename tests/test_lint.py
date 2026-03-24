@@ -6,12 +6,13 @@ import pytest
 
 from gxformat2.lint import (
     lint_best_practices_ga,
+    lint_format2,
     lint_ga,
     lint_pydantic_validation,
     main,
 )
 from gxformat2.linting import LintContext
-from gxformat2.normalized import normalized_native
+from gxformat2.normalized import expanded_format2, normalized_native
 from gxformat2.yaml import ordered_dump, ordered_load
 from ._helpers import (
     assert_valid_native,
@@ -366,6 +367,13 @@ class TestIWCLint:
         ctx = LintContext()
         lint_pydantic_validation(ctx, workflow_dict, format2=False)
         assert not ctx.error_messages, f"Pydantic validation errors: {ctx.error_messages}"
+
+    def test_format2_lint(self, ga_path_and_dict):
+        path, workflow_dict = ga_path_and_dict
+        nf2 = expanded_format2(workflow_dict)
+        ctx = LintContext()
+        lint_format2(ctx, nf2)
+        assert not ctx.error_messages, f"Format2 lint errors after conversion of {os.path.basename(path)}: {ctx.error_messages}"
 
     def test_best_practices(self, ga_path_and_dict):
         _, workflow_dict = ga_path_and_dict
