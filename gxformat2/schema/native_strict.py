@@ -44,7 +44,8 @@ data_collection_input: A dataset collection input to the workflow.
 parameter_input: A typed parameter input (text, integer, float, boolean, color).
 tool: A Galaxy tool execution step.
 subworkflow: An embedded or referenced sub-workflow.
-pause: A manual pause point that halts execution until user intervention."""
+pause: A manual pause point that halts execution until user intervention.
+pick_value: Select the first non-null value from multiple inputs."""
 
     data_input = "data_input"
     data_collection_input = "data_collection_input"
@@ -52,6 +53,7 @@ pause: A manual pause point that halts execution until user intervention."""
     tool = "tool"
     subworkflow = "subworkflow"
     pause = "pause"
+    pick_value = "pick_value"
 
 
 def _discriminate_creator(v: Any) -> str:
@@ -310,6 +312,7 @@ unencoded tool state is used. Connected parameters are represented as
     workflow_outputs: None | list[NativeWorkflowOutput] = Field(default=None, description="Outputs designated as workflow-level outputs. Steps with an empty array have all their outputs hidden by default.")
     post_job_actions: dict[str, NativePostJobAction] | None = Field(default=None, description="Post-job actions applied to outputs after tool execution. Keys are compound strings of the form ``{ActionType}{OutputName}``. Values are NativePostJobAction objects.")
     subworkflow: NativeGalaxyWorkflow | None = Field(default=None, description="Embedded subworkflow definition. A complete native workflow document (with ``a_galaxy_workflow``, ``format-version``, ``steps``, etc.) nested inside this step.")
+    tool_representation: dict[str, Any] | None = Field(default=None, description="Embedded tool definition for user-defined (dynamic) tools. Present when the step uses a ``GalaxyUserTool`` instead of a registered tool. Contains the full tool definition including ``class: GalaxyU...")
     in_: dict[str, Any] | None = Field(default=None, alias="in", description="Default values for step inputs. Keys are parameter names, values are objects with a ``default`` key.")
 
 class NativeReport(BaseModel):

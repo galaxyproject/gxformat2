@@ -21,13 +21,6 @@ class ImporterGalaxyInterface(metaclass=abc.ABCMeta):
     def import_workflow(self, workflow, **kwds):
         """Import a workflow via POST /api/workflows or comparable interface into Galaxy."""
 
-    def import_tool(self, tool):
-        """Import a new dynamically defined tool.
-
-        Not yet implemented in vanilla Galaxy - used only in the cwl branch of Galaxy.
-        """
-        raise NotImplementedError()
-
 
 class BioBlendImporterGalaxyInterface:
     """Implementation of :class:`ImporterGalaxyInterface` using bioblend."""
@@ -72,7 +65,3 @@ class BioBlendImporterGalaxyInterface:
     def import_workflow(self, workflow, **kwds):
         """Import Galaxy workflow using instance :class:`bioblend.GalaxyInstance` object."""
         return self._user_gi.workflows.import_workflow_json(workflow, **kwds)
-
-    def import_tool(self, tool_representation):
-        """Import Galaxy tool using instance :class:`bioblend.GalaxyInstance` object."""
-        raise NotImplementedError()

@@ -31,6 +31,7 @@ $graph:
     - tool
     - subworkflow
     - pause
+    - pick_value
   doc:
     - "Step module types in the native Galaxy workflow format."
     - "data_input: A single dataset input to the workflow."
@@ -39,6 +40,7 @@ $graph:
     - "tool: A Galaxy tool execution step."
     - "subworkflow: An embedded or referenced sub-workflow."
     - "pause: A manual pause point that halts execution until user intervention."
+    - "pick_value: Select the first non-null value from multiple inputs."
 
 - name: NativeStepInput
   type: record
@@ -584,6 +586,19 @@ $graph:
         Embedded subworkflow definition. A complete native workflow document
         (with ``a_galaxy_workflow``, ``format-version``, ``steps``, etc.)
         nested inside this step.
+    - name: tool_representation
+      type: Any?
+      pydantic:type: "dict[str, Any] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/tool_representation"
+        noLinkCheck: true
+      doc: |
+        Embedded tool definition for user-defined (dynamic) tools.
+        Present when the step uses a ``GalaxyUserTool`` instead of a
+        registered tool. Contains the full tool definition including
+        ``class: GalaxyUserTool``, ``name``, ``command``, ``inputs``,
+        and ``outputs``. When present, ``tool_id`` and ``tool_uuid``
+        are typically null.
     - name: in
       type: Any?
       pydantic:type: "dict[str, Any] | None"

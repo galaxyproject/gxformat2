@@ -222,6 +222,10 @@ def _convert_subworkflow_step(step, label_map, compact, tool_interface, convert_
 
 
 def _convert_tool_step(step, label_map, compact, convert_tool_state):
+    tool_representation = step.get("tool_representation")
+    if tool_representation and tool_representation.get("class") == "GalaxyUserTool":
+        return _convert_user_defined_tool_step(step, tool_representation, label_map, compact)
+
     step_dict = OrderedDict()
     optional_props = ["label", "tool_shed_repository"]
     required_props = ["tool_id", "tool_version"]
@@ -247,6 +251,16 @@ def _convert_tool_step(step, label_map, compact, convert_tool_state):
         tool_state.pop("__rerun_remap_job_id__", None)
         step_dict["tool_state"] = tool_state
 
+    _convert_input_connections(step, step_dict, label_map)
+    _convert_post_job_actions(step, step_dict)
+    return step_dict
+
+
+def _convert_user_defined_tool_step(step, tool_representation, label_map, compact):
+    step_dict = OrderedDict()
+    _copy_properties(step, step_dict, optional_props=["label"])
+    _copy_common_properties(step, step_dict, compact=compact)
+    step_dict["run"] = tool_representation
     _convert_input_connections(step, step_dict, label_map)
     _convert_post_job_actions(step, step_dict)
     return step_dict
