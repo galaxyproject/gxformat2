@@ -97,7 +97,8 @@ def to_native(
     workflow: dict[str, Any] | str | Path | NormalizedFormat2 | GalaxyWorkflow,
     options: ConversionOptions,
     expand: Literal[True],
-) -> ExpandedNativeWorkflow: ...
+) -> ExpandedNativeWorkflow:
+    ...
 
 
 @overload
@@ -105,7 +106,8 @@ def to_native(
     workflow: dict[str, Any] | str | Path | NormalizedFormat2 | GalaxyWorkflow,
     options: ConversionOptions | None = None,
     expand: Literal[False] = False,
-) -> NormalizedNativeWorkflow: ...
+) -> NormalizedNativeWorkflow:
+    ...
 
 
 def to_native(

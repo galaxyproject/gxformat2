@@ -74,7 +74,8 @@ def to_format2(
     workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
     options: ConversionOptions,
     expand: Literal[True],
-) -> ExpandedFormat2: ...
+) -> ExpandedFormat2:
+    ...
 
 
 @overload
@@ -82,7 +83,8 @@ def to_format2(
     workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
     options: ConversionOptions | None = None,
     expand: Literal[False] = False,
-) -> NormalizedFormat2: ...
+) -> NormalizedFormat2:
+    ...
 
 
 def to_format2(
