@@ -15,7 +15,6 @@ from typing import Any, Callable, Literal, overload, TypedDict
 
 from ._labels import Labels
 from .model import (
-    clean_connection,
     resolve_source_reference,
     setup_connected_values,
     unflatten_comment_data,
@@ -693,7 +692,7 @@ def _wire_workflow_outputs(
         if output_source is None:
             continue
 
-        source = clean_connection(output_source)
+        source = output_source
         if source is None:
             continue
 
