@@ -4,9 +4,8 @@ import argparse
 import sys
 from typing import Any
 
-from gxformat2._scripts import ensure_format2
-from gxformat2.model import steps_as_list
-from gxformat2.normalize import NormalizedWorkflow, walk_id_list_or_dict
+from gxformat2.normalized import normalized_format2, NormalizedFormat2, NormalizedWorkflowStep
+from gxformat2.schema.gxformat2 import GalaxyType, WorkflowInputParameter, WorkflowOutputParameter, WorkflowStepOutput
 from gxformat2.yaml import ordered_dump_to_path, ordered_load
 
 CWL_VERSION = "v1.2"
@@ -24,38 +23,37 @@ the workflow structure.
 """
 
 
-def from_dict(workflow_dict: dict, subworkflow=False):
-    """Convert dictified Galaxy workflow into abstract CWL representation."""
-    # TODO: pass some sort of flag to ensure_format2 to make sure information
-    # about step outputs that may be present in native format is not lost when
-    # converting to Format2.
-    workflow_dict = ensure_format2(workflow_dict)
-    normalized_workflow = NormalizedWorkflow(workflow_dict)
-    workflow_dict = normalized_workflow.normalized_workflow_dict
+def from_dict(workflow_dict: dict | NormalizedFormat2, subworkflow=False):
+    """Convert Galaxy workflow into abstract CWL representation.
+
+    Accepts a raw dict (Format2 or native .ga) or a pre-normalized
+    NormalizedFormat2 model.
+    """
+    if isinstance(workflow_dict, NormalizedFormat2):
+        nf2 = workflow_dict
+    else:
+        nf2 = normalized_format2(workflow_dict)
+
+    _ensure_implicit_step_outs(nf2)
 
     requirements: dict[str, Any] = {}
     abstract_dict: dict[str, Any] = {
         "class": "Workflow",
     }
-    for attr in ("doc", "label"):
-        value = workflow_dict.get(attr)
-        if value:
-            abstract_dict[attr] = value
+    if nf2.label:
+        abstract_dict["label"] = nf2.label
+    if nf2.doc:
+        abstract_dict["doc"] = nf2.doc
     if not subworkflow:
         abstract_dict["cwlVersion"] = CWL_VERSION
-    # inputs and outputs already mostly in CWL format...
 
-    # TODO: add test case where format2 input without inputs declaration is used
-    abstract_dict["inputs"] = _format2_inputs_to_abstract(workflow_dict.get("inputs", {}))
-    abstract_dict["outputs"] = _format2_outputs_to_abstract(workflow_dict.get("outputs", {}))
+    abstract_dict["inputs"] = _inputs_to_abstract(nf2.inputs)
+    abstract_dict["outputs"] = _outputs_to_abstract(nf2.outputs)
+
     steps = {}
-    for format2_step in steps_as_list(
-        workflow_dict, add_ids=True, inputs_offset=len(abstract_dict["inputs"]), mutate=False
-    ):
-        label = format2_step.get("label") or format2_step.get("id")
-        assert label is not None
-        label = str(label)
-        steps[label] = _format2_step_to_abstract(format2_step, requirements=requirements)
+    for step in nf2.steps:
+        label = step.label or step.id
+        steps[label] = _step_to_abstract(step, requirements=requirements)
 
     abstract_dict["steps"] = steps
     if requirements:
@@ -63,102 +61,162 @@ def from_dict(workflow_dict: dict, subworkflow=False):
     return abstract_dict
 
 
-def _format2_step_to_abstract(format2_step, requirements):
-    """Convert Format2 step CWL 1.2+ abstract operation."""
-    abstract_step = {}
-    for attr in ("doc",):
-        value = format2_step.get(attr)
-        if value:
-            abstract_step[attr] = value
-    if "run" in format2_step:
-        # probably encountered in subworkflow.
-        format2_run = format2_step["run"]
-        format2_run_class = format2_run["class"]
+def _step_to_abstract(step: NormalizedWorkflowStep, requirements: dict):
+    """Convert NormalizedWorkflowStep to CWL 1.2+ abstract operation."""
+    abstract_step: dict[str, Any] = {}
+    if step.doc:
+        abstract_step["doc"] = step.doc
+
+    if isinstance(step.run, NormalizedFormat2):
         requirements["SubworkflowFeatureRequirement"] = {}
-        if format2_run_class == "GalaxyWorkflow":
-            # preprocess to ensure it has outs - should the original call be recursive?
-            step_run = from_dict(format2_run, subworkflow=True)
-            abstract_step["run"] = step_run
-        else:
-            raise NotImplementedError(f"Unknown runnabled type encountered [{format2_run_class}]")
+        abstract_step["run"] = from_dict(step.run, subworkflow=True)
+    elif isinstance(step.run, dict) and step.run.get("class") == "GalaxyWorkflow":
+        # Unresolved dict subworkflow — normalize and recurse
+        requirements["SubworkflowFeatureRequirement"] = {}
+        abstract_step["run"] = from_dict(step.run, subworkflow=True)
     else:
-        step_run = {
+        abstract_step["run"] = {
             "class": "Operation",
-            "doc": format2_step.get("doc", ""),
+            "doc": step.doc or "",
             "inputs": {},  # TODO
             "outputs": {},  # TODO
         }
-        abstract_step["run"] = step_run
-    abstract_step["in"] = _format2_in_to_abstract(format2_step.get("in", []))
-    abstract_step["out"] = _format2_out_to_abstract(format2_step)
+
+    abstract_step["in"] = _step_inputs_to_abstract(step)
+    abstract_step["out"] = _step_outputs_to_abstract(step)
     return abstract_step
 
 
-def _format2_in_to_abstract(in_dict):
-    """Convert Format2 'in' dict for step into CWL abstract 'in' dict."""
-    return in_dict
+def _step_inputs_to_abstract(step: NormalizedWorkflowStep):
+    """Convert step inputs to CWL abstract 'in' dict."""
+    result = {}
+    for step_input in step.in_:
+        if step_input.id is None:
+            continue
+        entry: dict[str, Any] = {}
+        if step_input.source is not None:
+            entry["source"] = step_input.source
+        if step_input.default is not None:
+            entry["default"] = step_input.default
+        result[step_input.id] = entry
+    return result
 
 
-def _format2_out_to_abstract(format2_step, run=None):
-    """Convert Format2 'out' list for step into CWL abstract 'out' list."""
-    cwl_out = []
-    if "out" in format2_step:
-        out = format2_step.get("out")
-        if isinstance(out, dict):
-            for out_name in out.keys():
-                # discard PJA info when converting to abstract CWL
-                cwl_out.append(out_name)
-        else:
-            cwl_out = out
-
-    return cwl_out
+def _step_outputs_to_abstract(step: NormalizedWorkflowStep):
+    """Convert step outputs to CWL abstract 'out' list."""
+    return [out.id for out in step.out if out.id is not None]
 
 
-def _format2_inputs_to_abstract(inputs):
-    """Strip Galaxy extensions or namespace them."""
-    abstract_inputs = {}
+def _inputs_to_abstract(inputs: list[WorkflowInputParameter]):
+    """Convert Format2 inputs to abstract CWL inputs."""
+    abstract_inputs: dict[str, Any] = {}
+    for inp in inputs:
+        input_id = inp.id
+        if input_id is None:
+            continue
+        input_def: dict[str, Any] = {}
 
-    for input_name, input_def in walk_id_list_or_dict(inputs):
-        if isinstance(input_def, dict):
-            input_type = input_def.get("type")
-        else:
-            input_type = input_def
-            input_def = {"type": input_type}
+        # Convert type
+        cwl_type = _galaxy_type_to_cwl(inp.type_)
+        if inp.optional:
+            cwl_type += "?"
+        input_def["type"] = cwl_type
 
-        if input_type == "data":
-            input_def["type"] = "File"
+        if inp.default is not None:
+            input_def["default"] = inp.default
+        if inp.doc:
+            doc = inp.doc
+            if isinstance(doc, list):
+                doc = "\n".join(doc)
+            input_def["doc"] = doc
+        if inp.label:
+            input_def["label"] = inp.label
 
-        _format2_type_to_abstract(input_def)
-
-        # Strip off Galaxy extensions
-        input_def.pop("position", None)
-        input_def.pop("collection_type", None)
-        abstract_inputs[input_name] = input_def
-
+        abstract_inputs[input_id] = input_def
     return abstract_inputs
 
 
-def _format2_type_to_abstract(has_type):
-    format2_type = has_type.pop("type")
-    if format2_type == "data":
-        cwl_type = "File"
-    elif format2_type == "collection":
-        # TODO: handled nested collections, pairs, etc...
-        cwl_type = "File[]"
-    else:
-        cwl_type = format2_type
-    optional = has_type.pop("optional", False)
-    if optional:
-        cwl_type += "?"
-    has_type["type"] = cwl_type
+def _galaxy_type_to_cwl(galaxy_type: GalaxyType | list[GalaxyType] | None) -> str:
+    """Map a Galaxy/Format2 type to a CWL type string."""
+    if galaxy_type is None:
+        return "File"
+    if isinstance(galaxy_type, list):
+        # Array type e.g. [string] means "multiple values" → string[]
+        for t in galaxy_type:
+            if t != GalaxyType.null:
+                return _galaxy_type_to_cwl(t) + "[]"
+        return "File"
+    if galaxy_type == GalaxyType.data:
+        return "File"
+    if galaxy_type == GalaxyType.collection:
+        # TODO: handle nested collections, pairs, etc...
+        return "File[]"
+    return galaxy_type.value
 
 
-def _format2_outputs_to_abstract(outputs):
-    """Strip Galaxy extensions or namespace them."""
-    for _output_name, output in walk_id_list_or_dict(outputs):
-        if "type" not in output:
-            output["type"] = "File"
-    return outputs
+def _outputs_to_abstract(outputs: list[WorkflowOutputParameter]):
+    """Convert Format2 outputs to abstract CWL outputs."""
+    abstract_outputs: dict[str, Any] = {}
+    for out in outputs:
+        output_id = out.id
+        if output_id is None:
+            continue
+        output_def: dict[str, Any] = {}
+        cwl_type = _galaxy_type_to_cwl(out.type_)
+        if not cwl_type or cwl_type == "None":
+            cwl_type = "File"
+        output_def["type"] = cwl_type
+        if out.outputSource:
+            output_def["outputSource"] = out.outputSource
+        if out.doc:
+            doc = out.doc
+            if isinstance(doc, list):
+                doc = "\n".join(doc)
+            output_def["doc"] = doc
+        abstract_outputs[output_id] = output_def
+    return abstract_outputs
+
+
+def _ensure_implicit_step_outs(nf2: NormalizedFormat2):
+    """Ensure steps have explicit 'out' for all referenced outputs.
+
+    CWL requires explicit step output declarations. In Format2, these
+    can be implicit — referenced in workflow outputs or step inputs
+    without being declared in the step's 'out'.
+
+    Mutates step.out lists in place.
+    """
+    outputs_by_label: dict[str, set[str]] = {}
+
+    def register(step_label: str, output_name: str):
+        outputs_by_label.setdefault(step_label, set()).add(output_name)
+
+    def register_source(source: str):
+        if "/" in source:
+            ref = nf2.resolve_source(source)
+            register(ref.step_label, ref.output_name)
+
+    # From workflow outputs
+    for out in nf2.outputs:
+        if out.outputSource:
+            register_source(out.outputSource)
+
+    # From step inputs
+    for step in nf2.steps:
+        for step_in in step.in_:
+            if step_in.source is None:
+                continue
+            sources = step_in.source if isinstance(step_in.source, list) else [step_in.source]
+            for src in sources:
+                register_source(src)
+
+    # Ensure each step has the referenced outputs declared
+    for step in nf2.steps:
+        label = step.label or step.id
+        needed = outputs_by_label.get(label, set())
+        existing = {o.id for o in step.out if o.id}
+        for out_name in needed - existing:
+            step.out.append(WorkflowStepOutput(id=out_name))
 
 
 def main(argv=None):
@@ -174,8 +232,7 @@ def main(argv=None):
     if workflow_path == "-":
         workflow_dict = ordered_load(sys.stdin)
     else:
-        with open(workflow_path) as f:
-            workflow_dict = ordered_load(f)
+        workflow_dict = ordered_load(workflow_path)
 
     abstract_dict = from_dict(workflow_dict)
     ordered_dump_to_path(abstract_dict, output_path)
