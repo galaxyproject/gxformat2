@@ -11,6 +11,8 @@ from typing import (
 
 from typing_extensions import Literal
 
+from gxformat2.normalized import resolve_source_reference as _resolve_source_reference
+
 log = logging.getLogger(__name__)
 
 DictOrList = Union[dict, list]
@@ -155,18 +157,9 @@ def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, l
 def resolve_source_reference(value: str, known_labels: Union[set, dict]) -> tuple:
     """Parse a source reference into (step_label_or_id, output_name).
 
-    Tries matching known labels first to handle labels containing '/'.
-    Falls back to split on '/' for numeric step IDs or unknown labels.
+    Deprecated: use ``gxformat2.normalized.resolve_source_reference`` directly.
     """
-    for label in sorted(known_labels, key=len, reverse=True):
-        if value == label:
-            return label, "output"
-        if value.startswith(label + "/"):
-            return label, value[len(label) + 1 :]
-    if "/" in value:
-        parts = value.split("/", 1)
-        return parts[0], parts[1]
-    return value, "output"
+    return _resolve_source_reference(value, known_labels)
 
 
 def clean_connection(value: str) -> str:
