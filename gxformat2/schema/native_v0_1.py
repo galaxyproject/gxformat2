@@ -4932,7 +4932,7 @@ class NativeTextComment(BaseNativeComment):
 
             type_ = load_field(
                 _doc.get("type"),
-                typedsl_NativeTextCommentTypeLoader_2,
+                typedsl_strtype_2,
                 baseuri,
                 loadingOptions,
                 lc=_doc.get("type")
@@ -5362,7 +5362,7 @@ class NativeMarkdownComment(BaseNativeComment):
 
             type_ = load_field(
                 _doc.get("type"),
-                typedsl_NativeMarkdownCommentTypeLoader_2,
+                typedsl_strtype_2,
                 baseuri,
                 loadingOptions,
                 lc=_doc.get("type")
@@ -5807,7 +5807,7 @@ class NativeFrameComment(BaseNativeComment):
 
             type_ = load_field(
                 _doc.get("type"),
-                typedsl_NativeFrameCommentTypeLoader_2,
+                typedsl_strtype_2,
                 baseuri,
                 loadingOptions,
                 lc=_doc.get("type")
@@ -6358,7 +6358,7 @@ class NativeFreehandComment(BaseNativeComment):
 
             type_ = load_field(
                 _doc.get("type"),
-                typedsl_NativeFreehandCommentTypeLoader_2,
+                typedsl_strtype_2,
                 baseuri,
                 loadingOptions,
                 lc=_doc.get("type")
@@ -11464,15 +11464,12 @@ _vocab = {
     "NativeCreatorPersonType": "https://galaxyproject.org/gxformat2/native_v0_1#NativeCreatorPersonType",
     "NativeFrameComment": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameComment",
     "NativeFrameCommentData": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameCommentData",
-    "NativeFrameCommentType": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameCommentType",
     "NativeFreehandComment": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandComment",
     "NativeFreehandCommentData": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandCommentData",
-    "NativeFreehandCommentType": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandCommentType",
     "NativeGalaxyWorkflow": "https://galaxyproject.org/gxformat2/native_v0_1#NativeGalaxyWorkflow",
     "NativeInputConnection": "https://galaxyproject.org/gxformat2/native_v0_1#NativeInputConnection",
     "NativeMarkdownComment": "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownComment",
     "NativeMarkdownCommentData": "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownCommentData",
-    "NativeMarkdownCommentType": "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownCommentType",
     "NativePostJobAction": "https://galaxyproject.org/gxformat2/native_v0_1#NativePostJobAction",
     "NativeReport": "https://galaxyproject.org/gxformat2/native_v0_1#NativeReport",
     "NativeSourceMetadata": "https://galaxyproject.org/gxformat2/native_v0_1#NativeSourceMetadata",
@@ -11482,7 +11479,6 @@ _vocab = {
     "NativeStepType": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType",
     "NativeTextComment": "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextComment",
     "NativeTextCommentData": "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextCommentData",
-    "NativeTextCommentType": "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextCommentType",
     "NativeWorkflowOutput": "https://galaxyproject.org/gxformat2/native_v0_1#NativeWorkflowOutput",
     "Organization": "https://galaxyproject.org/gxformat2/native_v0_1#NativeCreatorOrganizationType/Organization",
     "Person": "https://galaxyproject.org/gxformat2/native_v0_1#NativeCreatorPersonType/Person",
@@ -11499,11 +11495,8 @@ _vocab = {
     "double": "http://www.w3.org/2001/XMLSchema#double",
     "enum": "https://w3id.org/cwl/salad#enum",
     "float": "http://www.w3.org/2001/XMLSchema#float",
-    "frame": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameCommentType/frame",
-    "freehand": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandCommentType/freehand",
     "int": "http://www.w3.org/2001/XMLSchema#int",
     "long": "http://www.w3.org/2001/XMLSchema#long",
-    "markdown": "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownCommentType/markdown",
     "null": "https://w3id.org/cwl/salad#null",
     "parameter_input": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/parameter_input",
     "pause": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/pause",
@@ -11511,7 +11504,6 @@ _vocab = {
     "record": "https://w3id.org/cwl/salad#record",
     "string": "http://www.w3.org/2001/XMLSchema#string",
     "subworkflow": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/subworkflow",
-    "text": "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextCommentType/text",
     "tool": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/tool",
 }
 _rvocab = {
@@ -11532,15 +11524,12 @@ _rvocab = {
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeCreatorPersonType": "NativeCreatorPersonType",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameComment": "NativeFrameComment",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameCommentData": "NativeFrameCommentData",
-    "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameCommentType": "NativeFrameCommentType",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandComment": "NativeFreehandComment",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandCommentData": "NativeFreehandCommentData",
-    "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandCommentType": "NativeFreehandCommentType",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeGalaxyWorkflow": "NativeGalaxyWorkflow",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeInputConnection": "NativeInputConnection",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownComment": "NativeMarkdownComment",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownCommentData": "NativeMarkdownCommentData",
-    "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownCommentType": "NativeMarkdownCommentType",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativePostJobAction": "NativePostJobAction",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeReport": "NativeReport",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeSourceMetadata": "NativeSourceMetadata",
@@ -11550,7 +11539,6 @@ _rvocab = {
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType": "NativeStepType",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextComment": "NativeTextComment",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextCommentData": "NativeTextCommentData",
-    "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextCommentType": "NativeTextCommentType",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeWorkflowOutput": "NativeWorkflowOutput",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeCreatorOrganizationType/Organization": "Organization",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeCreatorPersonType/Person": "Person",
@@ -11567,11 +11555,8 @@ _rvocab = {
     "http://www.w3.org/2001/XMLSchema#double": "double",
     "https://w3id.org/cwl/salad#enum": "enum",
     "http://www.w3.org/2001/XMLSchema#float": "float",
-    "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameCommentType/frame": "frame",
-    "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandCommentType/freehand": "freehand",
     "http://www.w3.org/2001/XMLSchema#int": "int",
     "http://www.w3.org/2001/XMLSchema#long": "long",
-    "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownCommentType/markdown": "markdown",
     "https://w3id.org/cwl/salad#null": "null",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/parameter_input": "parameter_input",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/pause": "pause",
@@ -11579,7 +11564,6 @@ _rvocab = {
     "https://w3id.org/cwl/salad#record": "record",
     "http://www.w3.org/2001/XMLSchema#string": "string",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/subworkflow": "subworkflow",
-    "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextCommentType/text": "text",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/tool": "tool",
 }
 
@@ -11651,26 +11635,6 @@ NativeStepOutputLoader = _RecordLoader(NativeStepOutput, None, None)
 NativeWorkflowOutputLoader = _RecordLoader(NativeWorkflowOutput, None, None)
 NativeInputConnectionLoader = _RecordLoader(NativeInputConnection, None, None)
 NativePostJobActionLoader = _RecordLoader(NativePostJobAction, None, None)
-NativeTextCommentTypeLoader = _EnumLoader(("text",), "NativeTextCommentType")
-"""
-Discriminator for text comments.
-"""
-NativeMarkdownCommentTypeLoader = _EnumLoader(
-    ("markdown",), "NativeMarkdownCommentType"
-)
-"""
-Discriminator for markdown comments.
-"""
-NativeFrameCommentTypeLoader = _EnumLoader(("frame",), "NativeFrameCommentType")
-"""
-Discriminator for frame comments.
-"""
-NativeFreehandCommentTypeLoader = _EnumLoader(
-    ("freehand",), "NativeFreehandCommentType"
-)
-"""
-Discriminator for freehand comments.
-"""
 NativeTextCommentDataLoader = _RecordLoader(NativeTextCommentData, None, None)
 NativeMarkdownCommentDataLoader = _RecordLoader(NativeMarkdownCommentData, None, None)
 NativeFrameCommentDataLoader = _RecordLoader(NativeFrameCommentData, None, None)
@@ -11823,26 +11787,18 @@ union_of_None_type_or_floattype_or_inttype = _UnionLoader(
         inttype,
     )
 )
-typedsl_NativeTextCommentTypeLoader_2 = _TypeDSLLoader(
-    NativeTextCommentTypeLoader, 2, "v1.1"
-)
+typedsl_strtype_2 = _TypeDSLLoader(strtype, 2, "v1.1")
 union_of_None_type_or_NativeTextCommentDataLoader = _UnionLoader(
     (
         None_type,
         NativeTextCommentDataLoader,
     )
 )
-typedsl_NativeMarkdownCommentTypeLoader_2 = _TypeDSLLoader(
-    NativeMarkdownCommentTypeLoader, 2, "v1.1"
-)
 union_of_None_type_or_NativeMarkdownCommentDataLoader = _UnionLoader(
     (
         None_type,
         NativeMarkdownCommentDataLoader,
     )
-)
-typedsl_NativeFrameCommentTypeLoader_2 = _TypeDSLLoader(
-    NativeFrameCommentTypeLoader, 2, "v1.1"
 )
 union_of_None_type_or_NativeFrameCommentDataLoader = _UnionLoader(
     (
@@ -11856,9 +11812,6 @@ union_of_None_type_or_array_of_inttype = _UnionLoader(
         None_type,
         array_of_inttype,
     )
-)
-typedsl_NativeFreehandCommentTypeLoader_2 = _TypeDSLLoader(
-    NativeFreehandCommentTypeLoader, 2, "v1.1"
 )
 union_of_None_type_or_NativeFreehandCommentDataLoader = _UnionLoader(
     (

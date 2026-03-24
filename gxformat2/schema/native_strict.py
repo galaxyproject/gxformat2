@@ -61,7 +61,7 @@ def _discriminate_creator(v: Any) -> str:
     if isinstance(v, dict):
         disc_val: str = str(v.get("class", ""))
     else:
-        disc_val = str(getattr(v, "class", ""))
+        disc_val = str(getattr(v, "class_", ""))
     return disc_map.get(disc_val, disc_val)
 
 
@@ -70,7 +70,7 @@ def _discriminate_comments(v: Any) -> str:
     if isinstance(v, dict):
         disc_val: str = str(v.get("type", ""))
     else:
-        disc_val = str(getattr(v, "type", ""))
+        disc_val = str(getattr(v, "type_", ""))
     return disc_map.get(disc_val, disc_val)
 
 

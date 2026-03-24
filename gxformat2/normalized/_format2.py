@@ -15,12 +15,18 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from gxformat2.schema.gxformat2 import (
+    BaseComment,
+    CreatorOrganization,
+    CreatorPerson,
+    FrameComment,
+    FreehandComment,
     GalaxyType,
     GalaxyWorkflow,
+    MarkdownComment,
     Report,
     StepPosition,
+    TextComment,
     ToolShedRepository,
-    WorkflowComment,
     WorkflowInputParameter,
     WorkflowOutputParameter,
     WorkflowStep,
@@ -77,10 +83,12 @@ class NormalizedFormat2(BaseModel):
     )
     outputs: list[WorkflowOutputParameter] = Field(default_factory=list, description="Always a list.")
     steps: list[NormalizedWorkflowStep] = Field(default_factory=list, description="Always a list, ids populated.")
-    comments: list[WorkflowComment] = Field(default_factory=list, description="Always a list.")
+    comments: list[TextComment | MarkdownComment | FrameComment | FreehandComment] = Field(
+        default_factory=list, description="Always a list of typed comments."
+    )
     report: Report | None = Field(default=None)
     tags: list[str] = Field(default_factory=list)
-    creator: list[dict[str, Any]] | None = Field(default=None)
+    creator: list[CreatorPerson | CreatorOrganization] | None = Field(default=None)
     license: str | None = Field(default=None)
     release: str | None = Field(default=None)
     uuid: str | None = Field(default=None)
@@ -376,24 +384,37 @@ def _normalize_step_outputs(
     return result
 
 
+_COMMENT_TYPE_MAP = {
+    "text": TextComment,
+    "markdown": MarkdownComment,
+    "frame": FrameComment,
+    "freehand": FreehandComment,
+}
+
+
+Format2Comment = TextComment | MarkdownComment | FrameComment | FreehandComment
+
+
 def _normalize_comments(
-    comments: list[WorkflowComment] | dict[str, WorkflowComment] | None,
-) -> list[WorkflowComment]:
+    comments: list[BaseComment] | dict[str, BaseComment] | None,
+) -> list[Format2Comment]:
     if comments is None:
         return []
     if isinstance(comments, list):
         return comments
 
-    result = []
+    result: list[Format2Comment] = []
     for key, comment in comments.items():
-        if isinstance(comment, WorkflowComment):
+        if isinstance(comment, BaseComment):
             if comment.label is None:
                 comment = comment.model_copy(update={"label": key})
             result.append(comment)
         elif isinstance(comment, dict):
             if "label" not in comment:
                 comment = {**comment, "label": key}
-            result.append(WorkflowComment.model_validate(comment))
+            comment_type = comment.get("type", "text")
+            model_class = _COMMENT_TYPE_MAP.get(comment_type, TextComment)
+            result.append(model_class.model_validate(comment))
         else:
             result.append(comment)
     return result

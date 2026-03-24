@@ -330,25 +330,19 @@ $graph:
         - type: array
           items: string
 
-- name: WorkflowComment
-  type: record
-  doc: |
-    A visual annotation in the workflow editor. Comments are non-functional
-    elements used for documentation and organization in the editor canvas.
+# --- Comment type discriminators ---
 
-    Fields vary by comment type. Common fields (``type``, ``position``, ``size``,
-    ``color``) apply to all types. Type-specific fields are optional and only
-    relevant for their respective type.
+# Comment type discriminators use string with pydantic:type Literal
+# instead of enums to avoid JSON-LD predicate collisions with GalaxyType symbols.
+
+# --- Comment base and types ---
+
+- name: BaseComment
+  type: record
+  abstract: true
+  doc: |
+    Base fields shared by all comment types.
   fields:
-    - name: type
-      type: string
-      jsonldPredicate:
-        "_id": "sld:type"
-        "_type": "@vocab"
-        refScope: 2
-        typeDSL: True
-      doc: |
-        The type of comment. Valid values are ``text``, ``markdown``, ``frame``, and ``freehand``.
     - name: position
       type: Any?
       pydantic:type: "list[float] | None"
@@ -370,30 +364,86 @@ $graph:
       doc: |
         Optional label for referencing this comment from frame ``contains_comments``
         fields or for use as a map key when comments are represented as a mapping.
+
+- name: TextComment
+  type: record
+  extends: BaseComment
+  doc: |
+    A plain text annotation in the workflow editor.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["text"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Comment type (``text``).
     - name: text
       type: string?
       jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/text"
       doc: |
-        Text content. Used by ``text`` and ``markdown`` comment types.
+        The text content.
     - name: bold
       type: boolean?
       doc: |
-        Whether the text is bold. Only used by ``text`` comments.
+        Whether the text is displayed in bold.
     - name: italic
       type: boolean?
       doc: |
-        Whether the text is italic. Only used by ``text`` comments.
+        Whether the text is displayed in italic.
     - name: text_size
       type:
         - "null"
         - float
         - int
       doc: |
-        Font size of the text. Only used by ``text`` comments.
+        Font size of the text.
+
+- name: MarkdownComment
+  type: record
+  extends: BaseComment
+  doc: |
+    A Markdown-rendered annotation in the workflow editor.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["markdown"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Comment type (``markdown``).
+    - name: text
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/text"
+      doc: |
+        Markdown content.
+
+- name: FrameComment
+  type: record
+  extends: BaseComment
+  doc: |
+    A rectangular grouping box that visually contains steps and other comments.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["frame"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Comment type (``frame``).
     - name: title
       type: string?
       doc: |
-        Title displayed on the frame. Only used by ``frame`` comments.
+        Title displayed on the frame header.
     - name: contains_steps
       type:
         - "null"
@@ -405,7 +455,7 @@ $graph:
         _id: "gxformat2:contains_steps"
         noLinkCheck: true
       doc: |
-        Step labels or indices contained within this frame. Only used by ``frame`` comments.
+        Step labels or indices contained within this frame.
     - name: contains_comments
       type:
         - "null"
@@ -417,14 +467,31 @@ $graph:
         _id: "gxformat2:contains_comments"
         noLinkCheck: true
       doc: |
-        Comment labels or indices contained within this frame. Only used by ``frame`` comments.
+        Comment labels or indices contained within this frame.
+
+- name: FreehandComment
+  type: record
+  extends: BaseComment
+  doc: |
+    A freehand drawn line on the editor canvas.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["freehand"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Comment type (``freehand``).
     - name: thickness
       type:
         - "null"
         - float
         - int
       doc: |
-        Line thickness. Only used by ``freehand`` comments.
+        Line thickness.
     - name: line
       type: Any?
       pydantic:type: "list[list[float]] | None"
@@ -433,7 +500,147 @@ $graph:
         noLinkCheck: true
       doc: |
         Array of ``[x, y]`` coordinate pairs defining the freehand line path.
-        Only used by ``freehand`` comments.
+
+- name: WorkflowComment
+  type: union
+  names:
+    - TextComment
+    - MarkdownComment
+    - FrameComment
+    - FreehandComment
+  doc: A visual annotation in the workflow editor, discriminated by type.
+
+# --- Creator type discriminators ---
+
+- name: CreatorPersonType
+  type: enum
+  symbols:
+    - Person
+  doc: "Discriminator for schema.org Person creators."
+
+- name: CreatorOrganizationType
+  type: enum
+  symbols:
+    - Organization
+  doc: "Discriminator for schema.org Organization creators."
+
+# --- Creator base and types ---
+
+- name: BaseCreator
+  type: record
+  abstract: true
+  doc: |
+    Base fields shared by all creator types, corresponding to schema.org
+    Thing properties common to both Person and Organization.
+  fields:
+    - name: name
+      type: string?
+      jsonldPredicate: "@id"
+      doc: |
+        Full name of the person or organization.
+    - name: identifier
+      type: string?
+      doc: |
+        Persistent identifier, typically an ORCID URL
+        (e.g. ``https://orcid.org/0000-0001-2345-6789``) or bare ORCID.
+    - name: url
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2:Creator/url"
+      doc: |
+        Website or profile URL.
+    - name: email
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2:Creator/email"
+      doc: |
+        Email address. May include a ``mailto:`` prefix.
+    - name: image
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2:Creator/image"
+      doc: |
+        URL to an image or avatar.
+    - name: address
+      type: string?
+      doc: |
+        Physical or mailing address.
+    - name: alternateName
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2:Creator/alternateName"
+      doc: |
+        An alternate name or alias.
+    - name: telephone
+      type: string?
+      doc: |
+        Telephone number.
+    - name: faxNumber
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2:Creator/faxNumber"
+      doc: |
+        Fax number.
+
+- name: CreatorPerson
+  type: record
+  extends: BaseCreator
+  doc: |
+    A person who created or contributed to the workflow.
+    Corresponds to a `schema.org Person <https://schema.org/Person>`_.
+  fields:
+    - name: class
+      type: CreatorPersonType
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      doc: |
+        Creator type discriminator (``Person``).
+    - name: givenName
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2:CreatorPerson/givenName"
+      doc: |
+        Given (first) name.
+    - name: familyName
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2:CreatorPerson/familyName"
+      doc: |
+        Family (last) name.
+    - name: honorificPrefix
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2:CreatorPerson/honorificPrefix"
+      doc: |
+        Honorific prefix (e.g. ``Dr``, ``Prof``).
+    - name: honorificSuffix
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2:CreatorPerson/honorificSuffix"
+      doc: |
+        Honorific suffix (e.g. ``M.D.``, ``PhD``).
+    - name: jobTitle
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2:CreatorPerson/jobTitle"
+      doc: |
+        Job title or role.
+
+- name: CreatorOrganization
+  type: record
+  extends: BaseCreator
+  doc: |
+    An organization that created or contributed to the workflow.
+    Corresponds to a `schema.org Organization <https://schema.org/Organization>`_.
+  fields:
+    - name: class
+      type: CreatorOrganizationType
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      doc: |
+        Creator type discriminator (``Organization``).
 
 - name: GalaxyWorkflow
   type: record
@@ -496,11 +703,8 @@ $graph:
       doc: |
         Tags for the workflow.
     - name: comments
-      type:
-        - "null"
-        - type: array
-          items: "#WorkflowComment"
-      pydantic:type: "list[WorkflowComment] | dict[str, WorkflowComment] | None"
+      type: Any?
+      pydantic:type: "list[TextComment | MarkdownComment | FrameComment | FreehandComment] | dict[str, TextComment | MarkdownComment | FrameComment | FreehandComment] | None"
       jsonldPredicate:
           mapSubject: label
       doc: |
@@ -509,8 +713,10 @@ $graph:
         keyed by label.
     - name: creator
       type: Any?
-      pydantic:type: "list[dict[str, Any]] | None"
-      doc: Can be a schema.org Person (https://schema.org/Person) or Organization (https://schema.org/Organization) entity
+      pydantic:type: "list[CreatorPerson | CreatorOrganization] | None"
+      doc: |
+        Workflow creators. Can be schema.org Person (https://schema.org/Person)
+        or Organization (https://schema.org/Organization) entities.
     - name: license
       type: string?
       doc: Must be a valid license listed at https://spdx.org/licenses/
