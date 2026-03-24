@@ -8,12 +8,10 @@ from docutils import nodes
 from docutils.parsers.rst import Directive
 from sphinx.application import Sphinx
 
+from gxformat2.cytoscape import cytoscape_elements
 from gxformat2.examples import load_catalog
-from gxformat2.model import ensure_step_position, resolve_source_reference
-from gxformat2.normalize import steps_normalized
 
 GITHUB_BASE = "https://github.com/galaxyproject/gxformat2/blob/main"
-MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
 
 # Minimal self-contained HTML template for embedding in an iframe.
 # Uses a unique container ID per workflow to avoid conflicts.
@@ -51,48 +49,10 @@ document.addEventListener("DOMContentLoaded", function() {
 def _build_cytoscape_elements(workflow_path):
     """Build cytoscape elements JSON from a workflow file, returns list or None on failure."""
     try:
-        steps = steps_normalized(workflow_path=workflow_path)
+        elements = cytoscape_elements(workflow_path)
     except Exception:
         return None
-
-    known_labels = {str(s.get("id") or s.get("label") or i) for i, s in enumerate(steps)}
-    elements = []
-    for i, step in enumerate(steps):
-        step_id = step.get("id") or step.get("label") or str(i)
-        step_type = step.get("type") or "tool"
-        classes = [f"type_{step_type}"]
-        classes.append("runnable" if step_type in ["tool", "subworkflow"] else "input")
-
-        tool_id = step.get("tool_id")
-        if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
-            tool_id = tool_id[len(MAIN_TS_PREFIX) :]
-        label = step.get("id") or step.get("label") or (f"tool:{tool_id}" if tool_id else str(i))
-        ensure_step_position(step, i)
-        node_position = dict(x=int(step["position"]["left"]), y=int(step["position"]["top"]))
-        node_data = {"id": step_id, "label": label, "step_type": step_type, "tool_id": step.get("tool_id")}
-        elements.append({"group": "nodes", "data": node_data, "classes": classes, "position": node_position})
-
-        in_val = step.get("in") or []
-        if isinstance(in_val, dict):
-            in_items = list(in_val.items())
-        else:
-            in_items = [(entry.get("id", ""), entry.get("source", "")) for entry in in_val if isinstance(entry, dict)]
-        for key, value in in_items:
-            if isinstance(value, dict) and "source" in value:
-                value = value["source"]
-            elif isinstance(value, dict):
-                continue
-            try:
-                from_step, output = resolve_source_reference(value, known_labels)
-            except Exception:
-                continue
-            if output == "output":
-                output = None
-            edge_id = f"{step_id}__to__{from_step}"
-            edge_data = {"id": edge_id, "source": from_step, "target": step_id, "input": key, "output": output}
-            elements.append({"group": "edges", "data": edge_data})
-
-    return elements
+    return elements.to_list()
 
 
 class ExamplesCatalogDirective(Directive):
