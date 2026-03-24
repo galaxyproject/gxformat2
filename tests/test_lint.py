@@ -21,7 +21,6 @@ from ._helpers import (
     iwc_fixture_ids,
     round_trip,
     TEST_INTEROP_EXAMPLES,
-    TEST_PATH,
     to_native,
 )
 from .example_wfs import (

@@ -1,13 +1,12 @@
 import copy
 import json
-import os
 
 from yaml import safe_load
 
 from gxformat2.converter import python_to_workflow
 from gxformat2.export import from_galaxy_native, main
 from gxformat2.yaml import ordered_load
-from ._helpers import example_path, MockGalaxyInterface, TEST_PATH, to_example_path
+from ._helpers import example_path, MockGalaxyInterface, to_example_path
 
 
 def test_sars_covid_example():

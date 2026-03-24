@@ -8,7 +8,6 @@ from docutils import nodes
 from docutils.parsers.rst import Directive
 from sphinx.application import Sphinx
 
-from gxformat2.cytoscape import CYTOSCAPE_JS_TEMPLATE
 from gxformat2.examples import load_catalog
 from gxformat2.model import ensure_step_position, resolve_source_reference
 from gxformat2.normalize import steps_normalized
@@ -66,7 +65,7 @@ def _build_cytoscape_elements(workflow_path):
 
         tool_id = step.get("tool_id")
         if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
-            tool_id = tool_id[len(MAIN_TS_PREFIX):]
+            tool_id = tool_id[len(MAIN_TS_PREFIX) :]
         label = step.get("id") or step.get("label") or (f"tool:{tool_id}" if tool_id else str(i))
         ensure_step_position(step, i)
         node_position = dict(x=int(step["position"]["left"]), y=int(step["position"]["top"]))

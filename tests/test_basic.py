@@ -1,5 +1,3 @@
-import os
-
 from gxformat2.converter import ImportOptions
 from gxformat2.export import from_galaxy_native
 from gxformat2.yaml import ordered_load
@@ -10,7 +8,6 @@ from ._helpers import (
     from_native,
     native_workflow_outputs,
     round_trip,
-    TEST_PATH,
     to_native,
 )
 from .example_wfs import (
