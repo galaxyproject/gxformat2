@@ -274,6 +274,10 @@ input — {py:func}`~gxformat2.to_format2.to_format2` expects native input,
 - Input type shorthands expanded (`"File"` → `"data"`, etc.)
 - `doc` fields joined from list to string
 - `$graph` multi-workflow documents resolved
+- `$link` entries in step `state` resolved — replaced with
+  `{"__class__": "ConnectedValue"}` in state, connection source
+  added to `step.in_`. After normalization, `step.in_` contains
+  ALL connections and `step.state` is clean
 
 {py:class}`~gxformat2.normalized.NormalizedNativeWorkflow` guarantees:
 - `tool_state` always a parsed `dict` (JSON strings auto-decoded)
