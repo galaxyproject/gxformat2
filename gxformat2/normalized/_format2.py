@@ -161,6 +161,23 @@ def _join_doc(doc: str | list[str] | None) -> str | None:
     return doc
 
 
+INPUT_TYPE_ALIASES = {
+    "File": "data",
+    "data_input": "data",
+    "data_collection": "collection",
+    "data_collection_input": "collection",
+}
+
+
+def _normalize_input_type(value: Any) -> Any:
+    """Normalize input type aliases to canonical Format2 types."""
+    if isinstance(value, str):
+        return INPUT_TYPE_ALIASES.get(value, value)
+    if isinstance(value, list):
+        return [_normalize_input_type(v) for v in value]
+    return value
+
+
 def _normalize_inputs(
     inputs: list[WorkflowInputParameter] | dict[str, WorkflowInputParameter | str] | dict[str, Any],
 ) -> list[WorkflowInputParameter]:
@@ -169,6 +186,10 @@ def _normalize_inputs(
         for inp in inputs:
             if isinstance(inp, WorkflowInputParameter):
                 result.append(inp)
+            elif isinstance(inp, dict):
+                if "type" in inp:
+                    inp = {**inp, "type": _normalize_input_type(inp["type"])}
+                result.append(WorkflowInputParameter.model_validate(inp))
             else:
                 result.append(WorkflowInputParameter.model_validate(inp))
         return result
@@ -178,8 +199,11 @@ def _normalize_inputs(
     for key, value in inputs.items():
         if isinstance(value, str):
             # Shorthand: input_name: "data"
+            normalized_type = _normalize_input_type(value)
             result.append(
-                WorkflowInputParameter(id=key, type_=GalaxyType(value) if value in GalaxyType.__members__ else None)
+                WorkflowInputParameter(
+                    id=key, type_=GalaxyType(normalized_type) if normalized_type in GalaxyType.__members__ else None
+                )
             )
         elif isinstance(value, WorkflowInputParameter):
             if value.id is None:
@@ -188,6 +212,8 @@ def _normalize_inputs(
         elif isinstance(value, dict):
             if "id" not in value:
                 value = {**value, "id": key}
+            if "type" in value:
+                value = {**value, "type": _normalize_input_type(value["type"])}
             result.append(WorkflowInputParameter.model_validate(value))
         else:
             result.append(WorkflowInputParameter(id=key))

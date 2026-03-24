@@ -124,18 +124,27 @@ def python_to_workflow(as_python, galaxy_interface=None, workflow_directory=None
     )
     result = to_native(as_python, options)
     data = result.model_dump(by_alias=True, exclude_none=True, mode="json")
-    if import_options.encode_tool_state_json:
-        _encode_tool_state(data)
+    _compat_fixup_native(data, import_options)
     return data
 
 
-def _encode_tool_state(data: dict) -> None:
-    """JSON-encode tool_state dicts in-place for Galaxy API compatibility."""
+def _compat_fixup_native(data: dict, import_options: ImportOptions) -> None:
+    """Post-process native dict for backward compat with old converter output."""
     for step in data.get("steps", {}).values():
-        if isinstance(step.get("tool_state"), dict):
+        # JSON-encode tool_state if requested
+        if import_options.encode_tool_state_json and isinstance(step.get("tool_state"), dict):
             step["tool_state"] = json.dumps(step["tool_state"])
+        # Ensure label key exists (old converter always set it)
+        if "label" not in step:
+            step["label"] = None
+        # Wrap single input_connections in lists (old converter always used lists)
+        ic = step.get("input_connections", {})
+        for key, value in ic.items():
+            if isinstance(value, dict):
+                ic[key] = [value]
+        # Recurse into subworkflows
         if isinstance(step.get("subworkflow"), dict):
-            _encode_tool_state(step["subworkflow"])
+            _compat_fixup_native(step["subworkflow"], import_options)
 
 
 def _python_to_workflow(as_python, conversion_context):

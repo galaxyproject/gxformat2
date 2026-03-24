@@ -48,6 +48,7 @@ from .schema.native import (
     NativeStepType,
     NativeWorkflowOutput,
     StepPosition,
+    ToolShedRepository,
 )
 
 log = logging.getLogger(__name__)
@@ -400,7 +401,7 @@ def _build_tool_step(
         annotation=step.doc or "",
         tool_id=tool_id,
         tool_version=step.tool_version,
-        tool_shed_repository=step.tool_shed_repository,
+        tool_shed_repository=_convert_tool_shed_repo(step.tool_shed_repository),
         tool_state=tool_state,
         tool_representation=tool_representation,
         input_connections=input_connections,
@@ -689,17 +690,36 @@ def _step_label(step: NormalizedWorkflowStep) -> str | None:
 
     For dict-keyed steps, the key is stored in ``id`` and ``label`` is None.
     Non-numeric ids are user labels; numeric ids are auto-assigned indices.
+    Sentinel labels (``_unlabeled_*``) are cleared to None.
     """
     if step.label is not None:
+        if Labels.is_unlabeled(step.label):
+            return None
         return step.label
     if step.id and not step.id.isdigit():
+        if Labels.is_unlabeled(step.id):
+            return None
         return step.id
     return None
 
 
-def _default_position(position: StepPosition | None, order_index: int) -> StepPosition:
+def _convert_tool_shed_repo(repo) -> ToolShedRepository | None:
+    if repo is None:
+        return None
+    if isinstance(repo, ToolShedRepository):
+        return repo
+    return ToolShedRepository(
+        name=repo.name, changeset_revision=repo.changeset_revision,
+        owner=repo.owner, tool_shed=repo.tool_shed,
+    )
+
+
+def _default_position(position: Any, order_index: int) -> StepPosition:
     if position is not None:
-        return position
+        # Convert from any StepPosition-like object (Format2 or native)
+        if isinstance(position, StepPosition):
+            return position
+        return StepPosition(left=position.left, top=position.top)
     return StepPosition(left=10 * order_index, top=10 * order_index)
 
 

@@ -160,7 +160,7 @@ def _normalize_workflow(wf: NativeGalaxyWorkflow) -> NormalizedNativeWorkflow:
         logo_url=wf.logo_url,
         doi=wf.doi,
         source_metadata=wf.source_metadata,
-        comments=wf.comments or [],
+        comments=[c.model_dump(by_alias=True) for c in wf.comments] if wf.comments else [],
         steps=steps,
         subworkflows=subworkflows,
     )

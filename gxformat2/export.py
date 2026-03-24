@@ -74,13 +74,18 @@ def from_galaxy_native(
     data = result.model_dump(by_alias=True, exclude_none=True, mode="json")
     data["class"] = "GalaxyWorkflow"
 
+    # Strip empty optional collections that the old code omitted
+    for key in ("comments", "tags"):
+        if key in data and data[key] == []:
+            del data[key]
+
     # Convert lists to dicts keyed by id/label for Format2 idmap representation
     _listify_to_idmap(data, "inputs")
     _listify_to_idmap(data, "outputs")
     _steps_to_idmap(data)
     _listify_to_idmap(data, "comments", key_field="label")
 
-    # Convert step in/out from lists to dicts
+    # Convert step in/out from lists to dicts, fix up subworkflow runs
     steps = data.get("steps", {})
     step_iter = steps.values() if isinstance(steps, dict) else steps
     for step in step_iter:
@@ -90,15 +95,33 @@ def from_galaxy_native(
             # Recurse into subworkflow run
             run = step.get("run")
             if isinstance(run, dict) and run.get("steps") is not None:
-                _listify_to_idmap(run, "inputs")
-                _listify_to_idmap(run, "outputs")
-                _steps_to_idmap(run)
-                _listify_to_idmap(run, "comments", key_field="label")
+                _fixup_format2_dict(run)
 
     if json_wrapper:
         return {"yaml_content": ordered_dump(data)}
 
     return data
+
+
+def _fixup_format2_dict(data: dict) -> None:
+    """Recursively fix up a Format2 workflow dict for backward compat."""
+    data["class"] = "GalaxyWorkflow"
+    for key in ("comments", "tags"):
+        if key in data and data[key] == []:
+            del data[key]
+    _listify_to_idmap(data, "inputs")
+    _listify_to_idmap(data, "outputs")
+    _steps_to_idmap(data)
+    _listify_to_idmap(data, "comments", key_field="label")
+    steps = data.get("steps", {})
+    step_iter = steps.values() if isinstance(steps, dict) else steps
+    for step in step_iter:
+        if isinstance(step, dict):
+            _listify_to_idmap(step, "in")
+            _listify_to_idmap(step, "out")
+            run = step.get("run")
+            if isinstance(run, dict) and run.get("steps") is not None:
+                _fixup_format2_dict(run)
 
 
 def _listify_to_idmap(data: dict, key: str, key_field: str = "id") -> None:

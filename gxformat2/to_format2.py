@@ -233,13 +233,13 @@ def _build_tool_format2_step(
         ts.pop("__rerun_remap_job_id__", None)
         tool_state = ts
 
-    label = step.label or label_map.get(str(step.id))
-    if label and Labels.is_unlabeled(label):
-        label = None
+    raw_label = step.label or label_map.get(str(step.id))
+    step_id = raw_label or str(step.id)
+    display_label = None if (raw_label and Labels.is_unlabeled(raw_label)) else raw_label
 
     return NormalizedWorkflowStep(
-        id=label or str(step.id),
-        label=label,
+        id=step_id,
+        label=display_label,
         doc=step.annotation or None,
         tool_id=step.tool_id,
         tool_version=step.tool_version,
@@ -262,11 +262,12 @@ def _build_user_tool_format2_step(
 ) -> NormalizedWorkflowStep:
     in_list = _build_step_inputs(step, label_map)
     out_list = _build_step_outputs(step)
-    label = step.label or label_map.get(str(step.id))
+    raw_label = step.label or label_map.get(str(step.id))
+    step_id = raw_label or str(step.id)
 
     return NormalizedWorkflowStep(
-        id=label or str(step.id),
-        label=label,
+        id=step_id,
+        label=raw_label,
         doc=step.annotation or None,
         run=step.tool_representation,
         in_=in_list,
@@ -292,13 +293,13 @@ def _build_subworkflow_format2_step(
     elif step.content_id:
         run = step.content_id
 
-    label = step.label or label_map.get(str(step.id))
-    if label and Labels.is_unlabeled(label):
-        label = None
+    raw_label = step.label or label_map.get(str(step.id))
+    step_id = raw_label or str(step.id)
+    display_label = None if (raw_label and Labels.is_unlabeled(raw_label)) else raw_label
 
     return NormalizedWorkflowStep(
-        id=label or str(step.id),
-        label=label,
+        id=step_id,
+        label=display_label,
         doc=step.annotation or None,
         run=run,
         in_=in_list,
@@ -315,13 +316,13 @@ def _build_pause_format2_step(
     compact: bool,
 ) -> NormalizedWorkflowStep:
     in_list = _build_step_inputs(step, label_map)
-    label = step.label or label_map.get(str(step.id))
-    if label and Labels.is_unlabeled(label):
-        label = None
+    raw_label = step.label or label_map.get(str(step.id))
+    step_id = raw_label or str(step.id)
+    display_label = None if (raw_label and Labels.is_unlabeled(raw_label)) else raw_label
 
     return NormalizedWorkflowStep(
-        id=label or str(step.id),
-        label=label,
+        id=step_id,
+        label=display_label,
         doc=step.annotation or None,
         type_=WorkflowStepType.pause,
         in_=in_list,
@@ -343,13 +344,13 @@ def _build_pick_value_format2_step(
     if "mode" in tool_state:
         state = {"mode": tool_state["mode"]}
 
-    label = step.label or label_map.get(str(step.id))
-    if label and Labels.is_unlabeled(label):
-        label = None
+    raw_label = step.label or label_map.get(str(step.id))
+    step_id = raw_label or str(step.id)
+    display_label = None if (raw_label and Labels.is_unlabeled(raw_label)) else raw_label
 
     return NormalizedWorkflowStep(
-        id=label or str(step.id),
-        label=label,
+        id=step_id,
+        label=display_label,
         doc=step.annotation or None,
         type_=WorkflowStepType.pick_value,
         state=state,
