@@ -298,13 +298,17 @@ def _normalize_steps(
             if isinstance(step, WorkflowStep):
                 if step.id is None:
                     step = step.model_copy(update={"id": key})
+                if step.label is None:
+                    step = step.model_copy(update={"label": key})
                 step_list.append(step)
             elif isinstance(step, dict):
                 if "id" not in step:
                     step = {**step, "id": key}
+                if "label" not in step:
+                    step = {**step, "label": key}
                 step_list.append(WorkflowStep.model_validate(step))
             else:
-                step_list.append(WorkflowStep.model_validate({"id": key}))
+                step_list.append(WorkflowStep.model_validate({"id": key, "label": key}))
     else:
         step_list = []
         for i, step in enumerate(steps):
