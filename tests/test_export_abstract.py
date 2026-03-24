@@ -19,6 +19,7 @@ from .example_wfs import (
     BASIC_WORKFLOW,
     FLOAT_INPUT_DEFAULT,
     INT_INPUT,
+    MULTI_STRING_INPUT_WORKFLOW,
     NESTED_WORKFLOW,
     OPTIONAL_INPUT,
     PJA_1,
@@ -113,6 +114,11 @@ def test_string_inputs():
         abstract_as_dict = from_dict(as_dict)
         assert abstract_as_dict["inputs"]["seed"]["type"] == "string"
         assert abstract_as_dict["inputs"]["seed"]["default"] == "mycooldefault"
+
+
+def test_multi_string_inputs():
+    abstract_as_dict = from_dict(ordered_load(MULTI_STRING_INPUT_WORKFLOW))
+    assert abstract_as_dict["inputs"]["multi-text"]["type"] == "string[]"
 
 
 def _run_example_path(path):

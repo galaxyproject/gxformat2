@@ -17,6 +17,8 @@ from ._format2 import (
     normalized_format2,
     NormalizedFormat2,
     NormalizedWorkflowStep,
+    resolve_source_reference,
+    SourceReference,
 )
 from ._native import (
     normalized_native,
@@ -35,6 +37,8 @@ __all__ = (
     "NormalizedNativeStep",
     "NormalizedNativeWorkflow",
     "NormalizedWorkflowStep",
+    "SourceReference",
     "normalized_format2",
     "normalized_native",
+    "resolve_source_reference",
 )

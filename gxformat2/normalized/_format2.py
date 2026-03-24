@@ -9,8 +9,9 @@ All step/input ids are populated.
 from __future__ import annotations
 
 import copy
+from functools import cached_property
 from pathlib import Path
-from typing import Any, Literal, Union
+from typing import Any, Literal, NamedTuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing_extensions import TypeAlias
@@ -58,6 +59,30 @@ class ImportReference(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
     import_path: str = Field(alias="@import")
+
+
+class SourceReference(NamedTuple):
+    """A parsed Format2 source reference (e.g. ``step_label/output_name``)."""
+
+    step_label: str
+    output_name: str
+
+
+def resolve_source_reference(value: str, known_labels: set | dict) -> SourceReference:
+    """Parse a source reference into (step_label_or_id, output_name).
+
+    Tries matching known labels first to handle labels containing '/'.
+    Falls back to split on '/' for numeric step IDs or unknown labels.
+    """
+    for label in sorted(known_labels, key=len, reverse=True):
+        if value == label:
+            return SourceReference(label, "output")
+        if value.startswith(label + "/"):
+            return SourceReference(label, value[len(label) + 1 :])
+    if "/" in value:
+        parts = value.split("/", 1)
+        return SourceReference(parts[0], parts[1])
+    return SourceReference(value, "output")
 
 
 class NormalizedWorkflowStep(BaseModel):
@@ -126,6 +151,17 @@ class NormalizedFormat2(BaseModel):
     license: str | None = Field(default=None)
     release: str | None = Field(default=None)
     uuid: str | None = Field(default=None)
+
+    @cached_property
+    def known_labels(self) -> set[str]:
+        """All step and input labels/ids in this workflow."""
+        labels = {s.label or s.id for s in self.steps}
+        labels |= {i.id for i in self.inputs if i.id}
+        return labels
+
+    def resolve_source(self, source: str) -> SourceReference:
+        """Parse a source reference string (e.g. ``step/output``) against this workflow's labels."""
+        return resolve_source_reference(source, self.known_labels)
 
 
 NormalizedWorkflowStep.model_rebuild()
