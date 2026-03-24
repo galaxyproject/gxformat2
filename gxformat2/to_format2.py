@@ -21,6 +21,7 @@ from .normalized._expanded import (
     ExpandedFormat2,
 )
 from .normalized._format2 import (
+    normalized_format2,
     NormalizedFormat2,
     NormalizedWorkflowStep,
 )
@@ -36,6 +37,7 @@ from .schema.gxformat2 import (
     CreatorPerson,
     FrameComment,
     FreehandComment,
+    GalaxyWorkflow,
     MarkdownComment,
     Report,
     StepPosition as Format2StepPosition,
@@ -67,6 +69,68 @@ def _convert_tool_shed_repo(repo) -> Format2ToolShedRepository | None:
         name=repo.name, changeset_revision=repo.changeset_revision,
         owner=repo.owner, tool_shed=repo.tool_shed,
     )
+
+
+@overload
+def ensure_format2(
+    workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
+    options: ConversionOptions,
+    expand: Literal[True],
+) -> ExpandedFormat2:
+    ...
+
+
+@overload
+def ensure_format2(
+    workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
+    options: ConversionOptions | None = None,
+    expand: Literal[False] = False,
+) -> NormalizedFormat2:
+    ...
+
+
+@overload
+def ensure_format2(
+    workflow: GalaxyWorkflow | NormalizedFormat2,
+    options: ConversionOptions,
+    expand: Literal[True],
+) -> ExpandedFormat2:
+    ...
+
+
+@overload
+def ensure_format2(
+    workflow: GalaxyWorkflow | NormalizedFormat2,
+    options: ConversionOptions | None = None,
+    expand: Literal[False] = False,
+) -> NormalizedFormat2:
+    ...
+
+
+def ensure_format2(
+    workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow | NormalizedNativeWorkflow | GalaxyWorkflow | NormalizedFormat2,
+    options: ConversionOptions | None = None,
+    expand: bool = False,
+) -> NormalizedFormat2 | ExpandedFormat2:
+    """Ensure a workflow is returned as Format2 typed models.
+
+    Accepts native or Format2 inputs (raw dict/path or typed models),
+    normalizing/converting as needed, and optionally expanding refs.
+    """
+    options = options or ConversionOptions()
+
+    if isinstance(workflow, NormalizedFormat2):
+        result = workflow
+    elif isinstance(workflow, GalaxyWorkflow):
+        result = normalized_format2(workflow)
+    elif isinstance(workflow, (NativeGalaxyWorkflow, NormalizedNativeWorkflow)):
+        result = to_format2(workflow, options=options, expand=False)
+    else:
+        result = normalized_format2(workflow)
+
+    if expand:
+        return expanded_format2(result, options)
+    return result
 
 
 @overload

@@ -119,7 +119,7 @@ NormalizedNativeStep.model_rebuild()
 NormalizedNativeWorkflow.model_rebuild()
 
 
-def _load_native(data: dict[str, Any], *, strict: bool = True) -> NativeGalaxyWorkflow:
+def load_native(data: dict[str, Any], *, strict: bool = True) -> NativeGalaxyWorkflow:
     """Load a native Galaxy workflow dict into a :class:`NativeGalaxyWorkflow`.
 
     Parameters
@@ -202,7 +202,7 @@ def normalized_native(
         with open(workflow) as f:
             workflow = json.load(f)
     if isinstance(workflow, dict):
-        workflow = _load_native(workflow, strict=False)
+        workflow = load_native(workflow, strict=False)
     return _normalize_workflow(workflow)
 
 

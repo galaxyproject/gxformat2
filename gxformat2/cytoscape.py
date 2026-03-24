@@ -7,8 +7,9 @@ import string
 import sys
 from typing import Any
 
-from gxformat2.normalized import normalized_format2, NormalizedFormat2, NormalizedWorkflowStep
+from gxformat2.normalized import NormalizedFormat2, NormalizedWorkflowStep
 from gxformat2.schema.gxformat2 import WorkflowInputParameter
+from gxformat2.to_format2 import ensure_format2
 
 CYTOSCAPE_JS_TEMPLATE = os.path.join(os.path.dirname(__file__), "cytoscape.html")
 MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
@@ -30,7 +31,7 @@ def to_cytoscape(workflow_path: str, output_path=None):
         output_path, _ = os.path.splitext(workflow_path)
         output_path += ".html"
 
-    nf2 = normalized_format2(workflow_path)
+    nf2 = ensure_format2(workflow_path)
     elements: list[dict[str, Any]] = []
 
     for i, inp in enumerate(nf2.inputs):

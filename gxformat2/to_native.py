@@ -33,6 +33,7 @@ from .normalized._format2 import (
 from .normalized._native import (
     NormalizedNativeStep,
     NormalizedNativeWorkflow,
+    normalized_native,
 )
 from .options import ConversionOptions
 from .schema.gxformat2 import (
@@ -43,6 +44,7 @@ from .schema.gxformat2 import (
     WorkflowStepOutput,
 )
 from .schema.native import (
+    NativeGalaxyWorkflow,
     NativeInputConnection,
     NativePostJobAction,
     NativeStepType,
@@ -90,6 +92,79 @@ POST_JOB_ACTIONS = {
         "arguments": lambda x: {"tags": ",".join(x)},
     },
 }
+
+
+@overload
+def ensure_native(
+    workflow: dict[str, Any] | str | Path | NormalizedFormat2 | GalaxyWorkflow,
+    options: ConversionOptions,
+    expand: Literal[True],
+) -> ExpandedNativeWorkflow:
+    ...
+
+
+@overload
+def ensure_native(
+    workflow: dict[str, Any] | str | Path | NormalizedFormat2 | GalaxyWorkflow,
+    options: ConversionOptions | None = None,
+    expand: Literal[False] = False,
+) -> NormalizedNativeWorkflow:
+    ...
+
+
+@overload
+def ensure_native(
+    workflow: NativeGalaxyWorkflow | NormalizedNativeWorkflow,
+    options: ConversionOptions,
+    expand: Literal[True],
+) -> ExpandedNativeWorkflow:
+    ...
+
+
+@overload
+def ensure_native(
+    workflow: NativeGalaxyWorkflow | NormalizedNativeWorkflow,
+    options: ConversionOptions | None = None,
+    expand: Literal[False] = False,
+) -> NormalizedNativeWorkflow:
+    ...
+
+
+def ensure_native(
+    workflow: dict[str, Any] | str | Path | NormalizedFormat2 | GalaxyWorkflow | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
+    options: ConversionOptions | None = None,
+    expand: bool = False,
+) -> NormalizedNativeWorkflow | ExpandedNativeWorkflow:
+    """Ensure a workflow is returned as native typed models.
+
+    Accepts native or Format2 inputs (raw dict/path or typed models),
+    normalizing/converting as needed, and optionally expanding refs.
+    """
+    options = options or ConversionOptions()
+
+    if isinstance(workflow, NormalizedNativeWorkflow):
+        result = workflow
+    elif isinstance(workflow, NativeGalaxyWorkflow):
+        result = normalized_native(workflow)
+    elif isinstance(workflow, (NormalizedFormat2, GalaxyWorkflow)):
+        result = to_native(workflow, options=options, expand=False)
+    elif isinstance(workflow, dict) and workflow.get("a_galaxy_workflow") == "true":
+        result = normalized_native(workflow)
+    elif isinstance(workflow, dict) and workflow.get("class") == "GalaxyWorkflow":
+        result = to_native(workflow, options=options, expand=False)
+    else:
+        # str or Path — could be either format, try native first
+        from gxformat2.yaml import ordered_load_path
+
+        loaded = ordered_load_path(str(workflow)) if isinstance(workflow, (str, Path)) else workflow
+        if isinstance(loaded, dict) and loaded.get("a_galaxy_workflow") == "true":
+            result = normalized_native(loaded)
+        else:
+            result = to_native(loaded, options=options, expand=False)
+
+    if expand:
+        return expanded_native(result, options)
+    return result
 
 
 @overload

@@ -2,7 +2,6 @@
 
 import argparse
 import json
-import os
 import re
 import sys
 from collections import OrderedDict
@@ -13,8 +12,6 @@ from pydantic import ValidationError
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
 from gxformat2.normalized import (
-    expanded_format2,
-    normalized_native,
     NormalizedFormat2,
     NormalizedWorkflowStep,
 )
@@ -27,6 +24,8 @@ from gxformat2.schema.gxformat2 import CreatorPerson, GalaxyType, GalaxyWorkflow
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as Format2StrictModel
 from gxformat2.schema.native import NativeGalaxyWorkflow as NativeLaxModel
 from gxformat2.schema.native_strict import NativeGalaxyWorkflow as NativeStrictModel
+from gxformat2.to_format2 import ensure_format2
+from gxformat2.to_native import ensure_native
 from gxformat2.yaml import ordered_load, ordered_load_path
 
 EXIT_CODE_SUCCESS = 0
@@ -88,14 +87,14 @@ def lint_ga(lint_context, nnw: NormalizedNativeWorkflow, raw_dict: dict | None =
 def lint_ga_path(lint_context, path):
     """Apply linting of native workflows to specified path."""
     workflow_dict = ordered_load_path(path)
-    nnw = normalized_native(workflow_dict)
+    nnw = ensure_native(workflow_dict)
     return lint_ga(lint_context, nnw, raw_dict=workflow_dict)
 
 
 def lint_format2_path(lint_context, path):
     """Apply linting of Format2 workflows to specified path."""
     workflow_dict = ordered_load_path(path)
-    nf2 = expanded_format2(workflow_dict)
+    nf2 = ensure_format2(workflow_dict, expand=True)
     return lint_format2(lint_context, nf2, raw_dict=workflow_dict)
 
 
@@ -308,7 +307,7 @@ def _lint_native_step_best_practices(lint_context, step: NormalizedNativeStep):
 def _try_build_nf2(lint_context, workflow_dict) -> NormalizedFormat2 | None:
     """Build ExpandedFormat2 from a workflow dict, emitting lint errors on failure."""
     try:
-        return expanded_format2(workflow_dict)
+        return ensure_format2(workflow_dict, expand=True)
     except ValidationError as e:
         for error in e.errors():
             loc = " -> ".join(str(p) for p in error["loc"])
@@ -322,7 +321,7 @@ def _try_build_nf2(lint_context, workflow_dict) -> NormalizedFormat2 | None:
 def _try_build_nnw(lint_context, workflow_dict) -> NormalizedNativeWorkflow | None:
     """Build NormalizedNativeWorkflow from a workflow dict, emitting lint errors on failure."""
     try:
-        return normalized_native(workflow_dict)
+        return ensure_native(workflow_dict)
     except ValidationError as e:
         for error in e.errors():
             loc = " -> ".join(str(p) for p in error["loc"])
@@ -390,30 +389,11 @@ def main(argv=None):
     nnw = None
 
     if is_format2:
-        try:
-            nf2 = expanded_format2(workflow_dict)
-        except (ValidationError, Exception) as e:
-            if isinstance(e, ValidationError):
-                for error in e.errors():
-                    loc = " -> ".join(str(p) for p in error["loc"])
-                    lint_context.error(f"Schema validation: {error['msg']} at {loc}")
-            else:
-                lint_context.error(f"Failed to parse workflow: {e}")
+        nf2 = _try_build_nf2(lint_context, workflow_dict)
     else:
-        try:
-            nnw = normalized_native(workflow_dict)
-        except (ValidationError, Exception) as e:
-            if isinstance(e, ValidationError):
-                for error in e.errors():
-                    loc = " -> ".join(str(p) for p in error["loc"])
-                    lint_context.error(f"Schema validation: {error['msg']} at {loc}")
-            else:
-                lint_context.error(f"Failed to parse workflow: {e}")
+        nnw = _try_build_nnw(lint_context, workflow_dict)
         # Also build ExpandedFormat2 for best practices (independent)
-        try:
-            nf2 = expanded_format2(workflow_dict)
-        except Exception:
-            pass  # best practices just won't run
+        nf2 = _try_build_nf2(lint_context, workflow_dict)
 
     # Structural lint (format-specific, needs valid model)
     if is_format2 and nf2 is not None:
