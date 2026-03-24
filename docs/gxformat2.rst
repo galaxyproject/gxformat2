@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   gxformat2.normalized
    gxformat2.schema
 
 Submodules
@@ -100,6 +101,30 @@ gxformat2.normalize module
    :undoc-members:
    :show-inheritance:
 
+gxformat2.options module
+------------------------
+
+.. automodule:: gxformat2.options
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+gxformat2.to\_format2 module
+-----------------------------
+
+.. automodule:: gxformat2.to_format2
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+gxformat2.to\_native module
+----------------------------
+
+.. automodule:: gxformat2.to_native
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 gxformat2.yaml module
 ---------------------
 
@@ -115,3 +140,4 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
+   :no-index:
