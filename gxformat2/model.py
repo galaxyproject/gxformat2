@@ -110,7 +110,7 @@ def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, l
 
         assert "$link" in value
         link_value = value["$link"]
-        append_to[key].append(clean_connection(link_value))
+        append_to[key].append(link_value)
 
     def recurse(sub_value, sub_key) -> Any:
         return setup_connected_values(sub_value, sub_key, append_to=append_to)
@@ -151,10 +151,6 @@ def resolve_source_reference(value: str, known_labels: Union[set, dict]) -> tupl
     """
     return _resolve_source_reference(value, known_labels)
 
-
-def clean_connection(value: str) -> str:
-    """Clean a connection value (no-op, legacy # syntax no longer supported)."""
-    return value
 
 
 def _connected_value():
