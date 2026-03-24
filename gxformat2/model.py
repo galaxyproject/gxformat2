@@ -15,10 +15,8 @@ from gxformat2.normalized import resolve_source_reference as _resolve_source_ref
 
 log = logging.getLogger(__name__)
 
-ConnectDict = dict
 
-
-NativeGalaxyStepType = Literal[
+_NativeGalaxyStepType = Literal[
     "subworkflow",
     "data_input",
     "data_collection_input",
@@ -27,15 +25,15 @@ NativeGalaxyStepType = Literal[
     "pick_value",
     "parameter_input",
 ]
-GxFormat2StepTypeAlias = Literal[
+_GxFormat2StepTypeAlias = Literal[
     "input",
     "input_collection",
     "parameter",
 ]
-StepTypes = Union[NativeGalaxyStepType, GxFormat2StepTypeAlias]
+_StepTypes = Union[_NativeGalaxyStepType, _GxFormat2StepTypeAlias]
 
 
-STEP_TYPES = [
+_STEP_TYPES = [
     "subworkflow",
     "data_input",
     "data_collection_input",
@@ -44,25 +42,25 @@ STEP_TYPES = [
     "pick_value",
     "parameter_input",
 ]
-STEP_TYPE_ALIASES: dict[GxFormat2StepTypeAlias, NativeGalaxyStepType] = {
+_STEP_TYPE_ALIASES: dict[_GxFormat2StepTypeAlias, _NativeGalaxyStepType] = {
     "input": "data_input",
     "input_collection": "data_collection_input",
     "parameter": "parameter_input",
 }
 
 
-def get_native_step_type(gxformat2_step_dict: dict) -> NativeGalaxyStepType:
+def get_native_step_type(gxformat2_step_dict: dict) -> _NativeGalaxyStepType:
     """Infer native galaxy step type from the gxformat2 step as a dict."""
     specifies_subworkflow_run = bool(gxformat2_step_dict.get("run"))
     step_type_default = "tool" if not specifies_subworkflow_run else "subworkflow"
     raw_step_type = gxformat2_step_dict.get("type", step_type_default)
-    if raw_step_type not in STEP_TYPES and raw_step_type not in STEP_TYPE_ALIASES:
+    if raw_step_type not in _STEP_TYPES and raw_step_type not in _STEP_TYPE_ALIASES:
         raise Exception(f"Unknown step type encountered {raw_step_type}")
-    step_type: NativeGalaxyStepType
-    if raw_step_type in STEP_TYPE_ALIASES:
-        step_type = STEP_TYPE_ALIASES[cast(GxFormat2StepTypeAlias, raw_step_type)]
+    step_type: _NativeGalaxyStepType
+    if raw_step_type in _STEP_TYPE_ALIASES:
+        step_type = _STEP_TYPE_ALIASES[cast(_GxFormat2StepTypeAlias, raw_step_type)]
     else:
-        step_type = cast(NativeGalaxyStepType, raw_step_type)
+        step_type = cast(_NativeGalaxyStepType, raw_step_type)
     return step_type
 
 
@@ -70,7 +68,7 @@ def get_native_step_type(gxformat2_step_dict: dict) -> NativeGalaxyStepType:
 SUPPORT_LEGACY_CONNECTIONS = os.environ.get("GXFORMAT2_SUPPORT_LEGACY_CONNECTIONS") == "1"
 
 
-def pop_connect_from_step_dict(step: dict) -> ConnectDict:
+def pop_connect_from_step_dict(step: dict) -> dict:
     """Merge 'in' and 'connect' keys into a unified connection dict separated from state.
 
     Meant to be used an initial processing step in reasoning about connections defined by the
@@ -187,7 +185,7 @@ def _join_prefix(prefix: Optional[str], key: str):
     return new_key
 
 
-def convert_dict_to_id_list_if_needed(
+def _convert_dict_to_id_list_if_needed(
     dict_or_list: Union[dict, list],
     add_label: bool = False,
     mutate: bool = False,
@@ -215,7 +213,7 @@ def convert_dict_to_id_list_if_needed(
     return rval
 
 
-def with_step_ids(steps: list, inputs_offset: int = 0):
+def _with_step_ids(steps: list, inputs_offset: int = 0):
     """Walk over a list of steps and ensure the steps have a numeric id if otherwise missing."""
     assert isinstance(steps, list)
     new_steps = []
@@ -268,18 +266,18 @@ def steps_as_list(
     if "steps" not in format2_workflow:
         raise Exception(f"No 'steps' key in dict, keys are {format2_workflow.keys()}")
     steps = format2_workflow["steps"]
-    steps = convert_dict_to_id_list_if_needed(steps, add_label=True, mutate=mutate)
+    steps = _convert_dict_to_id_list_if_needed(steps, add_label=True, mutate=mutate)
     if add_ids:
         if mutate:
-            append_step_id_to_step_list_elements(steps, inputs_offset=inputs_offset)
+            _append_step_id_to_step_list_elements(steps, inputs_offset=inputs_offset)
         else:
-            steps = with_step_ids(steps, inputs_offset=inputs_offset)
+            steps = _with_step_ids(steps, inputs_offset=inputs_offset)
     return steps
 
 
 # Mapping from native comment data.* field names to Format2 top-level field names.
 # Key = native data field name, Value = format2 field name.
-COMMENT_DATA_FIELDS: dict[str, dict[str, str]] = {
+_COMMENT_DATA_FIELDS: dict[str, dict[str, str]] = {
     "text": {"text": "text", "bold": "bold", "italic": "italic", "size": "text_size"},
     "markdown": {"text": "text"},
     "frame": {"title": "title"},
@@ -287,7 +285,7 @@ COMMENT_DATA_FIELDS: dict[str, dict[str, str]] = {
 }
 
 # Fields common to all comment types (preserved as-is, minus 'id' and 'data').
-COMMENT_COMMON_FIELDS = ("type", "position", "size", "color")
+_COMMENT_COMMON_FIELDS = ("type", "position", "size", "color")
 
 
 def _tuples_to_lists(value):
@@ -314,7 +312,7 @@ def flatten_comment_data(native_comment: dict) -> dict:
     result: dict = {}
 
     # Copy common fields
-    for field in COMMENT_COMMON_FIELDS:
+    for field in _COMMENT_COMMON_FIELDS:
         if field in native_comment:
             result[field] = _tuples_to_lists(native_comment[field])
 
@@ -324,7 +322,7 @@ def flatten_comment_data(native_comment: dict) -> dict:
 
     # Flatten data fields (convert tuples to lists for YAML serialization)
     data = native_comment.get("data", {})
-    field_map = COMMENT_DATA_FIELDS.get(comment_type, {})
+    field_map = _COMMENT_DATA_FIELDS.get(comment_type, {})
     for native_name, format2_name in field_map.items():
         if native_name in data:
             result[format2_name] = _tuples_to_lists(data[native_name])
@@ -348,7 +346,7 @@ def unflatten_comment_data(format2_comment: dict) -> dict:
     result: dict = {}
 
     # Copy common fields
-    for field in COMMENT_COMMON_FIELDS:
+    for field in _COMMENT_COMMON_FIELDS:
         if field in format2_comment:
             result[field] = format2_comment[field]
 
@@ -358,7 +356,7 @@ def unflatten_comment_data(format2_comment: dict) -> dict:
 
     # Build data dict from flattened fields
     data: dict = {}
-    field_map = COMMENT_DATA_FIELDS.get(comment_type, {})
+    field_map = _COMMENT_DATA_FIELDS.get(comment_type, {})
     # Invert: format2_name -> native_name
     for native_name, format2_name in field_map.items():
         if format2_name in format2_comment:
@@ -374,7 +372,7 @@ def unflatten_comment_data(format2_comment: dict) -> dict:
     return result
 
 
-def append_step_id_to_step_list_elements(steps: list[dict[str, Any]], inputs_offset: int = 0) -> None:
+def _append_step_id_to_step_list_elements(steps: list[dict[str, Any]], inputs_offset: int = 0) -> None:
     """Ensure a list of steps each contains an 'id' element."""
     assert isinstance(steps, list)
     for i, step in enumerate(steps):
