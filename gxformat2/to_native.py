@@ -18,7 +18,6 @@ from .model import (
     clean_connection,
     resolve_source_reference,
     setup_connected_values,
-    SUPPORT_LEGACY_CONNECTIONS,
     unflatten_comment_data,
 )
 from .normalized._expanded import (
@@ -695,8 +694,6 @@ def _wire_workflow_outputs(
             continue
 
         source = clean_connection(output_source)
-        if source is None and SUPPORT_LEGACY_CONNECTIONS and hasattr(output, "source"):
-            source = getattr(output, "source", "").replace("#", "/", 1)
         if source is None:
             continue
 
