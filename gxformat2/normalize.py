@@ -1,250 +1,119 @@
-"""Abstractions for uniform across formats."""
+"""Convenience functions for accessing normalized workflow components.
 
-import copy
-from typing import Union
+:func:`steps`, :func:`inputs`, and :func:`outputs` return typed Pydantic
+model lists from any workflow representation.  The ``_normalized`` variants
+return plain dicts for backward compatibility (used by Planemo).
+"""
 
-from gxformat2._labels import UNLABELED_STEP_PREFIX
-from gxformat2._scripts import ensure_format2
-from gxformat2.model import (
-    inputs_as_normalized_steps,
-    outputs_as_list,
-    resolve_source_reference,
-    steps_as_list,
-)
-from gxformat2.yaml import ordered_load
+from __future__ import annotations
 
-NON_INPUT_TYPES = ["tool", "subworkflow", "pause"]
+from os import PathLike
+from typing import Any
 
+from gxformat2.normalized import NormalizedFormat2, NormalizedNativeWorkflow, NormalizedWorkflowStep
+from gxformat2.options import ConversionOptions
+from gxformat2.schema.gxformat2 import GalaxyWorkflow, WorkflowInputParameter, WorkflowOutputParameter
+from gxformat2.schema.native import NativeGalaxyWorkflow
+from gxformat2.to_format2 import ensure_format2
 
-class Inputs:
-    """An abstraction around a Galaxy workflow's inputs."""
-
-    def __init__(self, workflow_dict):
-        """Parse normalized inputs from dictified workflow representation."""
-        self._inputs = inputs_normalized(workflow_dict=workflow_dict)
-
-    def is_an_input(self, target_label):
-        """Return true if step label/id is a input.
-
-        This does assume all labels that are numeric strings refer to the Galaxy 'id'
-        (i.e. order_index). We should make sure Galaxy doesn't allow purely numeric
-        labels so this doesn't get confusing and we can ensure correctness.
-        """
-        if isinstance(target_label, str):
-            for input_def in self._inputs:
-                label = input_def.get("label") or input_def.get("id")
-                if target_label == label:
-                    return True
-
-            for input_def in self._inputs:
-                label = input_def.get("label") or input_def.get("id")
-                if label.isdigit() and target_label == int(label):
-                    return True
-
-        if isinstance(target_label, int):
-            for index, input_def in enumerate(self._inputs):
-                if target_label == index:
-                    return True
-                input_id = input_def.get("id")
-                if isinstance(input_id, str):
-                    if input_id.isdigit() and int(input_id) == target_label:
-                        return True
-                else:
-                    if target_label == input_id:
-                        return True
-
-        return False
-
-    @property
-    def count(self):
-        """Return the number of declared inputs for the workflow."""
-        return len(self._inputs)
+# Any input ensure_format2 accepts
+Workflow = dict[str, Any] | str | PathLike | NormalizedFormat2 | NormalizedNativeWorkflow | GalaxyWorkflow | NativeGalaxyWorkflow
 
 
-class NormalizedWorkflow:
-    """Present a view of a Format2 workflow that has been normalized.
+# --- Typed model accessors ---------------------------------------------------
 
-    In a normalized view:
-    - Steps are a list and ids/labels have been populated
-    - references to anonymous outputs have been relaced with the correct anonymous label
 
-    TODO:
-    - input: <type> has been converted to input: {type: <type>}
-    - step inputs have been replaced with input declarations
-    - normalize out declarations to dicts?
+def steps(
+    workflow_dict: Workflow | None = None,
+    workflow_path: str | PathLike | None = None,
+    options: ConversionOptions | None = None,
+    expand: bool = False,
+) -> list[WorkflowInputParameter | NormalizedWorkflowStep]:
+    """Return input parameters followed by steps as typed models."""
+    nf2 = _ensure_format2(workflow_dict, workflow_path, options, expand)
+    return list(nf2.inputs) + list(nf2.steps)
+
+
+def inputs(
+    workflow_dict: Workflow | None = None,
+    workflow_path: str | PathLike | None = None,
+    options: ConversionOptions | None = None,
+    expand: bool = False,
+) -> list[WorkflowInputParameter]:
+    """Return normalized inputs as typed models."""
+    nf2 = _ensure_format2(workflow_dict, workflow_path, options, expand)
+    return list(nf2.inputs)
+
+
+def outputs(
+    workflow_dict: Workflow | None = None,
+    workflow_path: str | PathLike | None = None,
+    options: ConversionOptions | None = None,
+    expand: bool = False,
+) -> list[WorkflowOutputParameter]:
+    """Return normalized outputs as typed models."""
+    nf2 = _ensure_format2(workflow_dict, workflow_path, options, expand)
+    return list(nf2.outputs)
+
+
+# --- Deprecated dict accessors (backward compat for Planemo) ------------------
+
+
+def steps_normalized(
+    workflow_dict: Workflow | None = None,
+    workflow_path: str | PathLike | None = None,
+    options: ConversionOptions | None = None,
+    expand: bool = False,
+) -> list[dict[str, Any]]:
+    """Walk over a normalized step rep. across workflow formats.
+
+    .. deprecated:: Use :func:`steps` for typed model access.
+
+    Returns a list of dicts — input steps followed by tool/subworkflow steps.
     """
-
-    def __init__(self, input_workflow: dict):
-        """Create a NormalizedWorkflow from supplied Format2 workflow."""
-        self.input_workflow = input_workflow
-        normalized_workflow = copy.deepcopy(input_workflow)
-        _replace_anonymous_output_references(normalized_workflow)
-        _ensure_implicit_step_outs(normalized_workflow)
-        inputs = normalized_workflow.get("inputs", None)
-        if inputs:
-            normalized_workflow["inputs"] = inputs_as_normalized_steps(normalized_workflow)
-        self.normalized_workflow_dict = normalized_workflow
+    nf2 = _ensure_format2(workflow_dict, workflow_path, options, expand)
+    return _dump_list(nf2.inputs) + _dump_list(nf2.steps)
 
 
-def steps_normalized(workflow_dict=None, workflow_path=None):
-    """Walk over a normalized step rep. across workflow formats."""
-    workflow_dict = _ensure_format2(workflow_dict=workflow_dict, workflow_path=workflow_path)
-    steps = steps_as_list(workflow_dict)
-    return inputs_as_normalized_steps(workflow_dict) + steps
+def inputs_normalized(
+    workflow_dict: Workflow | None = None,
+    workflow_path: str | PathLike | None = None,
+    options: ConversionOptions | None = None,
+    expand: bool = False,
+) -> list[dict[str, Any]]:
+    """Return normalized input steps as dicts.
 
-
-def inputs_normalized(**kwd):
-    """Call steps_normalized and retain just the input steps normalized."""
-    steps = steps_normalized(**kwd)
-    input_steps = []
-    for step in steps:
-        step_type = step.get("type") or "tool"
-        if step_type in NON_INPUT_TYPES:
-            continue
-
-        input_steps.append(step)
-
-    return input_steps
-
-
-def outputs_normalized(**kwd):
-    """Ensure Format2 and return outputs.
-
-    Probably should go farther and normalize source -> outputSource,
-    but doesn't yet do this.
+    .. deprecated:: Use :func:`inputs` for typed model access.
     """
-    workflow_dict = _ensure_format2(**kwd)
-    return outputs_as_list(workflow_dict)
+    nf2 = _ensure_format2(workflow_dict, workflow_path, options, expand)
+    return _dump_list(nf2.inputs)
 
 
-def walk_id_list_or_dict(dict_or_list: Union[dict, list]):
-    """Walk over idmap regardless of list or dict representation."""
-    if isinstance(dict_or_list, list):
-        for item in dict_or_list:
-            yield item["id"], item
-    else:
-        for item in dict_or_list.items():
-            yield item
+def outputs_normalized(
+    workflow_dict: Workflow | None = None,
+    workflow_path: str | PathLike | None = None,
+    options: ConversionOptions | None = None,
+    expand: bool = False,
+) -> list[dict[str, Any]]:
+    """Return normalized outputs as dicts.
 
-
-def _collect_known_labels(workflow_dict: dict) -> set:
-    """Build a set of all step and input labels from a workflow dict."""
-    known_labels: set = set()
-    inputs = workflow_dict.get("inputs", {})
-    if isinstance(inputs, dict):
-        for key in inputs:
-            known_labels.add(str(key))
-    else:
-        for item in inputs:
-            label = item.get("label") or item.get("id")
-            if label is not None:
-                known_labels.add(str(label))
-    steps = workflow_dict.get("steps", {})
-    if isinstance(steps, dict):
-        for key in steps:
-            known_labels.add(str(key))
-    else:
-        for item in steps:
-            label = item.get("label") or item.get("id")
-            if label is not None:
-                known_labels.add(str(label))
-    return known_labels
-
-
-def _replace_anonymous_output_references(workflow_dict: dict):
-    """Replace anonymous output referneces in a Format 2 representation.
-
-    Don't do this when converting to/from other Galaxy formats because it
-    effectively adds output labels, but it can be useful for checking logic
-    and exporting to other formats that would benefit from or require an
-    output label (e.g. abstract CWL).
+    .. deprecated:: Use :func:`outputs` for typed model access.
     """
-    known_labels = _collect_known_labels(workflow_dict)
-    runs_by_label = {}
-    for step in steps_as_list(workflow_dict, add_ids=True, inputs_offset=len(workflow_dict["inputs"]), mutate=False):
-        label = step.get("label")
-        if label is None:
-            label = step.get("id")
-        assert label is not None, step
-        label = str(label)
-        if "run" in step:
-            runs_by_label[label] = step["run"]
-
-    for output_name, output in walk_id_list_or_dict(workflow_dict.get("outputs", {})):
-        if "outputSource" in output:
-            output_source = output["outputSource"]
-            if "/" in output_source:
-                step_label, output_name = resolve_source_reference(output_source, known_labels)
-                if ":" in output_name:
-                    subworkflow_label, subworkflow_output = output_name.split(":", 1)
-                    assert step_label in runs_by_label, f"{step_label} not in {runs_by_label.keys()}"
-                    run = runs_by_label[step_label]
-                    subworkflow_outputs = run["outputs"]
-                    assert isinstance(subworkflow_outputs, dict)
-                    inner_known_labels = _collect_known_labels(run) if isinstance(run, dict) else set()
-                    for subworkflow_output_name, output_def in subworkflow_outputs.items():
-                        inner_source = output_def["outputSource"]
-                        if "/" in inner_source:
-                            inner_step, inner_output = resolve_source_reference(inner_source, inner_known_labels)
-                        else:
-                            inner_step, inner_output = inner_source, "output"
-                        if inner_output == subworkflow_output and inner_step in (
-                            subworkflow_label,
-                            f"{UNLABELED_STEP_PREFIX}{subworkflow_label}",
-                        ):
-                            output["outputSource"] = f"{step_label}/{subworkflow_output_name}"
+    nf2 = _ensure_format2(workflow_dict, workflow_path, options, expand)
+    return _dump_list(nf2.outputs)
 
 
-def _ensure_implicit_step_outs(workflow_dict: dict):
-    """Ensure implicit 'out' dicts allowed by format2 are filled in for CWL."""
-    known_labels = _collect_known_labels(workflow_dict)
-    outputs_by_label = {}
-
-    def register_step_output(step_label, output_name):
-        step_label = str(step_label)
-        if step_label not in outputs_by_label:
-            outputs_by_label[step_label] = set()
-        outputs_by_label[step_label].add(output_name)
-
-    def register_output_source(output_source):
-        if "/" in output_source:
-            step_label, output_name = resolve_source_reference(output_source, known_labels)
-            register_step_output(step_label, output_name)
-
-    for output_name, output in walk_id_list_or_dict(workflow_dict.get("outputs", {})):
-        if "outputSource" in output:
-            output_source = output["outputSource"]
-            if "/" in output_source:
-                step_label, output_name = resolve_source_reference(output_source, known_labels)
-                register_step_output(step_label, output_name)
-
-    for step in steps_as_list(workflow_dict, mutate=False):
-        step_in = step.get("in", {})
-        for step_in_def in step_in.values():
-            register_output_source(step_in_def)
-
-    for step in steps_as_list(workflow_dict, add_ids=True, inputs_offset=len(workflow_dict["inputs"]), mutate=True):
-        label = step.get("label")
-        if label is None:
-            label = step.get("id")
-        assert label is not None, step
-        label = str(label)
-        if "out" not in step:
-            step["out"] = []
-        for out in outputs_by_label.get(label, []):
-            step_out = step["out"]
-            if isinstance(step_out, list):
-                if out not in step_out:
-                    step_out.append(out)
-            else:
-                step_out[out] = {}
+# --- Internal -----------------------------------------------------------------
 
 
-def _ensure_format2(workflow_dict=None, workflow_path=None):
-    if workflow_path is not None:
-        assert workflow_dict is None
-        with open(workflow_path) as f:
-            workflow_dict = ordered_load(f)
+def _dump_list(items) -> list[dict[str, Any]]:
+    return [item.model_dump(by_alias=True, exclude_none=True, mode="json") for item in items]
 
-    workflow_dict = ensure_format2(workflow_dict)
-    return workflow_dict
+
+def _ensure_format2(
+    workflow_dict: Workflow | None,
+    workflow_path: str | PathLike | None,
+    options: ConversionOptions | None = None,
+    expand: bool = False,
+) -> NormalizedFormat2:
+    return ensure_format2(workflow_path or workflow_dict, options=options, expand=expand)

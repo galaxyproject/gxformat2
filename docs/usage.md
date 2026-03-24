@@ -413,3 +413,57 @@ is_format2 = workflow_dict.get("class") == "GalaxyWorkflow"
 The schema models document what fields to expect — refer to
 {py:mod}`gxformat2.schema.gxformat2` and {py:mod}`gxformat2.schema.native`
 for field names, types, and aliases.
+
+## Slicing into Workflow Components
+
+Sometimes you don't need the full workflow model — you just want the
+inputs, the outputs, or the steps. The {py:mod}`gxformat2.normalize`
+module provides focused accessors that extract individual pieces from
+any workflow representation, handling format detection, conversion, and
+normalization behind the scenes.
+
+```python
+from gxformat2.normalize import inputs, outputs, steps
+
+# From a file path, a raw dict, or any typed model
+workflow_inputs = inputs("workflow.ga")
+workflow_outputs = outputs(format2_dict)
+all_steps = steps(normalized_native_workflow)
+```
+
+{py:func}`~gxformat2.normalize.inputs` returns a list of
+{py:class}`~gxformat2.schema.gxformat2.WorkflowInputParameter` models,
+{py:func}`~gxformat2.normalize.outputs` returns
+{py:class}`~gxformat2.schema.gxformat2.WorkflowOutputParameter` models,
+and {py:func}`~gxformat2.normalize.steps` returns input parameters
+followed by {py:class}`~gxformat2.normalized.NormalizedWorkflowStep`
+models — the same objects you'd get from the full
+{py:class}`~gxformat2.normalized.NormalizedFormat2` model, just without
+needing to build one yourself.
+
+All three accept the same arguments:
+
+```python
+from gxformat2.options import ConversionOptions
+
+# With conversion options and expansion
+opts = ConversionOptions(workflow_directory="/path/to/dir")
+expanded_inputs = inputs(workflow_dict=wf, options=opts, expand=True)
+```
+
+### Dict-returning variants (deprecated)
+
+The older {py:func}`~gxformat2.normalize.inputs_normalized`,
+{py:func}`~gxformat2.normalize.outputs_normalized`, and
+{py:func}`~gxformat2.normalize.steps_normalized` functions return the
+same data as plain dicts instead of typed models. These are retained for
+backward compatibility with tools like Planemo:
+
+```python
+from gxformat2.normalize import inputs_normalized
+
+# Returns list[dict] — each dict has "id", "type", "default", etc.
+input_dicts = inputs_normalized(workflow_path="workflow.gxwf.yml")
+```
+
+New code should prefer the typed accessors above.
