@@ -36,8 +36,8 @@ from .normalized._native import (
 )
 from .options import ConversionOptions
 from .schema.gxformat2 import (
+    BaseComment,
     GalaxyWorkflow,
-    WorkflowComment,
     WorkflowInputParameter,
     WorkflowOutputParameter,
     WorkflowStepOutput,
@@ -634,7 +634,7 @@ def _wire_workflow_outputs(
 
 
 def _build_native_comments(
-    comments: list[WorkflowComment],
+    comments: list[BaseComment],
     ctx: _ConversionContext,
 ) -> list:
     """Convert Format2 comments to native format."""

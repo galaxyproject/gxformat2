@@ -31,10 +31,16 @@ from .normalized._native import (
 )
 from .options import ConversionOptions
 from .schema.gxformat2 import (
+    BaseComment,
+    CreatorOrganization,
+    CreatorPerson,
+    FrameComment,
+    FreehandComment,
+    MarkdownComment,
     Report,
     StepPosition as Format2StepPosition,
+    TextComment,
     ToolShedRepository as Format2ToolShedRepository,
-    WorkflowComment,
     WorkflowInputParameter,
     WorkflowOutputParameter,
     WorkflowStepInput,
@@ -150,7 +156,7 @@ def _build_format2_workflow(
         comments=comments,
         report=Report(markdown=wf.report.markdown) if wf.report else None,
         tags=wf.tags,
-        creator=[c.model_dump(by_alias=True, exclude_none=True) for c in wf.creator] if wf.creator else None,
+        creator=_convert_creators(wf.creator),
         license=wf.license,
         release=wf.release,
         uuid=wf.uuid,
@@ -457,11 +463,38 @@ def _to_source(output_name: str, label_map: dict[str, str], step_id: int) -> str
     return f"{output_label}/{output_name}"
 
 
+_CREATOR_CLASS_MAP: dict[str, type] = {
+    "Person": CreatorPerson,
+    "Organization": CreatorOrganization,
+}
+
+
+def _convert_creators(
+    native_creators: list | None,
+) -> list[CreatorPerson | CreatorOrganization] | None:
+    if not native_creators:
+        return None
+    result: list[CreatorPerson | CreatorOrganization] = []
+    for c in native_creators:
+        d = c.model_dump(by_alias=True, exclude_none=True) if hasattr(c, "model_dump") else c
+        cls = _CREATOR_CLASS_MAP.get(d.get("class", ""), CreatorPerson)
+        result.append(cls.model_validate(d))
+    return result
+
+
+_COMMENT_TYPE_MAP: dict[str, type[BaseComment]] = {
+    "text": TextComment,
+    "markdown": MarkdownComment,
+    "frame": FrameComment,
+    "freehand": FreehandComment,
+}
+
+
 def _build_format2_comments(
     wf: NormalizedNativeWorkflow,
     label_map: dict[str, str],
     compact: bool,
-) -> list[WorkflowComment]:
+) -> list[TextComment | MarkdownComment | FrameComment | FreehandComment]:
     if not wf.comments:
         return []
 
@@ -473,7 +506,7 @@ def _build_format2_comments(
         if label:
             comment_label_map[i] = label
 
-    result: list[WorkflowComment] = []
+    result: list[TextComment | MarkdownComment | FrameComment | FreehandComment] = []
     for native_comment in native_comments:
         fmt2_dict = flatten_comment_data(native_comment)
 
@@ -491,6 +524,8 @@ def _build_format2_comments(
                     comment_label_map.get(idx, idx) for idx in fmt2_dict["contains_comments"]
                 ]
 
-        result.append(WorkflowComment.model_validate(fmt2_dict))
+        comment_type = fmt2_dict.get("type", "text")
+        model_class = _COMMENT_TYPE_MAP.get(comment_type, TextComment)
+        result.append(model_class.model_validate(fmt2_dict))
 
     return result
