@@ -39,7 +39,7 @@ import gxformat2 as project_module  # noqa: E402
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ["myst_parser", "sphinx.ext.autodoc", "sphinx.ext.viewcode"]
+extensions = ["myst_parser", "sphinx.ext.autodoc", "sphinx.ext.viewcode", "sphinxarg.ext"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -55,7 +55,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "gxformat2"
-copyright = "2015"
+copyright = "2015-2026, Galaxy Project and Community"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -187,7 +187,7 @@ html_static_path = ["_static"]
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "planemodoc"
+htmlhelp_basename = "gxformat2doc"
 
 
 # -- Options for LaTeX output ------------------------------------------
@@ -233,7 +233,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [("index", "galaxy-lib", "Galaxy-lib Documentation", ["Galaxy Project and Community"], 1)]
+man_pages = [("index", "gxformat2", "gxformat2 Documentation", ["Galaxy Project and Community"], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -247,11 +247,11 @@ man_pages = [("index", "galaxy-lib", "Galaxy-lib Documentation", ["Galaxy Projec
 texinfo_documents = [
     (
         "index",
-        "galaxy-lib",
-        "Galaxy-Lib Documentation",
+        "gxformat2",
+        "gxformat2 Documentation",
         "Galaxy Project and Community",
-        "galaxy-lib",
-        "One line description of project.",
+        "gxformat2",
+        "Galaxy Workflow Format 2 descriptions.",
         "Miscellaneous",
     ),
 ]

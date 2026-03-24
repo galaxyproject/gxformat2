@@ -199,8 +199,14 @@ def main(argv=None):
         return EXIT_CODE_SUCCESS
 
 
+SCRIPT_DESCRIPTION = """
+Lint Galaxy workflows (Format 2 or native .ga) for common issues.
+Best-practice user-facing workflows should also be linted with Planemo.
+"""
+
+
 def _parser():
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
     parser.add_argument(
         "--training-topic", required=False, help="If this is a training workflow, specify a training topic."
     )
