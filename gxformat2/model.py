@@ -1,7 +1,5 @@
 """Abstractions for dealing with Format2 data."""
 
-import logging
-import os
 from typing import (
     Any,
     cast,
@@ -12,8 +10,6 @@ from typing import (
 from typing_extensions import Literal
 
 from gxformat2.normalized import resolve_source_reference as _resolve_source_reference
-
-log = logging.getLogger(__name__)
 
 
 
@@ -63,10 +59,6 @@ def get_native_step_type(gxformat2_step_dict: dict) -> _NativeGalaxyStepType:
     else:
         step_type = cast(_NativeGalaxyStepType, raw_step_type)
     return step_type
-
-
-# source: step#output and $link: step#output instead of outputSource: step/output and $link: step/output
-SUPPORT_LEGACY_CONNECTIONS = os.environ.get("GXFORMAT2_SUPPORT_LEGACY_CONNECTIONS") == "1"
 
 
 def pop_connect_from_step_dict(step: dict) -> dict:
@@ -161,12 +153,7 @@ def resolve_source_reference(value: str, known_labels: Union[set, dict]) -> tupl
 
 
 def clean_connection(value: str) -> str:
-    """Convert legacy style connection targets with modern CWL-style ones."""
-    if value and "#" in value and SUPPORT_LEGACY_CONNECTIONS:
-        # Hope these are just used by Galaxy testing workflows and such, and not in production workflows.
-        log.warn(f"Legacy workflow syntax for connections [{value}] will not be supported in the future")
-        value = value.replace("#", "/", 1)
-
+    """Clean a connection value (no-op, legacy # syntax no longer supported)."""
     return value
 
 
