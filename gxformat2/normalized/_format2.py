@@ -214,6 +214,8 @@ def _normalize_inputs(
                 value = {**value, "id": key}
             if "type" in value:
                 value = {**value, "type": _normalize_input_type(value["type"])}
+            if "format" in value and isinstance(value["format"], str):
+                value = {**value, "format": [value["format"]]}
             result.append(WorkflowInputParameter.model_validate(value))
         else:
             result.append(WorkflowInputParameter(id=key))

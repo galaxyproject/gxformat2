@@ -435,7 +435,8 @@ def _build_step_outputs(step: NormalizedNativeStep) -> list[WorkflowStepOutput]:
         elif action_type == "RemoveTagDatasetAction":
             output_dict["remove_tags"] = action_args["tags"].split(",")
         elif action_type == "ColumnSetAction":
-            output_dict["set_columns"] = action_args
+            if action_args:
+                output_dict["set_columns"] = action_args
         else:
             handled = False
 

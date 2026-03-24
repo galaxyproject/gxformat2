@@ -160,7 +160,7 @@ $graph:
         The step output this action applies to.
     - name: action_arguments
       type: Any?
-      pydantic:type: "dict[str, str] | None"
+      pydantic:type: "dict[str, Any] | None"
       jsonldPredicate:
         _id: "gxnative:NativePostJobAction/action_arguments"
         noLinkCheck: true

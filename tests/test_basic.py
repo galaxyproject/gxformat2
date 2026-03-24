@@ -351,7 +351,7 @@ steps:
     in:
       input1: the_input
 """)
-    assert as_dict["inputs"]["the_input"]["format"] == "txt"
+    assert as_dict["inputs"]["the_input"]["format"] == ["txt"]
 
 
 def test_input_formats_multi():

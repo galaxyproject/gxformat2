@@ -231,7 +231,8 @@ def _build_input_step(
     order_index: int,
     ctx: _ConversionContext,
 ) -> NormalizedNativeStep:
-    label = inp.id or f"Input {order_index}"
+    raw_label = inp.id or f"Input {order_index}"
+    label = None if Labels.is_unlabeled(raw_label) else raw_label
     input_type = inp.type_
     if isinstance(input_type, list):
         if len(input_type) != 1:
@@ -251,7 +252,7 @@ def _build_input_step(
     else:
         raise Exception(f"Unknown input type [{type_str}] encountered.")
 
-    tool_state: dict[str, Any] = {"name": label}
+    tool_state: dict[str, Any] = {"name": raw_label}
     if step_type == NativeStepType.parameter_input:
         native_type = type_str
         if native_type == "int":
@@ -288,11 +289,11 @@ def _build_input_step(
         id=order_index,
         type_=step_type,
         label=label,
-        name=label,
+        name=raw_label,
         annotation=_join_doc(inp.doc) or "",
         tool_state=tool_state,
         position=position,
-        inputs=[{"name": label, "description": ""}],
+        inputs=[{"name": raw_label, "description": ""}],
         in_=in_,
     )
 
