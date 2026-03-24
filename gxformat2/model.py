@@ -61,43 +61,6 @@ def get_native_step_type(gxformat2_step_dict: dict) -> _NativeGalaxyStepType:
     return step_type
 
 
-def pop_connect_from_step_dict(step: dict) -> dict:
-    """Merge 'in' and 'connect' keys into a unified connection dict separated from state.
-
-    Meant to be used an initial processing step in reasoning about connections defined by the
-    format2 step description.
-    """
-    if "connect" not in step:
-        step["connect"] = {}
-
-    connect = step["connect"]
-    del step["connect"]
-
-    # handle CWL-style in dict connections.
-    if "in" in step:
-        step_in = step["in"]
-        assert isinstance(step_in, dict)
-        connection_keys = set()
-        for key, value in step_in.items():
-            # TODO: this can be a list right?
-            if isinstance(value, dict) and "source" in value:
-                value = value["source"]
-            elif isinstance(value, dict) and "default" in value:
-                continue
-            elif isinstance(value, dict):
-                raise KeyError(f"step input must define either source or default {value}")
-            connect[key] = [value]
-            connection_keys.add(key)
-
-        for key in connection_keys:
-            del step_in[key]
-
-        if len(step_in) == 0:
-            del step["in"]
-
-    return connect
-
-
 def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, list]] = None) -> Any:
     """Replace links with connected value."""
 

@@ -292,13 +292,11 @@ def _normalize_outputs(
 
 
 def _pre_clean_steps(workflow: dict[str, Any]) -> dict[str, Any]:
-    """Resolve non-schema connection conventions in step dicts before model validation.
+    """Resolve ``$link`` entries in step state dicts before model validation.
 
-    Handles two conventions not in the Format2 schema:
-    - ``connect`` key on steps → merged into ``in`` as source references
-    - ``$link`` entries in ``state`` → replaced with ConnectedValue, source added to ``in``
-
-    This runs on the raw dict so that model validation sees only schema-compliant data.
+    ``$link`` in ``state`` is a Format2 shorthand for connections embedded in
+    tool state.  This replaces them with ConnectedValue markers and adds the
+    connection source to ``in``, so the model layer sees only schema-compliant data.
     """
     steps = workflow.get("steps", {})
     if isinstance(steps, dict):
@@ -311,43 +309,35 @@ def _pre_clean_steps(workflow: dict[str, Any]) -> dict[str, Any]:
 
 
 def _pre_clean_step(step: dict[str, Any]) -> dict[str, Any]:
-    """Resolve connect and $link on a single step dict."""
-    step = dict(step)
-    in_dict: dict[str, Any] = dict(step.get("in", {})) if isinstance(step.get("in"), dict) else {}
-    in_list: list | None = step.get("in") if isinstance(step.get("in"), list) else None
-    extra_inputs: list[dict[str, Any]] = []
-
-    # Resolve connect key → in entries
-    connect = step.pop("connect", None)
-    if isinstance(connect, dict):
-        for key, sources in connect.items():
-            if in_list is not None:
-                extra_inputs.append({"id": key, "source": sources})
-            else:
-                in_dict[key] = {"source": sources} if isinstance(sources, list) else sources
-
-    # Resolve $link in state → ConnectedValue + in entries
+    """Resolve $link in state on a single step dict."""
     state = step.get("state")
-    if isinstance(state, dict):
-        clean_state, link_connections = _resolve_links(state)
-        step["state"] = clean_state
-        for key, sources in link_connections.items():
-            source = sources if len(sources) > 1 else sources[0]
-            if in_list is not None:
-                extra_inputs.append({"id": key, "source": source})
-            else:
+    if not isinstance(state, dict):
+        # Recursively clean subworkflow runs even if no state
+        run = step.get("run")
+        if isinstance(run, dict) and run.get("class") == "GalaxyWorkflow":
+            return {**step, "run": _pre_clean_steps(run)}
+        return step
+
+    step = dict(step)
+    clean_state, link_connections = _resolve_links(state)
+    step["state"] = clean_state
+
+    if link_connections:
+        in_val = step.get("in")
+        if isinstance(in_val, list):
+            extra = [{"id": k, "source": srcs if len(srcs) > 1 else srcs[0]} for k, srcs in link_connections.items()]
+            step["in"] = in_val + extra
+        else:
+            in_dict = dict(in_val) if isinstance(in_val, dict) else {}
+            for key, sources in link_connections.items():
+                source = sources if len(sources) > 1 else sources[0]
                 in_dict[key] = {"source": source} if isinstance(source, list) else source
+            step["in"] = in_dict
 
     # Recursively clean subworkflow runs
     run = step.get("run")
     if isinstance(run, dict) and run.get("class") == "GalaxyWorkflow":
         step["run"] = _pre_clean_steps(run)
-
-    # Write back in
-    if in_list is not None:
-        step["in"] = in_list + extra_inputs
-    elif in_dict:
-        step["in"] = in_dict
 
     return step
 
