@@ -3,8 +3,12 @@ import os
 import shutil
 import tempfile
 
-from gxformat2.cytoscape import main
+from gxformat2.cytoscape import main, to_cytoscape
+from gxformat2.normalized import normalized_format2
+from gxformat2.cytoscape import _input_type_str
+from gxformat2.yaml import ordered_load
 from ._helpers import example_path, TEST_INTEROP_EXAMPLES
+from .example_wfs import MULTI_STRING_INPUT_WORKFLOW
 from .test_lint import WITH_REPORT
 
 EXAMPLE_PATH = example_path("real-hacked-unicycler-assembly-extra-annotations.ga")
@@ -31,6 +35,12 @@ def test_interop_generation():
     # test Java against.
     write_cytoscape_elements(EXAMPLE_PATH)
     write_cytoscape_elements_for_string(WITH_REPORT)
+
+
+def test_multi_string_input_type():
+    nf2 = normalized_format2(ordered_load(MULTI_STRING_INPUT_WORKFLOW))
+    inp = nf2.inputs[0]
+    assert _input_type_str(inp) == "string[]"
 
 
 def write_cytoscape_elements_for_string(workflow_content):
