@@ -58,9 +58,9 @@ from ..schema.gxformat2 import (
     WorkflowStepOutput,
     WorkflowStepType,
 )
+from ..schema.native import CreatorOrganization as NativeCreatorOrganization
+from ..schema.native import CreatorPerson as NativeCreatorPerson
 from ..schema.native import (
-    CreatorOrganization as NativeCreatorOrganization,
-    CreatorPerson as NativeCreatorPerson,
     NativeGalaxyWorkflow,
     NativeInputConnection,
     NativePostJobAction,
