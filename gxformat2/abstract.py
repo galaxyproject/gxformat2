@@ -5,7 +5,7 @@ import sys
 from typing import Any
 
 from gxformat2._scripts import ensure_format2
-from gxformat2.converter import steps_as_list
+from gxformat2.model import steps_as_list
 from gxformat2.normalize import NormalizedWorkflow, walk_id_list_or_dict
 from gxformat2.yaml import ordered_dump_to_path, ordered_load
 

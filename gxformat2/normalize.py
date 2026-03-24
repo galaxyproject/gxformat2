@@ -5,13 +5,11 @@ from typing import Union
 
 from gxformat2._labels import UNLABELED_STEP_PREFIX
 from gxformat2._scripts import ensure_format2
-from gxformat2.converter import (
-    steps_as_list,
-)
 from gxformat2.model import (
     inputs_as_normalized_steps,
     outputs_as_list,
     resolve_source_reference,
+    steps_as_list,
 )
 from gxformat2.yaml import ordered_load
 
