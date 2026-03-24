@@ -681,7 +681,8 @@ def test_user_defined_tool_to_native():
     assert "tool_representation" in tool_step
     tool_rep = tool_step["tool_representation"]
     assert tool_rep["class"] == "GalaxyUserTool"
-    assert tool_rep["name"] == "My Custom Tool"
+    assert tool_rep["name"] == "cat_user_defined"
+    assert tool_rep["container"] == "busybox"
     # tool_id and tool_uuid should be None for user-defined tools
     assert tool_step.get("tool_id") is None
     assert tool_step.get("tool_uuid") is None
@@ -694,7 +695,8 @@ def test_user_defined_tool_round_trip():
     assert "run" in step
     run = step["run"]
     assert run["class"] == "GalaxyUserTool"
-    assert run["name"] == "My Custom Tool"
+    assert run["name"] == "cat_user_defined"
+    assert run["container"] == "busybox"
     # Should not have tool_id since it's a user-defined tool
     assert "tool_id" not in step
 
@@ -723,10 +725,14 @@ def test_native_user_defined_tool_to_format2():
                 "tool_uuid": None,
                 "tool_representation": {
                     "class": "GalaxyUserTool",
-                    "name": "My Custom Tool",
-                    "command": "cat '$input1' > '$output1'",
-                    "inputs": [{"name": "input1", "type": "data"}],
-                    "outputs": [{"name": "output1", "type": "data"}],
+                    "id": "cat_user_defined",
+                    "version": "0.1",
+                    "name": "cat_user_defined",
+                    "description": "concatenates a file",
+                    "container": "busybox",
+                    "shell_command": "cat '$(inputs.input1.path)' > output.txt",
+                    "inputs": [{"name": "input1", "type": "data", "format": "txt"}],
+                    "outputs": [{"name": "output1", "type": "data", "format": "txt", "from_work_dir": "output.txt"}],
                 },
                 "tool_state": "{}",
                 "input_connections": {
@@ -740,7 +746,8 @@ def test_native_user_defined_tool_to_format2():
     step = as_format2["steps"]["my_tool"]
     assert "run" in step
     assert step["run"]["class"] == "GalaxyUserTool"
-    assert step["run"]["name"] == "My Custom Tool"
+    assert step["run"]["name"] == "cat_user_defined"
+    assert step["run"]["container"] == "busybox"
     assert "tool_id" not in step
     assert "tool_version" not in step
 

@@ -572,14 +572,21 @@ steps:
   my_tool:
     run:
       class: GalaxyUserTool
-      name: My Custom Tool
-      command: cat '$input1' > '$output1'
+      id: cat_user_defined
+      version: "0.1"
+      name: cat_user_defined
+      description: concatenates a file
+      container: busybox
+      shell_command: cat '$(inputs.input1.path)' > output.txt
       inputs:
         - name: input1
           type: data
+          format: txt
       outputs:
         - name: output1
           type: data
+          format: txt
+          from_work_dir: output.txt
     in:
       input1: the_input
 """
