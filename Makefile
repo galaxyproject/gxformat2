@@ -106,25 +106,13 @@ dist: clean ## package
 	$(IN_VENV) twine check dist/*
 	ls -l dist
 
-release-test-artifacts: dist
-	$(IN_VENV) twine upload -r test dist/*
-	open https://testpypi.python.org/pypi/$(PROJECT_NAME) || xdg-open https://testpypi.python.org/pypi/$(PROJECT_NAME)
-
-release-aritfacts: release-test-artifacts ## Package and Upload to PyPi
-	@while [ -z "$$CONTINUE" ]; do \
-		read -r -p "Have you executed release-test and reviewed results? [y/N]: " CONTINUE; \
-	done ; \
-	[ $$CONTINUE = "y" ] || [ $$CONTINUE = "Y" ] || (echo "Exiting."; exit 1;)
-	@echo "Releasing"
-	$(IN_VENV) twine upload dist/*
-
 commit-version: ## Update version and history, commit.
 	$(IN_VENV) DEV_RELEASE=$(DEV_RELEASE) python $(BUILD_SCRIPTS_DIR)/commit_version.py $(SOURCE_DIR) $(VERSION)
 
 new-version: ## Mint a new version
 	$(IN_VENV) DEV_RELEASE=$(DEV_RELEASE) python $(BUILD_SCRIPTS_DIR)/new_version.py $(SOURCE_DIR) $(VERSION)
 
-release-local: commit-version release-aritfacts new-version
+release-local: commit-version new-version
 
 push-release: ## Push a tagged release to github
 	git push $(UPSTREAM) main
