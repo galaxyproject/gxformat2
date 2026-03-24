@@ -11,6 +11,7 @@ from gxformat2.lint import (
     main,
 )
 from gxformat2.linting import LintContext
+from gxformat2.normalized import normalized_native
 from gxformat2.yaml import ordered_dump, ordered_load
 
 from ._helpers import (
@@ -357,7 +358,8 @@ class TestIWCLint:
     def test_structural_lint(self, ga_path_and_dict):
         path, workflow_dict = ga_path_and_dict
         ctx = LintContext()
-        lint_ga(ctx, workflow_dict, path=path)
+        nnw = normalized_native(workflow_dict)
+        lint_ga(ctx, nnw, raw_dict=workflow_dict)
         assert not ctx.error_messages, f"Structural lint errors in {os.path.basename(path)}: {ctx.error_messages}"
 
     def test_pydantic_validation(self, ga_path_and_dict):
