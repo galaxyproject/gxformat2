@@ -61,7 +61,7 @@ load_document_with_metadata(doc, baseuri=None, loadingOptions=None, addl_metadat
 
 ## Loading
 
-### `gxformat2.native`
+### `gxformat2.normalized._native`
 
 ```python
 load_native(data: dict, *, strict: bool = True) -> NativeGalaxyWorkflow
