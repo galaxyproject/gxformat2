@@ -353,6 +353,89 @@ class TestExpandedFormat2:
         assert wf.steps[0].tool_id == "cat1"
 
 
+class TestEnsureFormat2Expansion:
+    """ensure_format2 with expand=True vs expand=False."""
+
+    def _base64_workflow(self, inner=None):
+        inner = inner or INNER_WORKFLOW
+        encoded = base64.b64encode(yaml.dump(inner).encode()).decode()
+        return {
+            "class": "GalaxyWorkflow",
+            "inputs": {"x": "data"},
+            "outputs": {},
+            "steps": {"nested": {"run": f"base64://{encoded}", "in": {"x": "x"}}},
+        }
+
+    def test_no_expand_leaves_run_as_string(self):
+        from gxformat2.to_format2 import ensure_format2
+
+        wf = ensure_format2(self._base64_workflow())
+        step = wf.steps[0]
+        assert isinstance(step.run, str)
+        assert step.run.startswith("base64://")
+        assert step.is_subworkflow_step
+
+    def test_expand_resolves_base64_run(self):
+        from gxformat2.to_format2 import ensure_format2
+
+        wf = ensure_format2(self._base64_workflow(), expand=True)
+        step = wf.steps[0]
+        assert isinstance(step.run, ExpandedFormat2)
+        assert step.run.steps[0].tool_id == "random_lines1"
+        assert step.is_subworkflow_step
+
+    def test_expand_resolves_file_run(self, tmp_path):
+        from gxformat2.to_format2 import ensure_format2
+
+        inner_path = tmp_path / "inner.gxwf.yml"
+        inner_path.write_text(yaml.dump(INNER_WORKFLOW))
+        outer = {
+            "class": "GalaxyWorkflow",
+            "inputs": {"x": "data"},
+            "outputs": {},
+            "steps": {"nested": {"run": "inner.gxwf.yml", "in": {"x": "x"}}},
+        }
+        opts = ConversionOptions(workflow_directory=str(tmp_path))
+        wf = ensure_format2(outer, options=opts, expand=True)
+        assert isinstance(wf.steps[0].run, ExpandedFormat2)
+        assert wf.steps[0].run.steps[0].tool_id == "random_lines1"
+
+    def test_no_expand_leaves_file_run_as_string(self):
+        from gxformat2.to_format2 import ensure_format2
+
+        outer = {
+            "class": "GalaxyWorkflow",
+            "inputs": {"x": "data"},
+            "outputs": {},
+            "steps": {"nested": {"run": "inner.gxwf.yml", "in": {"x": "x"}}},
+        }
+        wf = ensure_format2(outer)
+        assert wf.steps[0].run == "inner.gxwf.yml"
+        assert wf.steps[0].is_subworkflow_step
+
+    def test_expand_nested_base64(self):
+        """Nested subworkflow: outer run refs base64 which itself has an inline subworkflow."""
+        from gxformat2.to_format2 import ensure_format2
+
+        inner_with_sub = {
+            "class": "GalaxyWorkflow",
+            "inputs": {"y": "data"},
+            "outputs": {},
+            "steps": {
+                "inner_sub": {
+                    "run": INNER_WORKFLOW,
+                    "in": {"inner_input": "y"},
+                },
+            },
+        }
+        wf = ensure_format2(self._base64_workflow(inner_with_sub), expand=True)
+        step = wf.steps[0]
+        assert isinstance(step.run, ExpandedFormat2)
+        inner_step = step.run.steps[0]
+        assert isinstance(inner_step.run, ExpandedFormat2)
+        assert inner_step.run.steps[0].tool_id == "random_lines1"
+
+
 class TestExpandedNative:
     """expanded_native resolves subworkflow references."""
 
