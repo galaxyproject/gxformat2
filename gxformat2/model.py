@@ -9,8 +9,6 @@ from typing import (
 
 from typing_extensions import Literal
 
-from gxformat2.normalized import resolve_source_reference as _resolve_source_reference
-
 _NativeGalaxyStepType = Literal[
     "subworkflow",
     "data_input",
@@ -110,7 +108,9 @@ def resolve_source_reference(value: str, known_labels: Union[set, dict]) -> tupl
 
     Deprecated: use ``gxformat2.normalized.resolve_source_reference`` directly.
     """
-    return _resolve_source_reference(value, known_labels)
+    from gxformat2.normalized._format2 import resolve_source_reference as _impl
+
+    return _impl(value, known_labels)
 
 
 def _connected_value():
