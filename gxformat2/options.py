@@ -47,7 +47,7 @@ class ConversionOptions:
     expansion control, and URL resolution.
     """
 
-    def __init__(
+    def __init__(  # noqa: D107
         self,
         workflow_directory: str | Path | None = None,
         encode_tool_state_json: bool = True,

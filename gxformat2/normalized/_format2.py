@@ -37,8 +37,10 @@ from gxformat2.schema.gxformat2 import (
 
 
 class NormalizedWorkflowStep(BaseModel):
-    """A Format 2 workflow step with all union types resolved to their
-    canonical list form and ids guaranteed populated."""
+    """A Format 2 workflow step with all union types resolved to canonical list form.
+
+    Ids are guaranteed populated.
+    """
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 

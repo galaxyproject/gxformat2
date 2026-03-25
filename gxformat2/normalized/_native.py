@@ -54,8 +54,10 @@ NativeCreator = Annotated[
 
 
 class NormalizedNativeStep(BaseModel):
-    """A native workflow step with all optional containers resolved to empty defaults
-    and tool_state guaranteed to be a parsed dict."""
+    """A native workflow step with optional containers resolved to empty defaults.
+
+    tool_state is guaranteed to be a parsed dict.
+    """
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
@@ -86,8 +88,10 @@ class NormalizedNativeStep(BaseModel):
 
 
 class NormalizedNativeWorkflow(BaseModel):
-    """A native Galaxy workflow with all optional containers resolved to empty
-    defaults and steps containing NormalizedNativeStep instances."""
+    """A native Galaxy workflow with optional containers resolved to empty defaults.
+
+    Steps contain NormalizedNativeStep instances.
+    """
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
