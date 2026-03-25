@@ -172,14 +172,7 @@ def setup_module(module):
 
     invalid_format2_nested = _deep_copy(green_format2_nested)
     del invalid_format2_nested["steps"]["nested_workflow"]["run"]["steps"]
-    # BUG: should be exit code 2 but widening WorkflowStep.run to Any?
-    # (for URL/import support in d7e5dae) means neither schema-salad nor
-    # pydantic validates nested subworkflow structure. The subworkflow dict
-    # passes as an opaque dict instead of being validated as GalaxyWorkflow.
-    # Normalization also doesn't catch it — the dict stays raw and to_native
-    # crashes with a label lookup failure. Needs a lint rule that validates
-    # inline subworkflow dicts independently.
-    _dump_with_exit_code(invalid_format2_nested, 0, "format2_nested_no_steps")
+    _dump_with_exit_code(invalid_format2_nested, 2, "format2_nested_no_steps")
 
     invalid_native_nested = _deep_copy(green_native_nested)
     del invalid_native_nested["steps"]["2"]["subworkflow"]["steps"]
@@ -265,27 +258,12 @@ def setup_module(module):
     # ensure that round tripping all green format2 workflows still lint green.
     for file_name in os.listdir(TEST_LINT_EXAMPLES):
         if file_name.startswith("0_format2") and "roundtrip" not in file_name:
-            if "no_steps" in file_name:
-                continue  # tested separately via test_roundtrip_nested_no_steps
             roundtrip_contents = round_trip(open(os.path.join(TEST_LINT_EXAMPLES, file_name)).read())
             base = os.path.splitext(file_name)[0][len("0_") :]
             _dump_with_exit_code(roundtrip_contents, 0, base + "_roundtrip")
 
 
 SKIP_BP = "--skip-best-practices"
-
-
-@pytest.mark.xfail(
-    reason="WorkflowStep.run widened to Any? for URL/import support — "
-    "inline subworkflow dicts are not validated as GalaxyWorkflow, "
-    "so missing steps is undetected. Needs a dedicated lint rule.",
-    raises=ValueError,
-)
-def test_roundtrip_nested_no_steps():
-    """Round-tripping a nested workflow with deleted steps should fail lint."""
-    path = os.path.join(TEST_LINT_EXAMPLES, "0_format2_nested_no_steps.yml")
-    if os.path.exists(path):
-        round_trip(open(path).read())
 
 
 def test_lint_ga_basic():

@@ -118,14 +118,56 @@ def lint_format2(lint_context, workflow_dict, path=None):
         lint_context.error("Validation failed " + str(e))
 
     steps = ensure_key_if_present(lint_context, workflow_dict, "steps", default={}, has_class=(dict, list))
-    steps = steps.values() if isinstance(steps, dict) else steps
-    for step in steps:
+    steps_items = list(walk_id_list_or_dict(steps)) if steps else []
+    for step_key, step in steps_items:
         _lint_step_errors(lint_context, step)
         _lint_tool_if_present(lint_context, step)
 
+        # Recurse into inline subworkflows
+        run = step.get("run")
+        if isinstance(run, dict) and run.get("class") == "GalaxyWorkflow":
+            step_label = step.get("label") or step_key or "?"
+            child_ctx = lint_context.child(f"step {step_label}")
+            lint_format2(child_ctx, run, path=path)
+
+    _validate_output_sources(lint_context, workflow_dict, steps_items)
     _validate_input_types(lint_context, workflow_dict)
     _validate_report(lint_context, workflow_dict)
     _lint_training(lint_context, workflow_dict)
+
+
+def _validate_output_sources(lint_context, workflow_dict, steps_items):
+    """Check that outputSource references point to existing step/input labels."""
+    step_labels = set()
+    for step_key, step in steps_items:
+        label = step.get("label") or step_key
+        if label is not None:
+            step_labels.add(str(label))
+
+    # Also include input labels
+    inputs = workflow_dict.get("inputs")
+    if inputs:
+        for input_key, inp in walk_id_list_or_dict(inputs):
+            label = inp.get("label") or input_key if isinstance(inp, dict) else input_key
+            if label is not None:
+                step_labels.add(str(label))
+
+    outputs = workflow_dict.get("outputs")
+    if not outputs:
+        return
+    for output_key, output in walk_id_list_or_dict(outputs):
+        if not isinstance(output, dict):
+            continue
+        output_source = output.get("outputSource")
+        if not output_source or not isinstance(output_source, str):
+            continue
+        # Extract step reference — format is "step_label/output_name" or just "step_label"
+        step_ref = output_source.split("/")[0]
+        if step_ref not in step_labels:
+            lint_context.error(
+                f"Output '{output_key}' references step '{step_ref}' via outputSource "
+                f"'{output_source}', but no step or input with that label exists"
+            )
 
 
 def _validate_input_types(lint_context: LintContext, workflow_dict: dict):
