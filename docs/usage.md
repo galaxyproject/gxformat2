@@ -278,6 +278,11 @@ input — {py:func}`~gxformat2.to_format2.to_format2` expects native input,
   `{"__class__": "ConnectedValue"}` in state, connection source
   added to `step.in_`. After normalization, `step.in_` contains
   ALL connections and `step.state` is clean
+- Step `type_` always populated — inferred from context when not
+  explicit in the YAML (`run` present → `subworkflow`, otherwise →
+  `tool`). Convenience properties `is_tool_step`,
+  `is_subworkflow_step`, `is_pause_step`, `is_pick_value_step`
+  are also available
 
 {py:class}`~gxformat2.normalized.NormalizedNativeWorkflow` guarantees:
 - `tool_state` always a parsed `dict` (JSON strings auto-decoded)
