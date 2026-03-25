@@ -59,18 +59,19 @@ setup-git-hook-lint: ## setup precommit hook for linting project
 setup-git-hook-lint-and-test: ## setup precommit hook for linting and testing project
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint-and-test .git/hooks/pre-commit
 
-flake8: ## check style using flake8 for current Python (faster than lint)
-	$(IN_VENV) flake8 --max-complexity 11 $(SOURCE_DIR)  $(TEST_DIR)
-
-lint: ## check style using tox and flake8 for Python 2 and Python 3
-	$(IN_VENV) tox -e py36-lint && tox -e py39-lint
+lint: ## check style with ruff, flake8, black, and mypy
+	uv run --group lint ruff check
+	uv run --group lint flake8
+	uv run --group lint black --check --diff .
+	uv run --group mypy mypy gxformat2
+	SKIP_JAVA=1 SKIP_TYPESCRIPT=1 GXFORMAT2_SCHEMA_BUILD_DRY_RUN=1 bash build_schema.sh
 
 lint-docs: ready-docs
 	$(IN_VENV) $(MAKE) -C $(DOCS_DIR) clean
 	$(IN_VENV) $(MAKE) -C $(DOCS_DIR) html 2>&1 | python $(BUILD_SCRIPTS_DIR)/lint_sphinx_output.py
 
 test: ## run tests with the default Python (faster than tox)
-	$(IN_VENV) nosetests $(NOSE_TESTS)
+	uv run --group test pytest tests/
 
 tox: ## run tests with tox in the specified ENV
 	$(IN_VENV) tox -e $(ENV) -- $(ARGS)
@@ -127,4 +128,4 @@ format:
 	uv run --group lint black .
 
 mypy:
-	MYPYPATH=mypy-stubs mypy gxformat2
+	uv run --group mypy mypy gxformat2
