@@ -62,7 +62,7 @@ class NormalizedNativeStep(BaseModel):
 
     id: int = Field(description="Step ID.")
     name: str | None = Field(default=None)
-    type_: NativeStepType | None = Field(default=None, alias="type")
+    type_: NativeStepType = Field(default=NativeStepType.tool, alias="type")
     label: str | None = Field(default=None)
     annotation: str | None = Field(default=None)
     when: str | None = Field(default=None)
@@ -84,6 +84,22 @@ class NormalizedNativeStep(BaseModel):
     subworkflow: NormalizedNativeWorkflow | None = Field(default=None)
     tool_representation: dict[str, Any] | None = Field(default=None)
     in_: dict[str, Any] | None = Field(default=None, alias="in")
+
+    @property
+    def is_tool_step(self) -> bool:
+        return self.type_ == NativeStepType.tool
+
+    @property
+    def is_subworkflow_step(self) -> bool:
+        return self.type_ == NativeStepType.subworkflow
+
+    @property
+    def is_input_step(self) -> bool:
+        return self.type_ in (NativeStepType.data_input, NativeStepType.data_collection_input, NativeStepType.parameter_input)
+
+    @property
+    def is_pause_step(self) -> bool:
+        return self.type_ == NativeStepType.pause
 
 
 class NormalizedNativeWorkflow(BaseModel):
