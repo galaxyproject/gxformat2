@@ -51,7 +51,7 @@ def from_galaxy_native(
         state_encode_to_format2=convert_tool_state,
     )
     result = to_format2(native_workflow_dict, options)
-    data = result.model_dump(by_alias=True, exclude_none=True, mode="json")
+    data = result.to_dict()
     data["class"] = "GalaxyWorkflow"
 
     # Strip empty optional collections that the old code omitted

@@ -115,7 +115,7 @@ def outputs_normalized(
 
 
 def _dump_list(items) -> list[dict[str, Any]]:
-    return [item.model_dump(by_alias=True, exclude_none=True, mode="json") for item in items]
+    return [item.to_dict() if hasattr(item, "to_dict") else item.model_dump(by_alias=True, exclude_none=True, mode="json") for item in items]
 
 
 def _ensure_format2(

@@ -287,8 +287,23 @@ input — {py:func}`~gxformat2.to_format2.to_format2` expects native input,
 {py:class}`~gxformat2.normalized.NormalizedNativeWorkflow` guarantees:
 - `tool_state` always a parsed `dict` (JSON strings auto-decoded)
 - Optional containers default to empty (never `None`)
+- `input_connections` values always `list[NativeInputConnection]`
+  (single connections wrapped during construction — no `isinstance`
+  checks needed)
 - Tags normalized (empty string → empty list)
 - Subworkflows recursively normalized
+
+All normalized models provide a `to_dict()` method that serializes to
+a JSON/YAML-compatible dict with aliases resolved and `None` values
+stripped:
+
+```python
+nf2 = ensure_format2(workflow)
+workflow_dict = nf2.to_dict()  # ready for json.dump() or yaml.dump()
+
+nnw = ensure_native(workflow)
+native_dict = nnw.to_dict()   # includes "a_galaxy_workflow", "format-version", etc.
+```
 
 ```python
 from gxformat2.normalized import normalized_format2, normalized_native
