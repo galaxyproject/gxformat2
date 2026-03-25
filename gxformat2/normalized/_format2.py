@@ -151,6 +151,7 @@ class NormalizedFormat2(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
+    class_: Literal["GalaxyWorkflow"] = Field(default="GalaxyWorkflow", alias="class")
     label: str | None = Field(default=None)
     doc: str | None = Field(default=None, description="Annotation, joined if originally a list.")
     inputs: list[WorkflowInputParameter] = Field(
