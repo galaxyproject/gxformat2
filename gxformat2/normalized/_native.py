@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, Union
+
+from typing_extensions import TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Discriminator, Field, Tag
 
@@ -38,24 +40,30 @@ from gxformat2.schema.native import (
     ToolShedRepository,
 )
 
-NativeComment = Annotated[
-    Annotated[NativeTextComment, Tag("NativeTextComment")]
-    | Annotated[NativeMarkdownComment, Tag("NativeMarkdownComment")]
-    | Annotated[NativeFrameComment, Tag("NativeFrameComment")]
-    | Annotated[NativeFreehandComment, Tag("NativeFreehandComment")],
+NativeComment: TypeAlias = Annotated[
+    Union[
+        Annotated[NativeTextComment, Tag("NativeTextComment")],
+        Annotated[NativeMarkdownComment, Tag("NativeMarkdownComment")],
+        Annotated[NativeFrameComment, Tag("NativeFrameComment")],
+        Annotated[NativeFreehandComment, Tag("NativeFreehandComment")],
+    ],
     Discriminator(_discriminate_comments),
 ]
 
-NativeCreator = Annotated[
-    Annotated[NativeCreatorPerson, Tag("NativeCreatorPerson")]
-    | Annotated[NativeCreatorOrganization, Tag("NativeCreatorOrganization")],
+NativeCreator: TypeAlias = Annotated[
+    Union[
+        Annotated[NativeCreatorPerson, Tag("NativeCreatorPerson")],
+        Annotated[NativeCreatorOrganization, Tag("NativeCreatorOrganization")],
+    ],
     Discriminator(_discriminate_creator),
 ]
 
 
 class NormalizedNativeStep(BaseModel):
-    """A native workflow step with all optional containers resolved to empty defaults
-    and tool_state guaranteed to be a parsed dict."""
+    """A native workflow step with optional containers resolved to empty defaults.
+
+    tool_state is guaranteed to be a parsed dict.
+    """
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
@@ -86,8 +94,10 @@ class NormalizedNativeStep(BaseModel):
 
 
 class NormalizedNativeWorkflow(BaseModel):
-    """A native Galaxy workflow with all optional containers resolved to empty
-    defaults and steps containing NormalizedNativeStep instances."""
+    """A native Galaxy workflow with optional containers resolved to empty defaults.
+
+    Steps contain NormalizedNativeStep instances.
+    """
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
@@ -131,6 +141,7 @@ def normalized_native(
             workflow = json.load(f)
     if isinstance(workflow, dict):
         workflow = load_native(workflow, strict=False)
+    assert isinstance(workflow, NativeGalaxyWorkflow)
     return _normalize_workflow(workflow)
 
 
@@ -160,7 +171,7 @@ def _normalize_workflow(wf: NativeGalaxyWorkflow) -> NormalizedNativeWorkflow:
         logo_url=wf.logo_url,
         doi=wf.doi,
         source_metadata=wf.source_metadata,
-        comments=[c.model_dump(by_alias=True) for c in wf.comments] if wf.comments else [],
+        comments=list(wf.comments) if wf.comments else [],
         steps=steps,
         subworkflows=subworkflows,
     )
@@ -183,6 +194,7 @@ def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
         id=step.id or 0,
         name=step.name,
         type_=step.type_,
+        in_=step.in_,
         label=step.label,
         annotation=step.annotation,
         when=step.when,
@@ -203,5 +215,4 @@ def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
         post_job_actions=step.post_job_actions or {},
         subworkflow=subworkflow,
         tool_representation=step.tool_representation,
-        in_=step.in_,
     )

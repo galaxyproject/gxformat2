@@ -31,7 +31,6 @@ from .normalized._native import (
 )
 from .options import ConversionOptions
 from .schema.gxformat2 import (
-    BaseComment,
     CreatorOrganization,
     CreatorPerson,
     FrameComment,
@@ -64,8 +63,10 @@ def _convert_tool_shed_repo(repo) -> Format2ToolShedRepository | None:
     if repo is None:
         return None
     return Format2ToolShedRepository(
-        name=repo.name, changeset_revision=repo.changeset_revision,
-        owner=repo.owner, tool_shed=repo.tool_shed,
+        name=repo.name,
+        changeset_revision=repo.changeset_revision,
+        owner=repo.owner,
+        tool_shed=repo.tool_shed,
     )
 
 
@@ -370,8 +371,8 @@ def _build_pick_value_format2_step(
         label=display_label,
         doc=step.annotation or None,
         type_=WorkflowStepType.pick_value,
-        state=state,
         in_=in_list,
+        state=state,
         out=out_list,
         position=_convert_position(step.position) if not compact else None,
     )
@@ -478,7 +479,7 @@ def _to_source(output_name: str, label_map: dict[str, str], step_id: int) -> str
     return f"{output_label}/{output_name}"
 
 
-_CREATOR_CLASS_MAP: dict[str, type] = {
+_CREATOR_CLASS_MAP: dict[str, type[CreatorPerson] | type[CreatorOrganization]] = {
     "Person": CreatorPerson,
     "Organization": CreatorOrganization,
 }
@@ -497,7 +498,7 @@ def _convert_creators(
     return result
 
 
-_COMMENT_TYPE_MAP: dict[str, type[BaseComment]] = {
+_COMMENT_TYPE_MAP: dict[str, type[TextComment] | type[MarkdownComment] | type[FrameComment] | type[FreehandComment]] = {
     "text": TextComment,
     "markdown": MarkdownComment,
     "frame": FrameComment,

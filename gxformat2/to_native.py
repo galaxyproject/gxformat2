@@ -11,7 +11,7 @@ import json
 import logging
 import uuid as uuid_mod
 from pathlib import Path
-from typing import Any, Literal, overload
+from typing import Any, Callable, Literal, overload, TypedDict
 
 from ._labels import Labels
 from .model import (
@@ -36,15 +36,22 @@ from .normalized._native import (
 )
 from .options import ConversionOptions
 from .schema.gxformat2 import (
-    BaseComment,
+    FrameComment,
+    FreehandComment,
     GalaxyWorkflow,
+    MarkdownComment,
+    TextComment,
     WorkflowInputParameter,
     WorkflowOutputParameter,
     WorkflowStepOutput,
 )
 from .schema.native import (
+    NativeCreatorOrganization,
+    NativeCreatorPerson,
     NativeInputConnection,
     NativePostJobAction,
+    NativeReport,
+    NativeStepInput,
     NativeStepType,
     NativeWorkflowOutput,
     StepPosition,
@@ -53,7 +60,14 @@ from .schema.native import (
 
 log = logging.getLogger(__name__)
 
-POST_JOB_ACTIONS = {
+
+class _PJADef(TypedDict):
+    action_class: str
+    default: Any
+    arguments: Callable[..., dict[str, Any]]
+
+
+POST_JOB_ACTIONS: dict[str, _PJADef] = {
     "hide": {
         "action_class": "HideDatasetAction",
         "default": False,
@@ -178,7 +192,7 @@ class _ConversionContext:
 
     def step_id(self, label_or_id: str | int) -> int:
         if label_or_id in self.labels:
-            return self.labels[label_or_id]
+            return self.labels[label_or_id]  # type: ignore[index]
         return int(label_or_id)
 
     def step_output(self, value: str) -> tuple[int, str]:
@@ -210,6 +224,8 @@ def _build_native_workflow(
     # Convert comments
     comments = _build_native_comments(wf.comments, ctx)
 
+    native_creators = _convert_creators_to_native(wf.creator) if wf.creator else None
+    report = NativeReport(markdown=wf.report.markdown) if wf.report else None
     return NormalizedNativeWorkflow(
         a_galaxy_workflow="true",
         format_version="0.1",
@@ -219,8 +235,8 @@ def _build_native_workflow(
         tags=wf.tags,
         license=wf.license,
         release=wf.release,
-        creator=wf.creator,
-        report={"markdown": wf.report.markdown} if wf.report else None,
+        creator=native_creators,
+        report=report,
         steps=native_steps,
         comments=comments,
     )
@@ -242,7 +258,11 @@ def _build_input_step(
     else:
         multiple = False
 
-    type_str = input_type.value if hasattr(input_type, "value") else str(input_type) if input_type else "data"
+    type_str = (
+        input_type.value
+        if input_type is not None and hasattr(input_type, "value")
+        else str(input_type) if input_type else "data"
+    )
     if type_str in ("File", "data", "data_input"):
         step_type = NativeStepType.data_input
     elif type_str in ("collection", "data_collection", "data_collection_input"):
@@ -288,13 +308,13 @@ def _build_input_step(
     return NormalizedNativeStep(
         id=order_index,
         type_=step_type,
+        in_=in_,
         label=label,
         name=raw_label,
         annotation=_join_doc(inp.doc) or "",
         tool_state=tool_state,
         position=position,
-        inputs=[{"name": raw_label, "description": ""}],
-        in_=in_,
+        inputs=[NativeStepInput(name=raw_label, description="")],
     )
 
 
@@ -480,7 +500,7 @@ def _build_pause_step(
         annotation=step.doc or "",
         tool_state={"name": name},
         input_connections=input_connections,
-        inputs=[{"name": name, "description": ""}],
+        inputs=[NativeStepInput(name=name, description="")],
         position=position,
         uuid=step.uuid,
     )
@@ -514,7 +534,7 @@ def _build_pick_value_step(
         tool_state=tool_state,
         input_connections=input_connections,
         post_job_actions=post_job_actions,
-        inputs=[{"name": name, "description": ""}],
+        inputs=[NativeStepInput(name=name, description="")],
         position=position,
         uuid=step.uuid,
     )
@@ -634,7 +654,7 @@ def _wire_workflow_outputs(
 
 
 def _build_native_comments(
-    comments: list[BaseComment],
+    comments: list[TextComment | MarkdownComment | FrameComment | FreehandComment],
     ctx: _ConversionContext,
 ) -> list:
     """Convert Format2 comments to native format."""
@@ -710,8 +730,10 @@ def _convert_tool_shed_repo(repo) -> ToolShedRepository | None:
     if isinstance(repo, ToolShedRepository):
         return repo
     return ToolShedRepository(
-        name=repo.name, changeset_revision=repo.changeset_revision,
-        owner=repo.owner, tool_shed=repo.tool_shed,
+        name=repo.name,
+        changeset_revision=repo.changeset_revision,
+        owner=repo.owner,
+        tool_shed=repo.tool_shed,
     )
 
 
@@ -722,6 +744,23 @@ def _default_position(position: Any, order_index: int) -> StepPosition:
             return position
         return StepPosition(left=position.left, top=position.top)
     return StepPosition(left=10 * order_index, top=10 * order_index)
+
+
+_NATIVE_CREATOR_MAP: dict[str, type[NativeCreatorPerson] | type[NativeCreatorOrganization]] = {
+    "Person": NativeCreatorPerson,
+    "Organization": NativeCreatorOrganization,
+}
+
+
+def _convert_creators_to_native(
+    creators: list,
+) -> list[NativeCreatorPerson | NativeCreatorOrganization]:
+    result: list[NativeCreatorPerson | NativeCreatorOrganization] = []
+    for c in creators:
+        d = c.model_dump(by_alias=True, exclude_none=True) if hasattr(c, "model_dump") else c
+        cls = _NATIVE_CREATOR_MAP.get(d.get("class", ""), NativeCreatorPerson)
+        result.append(cls.model_validate(d))
+    return result
 
 
 def _join_doc(doc: str | list[str] | None) -> str | None:

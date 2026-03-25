@@ -10,12 +10,13 @@ from __future__ import annotations
 
 import copy
 from pathlib import Path
-from typing import Any
+from typing import Any, Union
+
+from typing_extensions import TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gxformat2.schema.gxformat2 import (
-    BaseComment,
     CreatorOrganization,
     CreatorPerson,
     FrameComment,
@@ -37,8 +38,10 @@ from gxformat2.schema.gxformat2 import (
 
 
 class NormalizedWorkflowStep(BaseModel):
-    """A Format 2 workflow step with all union types resolved to their
-    canonical list form and ids guaranteed populated."""
+    """A Format 2 workflow step with all union types resolved to canonical list form.
+
+    Ids are guaranteed populated.
+    """
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
@@ -124,6 +127,7 @@ def normalized_format2(
             workflow = from_galaxy_native(workflow)
         elif "$graph" in workflow and "class" not in workflow:
             workflow = _resolve_graph(workflow)
+        assert isinstance(workflow, dict)
         # Migrate legacy 'name' to 'label'
         if "name" in workflow and "label" not in workflow:
             workflow = {**workflow, "label": workflow["name"]}
@@ -135,6 +139,7 @@ def normalized_format2(
         if "steps" not in workflow:
             workflow = {**workflow, "steps": {}}
         workflow = GalaxyWorkflow.model_validate(workflow)
+    assert isinstance(workflow, GalaxyWorkflow)
     return _normalize_workflow(workflow)
 
 
@@ -307,6 +312,7 @@ def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
         label=step.label,
         doc=_join_doc(step.doc),
         type_=step.type_,
+        in_=in_list,
         tool_id=step.tool_id,
         tool_version=step.tool_version,
         tool_shed_repository=step.tool_shed_repository,
@@ -317,7 +323,6 @@ def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
         runtime_inputs=step.runtime_inputs,
         errors=step.errors,
         uuid=step.uuid,
-        in_=in_list,
         out=out_list,
         run=run,
     )
@@ -392,20 +397,20 @@ _COMMENT_TYPE_MAP = {
 }
 
 
-Format2Comment = TextComment | MarkdownComment | FrameComment | FreehandComment
+Format2Comment: TypeAlias = Union[TextComment, MarkdownComment, FrameComment, FreehandComment]
 
 
 def _normalize_comments(
-    comments: list[BaseComment] | dict[str, BaseComment] | None,
+    comments: list[Format2Comment] | dict[str, Format2Comment] | None,
 ) -> list[Format2Comment]:
     if comments is None:
         return []
     if isinstance(comments, list):
-        return comments
+        return list(comments)
 
     result: list[Format2Comment] = []
     for key, comment in comments.items():
-        if isinstance(comment, BaseComment):
+        if isinstance(comment, (TextComment, MarkdownComment, FrameComment, FreehandComment)):
             if comment.label is None:
                 comment = comment.model_copy(update={"label": key})
             result.append(comment)
@@ -461,6 +466,7 @@ def _inline_graph_refs(workflow: dict[str, Any], lookup: dict[str, dict[str, Any
             continue
         run = step.get("run")
         if _is_graph_id_reference(run):
+            assert isinstance(run, str)
             ref_id = run[1:]
             if ref_id not in lookup:
                 raise Exception(f"$graph reference '{run}' not found in graph entries")

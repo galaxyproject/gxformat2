@@ -35,7 +35,7 @@ class ExpandedWorkflowStep(NormalizedWorkflowStep):
 class ExpandedFormat2(NormalizedFormat2):
     """Format2 workflow with all references expanded."""
 
-    steps: list[ExpandedWorkflowStep] = Field(default_factory=list)
+    steps: list[ExpandedWorkflowStep] = Field(default_factory=list)  # type: ignore[assignment]
 
 
 class ExpandedNativeStep(NormalizedNativeStep):
@@ -47,7 +47,7 @@ class ExpandedNativeStep(NormalizedNativeStep):
 class ExpandedNativeWorkflow(NormalizedNativeWorkflow):
     """Native workflow with all subworkflow references resolved."""
 
-    steps: dict[str, ExpandedNativeStep] = Field(default_factory=dict)
+    steps: dict[str, ExpandedNativeStep] = Field(default_factory=dict)  # type: ignore[assignment]
 
 
 ExpandedWorkflowStep.model_rebuild()
@@ -181,7 +181,7 @@ def _expand_native(wf: NormalizedNativeWorkflow, ctx: _ExpansionContext) -> Expa
         expanded_steps[key] = ExpandedNativeStep(**step_data, subworkflow=expanded_sub)
 
     # Expand subworkflows dict too
-    expanded_subworkflows: dict[str, ExpandedNativeWorkflow] | None = None
+    expanded_subworkflows: dict[str, NormalizedNativeWorkflow] | None = None
     if wf.subworkflows:
         expanded_subworkflows = {k: _expand_native(v, ctx) for k, v in wf.subworkflows.items()}
 
