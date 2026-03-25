@@ -1,6 +1,7 @@
 """Tests for gxformat2.normalized models."""
 
 import base64
+import copy
 
 import pytest
 import yaml
@@ -14,6 +15,7 @@ from gxformat2.normalized import (
     normalized_native,
 )
 from gxformat2.options import ConversionOptions
+from gxformat2.to_format2 import ensure_format2
 
 
 class TestNormalizedFormat2Graph:
@@ -79,15 +81,11 @@ class TestNormalizedFormat2Graph:
         assert nested.run.steps[0].tool_id == "random_lines1"
 
     def test_graph_does_not_mutate_input(self):
-        import copy
-
         original = copy.deepcopy(self.GRAPH_WITH_SUBWORKFLOW)
         normalized_format2(self.GRAPH_WITH_SUBWORKFLOW)
         assert self.GRAPH_WITH_SUBWORKFLOW == original
 
     def test_graph_missing_main_raises(self):
-        import pytest
-
         bad = {
             "format-version": "v2.0",
             "$graph": [{"id": "not_main", "class": "GalaxyWorkflow", "inputs": {}, "outputs": {}, "steps": {}}],
@@ -96,15 +94,11 @@ class TestNormalizedFormat2Graph:
             normalized_format2(bad)
 
     def test_graph_missing_id_raises(self):
-        import pytest
-
         bad = {"format-version": "v2.0", "$graph": [{"class": "GalaxyWorkflow"}]}
         with pytest.raises(Exception, match="No subworkflow ID"):
             normalized_format2(bad)
 
     def test_graph_bad_ref_raises(self):
-        import pytest
-
         bad = {
             "format-version": "v2.0",
             "$graph": [
@@ -367,8 +361,6 @@ class TestEnsureFormat2Expansion:
         }
 
     def test_no_expand_leaves_run_as_string(self):
-        from gxformat2.to_format2 import ensure_format2
-
         wf = ensure_format2(self._base64_workflow())
         step = wf.steps[0]
         assert isinstance(step.run, str)
@@ -376,8 +368,6 @@ class TestEnsureFormat2Expansion:
         assert step.is_subworkflow_step
 
     def test_expand_resolves_base64_run(self):
-        from gxformat2.to_format2 import ensure_format2
-
         wf = ensure_format2(self._base64_workflow(), expand=True)
         step = wf.steps[0]
         assert isinstance(step.run, ExpandedFormat2)
