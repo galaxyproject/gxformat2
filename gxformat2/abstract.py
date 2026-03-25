@@ -1,5 +1,7 @@
 """Module for exporting Galaxy workflows to CWL abstract interface."""
 
+from __future__ import annotations
+
 import argparse
 import sys
 from typing import Any

@@ -8,7 +8,9 @@ return plain dicts for backward compatibility (used by Planemo).
 from __future__ import annotations
 
 from os import PathLike
-from typing import Any
+from typing import Any, Union
+
+from typing_extensions import TypeAlias
 
 from gxformat2.normalized import NormalizedFormat2, NormalizedNativeWorkflow, NormalizedWorkflowStep
 from gxformat2.options import ConversionOptions
@@ -17,15 +19,15 @@ from gxformat2.schema.native import NativeGalaxyWorkflow
 from gxformat2.to_format2 import ensure_format2
 
 # Any input ensure_format2 accepts
-Workflow = (
-    dict[str, Any]
-    | str
-    | PathLike
-    | NormalizedFormat2
-    | NormalizedNativeWorkflow
-    | GalaxyWorkflow
-    | NativeGalaxyWorkflow
-)
+Workflow: TypeAlias = Union[
+    dict[str, Any],
+    str,
+    PathLike,
+    NormalizedFormat2,
+    NormalizedNativeWorkflow,
+    GalaxyWorkflow,
+    NativeGalaxyWorkflow,
+]
 
 
 # --- Typed model accessors ---------------------------------------------------

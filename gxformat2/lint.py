@@ -1,5 +1,7 @@
 """Workflow linting entry point - main script."""
 
+from __future__ import annotations
+
 import argparse
 import json
 import re
