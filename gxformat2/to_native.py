@@ -26,6 +26,7 @@ from .normalized._expanded import (
     ExpandedNativeWorkflow,
 )
 from .normalized._format2 import (
+    GalaxyUserToolStub,
     normalized_format2,
     NormalizedFormat2,
     NormalizedWorkflowStep,
@@ -339,13 +340,9 @@ def _build_step(
 
 def _resolve_step_type(step: NormalizedWorkflowStep) -> NativeStepType:
     if step.run is not None:
-        if isinstance(step.run, (NormalizedFormat2, GalaxyWorkflow, dict)):
-            run_dict = step.run if isinstance(step.run, dict) else None
-            if run_dict and run_dict.get("class") == "GalaxyUserTool":
-                return NativeStepType.tool
-            return NativeStepType.subworkflow
-        elif isinstance(step.run, str):
-            # URL reference — treat as subworkflow
+        if isinstance(step.run, GalaxyUserToolStub):
+            return NativeStepType.tool
+        if isinstance(step.run, (NormalizedFormat2, GalaxyWorkflow, str)):
             return NativeStepType.subworkflow
     step_type_str = step.type_.value if step.type_ else "tool"
     # Handle aliases
@@ -363,13 +360,9 @@ def _build_tool_step(
     order_index: int,
     ctx: _ConversionContext,
 ) -> NormalizedNativeStep:
-    # Handle user-defined tools
     tool_representation: dict[str, Any] | None = None
-    if isinstance(step.run, dict) and step.run.get("class") == "GalaxyUserTool":
-        tool_representation = step.run
-    elif isinstance(step.run, NormalizedFormat2):
-        # Shouldn't reach here for tools, but defensive
-        pass
+    if isinstance(step.run, GalaxyUserToolStub):
+        tool_representation = step.run.model_dump(by_alias=True)
 
     tool_id = step.tool_id
     if tool_id is None and tool_representation is None:
@@ -451,12 +444,6 @@ def _build_subworkflow_step(
     elif isinstance(step.run, str):
         # URL reference — pass through as content_id
         content_id = step.run
-    elif isinstance(step.run, dict):
-        # Dict subworkflow — normalize and convert
-        subworkflow_child_ctx = ctx.child_context()
-        sub_fmt2 = normalized_format2(step.run)
-        _register_subworkflow_labels(sub_fmt2, subworkflow_child_ctx)
-        subworkflow = _build_native_workflow(sub_fmt2, subworkflow_child_ctx)
 
     connect = _extract_connections(step)
     is_subworkflow = subworkflow is not None

@@ -12,9 +12,8 @@ import json
 from pathlib import Path
 from typing import Annotated, Any, Union
 
-from typing_extensions import TypeAlias
-
 from pydantic import BaseModel, ConfigDict, Discriminator, Field, Tag
+from typing_extensions import TypeAlias
 
 from gxformat2.native import load_native
 from gxformat2.schema.native import (

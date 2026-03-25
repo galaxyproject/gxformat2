@@ -1,6 +1,7 @@
 """Tests for gxformat2.to_format2 — model-returning native→Format2 conversion."""
 
 from gxformat2.normalized import NormalizedFormat2
+from gxformat2.normalized._format2 import GalaxyUserToolStub
 from gxformat2.options import ConversionOptions
 from gxformat2.to_format2 import to_format2
 
@@ -240,5 +241,6 @@ class TestToFormat2UserTool:
         result = to_format2(native)
         step = result.steps[0]
         assert step.run is not None
-        assert step.run["class"] == "GalaxyUserTool"
+        assert isinstance(step.run, GalaxyUserToolStub)
+        assert step.run.class_ == "GalaxyUserTool"
         assert step.tool_id is None

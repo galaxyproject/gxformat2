@@ -20,16 +20,18 @@ from gxformat2.options import (
     MAX_EXPANSION_DEPTH,
 )
 
-from ._format2 import normalized_format2, NormalizedFormat2, NormalizedWorkflowStep
+from ._format2 import GalaxyUserToolStub, ImportReference, normalized_format2, NormalizedFormat2, NormalizedWorkflowStep
 from ._native import normalized_native, NormalizedNativeStep, NormalizedNativeWorkflow
 
 log = logging.getLogger(__name__)
 
 
 class ExpandedWorkflowStep(NormalizedWorkflowStep):
-    """Format2 step with run fully resolved."""
+    """Format2 step with run fully resolved — no ImportReference remaining."""
 
-    run: ExpandedFormat2 | None = Field(default=None, description="Always resolved or absent.")
+    run: ExpandedFormat2 | GalaxyUserToolStub | None = Field(
+        default=None, description="Resolved subworkflow, user tool, or absent."
+    )
 
 
 class ExpandedFormat2(NormalizedFormat2):
@@ -128,12 +130,9 @@ def _expand_format2(wf: NormalizedFormat2, ctx: _ExpansionContext) -> ExpandedFo
             child_ctx = ctx.child(step.run)
             normalized = normalized_format2(resolved)
             expanded_run = _expand_format2(normalized, child_ctx)
-        elif isinstance(step.run, dict):
-            if "@import" in step.run:
-                resolved = ctx.resolve_import(step.run["@import"])
-            else:
-                resolved = step.run
-            child_ctx = ctx.child(str(step.run.get("@import", id(step.run))))
+        elif isinstance(step.run, ImportReference):
+            resolved = ctx.resolve_import(step.run.import_path)
+            child_ctx = ctx.child(step.run.import_path)
             normalized = normalized_format2(resolved)
             expanded_run = _expand_format2(normalized, child_ctx)
 

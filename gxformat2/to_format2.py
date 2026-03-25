@@ -21,6 +21,7 @@ from .normalized._expanded import (
     ExpandedFormat2,
 )
 from .normalized._format2 import (
+    GalaxyUserToolStub,
     NormalizedFormat2,
     NormalizedWorkflowStep,
 )
@@ -37,16 +38,21 @@ from .schema.gxformat2 import (
     FreehandComment,
     MarkdownComment,
     Report,
-    StepPosition as Format2StepPosition,
+)
+from .schema.gxformat2 import StepPosition as Format2StepPosition
+from .schema.gxformat2 import (
     TextComment,
-    ToolShedRepository as Format2ToolShedRepository,
+)
+from .schema.gxformat2 import ToolShedRepository as Format2ToolShedRepository
+from .schema.gxformat2 import (
     WorkflowInputParameter,
     WorkflowOutputParameter,
     WorkflowStepInput,
     WorkflowStepOutput,
     WorkflowStepType,
 )
-from .schema.native import NativeGalaxyWorkflow, StepPosition as NativeStepPosition
+from .schema.native import NativeGalaxyWorkflow
+from .schema.native import StepPosition as NativeStepPosition
 
 log = logging.getLogger(__name__)
 
@@ -287,7 +293,7 @@ def _build_user_tool_format2_step(
         id=step_id,
         label=raw_label,
         doc=step.annotation or None,
-        run=step.tool_representation,
+        run=GalaxyUserToolStub.model_validate(step.tool_representation) if step.tool_representation else None,
         in_=in_list,
         out=out_list,
         position=_convert_position(step.position) if not compact else None,

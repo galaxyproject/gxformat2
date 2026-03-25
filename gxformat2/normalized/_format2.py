@@ -10,11 +10,10 @@ from __future__ import annotations
 
 import copy
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Literal, Union
 
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from typing_extensions import TypeAlias
-
-from pydantic import BaseModel, ConfigDict, Field
 
 from gxformat2.schema.gxformat2 import (
     CreatorOrganization,
@@ -35,6 +34,31 @@ from gxformat2.schema.gxformat2 import (
     WorkflowStepOutput,
     WorkflowStepType,
 )
+
+
+class GalaxyUserToolStub(BaseModel):
+    """Stub marker for a user-defined Galaxy tool in the normalized tree.
+
+    Carries enough to discriminate (class: GalaxyUserTool) and preserves
+    all other fields as extras. The full tool definition is opaque at this level.
+    """
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    class_: Literal["GalaxyUserTool"] = Field(alias="class")
+    name: str | None = Field(default=None)
+
+
+class ImportReference(BaseModel):
+    """Stub marker for an unresolved @import in the normalized tree.
+
+    Present only before expansion — resolved into inline
+    ExpandedFormat2 subworkflows during expansion.
+    """
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    import_path: str = Field(alias="@import")
 
 
 class NormalizedWorkflowStep(BaseModel):
@@ -63,10 +87,18 @@ class NormalizedWorkflowStep(BaseModel):
         default_factory=list, alias="in", description="Always a list, shorthands expanded."
     )
     out: list[WorkflowStepOutput] = Field(default_factory=list, description="Always a list, shorthands expanded.")
-    run: Any = Field(
-        default=None,
-        description="Inline subworkflow (NormalizedFormat2), unresolved reference (str/dict), or absent.",
-    )
+    run: NormalizedFormat2 | GalaxyUserToolStub | ImportReference | str | None = Field(default=None)
+
+    @field_validator("run", mode="before")
+    @classmethod
+    def _preserve_run_type(cls, v: Any) -> Any:
+        """Prevent pydantic from auto-coercing dicts into NormalizedFormat2."""
+        if isinstance(v, dict):
+            if "@import" in v:
+                return ImportReference.model_validate(v)
+            if v.get("class") == "GalaxyUserTool":
+                return GalaxyUserToolStub.model_validate(v)
+        return v
 
 
 class NormalizedFormat2(BaseModel):
@@ -300,11 +332,17 @@ def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
     in_list = _normalize_step_inputs(step.in_)
     out_list = _normalize_step_outputs(step.out)
 
-    run: NormalizedFormat2 | str | dict[str, Any] | None = None
+    run: NormalizedFormat2 | GalaxyUserToolStub | ImportReference | str | None = None
     if isinstance(step.run, GalaxyWorkflow):
         run = _normalize_workflow(step.run)
-    elif step.run is not None:
-        # Unresolved reference (URL string, @import dict) — pass through
+    elif isinstance(step.run, dict):
+        if "@import" in step.run:
+            run = ImportReference.model_validate(step.run)
+        elif step.run.get("class") == "GalaxyUserTool":
+            run = GalaxyUserToolStub.model_validate(step.run)
+        else:
+            run = normalized_format2(step.run)
+    elif isinstance(step.run, str):
         run = step.run
 
     return NormalizedWorkflowStep(
