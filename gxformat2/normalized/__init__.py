@@ -5,7 +5,7 @@ provide uniform, narrowed types suitable for downstream consumers that
 want typed access without handling representational flexibility.
 """
 
-from ._expanded import (
+from ._conversion import (
     expanded_format2,
     expanded_native,
     ExpandedFormat2,
