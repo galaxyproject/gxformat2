@@ -125,7 +125,7 @@ def _expand_format2(wf: NormalizedFormat2, ctx: _ExpansionContext) -> ExpandedFo
         elif isinstance(step.run, str):
             resolved = _resolve_run_reference(step.run, ctx)
             child_ctx = ctx.child(step.run)
-            normalized = normalized_format2(resolved)
+            normalized = _ensure_format2(resolved, ctx.options)
             expanded_run = _expand_format2(normalized, child_ctx)
         elif isinstance(step.run, dict):
             if "@import" in step.run:
@@ -133,7 +133,7 @@ def _expand_format2(wf: NormalizedFormat2, ctx: _ExpansionContext) -> ExpandedFo
             else:
                 resolved = step.run
             child_ctx = ctx.child(str(step.run.get("@import", id(step.run))))
-            normalized = normalized_format2(resolved)
+            normalized = _ensure_format2(resolved, ctx.options)
             expanded_run = _expand_format2(normalized, child_ctx)
 
         step_data = step.model_dump(by_alias=True, exclude={"run"})
@@ -150,29 +150,10 @@ def _expand_native(wf: NormalizedNativeWorkflow, ctx: _ExpansionContext) -> Expa
         if step.subworkflow is not None:
             expanded_sub = _expand_native(step.subworkflow, ctx)
         elif step.content_id and _is_resolvable_url(step.content_id):
-            try:
-                resolved = ctx.resolve_url(step.content_id)
-                child_ctx = ctx.child(step.content_id)
-                # Fetched content could be native or format2 — detect and normalize
-                if resolved.get("a_galaxy_workflow") == "true":
-                    normalized = normalized_native(resolved)
-                else:
-                    # Format2 content fetched for native expansion —
-                    # cross-format conversion not yet supported here.
-                    log.warning(
-                        "Fetched format2 workflow from %s for native expansion — "
-                        "cross-format expansion not yet supported, leaving as reference",
-                        step.content_id,
-                    )
-                    step_data = step.model_dump(by_alias=True)
-                    expanded_steps[key] = ExpandedNativeStep(**step_data)
-                    continue
-                expanded_sub = _expand_native(normalized, child_ctx)
-            except Exception:
-                log.warning("Failed to resolve %s, leaving as reference", step.content_id, exc_info=True)
-                step_data = step.model_dump(by_alias=True)
-                expanded_steps[key] = ExpandedNativeStep(**step_data)
-                continue
+            resolved = ctx.resolve_url(step.content_id)
+            child_ctx = ctx.child(step.content_id)
+            normalized = _ensure_native(resolved, ctx.options)
+            expanded_sub = _expand_native(normalized, child_ctx)
 
         step_data = step.model_dump(by_alias=True, exclude={"subworkflow"})
         if expanded_sub is not None:
@@ -186,6 +167,24 @@ def _expand_native(wf: NormalizedNativeWorkflow, ctx: _ExpansionContext) -> Expa
 
     wf_data = wf.model_dump(by_alias=True, exclude={"steps", "subworkflows"})
     return ExpandedNativeWorkflow(**wf_data, steps=expanded_steps, subworkflows=expanded_subworkflows)
+
+
+def _ensure_format2(resolved: dict[str, Any], options: ConversionOptions) -> NormalizedFormat2:
+    """Convert a fetched workflow dict to NormalizedFormat2, handling cross-format."""
+    if resolved.get("a_galaxy_workflow") == "true":
+        from gxformat2.to_format2 import to_format2
+
+        return to_format2(resolved, options=options, expand=False)
+    return normalized_format2(resolved)
+
+
+def _ensure_native(resolved: dict[str, Any], options: ConversionOptions) -> NormalizedNativeWorkflow:
+    """Convert a fetched workflow dict to NormalizedNativeWorkflow, handling cross-format."""
+    if resolved.get("a_galaxy_workflow") == "true":
+        return normalized_native(resolved)
+    from gxformat2.to_native import to_native
+
+    return to_native(resolved, options=options, expand=False)
 
 
 def _resolve_run_reference(ref: str, ctx: _ExpansionContext) -> dict[str, Any]:

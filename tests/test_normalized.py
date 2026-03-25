@@ -486,3 +486,100 @@ class TestExpandedNative:
         wf = expanded_native(native)
         assert wf.steps["0"].subworkflow is None
         assert wf.steps["0"].content_id == "$local_ref"
+
+
+NATIVE_INNER = {
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "NativeInner",
+    "steps": {
+        "0": {"id": 0, "type": "data_input", "label": "inner_input", "tool_state": "{}"},
+        "1": {
+            "id": 1,
+            "type": "tool",
+            "tool_id": "random_lines1",
+            "tool_state": "{}",
+            "input_connections": {"input": {"id": 0, "output_name": "output"}},
+        },
+    },
+}
+
+
+class TestCrossFormatExpansion:
+    """Expansion converts across formats when needed."""
+
+    def test_format2_fetches_native_url(self):
+        """Format2 step with run: URL that returns native .ga content."""
+        def mock_resolver(url):
+            return NATIVE_INNER
+
+        opts = ConversionOptions(url_resolver=mock_resolver)
+        wf = expanded_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {"sub": {"run": "https://example.com/inner.ga", "in": {"x": "x"}}},
+            },
+            options=opts,
+        )
+        assert isinstance(wf.steps[0].run, ExpandedFormat2)
+        assert wf.steps[0].run.steps[0].tool_id == "random_lines1"
+
+    def test_format2_fetches_native_base64(self):
+        """Format2 step with run: base64 that contains native .ga content."""
+        encoded = base64.b64encode(yaml.dump(NATIVE_INNER).encode()).decode()
+        wf = expanded_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {"sub": {"run": f"base64://{encoded}", "in": {"x": "x"}}},
+            },
+        )
+        assert isinstance(wf.steps[0].run, ExpandedFormat2)
+        assert wf.steps[0].run.steps[0].tool_id == "random_lines1"
+
+    def test_native_fetches_format2_url(self):
+        """Native step with content_id URL that returns format2 content."""
+        def mock_resolver(url):
+            return INNER_WORKFLOW
+
+        opts = ConversionOptions(url_resolver=mock_resolver)
+        native = {
+            "a_galaxy_workflow": "true",
+            "format-version": "0.1",
+            "name": "Outer",
+            "steps": {
+                "0": {"id": 0, "type": "data_input", "label": "inp", "tool_state": "{}"},
+                "1": {
+                    "id": 1,
+                    "type": "subworkflow",
+                    "content_id": "https://example.com/inner.gxwf.yml",
+                },
+            },
+        }
+        wf = expanded_native(native, options=opts)
+        assert isinstance(wf.steps["1"].subworkflow, ExpandedNativeWorkflow)
+        assert wf.steps["1"].subworkflow.steps["1"].tool_id == "random_lines1"
+
+    def test_fetch_failure_is_fatal(self):
+        """Fetch failure raises instead of silently leaving as reference."""
+        def failing_resolver(url):
+            raise ConnectionError("unreachable")
+
+        opts = ConversionOptions(url_resolver=failing_resolver)
+        native = {
+            "a_galaxy_workflow": "true",
+            "format-version": "0.1",
+            "name": "Outer",
+            "steps": {
+                "0": {
+                    "id": 0,
+                    "type": "subworkflow",
+                    "content_id": "https://example.com/inner.ga",
+                },
+            },
+        }
+        with pytest.raises(ConnectionError):
+            expanded_native(native, options=opts)
