@@ -103,7 +103,7 @@ class ExpandedWorkflowStep(NormalizedWorkflowStep):
 class ExpandedFormat2(NormalizedFormat2):
     """Format2 workflow with all references expanded."""
 
-    steps: list[ExpandedWorkflowStep] = Field(default_factory=list)
+    steps: list[ExpandedWorkflowStep] = Field(default_factory=list)  # type: ignore[assignment]
 
 
 class ExpandedNativeStep(NormalizedNativeStep):
@@ -115,7 +115,7 @@ class ExpandedNativeStep(NormalizedNativeStep):
 class ExpandedNativeWorkflow(NormalizedNativeWorkflow):
     """Native workflow with all subworkflow references resolved."""
 
-    steps: dict[str, ExpandedNativeStep] = Field(default_factory=dict)
+    steps: dict[str, ExpandedNativeStep] = Field(default_factory=dict)  # type: ignore[assignment]
 
 
 ExpandedWorkflowStep.model_rebuild()
@@ -183,7 +183,7 @@ def _ensure_native(resolved: dict[str, Any], options: ConversionOptions) -> Norm
 
 @overload
 def ensure_format2(
-    workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
     options: ConversionOptions,
     expand: Literal[True],
 ) -> ExpandedFormat2: ...
@@ -191,7 +191,7 @@ def ensure_format2(
 
 @overload
 def ensure_format2(
-    workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
     options: ConversionOptions | None = None,
     expand: Literal[False] = False,
 ) -> NormalizedFormat2: ...
@@ -211,6 +211,23 @@ def ensure_format2(
     options: ConversionOptions | None = None,
     expand: Literal[False] = False,
 ) -> NormalizedFormat2: ...
+
+
+@overload
+def ensure_format2(
+    workflow: (
+        dict[str, Any]
+        | str
+        | Path
+        | os.PathLike[str]
+        | NativeGalaxyWorkflow
+        | NormalizedNativeWorkflow
+        | GalaxyWorkflow
+        | NormalizedFormat2
+    ),
+    options: ConversionOptions | None = ...,
+    expand: bool = ...,
+) -> NormalizedFormat2 | ExpandedFormat2: ...
 
 
 def ensure_format2(
@@ -218,6 +235,7 @@ def ensure_format2(
         dict[str, Any]
         | str
         | Path
+        | os.PathLike[str]
         | NativeGalaxyWorkflow
         | NormalizedNativeWorkflow
         | GalaxyWorkflow
@@ -249,7 +267,7 @@ def ensure_format2(
 
 @overload
 def ensure_native(
-    workflow: dict[str, Any] | str | Path | NormalizedFormat2 | GalaxyWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NormalizedFormat2 | GalaxyWorkflow,
     options: ConversionOptions,
     expand: Literal[True],
 ) -> ExpandedNativeWorkflow: ...
@@ -257,7 +275,7 @@ def ensure_native(
 
 @overload
 def ensure_native(
-    workflow: dict[str, Any] | str | Path | NormalizedFormat2 | GalaxyWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NormalizedFormat2 | GalaxyWorkflow,
     options: ConversionOptions | None = None,
     expand: Literal[False] = False,
 ) -> NormalizedNativeWorkflow: ...
@@ -284,6 +302,7 @@ def ensure_native(
         dict[str, Any]
         | str
         | Path
+        | os.PathLike[str]
         | NormalizedFormat2
         | GalaxyWorkflow
         | NativeGalaxyWorkflow
@@ -366,7 +385,7 @@ def _convert_tool_shed_repo_to_format2(repo) -> Format2ToolShedRepository | None
 
 @overload
 def to_format2(
-    workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
     options: ConversionOptions,
     expand: Literal[True],
 ) -> ExpandedFormat2: ...
@@ -374,14 +393,14 @@ def to_format2(
 
 @overload
 def to_format2(
-    workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
     options: ConversionOptions | None = None,
     expand: Literal[False] = False,
 ) -> NormalizedFormat2: ...
 
 
 def to_format2(
-    workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NativeGalaxyWorkflow | NormalizedNativeWorkflow,
     options: ConversionOptions | None = None,
     expand: bool = False,
 ) -> NormalizedFormat2 | ExpandedFormat2:
@@ -886,7 +905,7 @@ POST_JOB_ACTIONS: dict[str, _PJADef] = {
 
 @overload
 def to_native(
-    workflow: dict[str, Any] | str | Path | NormalizedFormat2 | GalaxyWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NormalizedFormat2 | GalaxyWorkflow,
     options: ConversionOptions,
     expand: Literal[True],
 ) -> ExpandedNativeWorkflow: ...
@@ -894,14 +913,14 @@ def to_native(
 
 @overload
 def to_native(
-    workflow: dict[str, Any] | str | Path | NormalizedFormat2 | GalaxyWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NormalizedFormat2 | GalaxyWorkflow,
     options: ConversionOptions | None = None,
     expand: Literal[False] = False,
 ) -> NormalizedNativeWorkflow: ...
 
 
 def to_native(
-    workflow: dict[str, Any] | str | Path | NormalizedFormat2 | GalaxyWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NormalizedFormat2 | GalaxyWorkflow,
     options: ConversionOptions | None = None,
     expand: bool = False,
 ) -> NormalizedNativeWorkflow | ExpandedNativeWorkflow:
@@ -1546,7 +1565,7 @@ def _join_doc(doc: str | list[str] | None) -> str | None:
 
 
 def expanded_format2(
-    workflow: dict[str, Any] | str | Path | NormalizedFormat2,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NormalizedFormat2,
     options: ConversionOptions | None = None,
 ) -> ExpandedFormat2:
     """Normalize and expand a Format2 workflow, resolving all references.
@@ -1563,7 +1582,7 @@ def expanded_format2(
 
 
 def expanded_native(
-    workflow: dict[str, Any] | str | Path | NormalizedNativeWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NormalizedNativeWorkflow,
     options: ConversionOptions | None = None,
 ) -> ExpandedNativeWorkflow:
     """Normalize and expand a native workflow, resolving all subworkflow references.
@@ -1634,4 +1653,4 @@ def _expand_native(wf: NormalizedNativeWorkflow, ctx: _ExpansionContext) -> Expa
         expanded_subworkflows = {k: _expand_native(v, ctx) for k, v in wf.subworkflows.items()}
 
     wf_data = wf.model_dump(by_alias=True, exclude={"steps", "subworkflows"})
-    return ExpandedNativeWorkflow(**wf_data, steps=expanded_steps, subworkflows=expanded_subworkflows)
+    return ExpandedNativeWorkflow(**wf_data, steps=expanded_steps, subworkflows=expanded_subworkflows)  # type: ignore[arg-type]

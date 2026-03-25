@@ -9,6 +9,7 @@ All step/input ids are populated.
 from __future__ import annotations
 
 import copy
+import os
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, Union
@@ -86,9 +87,12 @@ def resolve_source_reference(value: str, known_labels: set | dict) -> SourceRefe
 
 
 class _DictMixin:
-    """Shared serialization for normalized models."""
+    """Shared serialization for normalized models.
 
-    def to_dict(self) -> dict[str, Any]:
+    Mixed into BaseModel subclasses — model_dump is provided by Pydantic.
+    """
+
+    def to_dict(self: Any) -> dict[str, Any]:
         """Serialize to a JSON/YAML-compatible dict."""
         return self.model_dump(by_alias=True, exclude_none=True, mode="json")
 
@@ -194,7 +198,7 @@ NormalizedFormat2.model_rebuild()
 
 
 def normalized_format2(
-    workflow: dict[str, Any] | str | Path | GalaxyWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | GalaxyWorkflow,
 ) -> NormalizedFormat2:
     """Normalize a Format 2 Galaxy workflow into a fully typed model.
 
@@ -359,6 +363,7 @@ def _pre_clean_steps(workflow: dict[str, Any]) -> dict[str, Any]:
     connection source to ``in``, so the model layer sees only schema-compliant data.
     """
     steps = workflow.get("steps", {})
+    cleaned: dict[str, Any] | list[Any]
     if isinstance(steps, dict):
         cleaned = {k: _pre_clean_step(v) if isinstance(v, dict) else v for k, v in steps.items()}
     elif isinstance(steps, list):

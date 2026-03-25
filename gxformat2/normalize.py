@@ -115,7 +115,10 @@ def outputs_normalized(
 
 
 def _dump_list(items) -> list[dict[str, Any]]:
-    return [item.to_dict() if hasattr(item, "to_dict") else item.model_dump(by_alias=True, exclude_none=True, mode="json") for item in items]
+    return [
+        item.to_dict() if hasattr(item, "to_dict") else item.model_dump(by_alias=True, exclude_none=True, mode="json")
+        for item in items
+    ]
 
 
 def _ensure_format2(
@@ -124,4 +127,7 @@ def _ensure_format2(
     options: ConversionOptions | None = None,
     expand: bool = False,
 ) -> NormalizedFormat2:
-    return ensure_format2(workflow_path or workflow_dict, options=options, expand=expand)
+    workflow = workflow_path or workflow_dict
+    if workflow is None:
+        raise ValueError("Either workflow_dict or workflow_path must be provided")
+    return ensure_format2(workflow, options=options, expand=expand)

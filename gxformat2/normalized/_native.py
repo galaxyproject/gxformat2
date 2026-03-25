@@ -9,10 +9,11 @@ and subworkflows are recursively normalized.
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Annotated, Any, Union
 
-from pydantic import BaseModel, ConfigDict, Discriminator, Field, Tag, field_validator
+from pydantic import BaseModel, ConfigDict, Discriminator, Field, field_validator, Tag
 from typing_extensions import TypeAlias
 
 from gxformat2.schema.native import (
@@ -58,9 +59,12 @@ NativeCreator: TypeAlias = Annotated[
 
 
 class _DictMixin:
-    """Shared serialization for normalized models."""
+    """Shared serialization for normalized models.
 
-    def to_dict(self) -> dict[str, Any]:
+    Mixed into BaseModel subclasses — model_dump is provided by Pydantic.
+    """
+
+    def to_dict(self: Any) -> dict[str, Any]:
         """Serialize to a JSON/YAML-compatible dict."""
         return self.model_dump(by_alias=True, exclude_none=True, mode="json")
 
@@ -234,7 +238,7 @@ def _normalize_tags(data: dict[str, Any]) -> None:
 
 
 def normalized_native(
-    workflow: dict[str, Any] | str | Path | NativeGalaxyWorkflow,
+    workflow: dict[str, Any] | str | Path | os.PathLike[str] | NativeGalaxyWorkflow,
 ) -> NormalizedNativeWorkflow:
     """Normalize a native Galaxy workflow into a fully typed model.
 
@@ -300,7 +304,7 @@ def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
     return NormalizedNativeStep(
         id=step.id or 0,
         name=step.name,
-        type_=step.type_,
+        type_=step.type_ or NativeStepType.tool,
         in_=step.in_,
         label=step.label,
         annotation=step.annotation,
@@ -315,7 +319,7 @@ def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
         uuid=step.uuid,
         errors=step.errors,
         position=step.position,
-        input_connections=step.input_connections or {},
+        input_connections={k: v if isinstance(v, list) else [v] for k, v in (step.input_connections or {}).items()},
         inputs=step.inputs or [],
         outputs=step.outputs or [],
         workflow_outputs=step.workflow_outputs or [],
