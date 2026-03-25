@@ -48,8 +48,8 @@ Homepage = "https://github.com/galaxyproject/gxformat2"
 lint = [
     "black",
     "flake8",
-    "flake8-import-order",
     "flake8-bugbear",
+    "isort",
     "ruff",
 ]
 mypy = [
@@ -76,6 +76,20 @@ docs = [
 
 [tool.ruff]
 exclude = [
+    "gxformat2/schema/v19_09.py",
+    "gxformat2/schema/native_v0_1.py",
+    "gxformat2/schema/gxformat2.py",
+    "gxformat2/schema/gxformat2_strict.py",
+    "gxformat2/schema/native.py",
+    "gxformat2/schema/native_strict.py",
+]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+known_first_party = ["gxformat2"]
+force_alphabetical_sort_within_sections = true
+skip_glob = [
     "gxformat2/schema/v19_09.py",
     "gxformat2/schema/native_v0_1.py",
     "gxformat2/schema/gxformat2.py",

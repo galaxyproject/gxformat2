@@ -12,6 +12,7 @@ from gxformat2.lint import (
 )
 from gxformat2.linting import LintContext
 from gxformat2.yaml import ordered_dump, ordered_load
+
 from ._helpers import (
     assert_valid_native,
     copy_without_workflow_output_labels,

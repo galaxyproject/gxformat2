@@ -7,6 +7,7 @@ from gxformat2.model import (
     flatten_comment_data,
     unflatten_comment_data,
 )
+
 from ._helpers import (
     from_native,
     round_trip,

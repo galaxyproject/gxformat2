@@ -107,8 +107,9 @@ def lint_ga(lint_context, workflow_dict, path=None):
 
 def lint_format2(lint_context, workflow_dict, path=None):
     """Lint a Format 2 Galaxy workflow and populate the corresponding LintContext."""
-    from gxformat2.schema.v19_09 import load_document
     from schema_salad.exceptions import SchemaSaladException  # type: ignore
+
+    from gxformat2.schema.v19_09 import load_document
 
     file_uri = Path(os.path.abspath(path)).as_uri()
     try:
