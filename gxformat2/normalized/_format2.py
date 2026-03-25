@@ -11,7 +11,7 @@ from __future__ import annotations
 import copy
 from functools import cached_property
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, Literal, NamedTuple
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -118,6 +118,7 @@ class NormalizedFormat2(BaseModel):
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
+    class_: Literal["GalaxyWorkflow"] = Field(default="GalaxyWorkflow", alias="class")
     label: str | None = Field(default=None)
     doc: str | None = Field(default=None, description="Annotation, joined if originally a list.")
     inputs: list[WorkflowInputParameter] = Field(
