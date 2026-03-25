@@ -96,7 +96,7 @@ class NormalizedWorkflowStep(BaseModel):
     id: str = Field(description="Step identifier — always populated.")
     label: str | None = Field(default=None)
     doc: str | None = Field(default=None, description="Annotation, joined if originally a list.")
-    type_: WorkflowStepType | None = Field(default=None, alias="type")
+    type_: WorkflowStepType = Field(default=WorkflowStepType.tool, alias="type")
     tool_id: str | None = Field(default=None)
     tool_version: str | None = Field(default=None)
     tool_shed_repository: ToolShedRepository | None = Field(default=None)
@@ -123,6 +123,22 @@ class NormalizedWorkflowStep(BaseModel):
             if v.get("class") == "GalaxyUserTool":
                 return GalaxyUserToolStub.model_validate(v)
         return v
+
+    @property
+    def is_tool_step(self) -> bool:
+        return self.type_ == WorkflowStepType.tool
+
+    @property
+    def is_subworkflow_step(self) -> bool:
+        return self.type_ == WorkflowStepType.subworkflow
+
+    @property
+    def is_pause_step(self) -> bool:
+        return self.type_ == WorkflowStepType.pause
+
+    @property
+    def is_pick_value_step(self) -> bool:
+        return self.type_ == WorkflowStepType.pick_value
 
 
 class NormalizedFormat2(BaseModel):
@@ -435,11 +451,21 @@ def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
     elif isinstance(step.run, str):
         run = step.run
 
+    # Infer type when not explicitly set
+    step_type = step.type_
+    if step_type is None:
+        if isinstance(run, (NormalizedFormat2, ImportReference, str)):
+            step_type = WorkflowStepType.subworkflow
+        elif isinstance(run, GalaxyUserToolStub):
+            step_type = WorkflowStepType.tool
+        else:
+            step_type = WorkflowStepType.tool
+
     return NormalizedWorkflowStep(
         id=step.id or "0",
         label=step.label,
         doc=_join_doc(step.doc),
-        type_=step.type_,
+        type_=step_type,
         in_=in_list,
         tool_id=step.tool_id,
         tool_version=step.tool_version,
