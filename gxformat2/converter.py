@@ -36,7 +36,7 @@ class ImportOptions:
     def __init__(self):
         self.deduplicate_subworkflows = False
         self.encode_tool_state_json = True
-        self.native_state_encoder: NativeStateEncoderFn = None
+        self.state_encode_to_native: NativeStateEncoderFn = None
 
 
 def yaml_to_workflow(has_yaml, galaxy_interface=None, workflow_directory=None, import_options=None):
@@ -66,7 +66,7 @@ def python_to_workflow(as_python, galaxy_interface=None, workflow_directory=None
     options = ConversionOptions(
         workflow_directory=workflow_directory,
         deduplicate_subworkflows=import_options.deduplicate_subworkflows,
-        native_state_encoder=import_options.native_state_encoder,
+        state_encode_to_native=import_options.state_encode_to_native,
     )
     result = to_native(as_python, options)
     data = result.model_dump(by_alias=True, exclude_none=True, mode="json")

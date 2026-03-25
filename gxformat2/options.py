@@ -10,7 +10,7 @@ from typing import Any, Callable, Dict, Optional
 import requests
 import yaml
 
-NativeStateEncoderFn = Optional[Callable[[dict, Dict[str, Any]], Optional[Dict[str, Any]]]]
+StateEncodeToNativeFn = Optional[Callable[[dict, Dict[str, Any]], Optional[Dict[str, Any]]]]
 """Callback to encode format2 state back to native tool_state.
 
 Accepts (step, state) where step is the partially-built native step dict
@@ -19,7 +19,7 @@ Returns {param_name: encoded_value} for native tool_state, or None to fall
 back to default json.dumps encoding.
 """
 
-ConvertToolStateFn = Optional[Callable[[dict], Optional[Dict[str, Any]]]]
+StateEncodeToFormat2Fn = Optional[Callable[[dict], Optional[Dict[str, Any]]]]
 """Callback to convert a native tool step's tool_state to format2 state.
 
 Accepts a native step dict (with tool_id, tool_version, tool_state).
@@ -52,19 +52,17 @@ class ConversionOptions:
         workflow_directory: str | Path | None = None,
         encode_tool_state_json: bool = True,
         deduplicate_subworkflows: bool = False,
-        native_state_encoder: NativeStateEncoderFn = None,
-        convert_tool_state: ConvertToolStateFn = None,
+        state_encode_to_native: StateEncodeToNativeFn = None,
+        state_encode_to_format2: StateEncodeToFormat2Fn = None,
         compact: bool = False,
-        expand: bool = False,
         url_resolver: UrlResolverFn = None,
     ):
         self.workflow_directory = str(workflow_directory) if workflow_directory else None
         self.encode_tool_state_json = encode_tool_state_json
         self.deduplicate_subworkflows = deduplicate_subworkflows
-        self.native_state_encoder = native_state_encoder
-        self.convert_tool_state = convert_tool_state
+        self.state_encode_to_native = state_encode_to_native
+        self.state_encode_to_format2 = state_encode_to_format2
         self.compact = compact
-        self.expand = expand
         self.url_resolver = url_resolver
 
 

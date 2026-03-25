@@ -121,7 +121,7 @@ def test_native_state_encoder_callback_called():
         called_with.append((step.get("tool_id"), dict(state)))
         return {k: json.dumps(v) for k, v in state.items()}
 
-    import_options.native_state_encoder = _encoder
+    import_options.state_encode_to_native = _encoder
     format2_path = to_example_path("encoder_basic", EXAMPLES_DIR_NAME, "gxwf.yml")
     with open(format2_path, "w") as f:
         f.write(INT_INPUT)
@@ -136,7 +136,7 @@ def test_native_state_encoder_callback_called():
 def test_native_state_encoder_callback_none_fallback():
     """Test that returning None falls back to default json.dumps encoding."""
     import_options = ImportOptions()
-    import_options.native_state_encoder = lambda step, state: None
+    import_options.state_encode_to_native = lambda step, state: None
 
     format2_path = to_example_path("encoder_none", EXAMPLES_DIR_NAME, "gxwf.yml")
     with open(format2_path, "w") as f:
@@ -168,7 +168,7 @@ def test_native_state_encoder_callback_exception_fallback():
     def _encoder(step, state):
         raise ValueError("encoding failed")
 
-    import_options.native_state_encoder = _encoder
+    import_options.state_encode_to_native = _encoder
 
     format2_path = to_example_path("encoder_exc", EXAMPLES_DIR_NAME, "gxwf.yml")
     with open(format2_path, "w") as f:
@@ -192,7 +192,7 @@ def test_native_state_encoder_connected_values():
         seen_states.append((step.get("tool_id"), dict(state)))
         return None  # fall back to default
 
-    import_options.native_state_encoder = _encoder
+    import_options.state_encode_to_native = _encoder
 
     format2_path = to_example_path("encoder_connected", EXAMPLES_DIR_NAME, "gxwf.yml")
     with open(format2_path, "w") as f:
@@ -220,7 +220,7 @@ def test_native_state_encoder_custom_encoding():
         # Custom encoding: wrap every value in a tag
         return {k: json.dumps({"custom_encoded": v}) for k, v in state.items()}
 
-    import_options.native_state_encoder = _encoder
+    import_options.state_encode_to_native = _encoder
 
     format2_path = to_example_path("encoder_custom", EXAMPLES_DIR_NAME, "gxwf.yml")
     with open(format2_path, "w") as f:

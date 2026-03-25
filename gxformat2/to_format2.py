@@ -310,12 +310,12 @@ def _build_tool_format2_step(
     tool_state: str | dict[str, Any] | None = None
 
     converted_state = None
-    if options.convert_tool_state is not None:
+    if options.state_encode_to_format2 is not None:
         try:
             step_dict = step.model_dump(by_alias=True, exclude_none=True)
-            converted_state = options.convert_tool_state(step_dict)
+            converted_state = options.state_encode_to_format2(step_dict)
         except Exception:
-            log.warning("convert_tool_state failed for %s, falling back", step.tool_id, exc_info=True)
+            log.warning("state_encode_to_format2 failed for %s, falling back", step.tool_id, exc_info=True)
 
     if converted_state is not None:
         state = converted_state
