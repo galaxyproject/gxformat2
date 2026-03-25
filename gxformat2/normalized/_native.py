@@ -110,6 +110,10 @@ class NormalizedNativeStep(BaseModel):
     def is_pause_step(self) -> bool:
         return self.type_ == NativeStepType.pause
 
+    @property
+    def is_pick_value_step(self) -> bool:
+        return self.type_ == NativeStepType.pick_value
+
 
 class NormalizedNativeWorkflow(BaseModel):
     """A native Galaxy workflow with optional containers resolved to empty defaults.
