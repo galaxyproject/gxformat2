@@ -1,9 +1,9 @@
-"""Tests for gxformat2.native.load_native()."""
+"""Tests for gxformat2.normalized._native.load_native()."""
 
 import pytest
 from pydantic import ValidationError
 
-from gxformat2.native import load_native
+from gxformat2.normalized._native import load_native
 
 MINIMAL_WORKFLOW = {
     "a_galaxy_workflow": "true",
