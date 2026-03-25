@@ -1,17 +1,16 @@
 import copy
 import json
-import os
 
 from yaml import safe_load
 
 from gxformat2.converter import python_to_workflow
 from gxformat2.export import from_galaxy_native, main
 from gxformat2.yaml import ordered_load
-from ._helpers import MockGalaxyInterface, TEST_PATH, to_example_path
+from ._helpers import example_path, MockGalaxyInterface, to_example_path
 
 
 def test_sars_covid_example():
-    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    sars_example = example_path("real-sars-cov2-variant-calling.ga")
     converted_path = _run_example_path(sars_example)
     with open(converted_path) as fh:
         wf = safe_load(fh)
@@ -19,7 +18,7 @@ def test_sars_covid_example():
 
 
 def test_multi_data_example():
-    example = os.path.join(TEST_PATH, "muti_data_example.ga")
+    example = example_path("real-multi-data-input.ga")
     converted_path = _run_example_path(example)
     with open(converted_path) as fh:
         wf = safe_load(fh)
@@ -27,7 +26,7 @@ def test_multi_data_example():
 
 
 def test_multiple_string_example():
-    example = os.path.join(TEST_PATH, "multi-string.ga")
+    example = example_path("real-multi-string-input.ga")
     converted_path = _run_example_path(example)
     with open(converted_path) as fh:
         wf = safe_load(fh)
@@ -35,7 +34,7 @@ def test_multiple_string_example():
 
 
 def test_compact_workflow_example():
-    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    sars_example = example_path("real-sars-cov2-variant-calling.ga")
     compact_path = _run_example_path(sars_example, compact=True)
     with open(compact_path) as fh:
         wf = safe_load(fh)
@@ -44,7 +43,7 @@ def test_compact_workflow_example():
 
 def test_dict_tool_state_export():
     """Test that from_galaxy_native handles dict-form tool_state (not JSON string)."""
-    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    sars_example = example_path("real-sars-cov2-variant-calling.ga")
     with open(sars_example) as f:
         native_wf = json.load(f)
 
@@ -61,7 +60,7 @@ def test_dict_tool_state_export():
 
 def test_unlabeled_input_round_trip():
     """Test that unlabeled inputs preserve label=None through round-trip."""
-    example = os.path.join(TEST_PATH, "basic_without_step_input_label.ga")
+    example = example_path("real-basic-without-step-input-label.ga")
     with open(example) as f:
         native_wf = json.load(f)
 
@@ -83,7 +82,7 @@ def test_unlabeled_input_round_trip():
 
 def test_unlabeled_input_connections_round_trip():
     """Test that connections to unlabeled inputs survive round-trip."""
-    example = os.path.join(TEST_PATH, "basic_without_step_input_label.ga")
+    example = example_path("real-basic-without-step-input-label.ga")
     with open(example) as f:
         native_wf = json.load(f)
 
@@ -105,7 +104,7 @@ def test_unlabeled_input_connections_round_trip():
 
 def test_convert_tool_state_callback_called():
     """Test that convert_tool_state callback is called for tool steps on export."""
-    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    sars_example = example_path("real-sars-cov2-variant-calling.ga")
     with open(sars_example) as f:
         native_wf = json.load(f)
 
@@ -128,7 +127,7 @@ def test_convert_tool_state_callback_called():
 
 def test_convert_tool_state_callback_none_fallback():
     """Test that returning None from callback falls back to default tool_state."""
-    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    sars_example = example_path("real-sars-cov2-variant-calling.ga")
     with open(sars_example) as f:
         native_wf = json.load(f)
 
@@ -145,7 +144,7 @@ def test_convert_tool_state_callback_none_fallback():
 
 def test_convert_tool_state_callback_exception_fallback():
     """Test that callback exceptions fall back to default tool_state."""
-    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    sars_example = example_path("real-sars-cov2-variant-calling.ga")
     with open(sars_example) as f:
         native_wf = json.load(f)
 
@@ -162,7 +161,7 @@ def test_convert_tool_state_callback_exception_fallback():
 
 def test_convert_tool_state_callback_selective():
     """Test that callback can convert some steps and fall back on others."""
-    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    sars_example = example_path("real-sars-cov2-variant-calling.ga")
     with open(sars_example) as f:
         native_wf = json.load(f)
 
@@ -192,7 +191,7 @@ def test_convert_tool_state_callback_selective():
 
 def test_convert_tool_state_connections_always_present():
     """Test that _convert_input_connections runs regardless of callback."""
-    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    sars_example = example_path("real-sars-cov2-variant-calling.ga")
     with open(sars_example) as f:
         native_wf = json.load(f)
 
@@ -212,7 +211,7 @@ def test_convert_tool_state_connections_always_present():
 
 def test_convert_tool_state_no_callback_default_unchanged():
     """Test that omitting convert_tool_state preserves original behavior."""
-    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    sars_example = example_path("real-sars-cov2-variant-calling.ga")
     with open(sars_example) as f:
         native_wf = json.load(f)
 

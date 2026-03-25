@@ -7,7 +7,6 @@ When GXFORMAT2_TEST_IWC_DIRECTORY is set, also validates all .ga files
 found in that IWC checkout.
 """
 
-import glob
 import json
 import os
 import tempfile
@@ -15,6 +14,7 @@ import tempfile
 import pytest
 
 from gxformat2.schema.native_v0_1 import load_document
+from ._helpers import find_iwc_ga_files, IWC_DIR, iwc_fixture_ids
 
 
 def _load_native(workflow_dict):
@@ -213,16 +213,7 @@ class TestNativeSchemaBasic:
 
 # --- IWC integration tests ---
 
-IWC_DIR = os.environ.get("GXFORMAT2_TEST_IWC_DIRECTORY")
-
-
-def _find_ga_files():
-    if not IWC_DIR:
-        return []
-    return sorted(glob.glob(os.path.join(IWC_DIR, "workflows", "**", "*.ga"), recursive=True))
-
-
-GA_FILES = _find_ga_files()
+GA_FILES = find_iwc_ga_files()
 
 
 @pytest.mark.skipif(IWC_DIR is None, reason="GXFORMAT2_TEST_IWC_DIRECTORY not set")
@@ -230,7 +221,7 @@ class TestIWCWorkflows:
 
     @pytest.fixture(
         params=GA_FILES,
-        ids=[os.path.relpath(p, IWC_DIR) if IWC_DIR else p for p in GA_FILES],
+        ids=iwc_fixture_ids(GA_FILES),
     )
     def ga_workflow(self, request):
         with open(request.param) as f:

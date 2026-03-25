@@ -1,12 +1,11 @@
 import json
-import os
 
 from gxformat2._scripts import ensure_format2_from_path
 from gxformat2.converter import ImportOptions, main, python_to_workflow
 from gxformat2.lint import lint_ga_path
 from gxformat2.linting import LintContext
 from gxformat2.yaml import ordered_dump, ordered_load
-from ._helpers import MockGalaxyInterface, TEST_PATH, to_example_path
+from ._helpers import example_path, MockGalaxyInterface, to_example_path
 from .example_wfs import (
     BASIC_WORKFLOW,
     INT_INPUT,
@@ -30,7 +29,7 @@ def test_basic_workflow():
 
 
 def test_double_convert_sars_wf():
-    sars_example = os.path.join(TEST_PATH, "sars-cov-2-variant-calling.ga")
+    sars_example = example_path("real-sars-cov2-variant-calling.ga")
     workflow_dict = ensure_format2_from_path(sars_example)
     format2_path = to_example_path(sars_example, EXAMPLES_DIR_NAME, "gxwf.yml")
     with open(format2_path, "w") as f:

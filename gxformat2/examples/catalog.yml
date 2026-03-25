@@ -1,0 +1,110 @@
+- file: format2/synthetic-basic.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_lint.py
+    - tests/test_basic.py
+    - tests/test_schema.py
+    - tests/test_to_native.py
+    - tests/test_export_abstract.py
+
+- file: format2/synthetic-nested-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_lint.py
+    - tests/test_export_abstract.py
+
+- file: format2/synthetic-unlinted-best-practices.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_lint_best_practices.py
+
+- file: native/real-unicycler-assembly.ga
+  origin: real
+  format: native
+  tests:
+    - tests/test_lint.py
+    - tests/test_basic.py
+
+- file: native/real-hacked-unicycler-assembly-with-tags.ga
+  origin: real-hacked
+  format: native
+  tests:
+    - tests/test_lint.py
+
+- file: native/real-hacked-unicycler-assembly-no-tool.ga
+  origin: real-hacked
+  format: native
+  tests:
+    - tests/test_lint.py
+
+- file: native/real-hacked-unicycler-assembly-testtoolshed.ga
+  origin: real-hacked
+  format: native
+  tests:
+    - tests/test_lint.py
+
+- file: native/real-hacked-unicycler-assembly-extra-annotations.ga
+  origin: real-hacked
+  format: native
+  tests:
+    - tests/test_cytoscape.py
+
+- file: native/real-sars-cov2-variant-calling.ga
+  origin: real
+  format: native
+  tests:
+    - tests/test_to_format2.py
+    - tests/test_to_native.py
+    - tests/test_export_abstract.py
+
+- file: native/real-ecoli-comparison.ga
+  origin: real
+  format: native
+  tests:
+    - tests/test_lint.py
+
+- file: native/real-shed-tools-raw.ga
+  origin: real
+  format: native
+  tests:
+    - tests/test_lint.py
+
+- file: native/real-multi-data-input.ga
+  origin: real
+  format: native
+  tests:
+    - tests/test_to_format2.py
+
+- file: native/real-multi-string-input.ga
+  origin: real
+  format: native
+  tests:
+    - tests/test_to_format2.py
+
+- file: native/real-basic-without-step-input-label.ga
+  origin: real
+  format: native
+  tests:
+    - tests/test_to_format2.py
+    - tests/test_export_abstract.py
+
+- file: native/synthetic-unlinted-best-practices.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_lint_best_practices.py
+
+- file: native/synthetic-unlinted-best-practices-dict-tool-state.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_lint_best_practices.py
+
+- file: native/synthetic-unlinted-best-practices-bad-identifier.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_lint_best_practices.py

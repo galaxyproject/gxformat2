@@ -1,0 +1,41 @@
+class: GalaxyWorkflow
+doc: |
+  Workflow with an embedded subworkflow that runs random_lines inside a nested workflow step.
+inputs:
+  outer_input: data
+outputs:
+  outer_output:
+    outputSource: second_cat/out_file1
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: outer_input
+  nested_workflow:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner_input: data
+      outputs:
+        workflow_output:
+          outputSource: random_lines/out_file1
+      steps:
+        random_lines:
+          tool_id: random_lines1
+          state:
+            num_lines: 2
+            input:
+              $link: inner_input
+            seed_source:
+              seed_source_selector: set_seed
+              seed: asdf
+    in:
+      inner_input: first_cat/out_file1
+  split:
+    tool_id: split
+    in:
+      input1: nested_workflow/workflow_output
+  second_cat:
+    tool_id: cat_list
+    in:
+      input1: split/output

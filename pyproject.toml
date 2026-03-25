@@ -94,6 +94,9 @@ extend-exclude = '''
 version = {attr = "gxformat2.__version__"}
 dependencies = {file = "requirements.txt"}
 
+[tool.setuptools.package-data]
+"gxformat2.examples" = ["**/*.yml", "**/*.ga"]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["gxformat2*"]

@@ -1,24 +1,13 @@
-"""Example workflows used by testing infrastructure."""
+"""Example workflows used by testing infrastructure.
 
-BASIC_WORKFLOW = """
-class: GalaxyWorkflow
-label: Simple workflow
-doc: |
-  Simple workflow that no-op cats a file and then selects 10 random lines.
-inputs:
-  the_input:
-    type: File
-    doc: input doc
-outputs:
-  the_output:
-    outputSource: cat/out_file1
-steps:
-  cat:
-    tool_id: cat1
-    doc: cat doc
-    in:
-      input1: the_input
+Workflows are migrating to gxformat2/examples/ as files.
+Constants here load from those files where available, with remaining
+constants defined inline until migrated.
 """
+
+from gxformat2.examples import load_contents
+
+BASIC_WORKFLOW = load_contents("synthetic-basic.gxwf.yml")
 
 WORKFLOW_WITH_REPEAT = """
 class: GalaxyWorkflow
@@ -36,47 +25,7 @@ steps:
       queries_1|input2: input1
 """
 
-NESTED_WORKFLOW = """
-class: GalaxyWorkflow
-inputs:
-  outer_input: data
-outputs:
-  outer_output:
-    outputSource: second_cat/out_file1
-steps:
-  first_cat:
-    tool_id: cat1
-    in:
-      input1: outer_input
-  nested_workflow:
-    run:
-      class: GalaxyWorkflow
-      inputs:
-        inner_input: data
-      outputs:
-        workflow_output:
-          outputSource: random_lines/out_file1
-      steps:
-        random_lines:
-          tool_id: random_lines1
-          state:
-            num_lines: 2
-            input:
-              $link: inner_input
-            seed_source:
-              seed_source_selector: set_seed
-              seed: asdf
-    in:
-      inner_input: first_cat/out_file1
-  split:
-    tool_id: split
-    in:
-      input1: nested_workflow/workflow_output
-  second_cat:
-    tool_id: cat_list
-    in:
-      input1: split/output
-"""
+NESTED_WORKFLOW = load_contents("synthetic-nested-subworkflow.gxwf.yml")
 
 RULES_TOOL = """
 class: GalaxyWorkflow

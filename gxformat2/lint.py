@@ -1,14 +1,24 @@
 """Workflow linting entry point - main script."""
 
 import argparse
+import json
 import os
+import re
 import sys
+from collections import OrderedDict
 from pathlib import Path
+from urllib.parse import urlparse
+
+from pydantic import ValidationError
 
 from gxformat2._scripts import ensure_format2
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
-from gxformat2.normalize import Inputs
+from gxformat2.normalize import Inputs, walk_id_list_or_dict
+from gxformat2.schema.gxformat2 import GalaxyWorkflow as Format2LaxModel
+from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as Format2StrictModel
+from gxformat2.schema.native import NativeGalaxyWorkflow as NativeLaxModel
+from gxformat2.schema.native_strict import NativeGalaxyWorkflow as NativeStrictModel
 from gxformat2.yaml import ordered_load, ordered_load_path
 
 EXIT_CODE_SUCCESS = 0
@@ -175,6 +185,180 @@ def _lint_training(lint_context, workflow_dict):
         lint_context.warn("Empty workflow documentation (annotation or doc element)")
 
 
+def lint_pydantic_validation(lint_context, workflow_dict, format2=False):
+    """Validate workflow dict against pydantic schema models.
+
+    Tries strict model (extra=forbid) first. If strict fails, falls back to
+    the lax model (extra=allow) to distinguish fundamental type errors from
+    merely having extra/unknown fields.
+    """
+    StrictModel = Format2StrictModel if format2 else NativeStrictModel
+    LaxModel = Format2LaxModel if format2 else NativeLaxModel
+    strict_errors = None
+    try:
+        StrictModel.model_validate(workflow_dict)
+        return  # strict passes — nothing to report
+    except ValidationError as e:
+        strict_errors = e.errors()
+
+    # Strict failed — try lax to see if the core schema is valid
+    try:
+        LaxModel.model_validate(workflow_dict)
+        # Lax passes: only extra/unknown fields caused strict failure
+        for error in strict_errors:
+            loc = " -> ".join(str(p) for p in error["loc"])
+            lint_context.warn(f"Schema validation (strict): {error['msg']} at {loc}")
+    except ValidationError as e:
+        # Lax also fails: fundamental schema errors
+        for error in e.errors():
+            loc = " -> ".join(str(p) for p in error["loc"])
+            lint_context.error(f"Schema validation: {error['msg']} at {loc}")
+
+
+SKIP_DISCONNECTED_CHECK_TYPES = {"data_input", "data_collection_input", "parameter_input", "pause"}
+
+
+def lint_best_practices_ga(lint_context, workflow_dict):
+    """Lint best practices for a native Galaxy workflow."""
+    _lint_best_practices(lint_context, workflow_dict, format2=False)
+    steps = workflow_dict.get("steps", {})
+    for step in steps.values():
+        _lint_step_best_practices_ga(lint_context, step)
+
+
+def lint_best_practices_format2(lint_context, workflow_dict):
+    """Lint best practices for a Format2 Galaxy workflow."""
+    _lint_best_practices(lint_context, workflow_dict, format2=True)
+    steps = workflow_dict.get("steps", {})
+    is_dict = isinstance(steps, dict)
+    for step_key, step in walk_id_list_or_dict(steps):
+        # For dict steps, the key serves as the implicit label
+        _lint_step_best_practices_format2(lint_context, step, dict_key=step_key if is_dict else None)
+
+
+def _check_json_for_untyped_params(j):
+    """Check for untyped workflow parameters (``${...}``) in a JSON-like structure."""
+    values = j.values() if isinstance(j, dict) else j
+    for value in values:
+        if type(value) in [list, dict, OrderedDict]:
+            if _check_json_for_untyped_params(value):
+                return True
+        elif isinstance(value, str):
+            if re.match(r"\$\{.+?\}", value):
+                return True
+    return False
+
+
+def _lint_best_practices(lint_context, workflow_dict, format2=False):
+    """Lint best practices shared across both native and Format2 workflows."""
+    # annotation / doc
+    if format2:
+        doc = workflow_dict.get("doc")
+        if not doc or (isinstance(doc, list) and not any(doc)):
+            lint_context.warn("Workflow is not annotated.")
+    else:
+        if not workflow_dict.get("annotation"):
+            lint_context.warn("Workflow is not annotated.")
+
+    # creator
+    creators = workflow_dict.get("creator", [])
+    if not creators:
+        lint_context.warn("Workflow does not specify a creator.")
+    else:
+        if not isinstance(creators, list):
+            creators = [creators]
+        for creator in creators:
+            if creator.get("class", "").lower() == "person" and "identifier" in creator:
+                identifier = creator["identifier"]
+                parsed_url = urlparse(identifier)
+                if not parsed_url.scheme:
+                    lint_context.warn(
+                        f'Creator identifier "{identifier}" should be a fully qualified URI, '
+                        f'for example "https://orcid.org/0000-0002-1825-0097".'
+                    )
+
+    # license
+    if not workflow_dict.get("license"):
+        lint_context.warn("Workflow does not specify a license.")
+
+
+def _lint_step_best_practices_ga(lint_context, step):
+    """Lint best practices for a native Galaxy workflow step."""
+    step_id = step.get("id")
+    step_type = step.get("type")
+
+    # disconnected inputs
+    if step_type not in SKIP_DISCONNECTED_CHECK_TYPES:
+        input_connections = step.get("input_connections") or {}
+        for input_def in step.get("inputs", []):
+            input_name = input_def.get("name")
+            if input_name and input_name not in input_connections:
+                lint_context.warn(
+                    f"Input {input_name} of workflow step {step.get('annotation') or step_id} is disconnected."
+                )
+
+    # missing metadata
+    if not step.get("annotation"):
+        lint_context.warn(f"Workflow step with ID {step_id} has no annotation.")
+    if not step.get("label"):
+        lint_context.warn(f"Workflow step with ID {step_id} has no label.")
+
+    # untyped parameters
+    raw_tool_state = step.get("tool_state", {})
+    if isinstance(raw_tool_state, str):
+        try:
+            tool_state = json.loads(raw_tool_state)
+        except (json.JSONDecodeError, TypeError):
+            tool_state = {}
+    else:
+        tool_state = raw_tool_state or {}
+
+    if _check_json_for_untyped_params(tool_state):
+        lint_context.warn(f"Workflow step with ID {step_id} specifies an untyped parameter as an input.")
+
+    pjas = step.get("post_job_actions", {}) or {}
+    if _check_json_for_untyped_params(pjas):
+        lint_context.warn(f"Workflow step with ID {step_id} specifies an untyped parameter in the post-job actions.")
+
+
+def _lint_step_best_practices_format2(lint_context, step, dict_key=None):
+    """Lint best practices for a Format2 workflow step."""
+    step_label = step.get("label") or dict_key
+    step_id = step.get("id", step_label)
+
+    # disconnected inputs — check declared inputs with no source or default
+    step_type = step.get("type")
+    if step_type not in SKIP_DISCONNECTED_CHECK_TYPES:
+        step_in = step.get("in") or {}
+        if isinstance(step_in, dict):
+            for key, value in step_in.items():
+                if isinstance(value, str):
+                    continue  # string shorthand = always connected
+                if isinstance(value, dict):
+                    if not value.get("source") and "default" not in value:
+                        lint_context.warn(f"Input {key} of workflow step {step_label or step_id} is disconnected.")
+        elif isinstance(step_in, list):
+            for key, value in walk_id_list_or_dict(step_in):
+                if not value.get("source") and "default" not in value:
+                    lint_context.warn(f"Input {key} of workflow step {step_label or step_id} is disconnected.")
+
+    # missing metadata
+    doc = step.get("doc")
+    if not doc or (isinstance(doc, list) and not any(doc)):
+        lint_context.warn(f"Workflow step {step_id} has no annotation.")
+    if not step_label:
+        lint_context.warn(f"Workflow step {step_id} has no label.")
+
+    # untyped parameters
+    tool_state = step.get("tool_state", {}) or {}
+    if _check_json_for_untyped_params(tool_state):
+        lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter as an input.")
+
+    out = step.get("out", {}) or {}
+    if _check_json_for_untyped_params(out):
+        lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter in the post-job actions.")
+
+
 def main(argv=None):
     """Script entry point for linting workflows."""
     if argv is None:
@@ -187,9 +371,14 @@ def main(argv=None):
         except Exception:
             return EXIT_CODE_FILE_PARSE_FAILED
     workflow_class = workflow_dict.get("class")
-    lint_func = lint_format2 if workflow_class == "GalaxyWorkflow" else lint_ga
+    is_format2 = workflow_class == "GalaxyWorkflow"
+    lint_func = lint_format2 if is_format2 else lint_ga
     lint_context = LintContext(training_topic=args.training_topic)
     lint_func(lint_context, workflow_dict, path=path)
+    lint_pydantic_validation(lint_context, workflow_dict, format2=is_format2)
+    if not args.skip_best_practices:
+        best_practices_func = lint_best_practices_format2 if is_format2 else lint_best_practices_ga
+        best_practices_func(lint_context, workflow_dict)
     lint_context.print_messages()
     if lint_context.found_errors:
         return EXIT_CODE_FORMAT_ERROR
@@ -210,6 +399,12 @@ def _parser():
     parser.add_argument(
         "--training-topic", required=False, help="If this is a training workflow, specify a training topic."
     )
+    parser.add_argument(
+        "--skip-best-practices",
+        action="store_true",
+        default=False,
+        help="Skip best practice checks (annotation, creator, license, step metadata).",
+    )
     parser.add_argument("path", metavar="PATH", type=str, help="workflow path")
     return parser
 
@@ -218,4 +413,11 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-__all__ = ("main", "lint_format2", "lint_ga")
+__all__ = (
+    "main",
+    "lint_format2",
+    "lint_ga",
+    "lint_best_practices_format2",
+    "lint_best_practices_ga",
+    "lint_pydantic_validation",
+)

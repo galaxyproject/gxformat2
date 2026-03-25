@@ -4,10 +4,10 @@ import shutil
 import tempfile
 
 from gxformat2.cytoscape import main
-from ._helpers import TEST_INTEROP_EXAMPLES, TEST_PATH
+from ._helpers import example_path, TEST_INTEROP_EXAMPLES
 from .test_lint import WITH_REPORT
 
-EXAMPLE_PATH = os.path.join(TEST_PATH, "unicycler-extra-annotations.ga")
+EXAMPLE_PATH = example_path("real-hacked-unicycler-assembly-extra-annotations.ga")
 TEST_CYTOSCAPE_EXAMPLES = os.path.join(TEST_INTEROP_EXAMPLES, "cytoscape")
 
 

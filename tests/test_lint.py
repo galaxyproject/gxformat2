@@ -1,14 +1,26 @@
 import copy
+import json
 import os
 
-from gxformat2.lint import main
+import pytest
+
+from gxformat2.lint import (
+    lint_best_practices_ga,
+    lint_ga,
+    lint_pydantic_validation,
+    main,
+)
+from gxformat2.linting import LintContext
 from gxformat2.yaml import ordered_dump, ordered_load
 from ._helpers import (
     assert_valid_native,
     copy_without_workflow_output_labels,
+    example_path,
+    find_iwc_ga_files,
+    IWC_DIR,
+    iwc_fixture_ids,
     round_trip,
     TEST_INTEROP_EXAMPLES,
-    TEST_PATH,
     to_native,
 )
 from .example_wfs import (
@@ -250,42 +262,67 @@ def setup_module(module):
             _dump_with_exit_code(roundtrip_contents, 0, base + "_roundtrip")
 
 
+SKIP_BP = "--skip-best-practices"
+
+
 def test_lint_ga_basic():
-    assert main(["lint", os.path.join(TEST_PATH, "wf3-shed-tools-raw.ga")]) == 1  # no outputs
+    assert main(["lint", SKIP_BP, example_path("real-shed-tools-raw.ga")]) == 1  # no outputs
 
 
 def test_lint_ga_unicycler():
-    assert main(["lint", os.path.join(TEST_PATH, "unicycler.ga")]) == 0
+    assert main(["lint", SKIP_BP, example_path("real-unicycler-assembly.ga")]) == 0
 
 
 def test_lint_ga_unicycler_training():
     # no tags, fails linting
-    assert main(["lint", "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler.ga")]) == 1
+    assert main(["lint", SKIP_BP, "--training-topic", "assembly", example_path("real-unicycler-assembly.ga")]) == 1
     # correct tag passes linting
-    assert main(["lint", "--training-topic", "assembly", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 0
+    assert (
+        main(
+            [
+                "lint",
+                SKIP_BP,
+                "--training-topic",
+                "assembly",
+                example_path("real-hacked-unicycler-assembly-with-tags.ga"),
+            ]
+        )
+        == 0
+    )
     # incorrect tag, fails linting
-    assert main(["lint", "--training-topic", "mapping", os.path.join(TEST_PATH, "unicycler-hacked-tags.ga")]) == 1
+    assert (
+        main(
+            [
+                "lint",
+                SKIP_BP,
+                "--training-topic",
+                "mapping",
+                example_path("real-hacked-unicycler-assembly-with-tags.ga"),
+            ]
+        )
+        == 1
+    )
 
 
 def test_lint_ga_unicycler_missing_tools():
     # only difference is one missing tool.
-    assert main(["lint", os.path.join(TEST_PATH, "unicycler-hacked-no-tool.ga")]) == 1
+    assert main(["lint", SKIP_BP, example_path("real-hacked-unicycler-assembly-no-tool.ga")]) == 1
 
 
 def test_lint_ga_unicycler_ts_tools():
     # only difference is testoolshed tool.
-    assert main(["lint", os.path.join(TEST_PATH, "unicycler-hacked-testtoolshed.ga")]) == 1
+    assert main(["lint", SKIP_BP, example_path("real-hacked-unicycler-assembly-testtoolshed.ga")]) == 1
 
 
 def test_lint_ecoli_comparison():
-    assert main(["lint", os.path.join(TEST_PATH, "ecoli-comparison.ga")]) == 1  # no outputs
+    assert main(["lint", SKIP_BP, example_path("real-ecoli-comparison.ga")]) == 1  # no outputs
 
 
 def test_lint_examples():
     for file_name in os.listdir(TEST_LINT_EXAMPLES):
         file_path = os.path.join(TEST_LINT_EXAMPLES, file_name)
         expected_exit_code = int(file_name[0])
-        actual_exit_code = main(["lint", file_path])
+        actual_exit_code = main(["lint", SKIP_BP, file_path])
         if actual_exit_code != expected_exit_code:
             contents = open(file_path).read()
             template = "File [%s] didn't lint properly - expected exit code [%d], got [%d]. Contents:\n%s"
@@ -298,3 +335,39 @@ def _dump_with_exit_code(as_dict, exit_code, description):
     with open(os.path.join(TEST_LINT_EXAMPLES, "%d_%s.yml" % (exit_code, description)), "w") as fd:
         ordered_dump(as_dict, fd)
         fd.flush()
+
+
+# --- IWC integration tests ---
+
+GA_FILES = find_iwc_ga_files()
+
+
+@pytest.mark.skipif(IWC_DIR is None, reason="GXFORMAT2_TEST_IWC_DIRECTORY not set")
+class TestIWCLint:
+
+    @pytest.fixture(
+        params=GA_FILES,
+        ids=iwc_fixture_ids(GA_FILES),
+    )
+    def ga_path_and_dict(self, request):
+        with open(request.param) as f:
+            return request.param, json.load(f)
+
+    def test_structural_lint(self, ga_path_and_dict):
+        path, workflow_dict = ga_path_and_dict
+        ctx = LintContext()
+        lint_ga(ctx, workflow_dict, path=path)
+        assert not ctx.error_messages, f"Structural lint errors in {os.path.basename(path)}: {ctx.error_messages}"
+
+    def test_pydantic_validation(self, ga_path_and_dict):
+        _, workflow_dict = ga_path_and_dict
+        ctx = LintContext()
+        lint_pydantic_validation(ctx, workflow_dict, format2=False)
+        assert not ctx.error_messages, f"Pydantic validation errors: {ctx.error_messages}"
+
+    def test_best_practices(self, ga_path_and_dict):
+        _, workflow_dict = ga_path_and_dict
+        ctx = LintContext()
+        lint_best_practices_ga(ctx, workflow_dict)
+        # Best practices produce warnings, not errors — just ensure no crash.
+        # Warnings are expected for many IWC workflows.

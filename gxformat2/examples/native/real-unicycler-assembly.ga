@@ -21,7 +21,7 @@
                     "name": "forward_reads",
                     "description": ""
                 }
-            ], 
+            ],
             "position": {
                 "top": 346,
                 "left": 160.98333740234375
@@ -83,7 +83,7 @@
             "type": "data_input"
         },
         "3": {
-            "tool_id": "testtoolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.71",
+            "tool_id": "toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.71",
             "tool_version": "0.71",
             "outputs": [
                 {
@@ -431,6 +431,6 @@
             "type": "tool"
         }
     },
-    "annotation": "",
+    "annotation": "Unicycler genome assembly workflow from Galaxy Training Materials.",
     "a_galaxy_workflow": "true"
 }

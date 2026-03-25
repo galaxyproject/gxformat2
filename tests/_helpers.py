@@ -1,13 +1,40 @@
 import copy
+import glob
 import os
 
 from gxformat2.converter import python_to_workflow, yaml_to_workflow
+from gxformat2.examples import get_path as example_path  # noqa: F401 (re-exported)
 from gxformat2.export import from_galaxy_native
 from gxformat2.interface import ImporterGalaxyInterface
 from gxformat2.model import STEP_TYPES
 
 TEST_PATH = os.path.abspath(os.path.dirname(__file__))
 TEST_INTEROP_EXAMPLES = os.environ.get("GXFORMAT2_INTEROP_EXAMPLES", os.path.join(TEST_PATH, "examples"))
+
+IWC_DIR = os.environ.get("GXFORMAT2_TEST_IWC_DIRECTORY")
+
+# TODO: remove after https://github.com/galaxyproject/iwc/pull/1167 is merged
+IWC_SKIP = {
+    "hic-fastq-to-cool-hicup-cooler.ga",
+    "chic-fastq-to-cool-hicup-cooler.ga",
+}
+
+
+def find_iwc_ga_files(skip=None):
+    """Find .ga workflow files in the IWC checkout, optionally skipping some by basename."""
+    if not IWC_DIR:
+        return []
+    skip = skip or IWC_SKIP
+    return sorted(
+        p
+        for p in glob.glob(os.path.join(IWC_DIR, "workflows", "**", "*.ga"), recursive=True)
+        if os.path.basename(p) not in skip
+    )
+
+
+def iwc_fixture_ids(paths):
+    """Generate pytest fixture IDs relative to IWC_DIR."""
+    return [os.path.relpath(p, IWC_DIR) if IWC_DIR else p for p in paths]
 
 
 def to_native(has_yaml, **kwds):
