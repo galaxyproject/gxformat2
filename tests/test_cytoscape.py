@@ -4,6 +4,7 @@ import shutil
 import tempfile
 
 from gxformat2.cytoscape import main
+
 from ._helpers import example_path, TEST_INTEROP_EXAMPLES
 from .test_lint import WITH_REPORT
 

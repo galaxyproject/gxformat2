@@ -6,6 +6,7 @@ import pytest
 from gxformat2.converter import (
     POST_JOB_ACTIONS,
 )
+
 from .test_basic import (
     assert_valid_native,
     from_native,

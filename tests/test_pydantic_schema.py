@@ -21,6 +21,7 @@ from gxformat2.schema.native import (
     NativeStepType,
 )
 from gxformat2.yaml import ordered_load
+
 from ._helpers import find_iwc_ga_files, IWC_DIR, iwc_fixture_ids
 
 MINIMAL_NATIVE = {
