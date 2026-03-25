@@ -4,8 +4,9 @@ import argparse
 import sys
 from typing import Any
 
-from gxformat2.normalized import normalized_format2, NormalizedFormat2, NormalizedWorkflowStep
+from gxformat2.normalized import NormalizedFormat2, NormalizedWorkflowStep
 from gxformat2.schema.gxformat2 import GalaxyType, WorkflowInputParameter, WorkflowOutputParameter, WorkflowStepOutput
+from gxformat2.to_format2 import ensure_format2
 from gxformat2.yaml import ordered_dump_to_path, ordered_load
 
 CWL_VERSION = "v1.2"
@@ -23,16 +24,12 @@ the workflow structure.
 """
 
 
-def from_dict(workflow_dict: dict | NormalizedFormat2, subworkflow=False):
+def from_dict(workflow_dict, subworkflow=False):
     """Convert Galaxy workflow into abstract CWL representation.
 
-    Accepts a raw dict (Format2 or native .ga) or a pre-normalized
-    NormalizedFormat2 model.
+    Accepts any workflow representation (raw dict, path, or typed model).
     """
-    if isinstance(workflow_dict, NormalizedFormat2):
-        nf2 = workflow_dict
-    else:
-        nf2 = normalized_format2(workflow_dict)
+    nf2 = ensure_format2(workflow_dict)
 
     _ensure_implicit_step_outs(nf2)
 

@@ -1,7 +1,7 @@
 """Tests for gxformat2.to_native — model-returning conversion."""
 
 from gxformat2.normalized import NormalizedNativeWorkflow
-from gxformat2.to_native import to_native
+from gxformat2.to_native import ensure_native, to_native
 
 from .example_wfs import (
     BASIC_WORKFLOW,
@@ -70,6 +70,37 @@ class TestToNativeBasic:
         param_steps = [s for s in result.steps.values() if s.type_ == "parameter_input"]
         assert len(param_steps) > 0
         assert param_steps[0].tool_state.get("multiple") is True
+
+
+class TestEnsureNative:
+
+    def test_accepts_native_dict(self):
+        native_dict = {
+            "a_galaxy_workflow": "true",
+            "format-version": "0.1",
+            "name": "native test",
+            "steps": {},
+        }
+        result = ensure_native(native_dict)
+        assert isinstance(result, NormalizedNativeWorkflow)
+        assert result.a_galaxy_workflow == "true"
+
+    def test_converts_format2_dict(self):
+        from gxformat2.yaml import ordered_load
+
+        fmt2 = ordered_load(BASIC_WORKFLOW)
+        result = ensure_native(fmt2)
+        assert isinstance(result, NormalizedNativeWorkflow)
+        assert result.a_galaxy_workflow == "true"
+        assert len(result.steps) > 0
+
+    def test_expand_true_returns_expanded_type(self):
+        from gxformat2.normalized import ExpandedNativeWorkflow
+        from gxformat2.yaml import ordered_load
+
+        fmt2 = ordered_load(BASIC_WORKFLOW)
+        result = ensure_native(fmt2, expand=True)
+        assert isinstance(result, ExpandedNativeWorkflow)
 
 
 class TestToNativeSubworkflow:

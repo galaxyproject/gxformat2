@@ -3,7 +3,9 @@
 from gxformat2.normalized import NormalizedFormat2
 from gxformat2.normalized._format2 import GalaxyUserToolStub
 from gxformat2.options import ConversionOptions
-from gxformat2.to_format2 import to_format2
+from gxformat2.to_format2 import ensure_format2, to_format2
+
+from .example_wfs import BASIC_WORKFLOW
 
 MINIMAL_NATIVE = {
     "a_galaxy_workflow": "true",
@@ -84,6 +86,28 @@ class TestToFormat2Basic:
         opts = ConversionOptions(compact=True)
         result = to_format2(native, options=opts)
         assert result.steps[0].position is None
+
+
+class TestEnsureFormat2:
+
+    def test_accepts_format2_dict(self):
+        from gxformat2.yaml import ordered_load
+
+        fmt2 = ordered_load(BASIC_WORKFLOW)
+        result = ensure_format2(fmt2)
+        assert isinstance(result, NormalizedFormat2)
+        assert result.label
+
+    def test_converts_native_dict(self):
+        result = ensure_format2(MINIMAL_NATIVE)
+        assert isinstance(result, NormalizedFormat2)
+        assert result.label == "Test Workflow"
+
+    def test_expand_true_returns_expanded_type(self):
+        from gxformat2.normalized import ExpandedFormat2
+
+        result = ensure_format2(MINIMAL_NATIVE, expand=True)
+        assert isinstance(result, ExpandedFormat2)
 
 
 class TestToFormat2Subworkflow:
