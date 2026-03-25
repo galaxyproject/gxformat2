@@ -188,9 +188,11 @@ def _expand_native(wf: NormalizedNativeWorkflow, ctx: _ExpansionContext) -> Expa
     return ExpandedNativeWorkflow(**wf_data, steps=expanded_steps, subworkflows=expanded_subworkflows)
 
 
-def _resolve_run_reference(url: str, ctx: _ExpansionContext) -> dict[str, Any]:
-    """Resolve a URL run reference to a workflow dict."""
-    return ctx.resolve_url(url)
+def _resolve_run_reference(ref: str, ctx: _ExpansionContext) -> dict[str, Any]:
+    """Resolve a run reference (URL or file path) to a workflow dict."""
+    if "://" in ref:
+        return ctx.resolve_url(ref)
+    return ctx.resolve_import(ref)
 
 
 def _is_resolvable_url(content_id: str) -> bool:
