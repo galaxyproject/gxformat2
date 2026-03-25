@@ -363,9 +363,28 @@ def _normalize_steps(
     return [_normalize_step(s) for s in step_list]
 
 
+_CONNECTED_VALUE = {"__class__": "ConnectedValue"}
+
+
 def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
     in_list = _normalize_step_inputs(step.in_)
     out_list = _normalize_step_outputs(step.out)
+
+    # Resolve connect key (extra field, not in schema) into in_
+    connect_extra = getattr(step, "connect", None) or (step.model_extra or {}).get("connect")
+    if isinstance(connect_extra, dict):
+        for key, sources in connect_extra.items():
+            if isinstance(sources, list):
+                in_list.append(WorkflowStepInput(id=key, source=sources))
+            else:
+                in_list.append(WorkflowStepInput(id=key, source=sources))
+
+    # Resolve $link entries in state → ConnectedValue + connections in in_
+    state = step.state
+    if state is not None:
+        state, link_connections = _resolve_links(state)
+        for key, sources in link_connections.items():
+            in_list.append(WorkflowStepInput(id=key, source=sources if len(sources) > 1 else sources[0]))
 
     run: NormalizedFormat2 | GalaxyUserToolStub | ImportReference | str | None = None
     if isinstance(step.run, GalaxyWorkflow):
@@ -391,7 +410,7 @@ def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
         tool_shed_repository=step.tool_shed_repository,
         position=step.position,
         when=step.when,
-        state=step.state,
+        state=state,
         tool_state=step.tool_state,
         runtime_inputs=step.runtime_inputs,
         errors=step.errors,
@@ -399,6 +418,47 @@ def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
         out=out_list,
         run=run,
     )
+
+
+def _resolve_links(
+    value: Any,
+    key: str = "",
+    connections: dict[str, list[str]] | None = None,
+) -> tuple[Any, dict[str, list[str]]]:
+    """Walk state dict, replacing $link with ConnectedValue and collecting connections.
+
+    Returns (clean_value, connections) where connections maps pipe-separated
+    state paths to source references.
+    """
+    if connections is None:
+        connections = {}
+
+    if isinstance(value, dict) and "$link" in value:
+        link_value = value["$link"]
+        connections.setdefault(key, []).append(link_value)
+        return dict(_CONNECTED_VALUE), connections
+
+    if isinstance(value, dict):
+        new_dict: dict[str, Any] = {}
+        for k, v in value.items():
+            child_key = f"{key}|{k}" if key else k
+            new_dict[k], connections = _resolve_links(v, child_key, connections)
+        return new_dict, connections
+
+    if isinstance(value, list):
+        new_list: list[Any] = []
+        for i, v in enumerate(value):
+            if isinstance(v, dict) and "$link" in v:
+                link_value = v["$link"]
+                connections.setdefault(key, []).append(link_value)
+                new_list.append(None)
+            else:
+                child_key = f"{key}_{i}"
+                resolved, connections = _resolve_links(v, child_key, connections)
+                new_list.append(resolved)
+        return new_list, connections
+
+    return value, connections
 
 
 def _normalize_step_inputs(

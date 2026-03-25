@@ -15,10 +15,7 @@ from typing import Any, Callable, Literal, overload, TypedDict
 
 from ._comment_helpers import unflatten_comment_data
 from ._labels import Labels
-from .model import (
-    resolve_source_reference,
-    setup_connected_values,
-)
+from .model import resolve_source_reference
 from .normalized._expanded import (
     expanded_native,
     ExpandedNativeWorkflow,
@@ -445,14 +442,14 @@ def _build_tool_step(
     if tool_id is None and tool_representation is None:
         raise Exception("Tool steps must define a tool_id.")
 
-    # Build tool state
+    # Build tool state — step.state already has $link resolved to ConnectedValue
+    # and step.in_ has all connections (from in, connect, and $link sources)
     tool_state: dict[str, Any] = {"__page__": 0}
     connect = _extract_connections(step)
 
     runtime_inputs = step.runtime_inputs or []
     if step.state is not None or runtime_inputs:
         step_state = dict(step.state) if step.state else {}
-        step_state = setup_connected_values(step_state, append_to=connect)
 
         encoder = ctx.options.state_encode_to_native
         encoded = None
@@ -466,8 +463,7 @@ def _build_tool_step(
         if encoded is not None:
             tool_state.update(encoded)
         else:
-            for key, value in step_state.items():
-                tool_state[key] = value
+            tool_state.update(step_state)
         for runtime_input in runtime_inputs:
             tool_state[runtime_input] = {"__class__": "RuntimeValue"}
     elif step.tool_state is not None:
