@@ -186,6 +186,43 @@ class ToolShedRepository(BaseModel):
     owner: str = Field(description="The owner of the tool shed repository this tool can be found in.")
     tool_shed: str = Field(description="The URI of the tool shed containing the repository this tool can be found in - typically this should be toolshed.g2.bx.psu.edu.")
 
+class BaseCreator(BaseModel):
+    """Base fields shared by all creator types, corresponding to schema.org
+Thing properties common to both Person and Organization."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    name: None | str = Field(default=None, description="Full name of the person or organization.")
+    identifier: None | str = Field(default=None, description="Persistent identifier, typically an ORCID URL (e.g. ``https://orcid.org/0000-0001-2345-6789``) or bare ORCID.")
+    url: None | str = Field(default=None, description="Website or profile URL.")
+    email: None | str = Field(default=None, description="Email address. May include a ``mailto:`` prefix.")
+    image: None | str = Field(default=None, description="URL to an image or avatar.")
+    address: None | str = Field(default=None, description="Physical or mailing address.")
+    alternateName: None | str = Field(default=None, description="An alternate name or alias.")
+    telephone: None | str = Field(default=None, description="Telephone number.")
+    faxNumber: None | str = Field(default=None, description="Fax number.")
+
+class CreatorPerson(BaseCreator):
+    """A person who created or contributed to the workflow.
+Corresponds to a `schema.org Person <https://schema.org/Person>`_."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    class_: Literal["Person"] = Field(default="Person", alias="class", description="Creator type discriminator (``Person``).")
+    givenName: None | str = Field(default=None, description="Given (first) name.")
+    familyName: None | str = Field(default=None, description="Family (last) name.")
+    honorificPrefix: None | str = Field(default=None, description="Honorific prefix (e.g. ``Dr``, ``Prof``).")
+    honorificSuffix: None | str = Field(default=None, description="Honorific suffix (e.g. ``M.D.``, ``PhD``).")
+    jobTitle: None | str = Field(default=None, description="Job title or role.")
+
+class CreatorOrganization(BaseCreator):
+    """An organization that created or contributed to the workflow.
+Corresponds to a `schema.org Organization <https://schema.org/Organization>`_."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    class_: Literal["Organization"] = Field(default="Organization", alias="class", description="Creator type discriminator (``Organization``).")
+
 class WorkflowInputParameter(InputParameter, HasStepPosition):
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
@@ -327,43 +364,6 @@ class FreehandComment(BaseComment):
     thickness: None | float | int = Field(default=None, description="Line thickness.")
     line: list[list[float]] | None = Field(default=None, description="Array of ``[x, y]`` coordinate pairs defining the freehand line path.")
 
-class BaseCreator(BaseModel):
-    """Base fields shared by all creator types, corresponding to schema.org
-Thing properties common to both Person and Organization."""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    name: None | str = Field(default=None, description="Full name of the person or organization.")
-    identifier: None | str = Field(default=None, description="Persistent identifier, typically an ORCID URL (e.g. ``https://orcid.org/0000-0001-2345-6789``) or bare ORCID.")
-    url: None | str = Field(default=None, description="Website or profile URL.")
-    email: None | str = Field(default=None, description="Email address. May include a ``mailto:`` prefix.")
-    image: None | str = Field(default=None, description="URL to an image or avatar.")
-    address: None | str = Field(default=None, description="Physical or mailing address.")
-    alternateName: None | str = Field(default=None, description="An alternate name or alias.")
-    telephone: None | str = Field(default=None, description="Telephone number.")
-    faxNumber: None | str = Field(default=None, description="Fax number.")
-
-class CreatorPerson(BaseCreator):
-    """A person who created or contributed to the workflow.
-Corresponds to a `schema.org Person <https://schema.org/Person>`_."""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    class_: Literal["Person"] = Field(default="Person", alias="class", description="Creator type discriminator (``Person``).")
-    givenName: None | str = Field(default=None, description="Given (first) name.")
-    familyName: None | str = Field(default=None, description="Family (last) name.")
-    honorificPrefix: None | str = Field(default=None, description="Honorific prefix (e.g. ``Dr``, ``Prof``).")
-    honorificSuffix: None | str = Field(default=None, description="Honorific suffix (e.g. ``M.D.``, ``PhD``).")
-    jobTitle: None | str = Field(default=None, description="Job title or role.")
-
-class CreatorOrganization(BaseCreator):
-    """An organization that created or contributed to the workflow.
-Corresponds to a `schema.org Organization <https://schema.org/Organization>`_."""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    class_: Literal["Organization"] = Field(default="Organization", alias="class", description="Creator type discriminator (``Organization``).")
-
 class GalaxyWorkflow(Process, HasUUID):
     """A Galaxy workflow description. This record corresponds to the description of a workflow that should be executable
 on a Galaxy server that includes the contained tool definitions.
@@ -410,6 +410,9 @@ HasStepPosition.model_rebuild()
 StepPosition.model_rebuild()
 ReferencesTool.model_rebuild()
 ToolShedRepository.model_rebuild()
+BaseCreator.model_rebuild()
+CreatorPerson.model_rebuild()
+CreatorOrganization.model_rebuild()
 WorkflowInputParameter.model_rebuild()
 WorkflowOutputParameter.model_rebuild()
 WorkflowStep.model_rebuild()
@@ -422,9 +425,6 @@ TextComment.model_rebuild()
 MarkdownComment.model_rebuild()
 FrameComment.model_rebuild()
 FreehandComment.model_rebuild()
-BaseCreator.model_rebuild()
-CreatorPerson.model_rebuild()
-CreatorOrganization.model_rebuild()
 GalaxyWorkflow.model_rebuild()
 
 
