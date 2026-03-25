@@ -60,7 +60,15 @@ def resolve_source_reference(value: str, known_labels: set | dict) -> SourceRefe
     return SourceReference(value, "output")
 
 
-class NormalizedWorkflowStep(BaseModel):
+class _DictMixin:
+    """Shared serialization for normalized models."""
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize to a JSON/YAML-compatible dict."""
+        return self.model_dump(by_alias=True, exclude_none=True, mode="json")
+
+
+class NormalizedWorkflowStep(_DictMixin, BaseModel):
     """A Format 2 workflow step with all union types resolved to canonical list form.
 
     Ids are guaranteed populated.
@@ -108,7 +116,7 @@ class NormalizedWorkflowStep(BaseModel):
         return self.type_ == WorkflowStepType.pick_value
 
 
-class NormalizedFormat2(BaseModel):
+class NormalizedFormat2(_DictMixin, BaseModel):
     """A Format 2 Galaxy workflow with all union types resolved.
 
     Steps, inputs, outputs, and comments are always lists.

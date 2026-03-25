@@ -1300,8 +1300,8 @@ def _build_input_connections(
     ctx: _ConversionContext,
     is_subworkflow: bool = False,
     subworkflow_ctx: _ConversionContext | None = None,
-) -> dict[str, NativeInputConnection | list[NativeInputConnection]]:
-    input_connections: dict[str, NativeInputConnection | list[NativeInputConnection]] = {}
+) -> dict[str, list[NativeInputConnection]]:
+    input_connections: dict[str, list[NativeInputConnection]] = {}
 
     for key, values in connect.items():
         connection_list: list[NativeInputConnection] = []
@@ -1321,7 +1321,7 @@ def _build_input_connections(
 
         actual_key = "__NO_INPUT_OUTPUT_NAME__" if key == "$step" else key
         if connection_list:
-            input_connections[actual_key] = connection_list if len(connection_list) > 1 else connection_list[0]
+            input_connections[actual_key] = connection_list
 
     return input_connections
 

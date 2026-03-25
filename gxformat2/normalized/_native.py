@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict, Discriminator, Field, Tag
+from pydantic import BaseModel, ConfigDict, Discriminator, Field, Tag, field_validator
 
 from gxformat2.schema.native import (
     _discriminate_comments,
@@ -52,7 +52,15 @@ NativeCreator = Annotated[
 ]
 
 
-class NormalizedNativeStep(BaseModel):
+class _DictMixin:
+    """Shared serialization for normalized models."""
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize to a JSON/YAML-compatible dict."""
+        return self.model_dump(by_alias=True, exclude_none=True, mode="json")
+
+
+class NormalizedNativeStep(_DictMixin, BaseModel):
     """A native workflow step with optional containers resolved to empty defaults.
 
     tool_state is guaranteed to be a parsed dict.
@@ -76,7 +84,15 @@ class NormalizedNativeStep(BaseModel):
     uuid: str | None = Field(default=None)
     errors: str | None = Field(default=None)
     position: StepPosition | None = Field(default=None)
-    input_connections: dict[str, NativeInputConnection | list[NativeInputConnection]] = Field(default_factory=dict)
+    input_connections: dict[str, list[NativeInputConnection]] = Field(default_factory=dict)
+
+    @field_validator("input_connections", mode="before")
+    @classmethod
+    def _normalize_connections(cls, v):
+        if isinstance(v, dict):
+            return {k: val if isinstance(val, list) else [val] for k, val in v.items()}
+        return v
+
     inputs: list[NativeStepInput] = Field(default_factory=list)
     outputs: list[NativeStepOutput] = Field(default_factory=list)
     workflow_outputs: list[NativeWorkflowOutput] = Field(default_factory=list)
@@ -106,7 +122,7 @@ class NormalizedNativeStep(BaseModel):
         return self.type_ == NativeStepType.pick_value
 
 
-class NormalizedNativeWorkflow(BaseModel):
+class NormalizedNativeWorkflow(_DictMixin, BaseModel):
     """A native Galaxy workflow with optional containers resolved to empty defaults.
 
     Steps contain NormalizedNativeStep instances.

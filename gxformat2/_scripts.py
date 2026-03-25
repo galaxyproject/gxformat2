@@ -15,4 +15,4 @@ def ensure_format2(workflow_dict: dict, ensure_labels: bool = False):
     So convert from ga if needed.
     """
     # keep return shape as raw dict for script compatibility
-    return _ensure_format2(workflow_dict).model_dump(mode="json", by_alias=True, exclude_none=True)
+    return _ensure_format2(workflow_dict).to_dict()

@@ -64,7 +64,7 @@ def python_to_workflow(as_python, galaxy_interface=None, workflow_directory=None
         state_encode_to_native=import_options.state_encode_to_native,
     )
     result = to_native(as_python, options)
-    data = result.model_dump(by_alias=True, exclude_none=True, mode="json")
+    data = result.to_dict()
     _compat_fixup_native(data, import_options)
     return data
 
