@@ -60,6 +60,7 @@ setup-git-hook-lint-and-test: ## setup precommit hook for linting and testing pr
 	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint-and-test .git/hooks/pre-commit
 
 lint: ## check style with ruff, flake8, black, and mypy
+	uv run --group lint isort --check --diff .
 	uv run --group lint ruff check
 	uv run --group lint flake8
 	uv run --group lint black --check --diff .
@@ -125,6 +126,7 @@ add-history: ## Reformat HISTORY.rst with data from Github's API
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py --acknowledgements
 
 format:
+	uv run --group lint isort .
 	uv run --group lint black .
 
 mypy:
