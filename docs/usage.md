@@ -135,6 +135,9 @@ for step in nf2.steps:
     step.out         # list[WorkflowStepOutput] — always a list
     step.connected_paths  # frozenset[str] — input ids with a source connection
 
+# Workflow-level tool inventory (recurses into inline subworkflows)
+nf2.unique_tools  # frozenset[ToolReference] — (tool_id, tool_version) pairs
+
 # Outputs — always a list
 for out in nf2.outputs:
     out.id           # str | None
@@ -285,6 +288,9 @@ input — {py:func}`~gxformat2.normalized.to_format2` expects native input,
   `is_subworkflow_step`, `is_pause_step`, `is_pick_value_step`,
   and `connected_paths` (frozenset of input ids with a source)
   are also available
+- `unique_tools` property returns `frozenset[ToolReference]` of all
+  `(tool_id, tool_version)` pairs, recursing into inline subworkflows
+  (unresolved `@import`/URL refs are skipped; use expanded models for full coverage)
 
 {py:class}`~gxformat2.normalized.NormalizedNativeWorkflow` guarantees:
 - `tool_state` always a parsed `dict` (JSON strings auto-decoded)
@@ -295,6 +301,8 @@ input — {py:func}`~gxformat2.normalized.to_format2` expects native input,
 - `connected_paths` property returns `frozenset[str]` of
   `input_connections` keys — O(1) membership test for checking
   whether a state path has an incoming connection
+- `unique_tools` property returns `frozenset[ToolReference]` of all
+  `(tool_id, tool_version)` pairs, recursing into inline subworkflows
 - Tags normalized (empty string → empty list)
 - Subworkflows recursively normalized
 

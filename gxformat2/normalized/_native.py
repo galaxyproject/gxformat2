@@ -39,6 +39,8 @@ from gxformat2.schema.native import (
     ToolShedRepository,
 )
 
+from ._types import ToolReference
+
 NativeComment: TypeAlias = Annotated[
     Union[
         Annotated[NativeTextComment, Tag("NativeTextComment")],
@@ -167,6 +169,20 @@ class NormalizedNativeWorkflow(_DictMixin, BaseModel):
     comments: list[NativeComment] = Field(default_factory=list)
     steps: dict[str, NormalizedNativeStep] = Field(default_factory=dict)
     subworkflows: dict[str, NormalizedNativeWorkflow] | None = Field(default=None)
+
+    @property
+    def unique_tools(self) -> frozenset[ToolReference]:
+        """All unique (tool_id, tool_version) pairs in this workflow and its inline subworkflows."""
+        tools: set[ToolReference] = set()
+        self._collect_tools(tools)
+        return frozenset(tools)
+
+    def _collect_tools(self, into: set[ToolReference]) -> None:
+        for step in self.steps.values():
+            if step.tool_id is not None:
+                into.add(ToolReference(step.tool_id, step.tool_version))
+            if step.subworkflow is not None:
+                step.subworkflow._collect_tools(into)
 
 
 NormalizedNativeStep.model_rebuild()

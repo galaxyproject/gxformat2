@@ -37,6 +37,8 @@ from gxformat2.schema.gxformat2 import (
 )
 from gxformat2.yaml import ordered_load_path
 
+from ._types import ToolReference
+
 
 class GalaxyUserToolStub(BaseModel):
     """Stub marker for a user-defined Galaxy tool in the normalized tree.
@@ -197,6 +199,20 @@ class NormalizedFormat2(_DictMixin, BaseModel):
     def resolve_source(self, source: str) -> SourceReference:
         """Parse a source reference string (e.g. ``step/output``) against this workflow's labels."""
         return resolve_source_reference(source, self.known_labels)
+
+    @property
+    def unique_tools(self) -> frozenset[ToolReference]:
+        """All unique (tool_id, tool_version) pairs in this workflow and its inline subworkflows."""
+        tools: set[ToolReference] = set()
+        self._collect_tools(tools)
+        return frozenset(tools)
+
+    def _collect_tools(self, into: set[ToolReference]) -> None:
+        for step in self.steps:
+            if step.tool_id is not None:
+                into.add(ToolReference(step.tool_id, step.tool_version))
+            if isinstance(step.run, NormalizedFormat2):
+                step.run._collect_tools(into)
 
 
 NormalizedWorkflowStep.model_rebuild()

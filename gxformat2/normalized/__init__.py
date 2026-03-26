@@ -32,6 +32,7 @@ from ._native import (
     NormalizedNativeStep,
     NormalizedNativeWorkflow,
 )
+from ._types import ToolReference
 
 __all__ = (
     "ensure_format2",
@@ -55,4 +56,5 @@ __all__ = (
     "resolve_source_reference",
     "to_format2",
     "to_native",
+    "ToolReference",
 )

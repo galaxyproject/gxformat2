@@ -14,6 +14,7 @@ from gxformat2.normalized import (
     ExpandedNativeWorkflow,
     normalized_format2,
     normalized_native,
+    ToolReference,
 )
 from gxformat2.options import ConversionOptions
 
@@ -636,3 +637,230 @@ class TestCrossFormatExpansion:
         }
         with pytest.raises(ConnectionError):
             expanded_native(native, options=opts)
+
+
+class TestUniqueToolsFormat2:
+
+    def test_single_tool_step(self):
+        wf = normalized_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {
+                    "step1": {
+                        "tool_id": "cat1",
+                        "tool_version": "1.0",
+                        "in": {"x": "x"},
+                    },
+                },
+            }
+        )
+        assert wf.unique_tools == frozenset({ToolReference("cat1", "1.0")})
+
+    def test_no_tool_steps(self):
+        wf = normalized_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {},
+            }
+        )
+        assert wf.unique_tools == frozenset()
+
+    def test_deduplicates(self):
+        wf = normalized_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {
+                    "step1": {"tool_id": "cat1", "tool_version": "1.0", "in": {"x": "x"}},
+                    "step2": {"tool_id": "cat1", "tool_version": "1.0", "in": {"x": "x"}},
+                },
+            }
+        )
+        assert wf.unique_tools == frozenset({ToolReference("cat1", "1.0")})
+
+    def test_multiple_tools(self):
+        wf = normalized_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {
+                    "step1": {"tool_id": "cat1", "tool_version": "1.0", "in": {"x": "x"}},
+                    "step2": {"tool_id": "sort1", "tool_version": "2.0", "in": {"x": "x"}},
+                },
+            }
+        )
+        assert wf.unique_tools == frozenset(
+            {
+                ToolReference("cat1", "1.0"),
+                ToolReference("sort1", "2.0"),
+            }
+        )
+
+    def test_inline_subworkflow(self):
+        wf = normalized_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {
+                    "outer_tool": {"tool_id": "cat1", "tool_version": "1.0", "in": {"x": "x"}},
+                    "nested": {
+                        "type": "subworkflow",
+                        "run": {
+                            "class": "GalaxyWorkflow",
+                            "inputs": {"y": "data"},
+                            "outputs": {},
+                            "steps": {
+                                "inner_tool": {"tool_id": "sort1", "tool_version": "2.0", "in": {"y": "y"}},
+                            },
+                        },
+                        "in": {"y": "x"},
+                    },
+                },
+            }
+        )
+        assert wf.unique_tools == frozenset(
+            {
+                ToolReference("cat1", "1.0"),
+                ToolReference("sort1", "2.0"),
+            }
+        )
+
+    def test_unresolved_ref_skipped(self):
+        wf = normalized_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {
+                    "tool_step": {"tool_id": "cat1", "tool_version": "1.0", "in": {"x": "x"}},
+                    "nested": {
+                        "type": "subworkflow",
+                        "run": "https://example.com/wf.gxwf.yml",
+                        "in": {"y": "x"},
+                    },
+                },
+            }
+        )
+        assert wf.unique_tools == frozenset({ToolReference("cat1", "1.0")})
+
+    def test_null_tool_version(self):
+        wf = normalized_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {
+                    "step1": {"tool_id": "cat1", "in": {"x": "x"}},
+                },
+            }
+        )
+        assert wf.unique_tools == frozenset({ToolReference("cat1", None)})
+
+
+class TestUniqueToolsNative:
+
+    def test_single_tool_step(self):
+        wf = normalized_native(
+            {
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "name": "Test",
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "type": "tool",
+                        "tool_id": "cat1",
+                        "tool_version": "1.0",
+                        "tool_state": "{}",
+                        "input_connections": {},
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                    },
+                },
+            }
+        )
+        assert wf.unique_tools == frozenset({ToolReference("cat1", "1.0")})
+
+    def test_no_tool_steps(self):
+        wf = normalized_native(
+            {
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "name": "Test",
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "type": "data_input",
+                        "tool_state": "{}",
+                        "input_connections": {},
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                    },
+                },
+            }
+        )
+        assert wf.unique_tools == frozenset()
+
+    def test_inline_subworkflow(self):
+        wf = normalized_native(
+            {
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "name": "Outer",
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "type": "tool",
+                        "tool_id": "cat1",
+                        "tool_version": "1.0",
+                        "tool_state": "{}",
+                        "input_connections": {},
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                    },
+                    "1": {
+                        "id": 1,
+                        "type": "subworkflow",
+                        "tool_state": "{}",
+                        "input_connections": {},
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "subworkflow": {
+                            "a_galaxy_workflow": "true",
+                            "format-version": "0.1",
+                            "name": "Inner",
+                            "steps": {
+                                "0": {
+                                    "id": 0,
+                                    "type": "tool",
+                                    "tool_id": "sort1",
+                                    "tool_version": "2.0",
+                                    "tool_state": "{}",
+                                    "input_connections": {},
+                                    "inputs": [],
+                                    "outputs": [],
+                                    "workflow_outputs": [],
+                                },
+                            },
+                        },
+                    },
+                },
+            }
+        )
+        assert wf.unique_tools == frozenset(
+            {
+                ToolReference("cat1", "1.0"),
+                ToolReference("sort1", "2.0"),
+            }
+        )
