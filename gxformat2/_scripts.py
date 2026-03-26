@@ -1,6 +1,6 @@
 """Utilities for scripts in gxformat2."""
 
-from gxformat2.to_format2 import ensure_format2 as _ensure_format2
+from gxformat2.normalized import ensure_format2 as _ensure_format2
 from gxformat2.yaml import ordered_load_path
 
 

@@ -7,6 +7,7 @@ import pytest
 import yaml
 
 from gxformat2.normalized import (
+    ensure_format2,
     expanded_format2,
     expanded_native,
     ExpandedFormat2,
@@ -15,7 +16,6 @@ from gxformat2.normalized import (
     normalized_native,
 )
 from gxformat2.options import ConversionOptions
-from gxformat2.to_format2 import ensure_format2
 
 
 class TestNormalizedFormat2Graph:
@@ -404,7 +404,7 @@ class TestEnsureFormat2Expansion:
         assert step.is_subworkflow_step
 
     def test_expand_resolves_file_run(self, tmp_path):
-        from gxformat2.to_format2 import ensure_format2
+        from gxformat2.normalized import ensure_format2
 
         inner_path = tmp_path / "inner.gxwf.yml"
         inner_path.write_text(yaml.dump(INNER_WORKFLOW))
@@ -420,7 +420,7 @@ class TestEnsureFormat2Expansion:
         assert wf.steps[0].run.steps[0].tool_id == "random_lines1"
 
     def test_no_expand_leaves_file_run_as_string(self):
-        from gxformat2.to_format2 import ensure_format2
+        from gxformat2.normalized import ensure_format2
 
         outer = {
             "class": "GalaxyWorkflow",
@@ -434,7 +434,7 @@ class TestEnsureFormat2Expansion:
 
     def test_expand_nested_base64(self):
         """Nested subworkflow: outer run refs base64 which itself has an inline subworkflow."""
-        from gxformat2.to_format2 import ensure_format2
+        from gxformat2.normalized import ensure_format2
 
         inner_with_sub = {
             "class": "GalaxyWorkflow",

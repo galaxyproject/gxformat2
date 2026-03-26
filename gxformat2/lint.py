@@ -14,6 +14,8 @@ from pydantic import ValidationError
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
 from gxformat2.normalized import (
+    ensure_format2,
+    ensure_native,
     NormalizedFormat2,
     NormalizedWorkflowStep,
 )
@@ -27,8 +29,6 @@ from gxformat2.schema.gxformat2 import GalaxyWorkflow as Format2LaxModel
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as Format2StrictModel
 from gxformat2.schema.native import NativeGalaxyWorkflow as NativeLaxModel
 from gxformat2.schema.native_strict import NativeGalaxyWorkflow as NativeStrictModel
-from gxformat2.to_format2 import ensure_format2
-from gxformat2.to_native import ensure_native
 from gxformat2.yaml import ordered_load, ordered_load_path
 
 EXIT_CODE_SUCCESS = 0

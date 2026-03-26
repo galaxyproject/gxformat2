@@ -1,7 +1,7 @@
 import json
 from collections import OrderedDict
 
-from gxformat2.converter import (
+from gxformat2.normalized import (
     POST_JOB_ACTIONS,
 )
 

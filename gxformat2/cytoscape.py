@@ -7,9 +7,8 @@ import string
 import sys
 from typing import Any
 
-from gxformat2.normalized import NormalizedFormat2, NormalizedWorkflowStep
+from gxformat2.normalized import ensure_format2, NormalizedFormat2, NormalizedWorkflowStep
 from gxformat2.schema.gxformat2 import WorkflowInputParameter
-from gxformat2.to_format2 import ensure_format2
 
 CYTOSCAPE_JS_TEMPLATE = os.path.join(os.path.dirname(__file__), "cytoscape.html")
 MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"

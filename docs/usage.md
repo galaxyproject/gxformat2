@@ -9,7 +9,7 @@ convenience (top) to lowest level (bottom):
   │  ensure_format2() / ensure_native()                 │
   │  "Give me any workflow, I'll give you typed models"  │
   │  Auto-detects format, converts, normalizes, expands │
-  │  ↳ from gxformat2.to_format2 / gxformat2.to_native │
+  │  ↳ from gxformat2.normalized                        │
   ├─────────────────────────────────────────────────────┤
   │  Expanded Models                                    │
   │  ExpandedFormat2 / ExpandedNativeWorkflow            │
@@ -35,8 +35,8 @@ convenience (top) to lowest level (bottom):
 
 ## The `ensure_` Layer — Recommended Entry Point
 
-The {py:func}`~gxformat2.to_format2.ensure_format2` and
-{py:func}`~gxformat2.to_native.ensure_native` functions are the primary way to
+The {py:func}`~gxformat2.normalized.ensure_format2` and
+{py:func}`~gxformat2.normalized.ensure_native` functions are the primary way to
 get typed workflow models. They accept **any** workflow representation and
 return normalized (or expanded) models in the target format, handling
 format detection and conversion automatically.
@@ -44,7 +44,7 @@ format detection and conversion automatically.
 ### ensure_format2
 
 ```python
-from gxformat2.to_format2 import ensure_format2
+from gxformat2.normalized import ensure_format2
 
 # From a file path (native .ga or Format2 .gxwf.yml)
 nf2 = ensure_format2("workflow.ga")
@@ -70,7 +70,7 @@ Overloads provide correct static types based on the `expand` literal.
 ### ensure_native
 
 ```python
-from gxformat2.to_native import ensure_native
+from gxformat2.normalized import ensure_native
 
 # Same flexibility — any input format
 nnw = ensure_native("workflow.gxwf.yml")
@@ -179,8 +179,8 @@ ref: SourceReference = resolve_source_reference("step/out", known_labels)
 ### ConversionOptions
 
 Both `ensure_` functions and the underlying
-{py:func}`~gxformat2.to_format2.to_format2` /
-{py:func}`~gxformat2.to_native.to_native` converters accept an optional
+{py:func}`~gxformat2.normalized.to_format2` /
+{py:func}`~gxformat2.normalized.to_native` converters accept an optional
 {py:class}`~gxformat2.options.ConversionOptions`:
 
 ```python
@@ -234,20 +234,20 @@ nnw = ensure_native(workflow_dict)                 # For native-specific checks
 
 For cases where you know the input format and don't need auto-detection,
 the {py:mod}`gxformat2.normalized` package provides direct constructors.
-For cross-format conversion, {py:func}`~gxformat2.to_format2.to_format2`
-and {py:func}`~gxformat2.to_native.to_native` convert between formats and
+For cross-format conversion, {py:func}`~gxformat2.normalized.to_format2`
+and {py:func}`~gxformat2.normalized.to_native` convert between formats and
 return normalized (or expanded) models.
 
 ### Cross-Format Conversion
 
-{py:func}`~gxformat2.to_format2.to_format2` converts native workflows to
-Format2, and {py:func}`~gxformat2.to_native.to_native` converts Format2
+{py:func}`~gxformat2.normalized.to_format2` converts native workflows to
+Format2, and {py:func}`~gxformat2.normalized.to_native` converts Format2
 workflows to native. Both accept the source format as a raw dict, file
 path, or typed model, and return normalized models in the target format:
 
 ```python
-from gxformat2.to_format2 import to_format2
-from gxformat2.to_native import to_native
+from gxformat2.normalized import to_format2
+from gxformat2.normalized import to_native
 
 # Native → Format2
 nf2 = to_format2(native_dict)
@@ -263,8 +263,8 @@ enw = to_native(format2_dict, options=options, expand=True)
 ```
 
 Unlike the `ensure_` functions, these only accept the *other* format as
-input — {py:func}`~gxformat2.to_format2.to_format2` expects native input,
-{py:func}`~gxformat2.to_native.to_native` expects Format2 input. Use
+input — {py:func}`~gxformat2.normalized.to_format2` expects native input,
+{py:func}`~gxformat2.normalized.to_native` expects Format2 input. Use
 `ensure_` when you don't know (or don't care about) the input format.
 
 ### Normalized Models

@@ -12,7 +12,8 @@ import sys
 from typing import Any, Callable, Dict, Optional
 
 from .model import steps_as_list  # noqa: F401 (re-exported for abstract.py, normalize.py)
-from .to_native import POST_JOB_ACTIONS  # noqa: F401 (re-exported for tests)
+from .normalized import to_native
+from .options import ConversionOptions
 from .yaml import ordered_load
 
 log = __import__("logging").getLogger(__name__)
@@ -52,9 +53,6 @@ def yaml_to_workflow(has_yaml, galaxy_interface=None, workflow_directory=None, i
 
 def python_to_workflow(as_python, galaxy_interface=None, workflow_directory=None, import_options=None):
     """Convert a Format 2 workflow into standard Galaxy format from supplied dictionary."""
-    from .options import ConversionOptions
-    from .to_native import to_native
-
     if "yaml_content" in as_python:
         as_python = ordered_load(as_python["yaml_content"])
 

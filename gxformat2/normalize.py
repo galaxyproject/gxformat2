@@ -12,11 +12,10 @@ from typing import Any, Union
 
 from typing_extensions import TypeAlias
 
-from gxformat2.normalized import NormalizedFormat2, NormalizedNativeWorkflow, NormalizedWorkflowStep
+from gxformat2.normalized import ensure_format2, NormalizedFormat2, NormalizedNativeWorkflow, NormalizedWorkflowStep
 from gxformat2.options import ConversionOptions
 from gxformat2.schema.gxformat2 import GalaxyWorkflow, WorkflowInputParameter, WorkflowOutputParameter
 from gxformat2.schema.native import NativeGalaxyWorkflow
-from gxformat2.to_format2 import ensure_format2
 
 # Any input ensure_format2 accepts
 Workflow: TypeAlias = Union[

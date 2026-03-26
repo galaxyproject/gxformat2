@@ -35,6 +35,7 @@ from gxformat2.schema.gxformat2 import (
     WorkflowStepOutput,
     WorkflowStepType,
 )
+from gxformat2.yaml import ordered_load_path
 
 
 class GalaxyUserToolStub(BaseModel):
@@ -218,12 +219,10 @@ def normalized_format2(
     lists, shorthands are expanded, and ids are populated.
     """
     if isinstance(workflow, (str, Path)):
-        from gxformat2.yaml import ordered_load_path
-
         workflow = ordered_load_path(str(workflow))
     if isinstance(workflow, dict):
         if workflow.get("a_galaxy_workflow") == "true":
-            from gxformat2.export import from_galaxy_native
+            from gxformat2.export import from_galaxy_native  # deferred: circular with export
 
             workflow = from_galaxy_native(workflow)
         elif "$graph" in workflow and "class" not in workflow:

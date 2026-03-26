@@ -1,9 +1,8 @@
 """Tests for gxformat2.to_format2 — model-returning native→Format2 conversion."""
 
-from gxformat2.normalized import NormalizedFormat2
+from gxformat2.normalized import ensure_format2, NormalizedFormat2, to_format2
 from gxformat2.normalized._format2 import GalaxyUserToolStub
 from gxformat2.options import ConversionOptions
-from gxformat2.to_format2 import ensure_format2, to_format2
 
 from .example_wfs import BASIC_WORKFLOW
 

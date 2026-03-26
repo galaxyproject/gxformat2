@@ -6,9 +6,8 @@ import argparse
 import sys
 from typing import Any
 
-from gxformat2.normalized import NormalizedFormat2, NormalizedWorkflowStep
+from gxformat2.normalized import ensure_format2, NormalizedFormat2, NormalizedWorkflowStep
 from gxformat2.schema.gxformat2 import GalaxyType, WorkflowInputParameter, WorkflowOutputParameter, WorkflowStepOutput
-from gxformat2.to_format2 import ensure_format2
 from gxformat2.yaml import ordered_dump_to_path, ordered_load
 
 CWL_VERSION = "v1.2"

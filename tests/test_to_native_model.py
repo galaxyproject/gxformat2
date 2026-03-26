@@ -1,7 +1,6 @@
 """Tests for gxformat2.to_native — model-returning conversion."""
 
-from gxformat2.normalized import NormalizedNativeWorkflow
-from gxformat2.to_native import ensure_native, to_native
+from gxformat2.normalized import ensure_native, NormalizedNativeWorkflow, to_native
 
 from .example_wfs import (
     BASIC_WORKFLOW,

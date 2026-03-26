@@ -8,13 +8,12 @@ PROJECT_OWNER = "galaxyproject"
 # Backward compat
 from .converter import ImportOptions, python_to_workflow  # NOQA
 from .export import from_galaxy_native  # NOQA
+from .normalized import to_format2, to_native  # NOQA
 from .options import (  # NOQA
     ConversionOptions,
     StateEncodeToFormat2Fn,
     StateEncodeToNativeFn,
 )
-from .to_format2 import to_format2  # NOQA
-from .to_native import to_native  # NOQA
 
 __all__ = (
     "ConversionOptions",

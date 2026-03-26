@@ -1,6 +1,6 @@
 """Tests for connection resolution during normalization."""
 
-from gxformat2.to_format2 import ensure_format2
+from gxformat2.normalized import ensure_format2
 from gxformat2.yaml import ordered_load
 
 

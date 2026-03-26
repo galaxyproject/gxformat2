@@ -43,8 +43,8 @@ MAX_EXPANSION_DEPTH = 10
 class ConversionOptions:
     """Options for workflow format conversion and expansion.
 
-    Subsumes the old ``ImportOptions`` and adds native→Format2 options,
-    expansion control, and URL resolution.
+    Controls native↔Format2 conversion, subworkflow expansion,
+    and URL resolution.
     """
 
     def __init__(  # noqa: D107
