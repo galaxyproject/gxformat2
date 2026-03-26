@@ -152,6 +152,11 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
     def is_pick_value_step(self) -> bool:
         return self.type_ == WorkflowStepType.pick_value
 
+    @property
+    def connected_paths(self) -> frozenset[str]:
+        """State paths that have incoming connections."""
+        return frozenset(si.id for si in self.in_ if si.source is not None and si.id is not None)
+
 
 class NormalizedFormat2(_DictMixin, BaseModel):
     """A Format 2 Galaxy workflow with all union types resolved.

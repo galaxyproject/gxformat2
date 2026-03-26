@@ -133,6 +133,7 @@ for step in nf2.steps:
     step.run         # NormalizedFormat2 | str | dict | None
     step.in_         # list[WorkflowStepInput] — always a list
     step.out         # list[WorkflowStepOutput] — always a list
+    step.connected_paths  # frozenset[str] — input ids with a source connection
 
 # Outputs — always a list
 for out in nf2.outputs:
@@ -281,7 +282,8 @@ input — {py:func}`~gxformat2.to_format2.to_format2` expects native input,
 - Step `type_` always populated — inferred from context when not
   explicit in the YAML (`run` present → `subworkflow`, otherwise →
   `tool`). Convenience properties `is_tool_step`,
-  `is_subworkflow_step`, `is_pause_step`, `is_pick_value_step`
+  `is_subworkflow_step`, `is_pause_step`, `is_pick_value_step`,
+  and `connected_paths` (frozenset of input ids with a source)
   are also available
 
 {py:class}`~gxformat2.normalized.NormalizedNativeWorkflow` guarantees:
@@ -290,6 +292,9 @@ input — {py:func}`~gxformat2.to_format2.to_format2` expects native input,
 - `input_connections` values always `list[NativeInputConnection]`
   (single connections wrapped during construction — no `isinstance`
   checks needed)
+- `connected_paths` property returns `frozenset[str]` of
+  `input_connections` keys — O(1) membership test for checking
+  whether a state path has an incoming connection
 - Tags normalized (empty string → empty list)
 - Subworkflows recursively normalized
 

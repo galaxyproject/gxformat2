@@ -134,6 +134,11 @@ class NormalizedNativeStep(_DictMixin, BaseModel):
     def is_pick_value_step(self) -> bool:
         return self.type_ == NativeStepType.pick_value
 
+    @property
+    def connected_paths(self) -> frozenset[str]:
+        """State paths that have incoming connections."""
+        return frozenset(self.input_connections.keys())
+
 
 class NormalizedNativeWorkflow(_DictMixin, BaseModel):
     """A native Galaxy workflow with optional containers resolved to empty defaults.

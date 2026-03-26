@@ -150,6 +150,18 @@ class TestNormalizedNativeBasics:
         wf = normalized_native(self.MINIMAL)
         assert wf.tags == []
 
+    def test_connected_paths(self):
+        wf_dict = copy.deepcopy(self.MINIMAL)
+        wf_dict["steps"]["0"]["input_connections"] = {
+            "input1": {"id": 1, "output_name": "output"},
+        }
+        wf = normalized_native(wf_dict)
+        assert wf.steps["0"].connected_paths == frozenset({"input1"})
+
+    def test_connected_paths_empty(self):
+        wf = normalized_native(self.MINIMAL)
+        assert wf.steps["0"].connected_paths == frozenset()
+
 
 class TestNormalizedFormat2Basics:
     """Basic normalized_format2 guarantees."""
@@ -178,6 +190,23 @@ class TestNormalizedFormat2Basics:
         assert len(wf.steps[0].in_) == 1
         assert wf.steps[0].in_[0].id == "input1"
         assert wf.steps[0].in_[0].source == "x"
+
+    def test_connected_paths(self):
+        wf = normalized_format2(
+            {
+                "class": "GalaxyWorkflow",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {"s": {"tool_id": "cat1", "in": {"input1": "x", "input2": {"default": 42}}}},
+            }
+        )
+        assert wf.steps[0].connected_paths == frozenset({"input1"})
+
+    def test_connected_paths_empty(self):
+        wf = normalized_format2(
+            {"class": "GalaxyWorkflow", "inputs": {}, "outputs": {}, "steps": {"s": {"tool_id": "cat1"}}}
+        )
+        assert wf.steps[0].connected_paths == frozenset()
 
     def test_native_dict_auto_detected(self):
         native = {
