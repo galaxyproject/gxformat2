@@ -460,6 +460,12 @@ def _build_format2_workflow(
         else:
             fmt2_steps.append(_build_format2_step(step, label_map, options))
 
+    # Replace anonymous subworkflow output references.  Native workflow_outputs
+    # use "inner_step_id:output_name" for subworkflow outputs, but the Format2
+    # subworkflow has its own output IDs.  Rewrite outputSource to use the
+    # subworkflow's Format2 output ID instead of the raw native name.
+    _replace_anonymous_output_references(output_params, fmt2_steps)
+
     # Convert comments
     comments = _build_format2_comments(wf, label_map, compact)
 
@@ -787,6 +793,50 @@ def _to_source(output_name: str, label_map: dict[str, str], step_id: int) -> str
     if output_name == "output":
         return output_label
     return f"{output_label}/{output_name}"
+
+
+def _replace_anonymous_output_references(
+    output_params: list[WorkflowOutputParameter],
+    fmt2_steps: list[NormalizedWorkflowStep],
+) -> None:
+    """Rewrite outputSource refs that use native ``inner_step_id:output_name`` syntax.
+
+    Native Galaxy encodes subworkflow outputs as ``"2:text_param"`` meaning
+    "output ``text_param`` from inner step 2".  The Format2 subworkflow has its
+    own output IDs (e.g. ``_anonymous_output_2``) with ``outputSource`` pointing
+    to that inner step.  This function finds those matches and rewrites the
+    parent's ``outputSource`` to use the subworkflow's Format2 output ID.
+    """
+    runs_by_label: dict[str, NormalizedFormat2] = {}
+    for step in fmt2_steps:
+        label = step.label or step.id
+        if isinstance(step.run, NormalizedFormat2):
+            runs_by_label[str(label)] = step.run
+
+    for out in output_params:
+        source = out.outputSource
+        if not source or "/" not in source:
+            continue
+        step_label, output_name = source.split("/", 1)
+        if ":" not in output_name:
+            continue
+        # output_name is "inner_step_id:inner_output_name" (native convention)
+        inner_step_id, inner_output_name = output_name.split(":", 1)
+        subworkflow = runs_by_label.get(step_label)
+        if subworkflow is None:
+            continue
+        # The subworkflow's Format2 inner step label for native step ID N
+        # is either the original label or "_unlabeled_step_N".  Build the
+        # expected outputSource suffix to match against.
+        target_suffix = f"/{inner_output_name}"
+        for sub_out in subworkflow.outputs:
+            sub_src = sub_out.outputSource
+            if sub_src and sub_src.endswith(target_suffix):
+                # Verify the step part refers to the right inner step
+                sub_step_ref = sub_src[: -len(target_suffix)]
+                if sub_step_ref == inner_step_id or sub_step_ref.endswith(inner_step_id):
+                    out.outputSource = f"{step_label}/{sub_out.id}"
+                    break
 
 
 _CREATOR_CLASS_MAP: dict[str, type[CreatorPerson] | type[CreatorOrganization]] = {
