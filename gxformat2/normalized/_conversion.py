@@ -1632,7 +1632,7 @@ def expanded_format2(
     """
     options = options or ConversionOptions()
     if not isinstance(workflow, NormalizedFormat2):
-        workflow = normalized_format2(workflow)
+        workflow = ensure_format2(workflow, options)
     ctx = _ExpansionContext(options)
     return _expand_format2(workflow, ctx)
 
