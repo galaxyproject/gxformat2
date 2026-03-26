@@ -1,8 +1,7 @@
 """Functionality for converting a Format 2 workflow into a standard Galaxy workflow.
 
-This module provides backward-compatible wrapper functions that delegate
-to :mod:`gxformat2.to_native` and return plain dicts.  The new typed API
-is :func:`gxformat2.to_native.to_native`.
+This module provides dict-returning wrapper functions used by Galaxy and
+Planemo.  The typed API is :func:`gxformat2.normalized.to_native`.
 """
 
 import argparse
@@ -73,7 +72,7 @@ def python_to_workflow(as_python, galaxy_interface=None, workflow_directory=None
 
 
 def _compat_fixup_native(data: dict, import_options: ImportOptions) -> None:
-    """Post-process native dict for backward compat with old converter output."""
+    """Post-process native dict to match Galaxy's expected .ga structure."""
     for step in data.get("steps", {}).values():
         # JSON-encode tool_state if requested
         if import_options.encode_tool_state_json and isinstance(step.get("tool_state"), dict):

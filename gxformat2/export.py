@@ -1,8 +1,7 @@
 """Functionality for converting a standard Galaxy workflow into a format 2 workflow.
 
-This module provides backward-compatible wrapper functions that delegate
-to :mod:`gxformat2.to_format2` and return plain dicts.  The new typed API
-is :func:`gxformat2.to_format2.to_format2`.
+This module provides dict-returning wrapper functions used by Galaxy and
+Planemo.  The typed API is :func:`gxformat2.normalized.to_format2`.
 """
 
 import argparse
@@ -54,7 +53,7 @@ def from_galaxy_native(
     data = result.to_dict()
     data["class"] = "GalaxyWorkflow"
 
-    # Strip empty optional collections that the old code omitted
+    # Strip empty optional collections for cleaner YAML output
     for key in ("comments", "tags"):
         if key in data and data[key] == []:
             del data[key]
@@ -84,7 +83,7 @@ def from_galaxy_native(
 
 
 def _fixup_format2_dict(data: dict) -> None:
-    """Recursively fix up a Format2 workflow dict for backward compat."""
+    """Recursively fix up a Format2 workflow dict for idmap/cleanup conventions."""
     data["class"] = "GalaxyWorkflow"
     for key in ("comments", "tags"):
         if key in data and data[key] == []:
