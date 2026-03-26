@@ -208,9 +208,10 @@ def normalized_format2(
 ) -> NormalizedFormat2:
     """Normalize a Format 2 Galaxy workflow into a fully typed model.
 
-    Accepts a raw dict, a YAML/JSON file path, a ``GalaxyWorkflow``
-    model, or a native workflow dict (auto-detected by
-    ``a_galaxy_workflow`` key and converted via ``from_galaxy_native``).
+    Accepts a raw Format2 dict, a YAML/JSON file path, or a
+    ``GalaxyWorkflow`` model.  Raises ``ValueError`` if given a native
+    Galaxy workflow — use ``ensure_format2()`` or ``to_format2()`` for
+    cross-format input.
 
     Handles ``$graph`` multi-workflow documents by extracting the
     ``main`` workflow and inlining ``#ref`` subworkflow references.
@@ -222,9 +223,9 @@ def normalized_format2(
         workflow = ordered_load_path(str(workflow))
     if isinstance(workflow, dict):
         if workflow.get("a_galaxy_workflow") == "true":
-            from gxformat2.export import from_galaxy_native  # deferred: circular with export
-
-            workflow = from_galaxy_native(workflow)
+            raise ValueError(
+                "normalized_format2() received a native Galaxy workflow; use ensure_format2() or to_format2() instead"
+            )
         elif "$graph" in workflow and "class" not in workflow:
             workflow = _resolve_graph(workflow)
         assert isinstance(workflow, dict)

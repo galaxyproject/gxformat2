@@ -322,8 +322,9 @@ nnw = normalized_native(native_dict)
 nnw = normalized_native("/path/to/workflow.ga")
 nnw = normalized_native(native_galaxy_workflow_model)
 
-# normalized_format2 also auto-detects native dicts:
-nf2 = normalized_format2(native_dict)  # converts via from_galaxy_native
+# For native dicts, use ensure_format2 or to_format2 instead:
+from gxformat2.normalized import ensure_format2
+nf2 = ensure_format2(native_dict)
 ```
 
 ### Expanded Models

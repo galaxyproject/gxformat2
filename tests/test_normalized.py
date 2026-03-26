@@ -208,7 +208,7 @@ class TestNormalizedFormat2Basics:
         )
         assert wf.steps[0].connected_paths == frozenset()
 
-    def test_native_dict_auto_detected(self):
+    def test_native_dict_rejected(self):
         native = {
             "a_galaxy_workflow": "true",
             "format-version": "0.1",
@@ -226,7 +226,28 @@ class TestNormalizedFormat2Basics:
                 }
             },
         }
-        wf = normalized_format2(native)
+        with pytest.raises(ValueError, match="native Galaxy workflow"):
+            normalized_format2(native)
+
+    def test_native_dict_via_ensure_format2(self):
+        native = {
+            "a_galaxy_workflow": "true",
+            "format-version": "0.1",
+            "name": "Test",
+            "steps": {
+                "0": {
+                    "id": 0,
+                    "type": "data_input",
+                    "label": "inp",
+                    "tool_state": "{}",
+                    "input_connections": {},
+                    "inputs": [],
+                    "outputs": [],
+                    "workflow_outputs": [],
+                }
+            },
+        }
+        wf = ensure_format2(native)
         assert len(wf.inputs) >= 1
 
     def test_url_run_passes_through(self):

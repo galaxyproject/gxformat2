@@ -10,6 +10,7 @@ import sys
 from collections import OrderedDict
 from typing import Any, Callable, Dict, Optional, Union
 
+from .normalized import to_format2
 from .options import ConversionOptions
 from .schema.native import NativeGalaxyWorkflow
 from .yaml import ordered_dump
@@ -43,8 +44,6 @@ def from_galaxy_native(
     carry ``state`` instead of ``tool_state``; when it returns ``None`` the
     default ``tool_state`` passthrough is used.
     """
-    from .normalized import to_format2  # deferred: circular with _format2
-
     options = ConversionOptions(
         compact=compact,
         state_encode_to_format2=convert_tool_state,

@@ -251,11 +251,17 @@ def ensure_format2(
     """
     options = options or ConversionOptions()
 
+    # Resolve paths early so dict-level detection works uniformly
+    if isinstance(workflow, (str, Path, os.PathLike)):
+        workflow = ordered_load_path(str(workflow))
+
     if isinstance(workflow, NormalizedFormat2):
         result = workflow
     elif isinstance(workflow, GalaxyWorkflow):
         result = normalized_format2(workflow)
     elif isinstance(workflow, (NativeGalaxyWorkflow, NormalizedNativeWorkflow)):
+        result = to_format2(workflow, options=options, expand=False)
+    elif isinstance(workflow, dict) and workflow.get("a_galaxy_workflow") == "true":
         result = to_format2(workflow, options=options, expand=False)
     else:
         result = normalized_format2(workflow)
