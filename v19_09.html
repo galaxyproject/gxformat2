@@ -221,7 +221,7 @@ input data links are fulfilled.</p>
 <div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>comments</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3">array&lt;<a href="#WorkflowComment">WorkflowComment</a>&gt; | <br><a href='#map'>map</a>&lt;<code>label</code>,&nbsp;<a href="#WorkflowComment">WorkflowComment</a>&gt</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Visual annotations for the workflow editor canvas. Comments are non-functional
 and do not affect workflow execution. May be specified as a list or as a mapping
 keyed by label.</p>
@@ -231,7 +231,8 @@ keyed by label.</p>
 <div class="col-xs-3 col-lg-2"><code>creator</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Can be a schema.org Person (<a href="https://schema.org/Person">https://schema.org/Person</a>) or Organization (<a href="https://schema.org/Organization">https://schema.org/Organization</a>) entity</p>
+<div class="col-xs-12 col-lg-6 description-col"><p>Workflow creators. Can be schema.org Person (<a href="https://schema.org/Person">https://schema.org/Person</a>)
+or Organization (<a href="https://schema.org/Organization">https://schema.org/Organization</a>) entities.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -522,8 +523,9 @@ interface for constructing the input object.</p>
 <div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>run</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#GalaxyWorkflow">GalaxyWorkflow</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Specifies a subworkflow to run.</p>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specifies a subworkflow to run. May be an inline workflow definition,
+a URL string, or an @import reference dict.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -641,7 +643,7 @@ to connect the output value to downstream parameters.</p>
 <div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>set_columns</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
 <div class="col-xs-12 col-lg-6 description-col"></div>
 </div></div><h3 id="ToolShedRepository" class="section">ToolShedRepository <a href="#ToolShedRepository">&sect;</a></h3><h3>Fields</h3>
 <div class="responsive-table">
@@ -695,118 +697,6 @@ field is 'markdown'.</p>
 <div class="col-xs-2 col-lg-1">required</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Galaxy flavored Markdown to define an invocation report.</p>
-</div>
-</div></div><h2 id="WorkflowComment" class="section">WorkflowComment <a href="#WorkflowComment">&sect;</a></h2><p>A visual annotation in the workflow editor. Comments are non-functional
-elements used for documentation and organization in the editor canvas.</p>
-<p>Fields vary by comment type. Common fields (<code>type</code>, <code>position</code>, <code>size</code>,
-<code>color</code>) apply to all types. Type-specific fields are optional and only
-relevant for their respective type.</p>
-<h3>Fields</h3>
-<div class="responsive-table">
-<div class="row responsive-table-header">
-<div class="col-xs-3 col-lg-2">field</div>
-<div class="col-xs-2 col-lg-1">required</div>
-<div class="col-xs-7 col-lg-3">type</div>
-<div class="col-xs-12 col-lg-6 description-header">description</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>type</code></div>
-<div class="col-xs-2 col-lg-1">required</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>The type of comment. Valid values are <code>text</code>, <code>markdown</code>, <code>frame</code>, and <code>freehand</code>.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>position</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Position of the comment on the editor canvas as <code>[x, y]</code> coordinates.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>size</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Size of the comment as <code>[width, height]</code>.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>color</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Display color of the comment (e.g. <code>&quot;none&quot;</code>, <code>&quot;blue&quot;</code>).</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>label</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Optional label for referencing this comment from frame <code>contains_comments</code>
-fields or for use as a map key when comments are represented as a mapping.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>text</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Text content. Used by <code>text</code> and <code>markdown</code> comment types.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>bold</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Whether the text is bold. Only used by <code>text</code> comments.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>italic</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Whether the text is italic. Only used by <code>text</code> comments.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>text_size</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">int</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Font size of the text. Only used by <code>text</code> comments.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>title</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Title displayed on the frame. Only used by <code>frame</code> comments.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>contains_steps</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&nbsp;|&nbsp;<a href="#PrimitiveType">int</a>&gt;</div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Step labels or indices contained within this frame. Only used by <code>frame</code> comments.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>contains_comments</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&nbsp;|&nbsp;<a href="#PrimitiveType">int</a>&gt;</div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Comment labels or indices contained within this frame. Only used by <code>frame</code> comments.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>thickness</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">int</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Line thickness. Only used by <code>freehand</code> comments.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>line</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Array of <code>[x, y]</code> coordinate pairs defining the freehand line path.
-Only used by <code>freehand</code> comments.</p>
 </div>
 </div></div></div>
     </div>
