@@ -72,7 +72,12 @@ def _build_cytoscape_elements(workflow_path):
         node_data = {"id": step_id, "label": label, "step_type": step_type, "tool_id": step.get("tool_id")}
         elements.append({"group": "nodes", "data": node_data, "classes": classes, "position": node_position})
 
-        for key, value in (step.get("in") or {}).items():
+        in_val = step.get("in") or []
+        if isinstance(in_val, dict):
+            in_items = list(in_val.items())
+        else:
+            in_items = [(entry.get("id", ""), entry.get("source", "")) for entry in in_val if isinstance(entry, dict)]
+        for key, value in in_items:
             if isinstance(value, dict) and "source" in value:
                 value = value["source"]
             elif isinstance(value, dict):

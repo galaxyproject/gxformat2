@@ -1,20 +1,30 @@
 """Workflow linting entry point - main script."""
 
+from __future__ import annotations
+
 import argparse
 import json
-import os
 import re
 import sys
 from collections import OrderedDict
-from pathlib import Path
 from urllib.parse import urlparse
 
 from pydantic import ValidationError
 
-from gxformat2._scripts import ensure_format2
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
-from gxformat2.normalize import Inputs, walk_id_list_or_dict
+from gxformat2.normalized import (
+    ensure_format2,
+    ensure_native,
+    NormalizedFormat2,
+    NormalizedWorkflowStep,
+)
+from gxformat2.normalized._native import (
+    NativeStepType,
+    NormalizedNativeStep,
+    NormalizedNativeWorkflow,
+)
+from gxformat2.schema.gxformat2 import CreatorPerson, GalaxyType
 from gxformat2.schema.gxformat2 import GalaxyWorkflow as Format2LaxModel
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as Format2StrictModel
 from gxformat2.schema.native import NativeGalaxyWorkflow as NativeLaxModel
@@ -30,159 +40,167 @@ LINT_FAILED_NO_OUTPUTS = "Workflow contained no outputs"
 LINT_FAILED_OUTPUT_NO_LABEL = "Workflow contained output without a label"
 
 
-def ensure_key(lint_context, has_keys, key, has_class=None, has_value=None):
-    if key not in has_keys:
-        lint_context.error("expected to find key [{key}] but absent", key=key)
-        return None
+def lint_ga(lint_context, nnw: NormalizedNativeWorkflow, raw_dict: dict | None = None):
+    """Lint a native Galaxy workflow and populate the corresponding LintContext."""
+    # Check fields that the model defaults mask
+    if raw_dict is not None:
+        if "a_galaxy_workflow" not in raw_dict:
+            lint_context.error("expected to find key [a_galaxy_workflow] but absent")
+        elif raw_dict.get("a_galaxy_workflow") != "true":
+            lint_context.error(
+                f"expected value [{raw_dict.get('a_galaxy_workflow')}] with key [a_galaxy_workflow] to be true"
+            )
+        if "format-version" not in raw_dict:
+            lint_context.error("expected to find key [format-version] but absent")
+        elif raw_dict.get("format-version") != "0.1":
+            lint_context.error(f"expected value [{raw_dict.get('format-version')}] with key [format-version] to be 0.1")
+        if "steps" not in raw_dict:
+            lint_context.error("expected to find key [steps] but absent")
+            return
 
-    value = has_keys[key]
-    return ensure_key_has_value(lint_context, has_keys, key, value, has_class=has_class, has_value=has_value)
+    found_outputs = False
+    found_output_without_label = False
 
+    for order_index_str, step in nnw.steps.items():
+        if not order_index_str.isdigit():
+            lint_context.error("expected step_key to be integer not [{value}]", value=order_index_str)
 
-def ensure_key_if_present(lint_context, has_keys, key, default=None, has_class=None):
-    if key not in has_keys:
-        return default
+        for workflow_output in step.workflow_outputs:
+            found_outputs = True
+            if not workflow_output.label:
+                found_output_without_label = True
 
-    value = has_keys[key]
-    return ensure_key_has_value(lint_context, has_keys, key, value, has_class=has_class, has_value=None)
+        if step.type_ == NativeStepType.subworkflow and step.subworkflow is not None:
+            if not step.subworkflow.steps:
+                lint_context.error("expected to find key [steps] but absent")
+            else:
+                lint_ga(lint_context, step.subworkflow)
 
+        _lint_step_errors(lint_context, step.errors)
+        _lint_tool_if_present(lint_context, step.tool_id)
 
-def ensure_key_has_value(lint_context, has_keys, key, value, has_class=None, has_value=None):
-    if has_class is not None and not isinstance(value, has_class):
-        lint_context.error(f"expected value [{value}] with key [{key}] to be of class {has_class}")
-    if has_value is not None and value != has_value:
-        lint_context.error(f"expected value [{value}] with key [{key}] to be {has_value}")
-    return value
+    _validate_report(lint_context, nnw.report)
 
+    if not found_outputs:
+        lint_context.warn(LINT_FAILED_NO_OUTPUTS)
+    if found_output_without_label:
+        lint_context.warn(LINT_FAILED_OUTPUT_NO_LABEL)
 
-def _lint_step_errors(lint_context, step):
-    step_errors = step.get("errors")
-    if step_errors is not None:
-        lint_context.warn(f"tool step contains error indicated during Galaxy export - {step_errors}")
+    _lint_training(lint_context, nnw.tags, nnw.annotation)
 
 
 def lint_ga_path(lint_context, path):
     """Apply linting of native workflows to specified path."""
     workflow_dict = ordered_load_path(path)
-    return lint_ga(lint_context, workflow_dict, path=path)
+    nnw = ensure_native(workflow_dict)
+    return lint_ga(lint_context, nnw, raw_dict=workflow_dict)
 
 
-def lint_ga(lint_context, workflow_dict, path=None):
-    """Lint a native/legacy style Galaxy workflow and populate the corresponding LintContext."""
-    ensure_key(lint_context, workflow_dict, "format-version", has_value="0.1")
-    ensure_key(lint_context, workflow_dict, "a_galaxy_workflow", has_value="true")
-
-    native_steps = ensure_key(lint_context, workflow_dict, "steps", has_class=dict) or {}
-
-    found_outputs = False
-    found_output_without_label = False
-    for order_index_str, step in native_steps.items():
-        if not order_index_str.isdigit():
-            lint_context.error("expected step_key to be integer not [{value}]", value=order_index_str)
-
-        workflow_outputs = ensure_key_if_present(lint_context, step, "workflow_outputs", default=[], has_class=list)
-        for workflow_output in workflow_outputs:
-            found_outputs = True
-
-            if not workflow_output.get("label"):
-                found_output_without_label = True
-
-        step_type = step.get("type")
-        if step_type == "subworkflow":
-            subworkflow = ensure_key(lint_context, step, "subworkflow", has_class=dict)
-            lint_ga(lint_context, subworkflow)
-
-        _lint_step_errors(lint_context, step)
-        _lint_tool_if_present(lint_context, step)
-
-    _validate_report(lint_context, workflow_dict)
-    if not found_outputs:
-        lint_context.warn(LINT_FAILED_NO_OUTPUTS)
-
-    if found_output_without_label:
-        lint_context.warn(LINT_FAILED_OUTPUT_NO_LABEL)
-
-    _lint_training(lint_context, workflow_dict)
+def lint_format2_path(lint_context, path):
+    """Apply linting of Format2 workflows to specified path."""
+    workflow_dict = ordered_load_path(path)
+    nf2 = ensure_format2(workflow_dict, expand=True)
+    return lint_format2(lint_context, nf2, raw_dict=workflow_dict)
 
 
-def lint_format2(lint_context, workflow_dict, path=None):
+def lint_format2(lint_context, nf2: NormalizedFormat2, raw_dict: dict | None = None):
     """Lint a Format 2 Galaxy workflow and populate the corresponding LintContext."""
-    from schema_salad.exceptions import SchemaSaladException  # type: ignore
+    if raw_dict is not None:
+        if "steps" not in raw_dict:
+            lint_context.error("expected to find key [steps] but absent")
+        if "class" not in raw_dict:
+            lint_context.error("expected to find key [class] but absent")
 
-    from gxformat2.schema.v19_09 import load_document
+    for step in nf2.steps:
+        _lint_step_errors(lint_context, step.errors)
+        _lint_tool_if_present(lint_context, step.tool_id)
+        if isinstance(step.run, NormalizedFormat2):
+            if not step.run.steps:
+                lint_context.error("expected to find key [steps] but absent")
+            else:
+                lint_format2(lint_context, step.run)
 
-    file_uri = Path(os.path.abspath(path)).as_uri()
-    try:
-        load_document(file_uri)
-    except SchemaSaladException as e:
-        lint_context.error("Validation failed " + str(e))
-
-    steps = ensure_key_if_present(lint_context, workflow_dict, "steps", default={}, has_class=(dict, list))
-    steps = steps.values() if isinstance(steps, dict) else steps
-    for step in steps:
-        _lint_step_errors(lint_context, step)
-        _lint_tool_if_present(lint_context, step)
-
-    _validate_input_types(lint_context, workflow_dict)
-    _validate_report(lint_context, workflow_dict)
-    _lint_training(lint_context, workflow_dict)
+    _validate_output_sources(lint_context, nf2)
+    _validate_input_types(lint_context, nf2)
+    _validate_report(lint_context, nf2.report)
+    _lint_training(lint_context, nf2.tags, nf2.doc)
 
 
-def _validate_input_types(lint_context: LintContext, workflow_dict: dict):
-    try:
-        inputs = Inputs(workflow_dict)
-    except Exception:
-        # bad document, can't process inputs...
+def _validate_output_sources(lint_context, nf2: NormalizedFormat2):
+    """Check that outputSource references point to existing step/input labels."""
+    if not nf2.outputs:
         return
-    for input_def in inputs._inputs:
-        input_type = input_def.get("type")
-        if "default" in input_def:
-            input_default = input_def["default"]
-            if input_type == "int":
-                if not isinstance(input_default, int):
-                    lint_context.error("Input default is of invalid type")
-            elif input_type == "float":
-                if not isinstance(input_default, (int, float)):
-                    lint_context.error("Input default is of invalid type")
-            elif input_type == "string":
-                if not isinstance(input_default, str):
-                    lint_context.error("Input default is of invalid type")
+    for output in nf2.outputs:
+        output_source = output.outputSource
+        if not output_source or not isinstance(output_source, str):
+            continue
+        step_ref = nf2.resolve_source(output_source).step_label
+        if step_ref not in nf2.known_labels:
+            output_id = output.id or "?"
+            lint_context.error(
+                f"Output '{output_id}' references step '{step_ref}' via outputSource "
+                f"'{output_source}', but no step or input with that label exists"
+            )
 
 
-def _lint_tool_if_present(lint_context, step_dict):
-    tool_id = step_dict.get("tool_id")
+def _lint_step_errors(lint_context, step_errors):
+    if step_errors is not None:
+        lint_context.warn(f"tool step contains error indicated during Galaxy export - {step_errors}")
+
+
+def _lint_tool_if_present(lint_context, tool_id):
     if tool_id and "testtoolshed" in tool_id:
         lint_context.warn(
             "Step references a tool from the test tool shed, this should be replaced with a production tool"
         )
 
 
-def _validate_report(lint_context, workflow_dict):
-    report_dict = ensure_key_if_present(lint_context, workflow_dict, "report", default=None, has_class=dict)
-    if report_dict is not None:
-        markdown = ensure_key(lint_context, report_dict, "markdown", has_class=str)
-        if isinstance(markdown, str):
-            try:
-                validate_galaxy_markdown(markdown)
-            except ValueError as e:
-                lint_context.error(f"Report markdown validation failed [{e}]")
+def _validate_input_types(lint_context: LintContext, nf2: NormalizedFormat2):
+    for inp in nf2.inputs:
+        if inp.default is None:
+            continue
+        input_type = inp.type_
+        if isinstance(input_type, list):
+            # Array type like [string] — skip default validation for now
+            continue
+        if input_type == GalaxyType.int or input_type == GalaxyType.integer:
+            if not isinstance(inp.default, int):
+                lint_context.error("Input default is of invalid type")
+        elif input_type == GalaxyType.float or input_type == GalaxyType.double:
+            if not isinstance(inp.default, (int, float)):
+                lint_context.error("Input default is of invalid type")
+        elif input_type == GalaxyType.string or input_type == GalaxyType.text:
+            if not isinstance(inp.default, str):
+                lint_context.error("Input default is of invalid type")
 
 
-def _lint_training(lint_context, workflow_dict):
+def _validate_report(lint_context, report):
+    """Validate workflow report if present."""
+    if report is None:
+        return
+    markdown = report.markdown
+    if not isinstance(markdown, str):
+        lint_context.error(f"expected value [{markdown}] with key [markdown] to be of class {str}")
+        return
+    try:
+        validate_galaxy_markdown(markdown)
+    except ValueError as e:
+        lint_context.error(f"Report markdown validation failed [{e}]")
+
+
+def _lint_training(lint_context, tags, doc_or_annotation):
+    """Lint training-related metadata. Works with either doc (format2) or annotation (native)."""
     if lint_context.training_topic is None:
         return
 
-    if "tags" not in workflow_dict:
+    if not tags:
         lint_context.warn("Missing tag(s).")
-    else:
-        tags = workflow_dict["tags"]
-        if lint_context.training_topic not in tags:
-            lint_context.warn(f"Missing expected training topic ({lint_context.training_topic}) as workflow tag.")
-    # Move up into individual lints - all workflows should have docs.
-    format2_dict = ensure_format2(workflow_dict)
-    if "doc" not in format2_dict:
+    elif lint_context.training_topic not in tags:
+        lint_context.warn(f"Missing expected training topic ({lint_context.training_topic}) as workflow tag.")
+
+    if not doc_or_annotation:
         lint_context.warn("Missing workflow documentation (annotation or doc element)")
-    elif not format2_dict["doc"]:
+    elif isinstance(doc_or_annotation, str) and not doc_or_annotation.strip():
         lint_context.warn("Empty workflow documentation (annotation or doc element)")
 
 
@@ -216,25 +234,146 @@ def lint_pydantic_validation(lint_context, workflow_dict, format2=False):
             lint_context.error(f"Schema validation: {error['msg']} at {loc}")
 
 
-SKIP_DISCONNECTED_CHECK_TYPES = {"data_input", "data_collection_input", "parameter_input", "pause"}
+def lint_best_practices(lint_context, nf2: NormalizedFormat2):
+    """Lint best practices for a Galaxy workflow (works for both native and Format2 input)."""
+    # annotation / doc
+    doc = nf2.doc
+    if not doc or not doc.strip():
+        lint_context.warn("Workflow is not annotated.")
+
+    # creator
+    creators = nf2.creator or []
+    if not creators:
+        lint_context.warn("Workflow does not specify a creator.")
+    else:
+        for creator in creators:
+            if isinstance(creator, CreatorPerson) and creator.identifier:
+                parsed_url = urlparse(creator.identifier)
+                if not parsed_url.scheme:
+                    lint_context.warn(
+                        f'Creator identifier "{creator.identifier}" should be a fully qualified URI, '
+                        f'for example "https://orcid.org/0000-0002-1825-0097".'
+                    )
+
+    # license
+    if not nf2.license:
+        lint_context.warn("Workflow does not specify a license.")
+
+    # step-level best practices
+    for step in nf2.steps:
+        _lint_step_best_practices(lint_context, step)
+
+
+def _lint_step_best_practices(lint_context, step: NormalizedWorkflowStep):
+    """Lint best practices for a single workflow step."""
+    step_id = step.label or step.id
+
+    # disconnected inputs
+    for step_input in step.in_:
+        if step_input.source is None and step_input.default is None:
+            lint_context.warn(f"Input {step_input.id} of workflow step {step_id} is disconnected.")
+
+    # missing metadata
+    if not step.doc:
+        lint_context.warn(f"Workflow step {step_id} has no annotation.")
+    if not step.label:
+        lint_context.warn(f"Workflow step {step_id} has no label.")
+
+    # untyped parameters
+    tool_state = step.state or step.tool_state
+    if tool_state:
+        if isinstance(tool_state, str):
+            try:
+                tool_state = json.loads(tool_state)
+            except (json.JSONDecodeError, TypeError):
+                tool_state = {}
+        if isinstance(tool_state, dict) and _check_json_for_untyped_params(tool_state):
+            lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter as an input.")
+
+    # untyped parameters in outputs (PJA equivalents in format2)
+    if step.out:
+        out_data = [o.model_dump(by_alias=True) for o in step.out]
+        if _check_json_for_untyped_params(out_data):
+            lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter in the post-job actions.")
+
+
+SKIP_DISCONNECTED_CHECK_TYPES_NATIVE = {
+    NativeStepType.data_input,
+    NativeStepType.data_collection_input,
+    NativeStepType.parameter_input,
+    NativeStepType.pause,
+}
+
+
+def _lint_native_step_best_practices(lint_context, step: NormalizedNativeStep):
+    """Native-specific step best practice checks that don't survive format2 conversion."""
+    step_id = step.label or step.annotation or step.id
+
+    # disconnected inputs — compare declared inputs against input_connections
+    if step.type_ not in SKIP_DISCONNECTED_CHECK_TYPES_NATIVE:
+        input_connections = step.input_connections
+        for input_def in step.inputs:
+            if input_def.name and input_def.name not in input_connections:
+                lint_context.warn(f"Input {input_def.name} of workflow step {step_id} is disconnected.")
+
+    # untyped parameters in post_job_actions
+    if step.post_job_actions:
+        pjas = {k: v.model_dump(by_alias=True) for k, v in step.post_job_actions.items()}
+        if _check_json_for_untyped_params(pjas):
+            lint_context.warn(
+                f"Workflow step with ID {step.id} specifies an untyped parameter in the post-job actions."
+            )
+
+
+def _try_build_nf2(lint_context, workflow_dict) -> NormalizedFormat2 | None:
+    """Build ExpandedFormat2 from a workflow dict, emitting lint errors on failure."""
+    try:
+        return ensure_format2(workflow_dict, expand=True)
+    except ValidationError as e:
+        for error in e.errors():
+            loc = " -> ".join(str(p) for p in error["loc"])
+            lint_context.error(f"Schema validation: {error['msg']} at {loc}")
+        return None
+    except (ValueError, json.JSONDecodeError) as e:
+        lint_context.error(f"Failed to parse workflow: {e}")
+        return None
+
+
+def _try_build_nnw(lint_context, workflow_dict) -> NormalizedNativeWorkflow | None:
+    """Build NormalizedNativeWorkflow from a workflow dict, emitting lint errors on failure."""
+    try:
+        return ensure_native(workflow_dict)
+    except ValidationError as e:
+        for error in e.errors():
+            loc = " -> ".join(str(p) for p in error["loc"])
+            lint_context.error(f"Schema validation: {error['msg']} at {loc}")
+        return None
+    except (ValueError, json.JSONDecodeError) as e:
+        lint_context.error(f"Failed to parse workflow: {e}")
+        return None
 
 
 def lint_best_practices_ga(lint_context, workflow_dict):
-    """Lint best practices for a native Galaxy workflow."""
-    _lint_best_practices(lint_context, workflow_dict, format2=False)
-    steps = workflow_dict.get("steps", {})
-    for step in steps.values():
-        _lint_step_best_practices_ga(lint_context, step)
+    """Lint best practices for a native Galaxy workflow.
+
+    Runs shared best practices on NormalizedFormat2 plus native-specific
+    checks (disconnected inputs, PJA untyped params) on NormalizedNativeWorkflow.
+    """
+    nf2 = _try_build_nf2(lint_context, workflow_dict)
+    if nf2 is not None:
+        lint_best_practices(lint_context, nf2)
+    # Native-specific checks that don't survive format2 conversion
+    nnw = _try_build_nnw(lint_context, workflow_dict)
+    if nnw is not None:
+        for step in nnw.steps.values():
+            _lint_native_step_best_practices(lint_context, step)
 
 
 def lint_best_practices_format2(lint_context, workflow_dict):
     """Lint best practices for a Format2 Galaxy workflow."""
-    _lint_best_practices(lint_context, workflow_dict, format2=True)
-    steps = workflow_dict.get("steps", {})
-    is_dict = isinstance(steps, dict)
-    for step_key, step in walk_id_list_or_dict(steps):
-        # For dict steps, the key serves as the implicit label
-        _lint_step_best_practices_format2(lint_context, step, dict_key=step_key if is_dict else None)
+    nf2 = _try_build_nf2(lint_context, workflow_dict)
+    if nf2 is not None:
+        lint_best_practices(lint_context, nf2)
 
 
 def _check_json_for_untyped_params(j):
@@ -250,116 +389,6 @@ def _check_json_for_untyped_params(j):
     return False
 
 
-def _lint_best_practices(lint_context, workflow_dict, format2=False):
-    """Lint best practices shared across both native and Format2 workflows."""
-    # annotation / doc
-    if format2:
-        doc = workflow_dict.get("doc")
-        if not doc or (isinstance(doc, list) and not any(doc)):
-            lint_context.warn("Workflow is not annotated.")
-    else:
-        if not workflow_dict.get("annotation"):
-            lint_context.warn("Workflow is not annotated.")
-
-    # creator
-    creators = workflow_dict.get("creator", [])
-    if not creators:
-        lint_context.warn("Workflow does not specify a creator.")
-    else:
-        if not isinstance(creators, list):
-            creators = [creators]
-        for creator in creators:
-            if creator.get("class", "").lower() == "person" and "identifier" in creator:
-                identifier = creator["identifier"]
-                parsed_url = urlparse(identifier)
-                if not parsed_url.scheme:
-                    lint_context.warn(
-                        f'Creator identifier "{identifier}" should be a fully qualified URI, '
-                        f'for example "https://orcid.org/0000-0002-1825-0097".'
-                    )
-
-    # license
-    if not workflow_dict.get("license"):
-        lint_context.warn("Workflow does not specify a license.")
-
-
-def _lint_step_best_practices_ga(lint_context, step):
-    """Lint best practices for a native Galaxy workflow step."""
-    step_id = step.get("id")
-    step_type = step.get("type")
-
-    # disconnected inputs
-    if step_type not in SKIP_DISCONNECTED_CHECK_TYPES:
-        input_connections = step.get("input_connections") or {}
-        for input_def in step.get("inputs", []):
-            input_name = input_def.get("name")
-            if input_name and input_name not in input_connections:
-                lint_context.warn(
-                    f"Input {input_name} of workflow step {step.get('annotation') or step_id} is disconnected."
-                )
-
-    # missing metadata
-    if not step.get("annotation"):
-        lint_context.warn(f"Workflow step with ID {step_id} has no annotation.")
-    if not step.get("label"):
-        lint_context.warn(f"Workflow step with ID {step_id} has no label.")
-
-    # untyped parameters
-    raw_tool_state = step.get("tool_state", {})
-    if isinstance(raw_tool_state, str):
-        try:
-            tool_state = json.loads(raw_tool_state)
-        except (json.JSONDecodeError, TypeError):
-            tool_state = {}
-    else:
-        tool_state = raw_tool_state or {}
-
-    if _check_json_for_untyped_params(tool_state):
-        lint_context.warn(f"Workflow step with ID {step_id} specifies an untyped parameter as an input.")
-
-    pjas = step.get("post_job_actions", {}) or {}
-    if _check_json_for_untyped_params(pjas):
-        lint_context.warn(f"Workflow step with ID {step_id} specifies an untyped parameter in the post-job actions.")
-
-
-def _lint_step_best_practices_format2(lint_context, step, dict_key=None):
-    """Lint best practices for a Format2 workflow step."""
-    step_label = step.get("label") or dict_key
-    step_id = step.get("id", step_label)
-
-    # disconnected inputs — check declared inputs with no source or default
-    step_type = step.get("type")
-    if step_type not in SKIP_DISCONNECTED_CHECK_TYPES:
-        step_in = step.get("in") or {}
-        if isinstance(step_in, dict):
-            for key, value in step_in.items():
-                if isinstance(value, str):
-                    continue  # string shorthand = always connected
-                if isinstance(value, dict):
-                    if not value.get("source") and "default" not in value:
-                        lint_context.warn(f"Input {key} of workflow step {step_label or step_id} is disconnected.")
-        elif isinstance(step_in, list):
-            for key, value in walk_id_list_or_dict(step_in):
-                if not value.get("source") and "default" not in value:
-                    lint_context.warn(f"Input {key} of workflow step {step_label or step_id} is disconnected.")
-
-    # missing metadata
-    doc = step.get("doc")
-    if not doc or (isinstance(doc, list) and not any(doc)):
-        lint_context.warn(f"Workflow step {step_id} has no annotation.")
-    if not step_label:
-        lint_context.warn(f"Workflow step {step_id} has no label.")
-
-    # untyped parameters
-    tool_state = step.get("tool_state", {}) or {}
-    if _check_json_for_untyped_params(tool_state):
-        lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter as an input.")
-
-    out = step.get("out", {}) or {}
-    if _check_json_for_untyped_params(out):
-        lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter in the post-job actions.")
-
-
 def main(argv=None):
     """Script entry point for linting workflows."""
     if argv is None:
@@ -371,15 +400,39 @@ def main(argv=None):
             workflow_dict = ordered_load(f)
         except Exception:
             return EXIT_CODE_FILE_PARSE_FAILED
+
     workflow_class = workflow_dict.get("class")
     is_format2 = workflow_class == "GalaxyWorkflow"
-    lint_func = lint_format2 if is_format2 else lint_ga
     lint_context = LintContext(training_topic=args.training_topic)
-    lint_func(lint_context, workflow_dict, path=path)
+
+    # Build normalized models — fail fast if invalid
+    nf2 = None
+    nnw = None
+
+    if is_format2:
+        nf2 = _try_build_nf2(lint_context, workflow_dict)
+    else:
+        nnw = _try_build_nnw(lint_context, workflow_dict)
+        # Also build ExpandedFormat2 for best practices (independent)
+        nf2 = _try_build_nf2(lint_context, workflow_dict)
+
+    # Structural lint (format-specific, needs valid model)
+    if is_format2 and nf2 is not None:
+        lint_format2(lint_context, nf2, raw_dict=workflow_dict)
+    elif not is_format2 and nnw is not None:
+        lint_ga(lint_context, nnw, raw_dict=workflow_dict)
+
+    # Pydantic strict/lax validation (always runs on raw dict)
     lint_pydantic_validation(lint_context, workflow_dict, format2=is_format2)
-    if not args.skip_best_practices:
-        best_practices_func = lint_best_practices_format2 if is_format2 else lint_best_practices_ga
-        best_practices_func(lint_context, workflow_dict)
+
+    # Best practices (merged, runs on NormalizedFormat2)
+    if not args.skip_best_practices and nf2 is not None:
+        lint_best_practices(lint_context, nf2)
+        # Native-specific best practice checks
+        if not is_format2 and nnw is not None:
+            for step in nnw.steps.values():
+                _lint_native_step_best_practices(lint_context, step)
+
     lint_context.print_messages()
     if lint_context.found_errors:
         return EXIT_CODE_FORMAT_ERROR
@@ -418,6 +471,7 @@ __all__ = (
     "main",
     "lint_format2",
     "lint_ga",
+    "lint_best_practices",
     "lint_best_practices_format2",
     "lint_best_practices_ga",
     "lint_pydantic_validation",

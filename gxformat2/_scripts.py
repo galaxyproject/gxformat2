@@ -1,6 +1,6 @@
 """Utilities for scripts in gxformat2."""
 
-from gxformat2.export import from_galaxy_native
+from gxformat2.normalized import ensure_format2 as _ensure_format2
 from gxformat2.yaml import ordered_load_path
 
 
@@ -14,6 +14,5 @@ def ensure_format2(workflow_dict: dict, ensure_labels: bool = False):
 
     So convert from ga if needed.
     """
-    if workflow_dict.get("a_galaxy_workflow") == "true":
-        workflow_dict = from_galaxy_native(workflow_dict)
-    return workflow_dict
+    # keep return shape as raw dict for script compatibility
+    return _ensure_format2(workflow_dict).to_dict()

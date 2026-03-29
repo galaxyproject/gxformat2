@@ -12,22 +12,31 @@ DEFAULT_TRAINING_LINT = None
 class LintContext:
     """Track running status (state) of linting."""
 
-    def __init__(self, level=LEVEL_WARN, training_topic=DEFAULT_TRAINING_LINT):
+    def __init__(self, level=LEVEL_WARN, training_topic=DEFAULT_TRAINING_LINT, _prefix=""):
         """Create LintContext with specified 'level' (currently unused)."""
         self.level = level
         self.training_topic = training_topic
         self.found_errors = False
         self.found_warns = False
+        self._prefix = _prefix
 
         # self.valid_messages = []
         # self.info_messages = []
         self.warn_messages = []
         self.error_messages = []
 
+    def child(self, prefix):
+        """Create child context that prefixes messages and shares parent message lists."""
+        full_prefix = f"{self._prefix}[{prefix}] " if not self._prefix else f"{self._prefix[:-1]} > {prefix}] "
+        child_ctx = LintContext(level=self.level, training_topic=self.training_topic, _prefix=full_prefix)
+        child_ctx.warn_messages = self.warn_messages
+        child_ctx.error_messages = self.error_messages
+        return child_ctx
+
     def __handle_message(self, message_list, message, *args, **kwds):
         if kwds or args:
             message = message.format(*args, **kwds)
-        message_list.append(message)
+        message_list.append(f"{self._prefix}{message}")
 
     # def valid(self, message, *args, **kwds):
     #     self.__handle_message(self.valid_messages, message, *args, **kwds)

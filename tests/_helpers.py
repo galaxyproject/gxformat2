@@ -5,8 +5,7 @@ import os
 from gxformat2.converter import python_to_workflow, yaml_to_workflow
 from gxformat2.examples import get_path as example_path  # noqa: F401 (re-exported)
 from gxformat2.export import from_galaxy_native
-from gxformat2.interface import ImporterGalaxyInterface
-from gxformat2.model import STEP_TYPES
+from gxformat2.schema.native import NativeStepType
 
 TEST_PATH = os.path.abspath(os.path.dirname(__file__))
 TEST_INTEROP_EXAMPLES = os.environ.get("GXFORMAT2_INTEROP_EXAMPLES", os.path.join(TEST_PATH, "examples"))
@@ -39,9 +38,9 @@ def iwc_fixture_ids(paths):
 
 def to_native(has_yaml, **kwds):
     if isinstance(has_yaml, dict):
-        return python_to_workflow(has_yaml, MockGalaxyInterface(), None, **kwds)
+        return python_to_workflow(has_yaml, **kwds)
     else:
-        return yaml_to_workflow(has_yaml, MockGalaxyInterface(), None, **kwds)
+        return yaml_to_workflow(has_yaml, **kwds)
 
 
 def assert_valid_native(as_dict_native):
@@ -53,13 +52,7 @@ def assert_valid_native(as_dict_native):
         assert key == str(step_count)
         step_count += 1
         assert "type" in value
-        assert value["type"] in STEP_TYPES
-
-
-class MockGalaxyInterface(ImporterGalaxyInterface):
-
-    def import_workflow(self, workflow, **kwds):
-        pass
+        assert value["type"] in NativeStepType.__members__
 
 
 def copy_without_workflow_output_labels(native_as_dict):

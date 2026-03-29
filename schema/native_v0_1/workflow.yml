@@ -160,7 +160,7 @@ $graph:
         The step output this action applies to.
     - name: action_arguments
       type: Any?
-      pydantic:type: "dict[str, str] | None"
+      pydantic:type: "dict[str, Any] | None"
       jsonldPredicate:
         _id: "gxnative:NativePostJobAction/action_arguments"
         noLinkCheck: true
@@ -173,29 +173,8 @@ $graph:
 
 # --- Comment type discriminator enums ---
 
-- name: NativeTextCommentType
-  type: enum
-  symbols:
-    - text
-  doc: "Discriminator for text comments."
-
-- name: NativeMarkdownCommentType
-  type: enum
-  symbols:
-    - markdown
-  doc: "Discriminator for markdown comments."
-
-- name: NativeFrameCommentType
-  type: enum
-  symbols:
-    - frame
-  doc: "Discriminator for frame comments."
-
-- name: NativeFreehandCommentType
-  type: enum
-  symbols:
-    - freehand
-  doc: "Discriminator for freehand comments."
+# Comment type discriminators use string with pydantic:type Literal
+# instead of enums to avoid JSON-LD predicate collisions.
 
 # --- Comment data records (per-type) ---
 
@@ -315,7 +294,8 @@ $graph:
     A plain text annotation in the workflow editor.
   fields:
     - name: type
-      type: NativeTextCommentType
+      type: string
+      pydantic:type: 'Literal["text"]'
       jsonldPredicate:
         "_id": "sld:type"
         "_type": "@vocab"
@@ -339,7 +319,8 @@ $graph:
     A Markdown-rendered annotation in the workflow editor.
   fields:
     - name: type
-      type: NativeMarkdownCommentType
+      type: string
+      pydantic:type: 'Literal["markdown"]'
       jsonldPredicate:
         "_id": "sld:type"
         "_type": "@vocab"
@@ -363,7 +344,8 @@ $graph:
     A rectangular grouping box that visually contains steps and other comments.
   fields:
     - name: type
-      type: NativeFrameCommentType
+      type: string
+      pydantic:type: 'Literal["frame"]'
       jsonldPredicate:
         "_id": "sld:type"
         "_type": "@vocab"
@@ -407,7 +389,8 @@ $graph:
     A freehand drawn line on the editor canvas.
   fields:
     - name: type
-      type: NativeFreehandCommentType
+      type: string
+      pydantic:type: 'Literal["freehand"]'
       jsonldPredicate:
         "_id": "sld:type"
         "_type": "@vocab"
@@ -656,7 +639,7 @@ $graph:
     - name: url
       type: string?
       jsonldPredicate:
-        _id: "gxnative:url"
+        _id: "gxformat2common:Creator/url"
       doc: |
         Website or profile URL.
     - name: email
@@ -779,7 +762,7 @@ $graph:
     - name: url
       type: string?
       jsonldPredicate:
-        _id: "gxnative:url"
+        _id: "gxformat2common:Creator/url"
       doc: |
         URL from which the workflow was directly imported.
     - name: trs_tool_id

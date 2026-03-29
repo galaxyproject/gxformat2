@@ -61,7 +61,7 @@ def _discriminate_creator(v: Any) -> str:
     if isinstance(v, dict):
         disc_val: str = str(v.get("class", ""))
     else:
-        disc_val = str(getattr(v, "class", ""))
+        disc_val = str(getattr(v, "class_", ""))
     return disc_map.get(disc_val, disc_val)
 
 
@@ -70,7 +70,7 @@ def _discriminate_comments(v: Any) -> str:
     if isinstance(v, dict):
         disc_val: str = str(v.get("type", ""))
     else:
-        disc_val = str(getattr(v, "type", ""))
+        disc_val = str(getattr(v, "type_", ""))
     return disc_map.get(disc_val, disc_val)
 
 
@@ -199,7 +199,7 @@ Common action types: ``HideDatasetAction``, ``RenameDatasetAction``,
 
     action_type: str = Field(description="The action type identifier (e.g. ``HideDatasetAction``).")
     output_name: str = Field(description="The step output this action applies to.")
-    action_arguments: dict[str, str] | None = Field(default=None, description="Action-specific arguments. For ``RenameDatasetAction``: ``{\"newname\": \"...\"}``; for ``ChangeDatatypeAction``: ``{\"newtype\": \"tabular\"}``; for ``TagDatasetAction``: ``{\"tags\": \"name:tag\"...")
+    action_arguments: dict[str, Any] | None = Field(default=None, description="Action-specific arguments. For ``RenameDatasetAction``: ``{\"newname\": \"...\"}``; for ``ChangeDatatypeAction``: ``{\"newtype\": \"tabular\"}``; for ``TagDatasetAction``: ``{\"tags\": \"name:tag\"...")
 
 class NativeTextCommentData(BaseModel):
     """Data payload for a text comment."""

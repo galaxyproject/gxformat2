@@ -1,7 +1,5 @@
 """Abstractions for dealing with Format2 data."""
 
-import logging
-import os
 from typing import (
     Any,
     cast,
@@ -11,13 +9,9 @@ from typing import (
 
 from typing_extensions import Literal
 
-log = logging.getLogger(__name__)
+from gxformat2.normalized._format2 import resolve_source_reference as _resolve_source_impl
 
-DictOrList = Union[dict, list]
-ConnectDict = dict
-
-
-NativeGalaxyStepType = Literal[
+_NativeGalaxyStepType = Literal[
     "subworkflow",
     "data_input",
     "data_collection_input",
@@ -26,15 +20,15 @@ NativeGalaxyStepType = Literal[
     "pick_value",
     "parameter_input",
 ]
-GxFormat2StepTypeAlias = Literal[
+_GxFormat2StepTypeAlias = Literal[
     "input",
     "input_collection",
     "parameter",
 ]
-StepTypes = Union[NativeGalaxyStepType, GxFormat2StepTypeAlias]
+_StepTypes = Union[_NativeGalaxyStepType, _GxFormat2StepTypeAlias]
 
 
-STEP_TYPES = [
+_STEP_TYPES = [
     "subworkflow",
     "data_input",
     "data_collection_input",
@@ -43,67 +37,26 @@ STEP_TYPES = [
     "pick_value",
     "parameter_input",
 ]
-STEP_TYPE_ALIASES: dict[GxFormat2StepTypeAlias, NativeGalaxyStepType] = {
+_STEP_TYPE_ALIASES: dict[_GxFormat2StepTypeAlias, _NativeGalaxyStepType] = {
     "input": "data_input",
     "input_collection": "data_collection_input",
     "parameter": "parameter_input",
 }
 
 
-def get_native_step_type(gxformat2_step_dict: dict) -> NativeGalaxyStepType:
+def get_native_step_type(gxformat2_step_dict: dict) -> _NativeGalaxyStepType:
     """Infer native galaxy step type from the gxformat2 step as a dict."""
     specifies_subworkflow_run = bool(gxformat2_step_dict.get("run"))
     step_type_default = "tool" if not specifies_subworkflow_run else "subworkflow"
     raw_step_type = gxformat2_step_dict.get("type", step_type_default)
-    if raw_step_type not in STEP_TYPES and raw_step_type not in STEP_TYPE_ALIASES:
+    if raw_step_type not in _STEP_TYPES and raw_step_type not in _STEP_TYPE_ALIASES:
         raise Exception(f"Unknown step type encountered {raw_step_type}")
-    step_type: NativeGalaxyStepType
-    if raw_step_type in STEP_TYPE_ALIASES:
-        step_type = STEP_TYPE_ALIASES[cast(GxFormat2StepTypeAlias, raw_step_type)]
+    step_type: _NativeGalaxyStepType
+    if raw_step_type in _STEP_TYPE_ALIASES:
+        step_type = _STEP_TYPE_ALIASES[cast(_GxFormat2StepTypeAlias, raw_step_type)]
     else:
-        step_type = cast(NativeGalaxyStepType, raw_step_type)
+        step_type = cast(_NativeGalaxyStepType, raw_step_type)
     return step_type
-
-
-# source: step#output and $link: step#output instead of outputSource: step/output and $link: step/output
-SUPPORT_LEGACY_CONNECTIONS = os.environ.get("GXFORMAT2_SUPPORT_LEGACY_CONNECTIONS") == "1"
-
-
-def pop_connect_from_step_dict(step: dict) -> ConnectDict:
-    """Merge 'in' and 'connect' keys into a unified connection dict separated from state.
-
-    Meant to be used an initial processing step in reasoning about connections defined by the
-    format2 step description.
-    """
-    if "connect" not in step:
-        step["connect"] = {}
-
-    connect = step["connect"]
-    del step["connect"]
-
-    # handle CWL-style in dict connections.
-    if "in" in step:
-        step_in = step["in"]
-        assert isinstance(step_in, dict)
-        connection_keys = set()
-        for key, value in step_in.items():
-            # TODO: this can be a list right?
-            if isinstance(value, dict) and "source" in value:
-                value = value["source"]
-            elif isinstance(value, dict) and "default" in value:
-                continue
-            elif isinstance(value, dict):
-                raise KeyError(f"step input must define either source or default {value}")
-            connect[key] = [value]
-            connection_keys.add(key)
-
-        for key in connection_keys:
-            del step_in[key]
-
-        if len(step_in) == 0:
-            del step["in"]
-
-    return connect
 
 
 def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, list]] = None) -> Any:
@@ -118,7 +71,7 @@ def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, l
 
         assert "$link" in value
         link_value = value["$link"]
-        append_to[key].append(clean_connection(link_value))
+        append_to[key].append(link_value)
 
     def recurse(sub_value, sub_key) -> Any:
         return setup_connected_values(sub_value, sub_key, append_to=append_to)
@@ -155,28 +108,9 @@ def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, l
 def resolve_source_reference(value: str, known_labels: Union[set, dict]) -> tuple:
     """Parse a source reference into (step_label_or_id, output_name).
 
-    Tries matching known labels first to handle labels containing '/'.
-    Falls back to split on '/' for numeric step IDs or unknown labels.
+    Deprecated: use ``gxformat2.normalized.resolve_source_reference`` directly.
     """
-    for label in sorted(known_labels, key=len, reverse=True):
-        if value == label:
-            return label, "output"
-        if value.startswith(label + "/"):
-            return label, value[len(label) + 1 :]
-    if "/" in value:
-        parts = value.split("/", 1)
-        return parts[0], parts[1]
-    return value, "output"
-
-
-def clean_connection(value: str) -> str:
-    """Convert legacy style connection targets with modern CWL-style ones."""
-    if value and "#" in value and SUPPORT_LEGACY_CONNECTIONS:
-        # Hope these are just used by Galaxy testing workflows and such, and not in production workflows.
-        log.warn(f"Legacy workflow syntax for connections [{value}] will not be supported in the future")
-        value = value.replace("#", "/", 1)
-
-    return value
+    return _resolve_source_impl(value, known_labels)
 
 
 def _connected_value():
@@ -189,14 +123,12 @@ def _is_link(value: Any) -> bool:
 
 def _join_prefix(prefix: Optional[str], key: str):
     if prefix:
-        new_key = f"{prefix}|{key}"
-    else:
-        new_key = key
-    return new_key
+        return f"{prefix}|{key}"
+    return key
 
 
-def convert_dict_to_id_list_if_needed(
-    dict_or_list: DictOrList,
+def _convert_dict_to_id_list_if_needed(
+    dict_or_list: Union[dict, list],
     add_label: bool = False,
     mutate: bool = False,
 ) -> list:
@@ -223,7 +155,7 @@ def convert_dict_to_id_list_if_needed(
     return rval
 
 
-def with_step_ids(steps: list, inputs_offset: int = 0):
+def _with_step_ids(steps: list, inputs_offset: int = 0):
     """Walk over a list of steps and ensure the steps have a numeric id if otherwise missing."""
     assert isinstance(steps, list)
     new_steps = []
@@ -245,153 +177,6 @@ def ensure_step_position(step: dict, order_index: int):
         step["position"] = {"left": 10 * order_index, "top": 10 * order_index}
 
 
-def prune_position(step):
-    """Keep only ``left`` and ``top`` keys in step position."""
-    return {k: v for k, v in step.get("position", {}).items() if k in ("left", "top")}
-
-
-def native_input_to_format2_type(step: dict, tool_state: dict) -> Union[str, list[str]]:
-    """Return a Format2 input type ('type') from a native input step dictionary."""
-    module_type = step.get("type")
-    if module_type == "data_collection_input":
-        format2_type = "collection"
-    elif module_type == "data_input":
-        format2_type = "data"
-    elif module_type == "parameter_input":
-        native_type = cast(str, tool_state.get("parameter_type"))
-        format2_type = native_type
-        if native_type == "integer":
-            format2_type = "int"
-        elif native_type == "text":
-            format2_type = "string"
-        if tool_state.get("multiple", False):
-            return [format2_type]
-    return format2_type
-
-
-def inputs_as_normalized_steps(workflow_dict):
-    """Return workflow inputs to a steps in array.
-
-    Normalize Format2 inputs. `workflow_dict` is a Format 2 representation of
-    a workflow. This method does not modify `workflow_dict`.
-    """
-    if "inputs" not in workflow_dict:
-        return []
-
-    inputs = workflow_dict.get("inputs", [])
-    new_steps = []
-    inputs = convert_dict_to_id_list_if_needed(inputs)
-    for input_def_raw in with_step_ids(inputs):
-        input_def = input_def_raw.copy()
-
-        if "label" in input_def and "id" in input_def:
-            raise Exception("label and id are aliases for inputs, may only define one")
-        if "label" not in input_def and "id" not in input_def:
-            raise Exception("Input must define a label.")
-
-        raw_label = input_def.pop("label", None)
-        raw_id = input_def.pop("id", None)
-        label = raw_label or raw_id
-
-        if label is None:
-            raise Exception("Input label must not be empty.")
-
-        step_type = input_def.pop("type", "data")
-        if step_type == "File":
-            step_type = "data"
-        elif step_type == "integer":
-            step_type = "int"
-        elif step_type == "text":
-            step_type = "string"
-
-        step_def = input_def
-        step_def.update(
-            {
-                "type": step_type,
-                "id": label,
-            }
-        )
-        new_steps.append(step_def)
-
-    return new_steps
-
-
-def inputs_as_native_steps(workflow_dict: dict):
-    """Return workflow inputs to a steps in array - like in native Galaxy.
-
-    Convert Format2 types into native ones. `workflow_dict` is a Format 2
-    representation of a workflow. This method does not modify `workflow_dict`.
-    """
-    if "inputs" not in workflow_dict:
-        return []
-
-    inputs = workflow_dict.get("inputs", [])
-    new_steps = []
-    inputs = convert_dict_to_id_list_if_needed(inputs)
-    for input_def_raw in inputs:
-        input_def = input_def_raw.copy()
-
-        if "label" in input_def and "id" in input_def:
-            raise Exception("label and id are aliases for inputs, may only define one")
-        if "label" not in input_def and "id" not in input_def:
-            raise Exception("Input must define a label.")
-
-        raw_label = input_def.pop("label", None)
-        raw_id = input_def.pop("id", None)
-        label = raw_label or raw_id
-
-        if label is None:
-            raise Exception("Input label must not be empty.")
-
-        input_type = input_def.pop("type", "data")
-        if isinstance(input_type, list):
-            if len(input_type) != 1:
-                raise Exception("Only simple arrays of workflow inputs are currently supported")
-            input_type = input_type[0]
-            if input_type in ["File", "data", "data_input"]:
-                raise Exception(f"Array of {input_type} is not supported")
-            input_def["tool_state"] = {"multiple": True}
-        if input_type in ["File", "data", "data_input"]:
-            step_type = "data_input"
-        elif input_type in ["collection", "data_collection", "data_collection_input"]:
-            step_type = "data_collection_input"
-        elif input_type in ["text", "string", "integer", "int", "float", "color", "boolean"]:
-            step_type = "parameter_input"
-            format2_type = input_type
-            if format2_type == "int":
-                native_type = "integer"
-            elif format2_type == "string":
-                native_type = "text"
-            else:
-                native_type = format2_type
-            input_def["parameter_type"] = native_type
-        else:
-            raise Exception(f"Unknown input type [{input_type}] encountered.")
-
-        step_def = input_def
-        step_def.update(
-            {
-                "type": step_type,
-                "label": label,
-            }
-        )
-        default = step_def.get("default")
-        if isinstance(default, dict) and default.get("class") == "File":
-            # First 'default' is input name, hardcoded to default, second 'default'
-            # is the actual default for the input name
-            step_def["in"] = {"default": {"default": step_def.pop("default")}}
-        new_steps.append(step_def)
-
-    return new_steps
-
-
-def outputs_as_list(as_python: dict) -> list:
-    """Extract outputs from Format2 rep as list."""
-    outputs = as_python.get("outputs", [])
-    outputs = convert_dict_to_id_list_if_needed(outputs)
-    return outputs
-
-
 def steps_as_list(
     format2_workflow: dict, add_ids: bool = False, inputs_offset: int = 0, mutate: bool = False
 ) -> list[dict[str, Any]]:
@@ -404,113 +189,16 @@ def steps_as_list(
     if "steps" not in format2_workflow:
         raise Exception(f"No 'steps' key in dict, keys are {format2_workflow.keys()}")
     steps = format2_workflow["steps"]
-    steps = convert_dict_to_id_list_if_needed(steps, add_label=True, mutate=mutate)
+    steps = _convert_dict_to_id_list_if_needed(steps, add_label=True, mutate=mutate)
     if add_ids:
         if mutate:
-            append_step_id_to_step_list_elements(steps, inputs_offset=inputs_offset)
+            _append_step_id_to_step_list_elements(steps, inputs_offset=inputs_offset)
         else:
-            steps = with_step_ids(steps, inputs_offset=inputs_offset)
+            steps = _with_step_ids(steps, inputs_offset=inputs_offset)
     return steps
 
 
-# Mapping from native comment data.* field names to Format2 top-level field names.
-# Key = native data field name, Value = format2 field name.
-COMMENT_DATA_FIELDS: dict[str, dict[str, str]] = {
-    "text": {"text": "text", "bold": "bold", "italic": "italic", "size": "text_size"},
-    "markdown": {"text": "text"},
-    "frame": {"title": "title"},
-    "freehand": {"thickness": "thickness", "line": "line"},
-}
-
-# Fields common to all comment types (preserved as-is, minus 'id' and 'data').
-COMMENT_COMMON_FIELDS = ("type", "position", "size", "color")
-
-
-def _tuples_to_lists(value):
-    """Recursively convert tuples to lists for YAML serialization.
-
-    Galaxy's Pydantic models use tuples for position/size/line coordinates,
-    but YAML's OrderedDumper can't serialize tuples.
-    """
-    if isinstance(value, tuple):
-        return [_tuples_to_lists(v) for v in value]
-    if isinstance(value, list):
-        return [_tuples_to_lists(v) for v in value]
-    return value
-
-
-def flatten_comment_data(native_comment: dict) -> dict:
-    """Convert a native comment dict to Format2 representation.
-
-    Hoists type-specific fields from nested ``data`` dict to top level.
-    Renames ``child_steps`` -> ``contains_steps`` and ``child_comments`` -> ``contains_comments``.
-    Drops the ``id`` field (order_index).
-    """
-    comment_type = native_comment["type"]
-    result: dict = {}
-
-    # Copy common fields
-    for field in COMMENT_COMMON_FIELDS:
-        if field in native_comment:
-            result[field] = _tuples_to_lists(native_comment[field])
-
-    # Preserve label if present
-    if "label" in native_comment:
-        result["label"] = native_comment["label"]
-
-    # Flatten data fields (convert tuples to lists for YAML serialization)
-    data = native_comment.get("data", {})
-    field_map = COMMENT_DATA_FIELDS.get(comment_type, {})
-    for native_name, format2_name in field_map.items():
-        if native_name in data:
-            result[format2_name] = _tuples_to_lists(data[native_name])
-
-    # Rename frame containment fields
-    if "child_steps" in native_comment:
-        result["contains_steps"] = native_comment["child_steps"]
-    if "child_comments" in native_comment:
-        result["contains_comments"] = native_comment["child_comments"]
-
-    return result
-
-
-def unflatten_comment_data(format2_comment: dict) -> dict:
-    """Convert a Format2 comment dict to native representation.
-
-    Collects type-specific top-level fields back into a nested ``data`` dict.
-    Renames ``contains_steps`` -> ``child_steps`` and ``contains_comments`` -> ``child_comments``.
-    """
-    comment_type = format2_comment["type"]
-    result: dict = {}
-
-    # Copy common fields
-    for field in COMMENT_COMMON_FIELDS:
-        if field in format2_comment:
-            result[field] = format2_comment[field]
-
-    # Preserve label if present
-    if "label" in format2_comment:
-        result["label"] = format2_comment["label"]
-
-    # Build data dict from flattened fields
-    data: dict = {}
-    field_map = COMMENT_DATA_FIELDS.get(comment_type, {})
-    # Invert: format2_name -> native_name
-    for native_name, format2_name in field_map.items():
-        if format2_name in format2_comment:
-            data[native_name] = format2_comment[format2_name]
-    result["data"] = data
-
-    # Rename frame containment fields back
-    if "contains_steps" in format2_comment:
-        result["child_steps"] = format2_comment["contains_steps"]
-    if "contains_comments" in format2_comment:
-        result["child_comments"] = format2_comment["contains_comments"]
-
-    return result
-
-
-def append_step_id_to_step_list_elements(steps: list[dict[str, Any]], inputs_offset: int = 0) -> None:
+def _append_step_id_to_step_list_elements(steps: list[dict[str, Any]], inputs_offset: int = 0) -> None:
     """Ensure a list of steps each contains an 'id' element."""
     assert isinstance(steps, list)
     for i, step in enumerate(steps):

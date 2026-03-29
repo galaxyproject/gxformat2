@@ -14,6 +14,8 @@ uv sync --group test --group lint --group mypy
 uv run --group test pytest tests/ -x -q
 ```
 
+Set `GXFORMAT2_TEST_IWC_DIRECTORY` to a local clone of the IWC repository to enable additional integration tests that exercise real-world workflows (conversion, linting, round-tripping). If you know of an IWC checkout, set it during test runs.
+
 ## Linting
 
 ```bash

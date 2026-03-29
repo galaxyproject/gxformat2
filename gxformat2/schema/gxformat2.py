@@ -235,7 +235,7 @@ to representing `state` this way is defining inputs with default values."""
     state: dict[str, Any] | None = Field(default=None, description="Structured tool state.")
     tool_state: str | dict[str, Any] | None = Field(default=None, description="Unstructured tool state.")
     type_: None | WorkflowStepType = Field(default=None, alias="type", description="Workflow step module's type (defaults to 'tool').")
-    run: None | GalaxyWorkflow = Field(default=None, description="Specifies a subworkflow to run.")
+    run: GalaxyWorkflow | str | dict[str, Any] | None = Field(default=None, description="Specifies a subworkflow to run. May be an inline workflow definition, a URL string, or an @import reference dict.")
     runtime_inputs: None | list[str] = Field(default=None)
     when: None | str = Field(default=None, description="If defined, only run the step when the expression evaluates to `true`.  If `false` the step is skipped.  A skipped step produces a `null` on each output.  Expression should be an ecma5.1 expression.")
 
@@ -277,32 +277,92 @@ to connect the output value to downstream parameters."""
     hide: None | bool = Field(default=None)
     remove_tags: None | list[str] = Field(default=None)
     rename: None | str = Field(default=None)
-    set_columns: None | list[str] = Field(default=None)
+    set_columns: dict[str, Any] | None = Field(default=None)
 
-class WorkflowComment(BaseModel):
-    """A visual annotation in the workflow editor. Comments are non-functional
-elements used for documentation and organization in the editor canvas.
-
-Fields vary by comment type. Common fields (``type``, ``position``, ``size``,
-``color``) apply to all types. Type-specific fields are optional and only
-relevant for their respective type."""
+class BaseComment(BaseModel):
+    """Base fields shared by all comment types."""
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
-    type_: str = Field(alias="type", description="The type of comment. Valid values are ``text``, ``markdown``, ``frame``, and ``freehand``.")
     position: list[float] | None = Field(default=None, description="Position of the comment on the editor canvas as ``[x, y]`` coordinates.")
     size: list[float] | None = Field(default=None, description="Size of the comment as ``[width, height]``.")
     color: None | str = Field(default=None, description="Display color of the comment (e.g. ``\"none\"``, ``\"blue\"``).")
     label: None | str = Field(default=None, description="Optional label for referencing this comment from frame ``contains_comments`` fields or for use as a map key when comments are represented as a mapping.")
-    text: None | str = Field(default=None, description="Text content. Used by ``text`` and ``markdown`` comment types.")
-    bold: None | bool = Field(default=None, description="Whether the text is bold. Only used by ``text`` comments.")
-    italic: None | bool = Field(default=None, description="Whether the text is italic. Only used by ``text`` comments.")
-    text_size: None | float | int = Field(default=None, description="Font size of the text. Only used by ``text`` comments.")
-    title: None | str = Field(default=None, description="Title displayed on the frame. Only used by ``frame`` comments.")
-    contains_steps: None | list[str | int] = Field(default=None, description="Step labels or indices contained within this frame. Only used by ``frame`` comments.")
-    contains_comments: None | list[str | int] = Field(default=None, description="Comment labels or indices contained within this frame. Only used by ``frame`` comments.")
-    thickness: None | float | int = Field(default=None, description="Line thickness. Only used by ``freehand`` comments.")
-    line: list[list[float]] | None = Field(default=None, description="Array of ``[x, y]`` coordinate pairs defining the freehand line path. Only used by ``freehand`` comments.")
+
+class TextComment(BaseComment):
+    """A plain text annotation in the workflow editor."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: Literal["text"] = Field(default="text", alias="type", description="Comment type (``text``).")
+    text: None | str = Field(default=None, description="The text content.")
+    bold: None | bool = Field(default=None, description="Whether the text is displayed in bold.")
+    italic: None | bool = Field(default=None, description="Whether the text is displayed in italic.")
+    text_size: None | float | int = Field(default=None, description="Font size of the text.")
+
+class MarkdownComment(BaseComment):
+    """A Markdown-rendered annotation in the workflow editor."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: Literal["markdown"] = Field(default="markdown", alias="type", description="Comment type (``markdown``).")
+    text: None | str = Field(default=None, description="Markdown content.")
+
+class FrameComment(BaseComment):
+    """A rectangular grouping box that visually contains steps and other comments."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: Literal["frame"] = Field(default="frame", alias="type", description="Comment type (``frame``).")
+    title: None | str = Field(default=None, description="Title displayed on the frame header.")
+    contains_steps: None | list[str | int] = Field(default=None, description="Step labels or indices contained within this frame.")
+    contains_comments: None | list[str | int] = Field(default=None, description="Comment labels or indices contained within this frame.")
+
+class FreehandComment(BaseComment):
+    """A freehand drawn line on the editor canvas."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: Literal["freehand"] = Field(default="freehand", alias="type", description="Comment type (``freehand``).")
+    thickness: None | float | int = Field(default=None, description="Line thickness.")
+    line: list[list[float]] | None = Field(default=None, description="Array of ``[x, y]`` coordinate pairs defining the freehand line path.")
+
+class BaseCreator(BaseModel):
+    """Base fields shared by all creator types, corresponding to schema.org
+Thing properties common to both Person and Organization."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    name: None | str = Field(default=None, description="Full name of the person or organization.")
+    identifier: None | str = Field(default=None, description="Persistent identifier, typically an ORCID URL (e.g. ``https://orcid.org/0000-0001-2345-6789``) or bare ORCID.")
+    url: None | str = Field(default=None, description="Website or profile URL.")
+    email: None | str = Field(default=None, description="Email address. May include a ``mailto:`` prefix.")
+    image: None | str = Field(default=None, description="URL to an image or avatar.")
+    address: None | str = Field(default=None, description="Physical or mailing address.")
+    alternateName: None | str = Field(default=None, description="An alternate name or alias.")
+    telephone: None | str = Field(default=None, description="Telephone number.")
+    faxNumber: None | str = Field(default=None, description="Fax number.")
+
+class CreatorPerson(BaseCreator):
+    """A person who created or contributed to the workflow.
+Corresponds to a `schema.org Person <https://schema.org/Person>`_."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    class_: Literal["Person"] = Field(default="Person", alias="class", description="Creator type discriminator (``Person``).")
+    givenName: None | str = Field(default=None, description="Given (first) name.")
+    familyName: None | str = Field(default=None, description="Family (last) name.")
+    honorificPrefix: None | str = Field(default=None, description="Honorific prefix (e.g. ``Dr``, ``Prof``).")
+    honorificSuffix: None | str = Field(default=None, description="Honorific suffix (e.g. ``M.D.``, ``PhD``).")
+    jobTitle: None | str = Field(default=None, description="Job title or role.")
+
+class CreatorOrganization(BaseCreator):
+    """An organization that created or contributed to the workflow.
+Corresponds to a `schema.org Organization <https://schema.org/Organization>`_."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    class_: Literal["Organization"] = Field(default="Organization", alias="class", description="Creator type discriminator (``Organization``).")
 
 class GalaxyWorkflow(Process, HasUUID):
     """A Galaxy workflow description. This record corresponds to the description of a workflow that should be executable
@@ -327,8 +387,8 @@ workflow definition schema the attribute should be called `label`."""
     steps: list[WorkflowStep] | dict[str, WorkflowStep] = Field(description="The individual steps that make up the workflow. Each step is executed when all of its input data links are fulfilled.")
     report: None | Report = Field(default=None, description="Workflow invocation report template.")
     tags: list[str] | None = Field(default=None, description="Tags for the workflow.")
-    comments: list[WorkflowComment] | dict[str, WorkflowComment] | None = Field(default=None, description="Visual annotations for the workflow editor canvas. Comments are non-functional and do not affect workflow execution. May be specified as a list or as a mapping keyed by label.")
-    creator: list[dict[str, Any]] | None = Field(default=None, description="Can be a schema.org Person (https://schema.org/Person) or Organization (https://schema.org/Organization) entity")
+    comments: list[TextComment | MarkdownComment | FrameComment | FreehandComment] | dict[str, TextComment | MarkdownComment | FrameComment | FreehandComment] | None = Field(default=None, description="Visual annotations for the workflow editor canvas. Comments are non-functional and do not affect workflow execution. May be specified as a list or as a mapping keyed by label.")
+    creator: list[CreatorPerson | CreatorOrganization] | None = Field(default=None, description="Workflow creators. Can be schema.org Person (https://schema.org/Person) or Organization (https://schema.org/Organization) entities.")
     license: None | str = Field(default=None, description="Must be a valid license listed at https://spdx.org/licenses/")
     release: None | str = Field(default=None, description="If listed should correspond to the release of the workflow in its source reposiory.")
 
@@ -357,7 +417,14 @@ Sink.model_rebuild()
 WorkflowStepInput.model_rebuild()
 Report.model_rebuild()
 WorkflowStepOutput.model_rebuild()
-WorkflowComment.model_rebuild()
+BaseComment.model_rebuild()
+TextComment.model_rebuild()
+MarkdownComment.model_rebuild()
+FrameComment.model_rebuild()
+FreehandComment.model_rebuild()
+BaseCreator.model_rebuild()
+CreatorPerson.model_rebuild()
+CreatorOrganization.model_rebuild()
 GalaxyWorkflow.model_rebuild()
 
 
