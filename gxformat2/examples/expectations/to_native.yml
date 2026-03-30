@@ -1,0 +1,95 @@
+test_to_native_basic_structure:
+  fixture: synthetic-basic.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [a_galaxy_workflow]
+      value: "true"
+    - path: [format_version]
+      value: "0.1"
+    - path: [name]
+      value: "Simple workflow"
+
+test_to_native_input_step_type:
+  fixture: synthetic-basic.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", type_]
+      value: data_input
+    - path: [steps, "0", label]
+      value: the_input
+
+test_to_native_tool_step:
+  fixture: synthetic-basic.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", tool_id]
+      value: cat1
+    - path: [steps, "1", label]
+      value: cat
+
+test_to_native_tool_connections:
+  fixture: synthetic-basic.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", input_connections, input1, $length]
+      value: 1
+
+test_to_native_workflow_outputs:
+  fixture: synthetic-basic.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", workflow_outputs, $length]
+      value: 1
+    - path: [steps, "1", workflow_outputs, 0, label]
+      value: the_output
+
+test_to_native_int_input:
+  fixture: synthetic-int-input.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: parameter_input
+    - path: [steps, "1", tool_state, parameter_type]
+      value: integer
+
+test_to_native_inline_subworkflow:
+  fixture: synthetic-graph-with-subworkflow.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "2", type_]
+      value: subworkflow
+    - path: [steps, "2", subworkflow, a_galaxy_workflow]
+      value: "true"
+    - path: [steps, "2", subworkflow, steps, "1", tool_id]
+      value: random_lines1
+
+test_to_native_url_subworkflow:
+  fixture: synthetic-url-run-yml.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: subworkflow
+    - path: [steps, "1", content_id]
+      value: "https://example.com/wf.yml"
+    - path: [steps, "1", subworkflow]
+      value: null
+
+test_to_native_pause_step:
+  fixture: synthetic-pause-step.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "2", type_]
+      value: pause
+    - path: [steps, "2", label]
+      value: the_pause
+    - path: [steps, "2", tool_state, name]
+      value: the_pause
+
+test_to_native_comments:
+  fixture: synthetic-comments-list.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [comments, $length]
+      value: 1

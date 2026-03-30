@@ -1,0 +1,12 @@
+class: GalaxyWorkflow
+inputs:
+  test_input: data
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: test_input
+  the_pause:
+    type: pause
+    in:
+      input: first_cat/out_file1

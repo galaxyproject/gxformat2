@@ -7,6 +7,7 @@
     - tests/test_schema.py
     - tests/test_to_native.py
     - tests/test_export_abstract.py
+    - tests/test_declarative_normalized.py
 
 - file: format2/synthetic-nested-subworkflow.gxwf.yml
   origin: synthetic
@@ -204,10 +205,43 @@
   format: native
   tests:
     - tests/test_normalized.py
+    - tests/test_declarative_normalized.py
 
 - file: native/synthetic-native-tool-with-subworkflow.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_normalized.py
+    - tests/test_declarative_normalized.py
+
+# --- test_declarative_normalized.py conversion fixtures ---
+
+- file: native/synthetic-labeled-tool.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: native/synthetic-rename-pja.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-int-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-pause-step.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-comments-list.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
     - tests/test_declarative_normalized.py

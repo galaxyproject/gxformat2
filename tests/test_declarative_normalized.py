@@ -12,6 +12,7 @@ Path element types:
 
 Assertion modes:
   - value: exact equality (None, str, int, list, dict)
+  - value_contains: substring containment check (str in str)
   - value_set: unordered set comparison; each item is a flat {key: value} dict
     compared against NamedTuple._asdict() or plain set membership
 """
@@ -24,11 +25,14 @@ import yaml
 
 from gxformat2.examples import EXAMPLES_DIR, load
 from gxformat2.normalized import (
+    ensure_format2,
+    ensure_native,
     expanded_format2,
     expanded_native,
     normalized_format2,
     normalized_native,
-    ToolReference,
+    to_format2,
+    to_native,
 )
 
 EXPECTATIONS_DIR = os.path.join(EXAMPLES_DIR, "expectations")
@@ -37,6 +41,10 @@ OPERATIONS = {
     "normalized_native": normalized_native,
     "expanded_format2": expanded_format2,
     "expanded_native": expanded_native,
+    "to_format2": to_format2,
+    "to_native": to_native,
+    "ensure_format2": ensure_format2,
+    "ensure_native": ensure_native,
 }
 
 
@@ -78,6 +86,11 @@ def _assert_value(obj: Any, expected: Any):
     assert obj == expected, f"expected {expected!r}, got {obj!r}"
 
 
+def _assert_value_contains(obj: Any, expected: str):
+    """Assert that expected is a substring of obj."""
+    assert expected in obj, f"expected {expected!r} in {obj!r}"
+
+
 def _assert_value_set(obj: Any, expected_items: list):
     """Assert unordered set equality.
 
@@ -115,7 +128,9 @@ def test_declarative(test_id, case):
         obj = _navigate(wf, path)
         if "value" in assertion:
             _assert_value(obj, assertion["value"])
+        elif "value_contains" in assertion:
+            _assert_value_contains(obj, assertion["value_contains"])
         elif "value_set" in assertion:
             _assert_value_set(obj, assertion["value_set"])
         else:
-            raise ValueError(f"Assertion has neither 'value' nor 'value_set': {assertion}")
+            raise ValueError(f"Assertion has no recognized mode: {assertion}")
