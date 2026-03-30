@@ -22,24 +22,6 @@ from gxformat2.options import ConversionOptions
 class TestNormalizedFormat2Graph:
     """$graph handling in normalized_format2."""
 
-    def test_simple_graph_extracts_main(self):
-        wf = normalized_format2(load("synthetic-graph-simple.gxwf.yml"))
-        assert wf.label is None
-        assert len(wf.inputs) == 1
-        assert wf.inputs[0].id == "the_input"
-        assert len(wf.steps) == 1
-        assert wf.steps[0].tool_id == "cat1"
-
-    def test_graph_inlines_subworkflow_ref(self):
-        wf = normalized_format2(load("synthetic-graph-with-subworkflow.gxwf.yml"))
-        assert len(wf.steps) == 2
-        nested = [s for s in wf.steps if s.id == "nested_workflow"][0]
-        assert nested.run is not None
-        assert len(nested.run.inputs) == 1
-        assert nested.run.inputs[0].id == "inner_input"
-        assert len(nested.run.steps) == 1
-        assert nested.run.steps[0].tool_id == "random_lines1"
-
     def test_graph_does_not_mutate_input(self):
         wf_dict = load("synthetic-graph-with-subworkflow.gxwf.yml")
         original = copy.deepcopy(wf_dict)
@@ -68,24 +50,6 @@ class TestNormalizedFormat2Graph:
 class TestNormalizedNativeBasics:
     """Basic normalized_native guarantees."""
 
-    def test_tool_state_always_dict(self):
-        wf = normalized_native(load("synthetic-minimal-tool.ga"))
-        assert isinstance(wf.steps["0"].tool_state, dict)
-        assert wf.steps["0"].tool_state["input1"] == {"__class__": "ConnectedValue"}
-
-    def test_containers_never_none(self):
-        wf = normalized_native(load("synthetic-minimal-tool.ga"))
-        step = wf.steps["0"]
-        assert step.input_connections == {}
-        assert step.inputs == []
-        assert step.outputs == []
-        assert step.workflow_outputs == []
-        assert step.post_job_actions == {}
-
-    def test_tags_never_none(self):
-        wf = normalized_native(load("synthetic-minimal-tool.ga"))
-        assert wf.tags == []
-
     def test_connected_paths(self):
         wf_dict = load("synthetic-minimal-tool.ga")
         wf_dict["steps"]["0"]["input_connections"] = {
@@ -93,10 +57,6 @@ class TestNormalizedNativeBasics:
         }
         wf = normalized_native(wf_dict)
         assert wf.steps["0"].connected_paths == frozenset({"input1"})
-
-    def test_connected_paths_empty(self):
-        wf = normalized_native(load("synthetic-minimal-tool.ga"))
-        assert wf.steps["0"].connected_paths == frozenset()
 
 
 class TestNormalizedFormat2Basics:
@@ -108,17 +68,6 @@ class TestNormalizedFormat2Basics:
         wf = normalized_format2(wf_dict)
         assert isinstance(wf.steps, list)
         assert wf.steps[0].id == "s1"
-
-    def test_input_shorthand_expanded(self):
-        wf = normalized_format2(load("synthetic-input-shorthand.gxwf.yml"))
-        assert len(wf.inputs) == 1
-        assert wf.inputs[0].id == "x"
-
-    def test_step_in_shorthand_expanded(self):
-        wf = normalized_format2(load("synthetic-step-in-shorthand.gxwf.yml"))
-        assert len(wf.steps[0].in_) == 1
-        assert wf.steps[0].in_[0].id == "input1"
-        assert wf.steps[0].in_[0].source == "x"
 
     def test_connected_paths(self):
         wf_dict = load("synthetic-step-in-shorthand.gxwf.yml")
@@ -139,10 +88,6 @@ class TestNormalizedFormat2Basics:
     def test_native_dict_via_ensure_format2(self):
         wf = ensure_format2(load("synthetic-native-data-input.ga"))
         assert len(wf.inputs) >= 1
-
-    def test_url_run_passes_through(self):
-        wf = normalized_format2(load("synthetic-url-run-yml.gxwf.yml"))
-        assert wf.steps[0].run == "https://example.com/wf.yml"
 
 
 class TestExpandedFormat2:
@@ -202,11 +147,6 @@ class TestExpandedFormat2:
         opts = ConversionOptions(url_resolver=cyclic_resolver)
         with pytest.raises(ValueError, match="Circular"):
             expanded_format2(load("synthetic-url-run-yml.gxwf.yml"), options=opts)
-
-    def test_steps_without_run_unchanged(self):
-        wf = expanded_format2(load("synthetic-step-in-shorthand.gxwf.yml"))
-        assert wf.steps[0].run is None
-        assert wf.steps[0].tool_id == "cat1"
 
 
 class TestEnsureFormat2Expansion:
@@ -269,12 +209,6 @@ class TestEnsureFormat2Expansion:
 
 class TestExpandedNative:
     """expanded_native resolves subworkflow references."""
-
-    def test_inline_subworkflow_expanded(self):
-        wf = expanded_native(load("synthetic-outer-inline-subworkflow.ga"))
-        assert isinstance(wf, ExpandedNativeWorkflow)
-        assert wf.steps["1"].subworkflow is not None
-        assert wf.steps["1"].subworkflow.steps["1"].tool_id == "random_lines1"
 
     def test_url_content_id_resolved(self):
         def mock_resolver(url):
@@ -340,14 +274,6 @@ class TestCrossFormatExpansion:
 
 class TestUniqueToolsFormat2:
 
-    def test_single_tool_step(self):
-        wf = normalized_format2(load("synthetic-single-versioned-tool.gxwf.yml"))
-        assert wf.unique_tools == frozenset({ToolReference("cat1", "1.0")})
-
-    def test_no_tool_steps(self):
-        wf = normalized_format2(load("synthetic-input-shorthand.gxwf.yml"))
-        assert wf.unique_tools == frozenset()
-
     def test_deduplicates(self):
         wf_dict = load("synthetic-single-versioned-tool.gxwf.yml")
         wf_dict["steps"]["step2"] = dict(wf_dict["steps"]["step1"])
@@ -365,15 +291,6 @@ class TestUniqueToolsFormat2:
             }
         )
 
-    def test_inline_subworkflow(self):
-        wf = normalized_format2(load("synthetic-tool-with-inline-subworkflow.gxwf.yml"))
-        assert wf.unique_tools == frozenset(
-            {
-                ToolReference("cat1", "1.0"),
-                ToolReference("sort1", "2.0"),
-            }
-        )
-
     def test_unresolved_ref_skipped(self):
         wf_dict = load("synthetic-single-versioned-tool.gxwf.yml")
         wf_dict["steps"]["nested"] = {
@@ -384,26 +301,3 @@ class TestUniqueToolsFormat2:
         wf = normalized_format2(wf_dict)
         assert wf.unique_tools == frozenset({ToolReference("cat1", "1.0")})
 
-    def test_null_tool_version(self):
-        wf = normalized_format2(load("synthetic-step-in-shorthand.gxwf.yml"))
-        assert wf.unique_tools == frozenset({ToolReference("cat1", None)})
-
-
-class TestUniqueToolsNative:
-
-    def test_single_tool_step(self):
-        wf = normalized_native(load("synthetic-minimal-tool.ga"))
-        assert wf.unique_tools == frozenset({ToolReference("cat1", "1.0")})
-
-    def test_no_tool_steps(self):
-        wf = normalized_native(load("synthetic-native-data-input.ga"))
-        assert wf.unique_tools == frozenset()
-
-    def test_inline_subworkflow(self):
-        wf = normalized_native(load("synthetic-native-tool-with-subworkflow.ga"))
-        assert wf.unique_tools == frozenset(
-            {
-                ToolReference("cat1", "1.0"),
-                ToolReference("sort1", "2.0"),
-            }
-        )

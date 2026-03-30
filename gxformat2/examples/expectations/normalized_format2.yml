@@ -1,0 +1,72 @@
+test_simple_graph_extracts_main:
+  fixture: synthetic-graph-simple.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [label]
+      value: null
+    - path: [inputs, $length]
+      value: 1
+    - path: [inputs, 0, id]
+      value: the_input
+    - path: [steps, $length]
+      value: 1
+    - path: [steps, 0, tool_id]
+      value: cat1
+
+test_graph_inlines_subworkflow_ref:
+  fixture: synthetic-graph-with-subworkflow.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, $length]
+      value: 2
+    - path: [steps, {id: nested_workflow}, run, inputs, $length]
+      value: 1
+    - path: [steps, {id: nested_workflow}, run, inputs, 0, id]
+      value: inner_input
+    - path: [steps, {id: nested_workflow}, run, steps, $length]
+      value: 1
+    - path: [steps, {id: nested_workflow}, run, steps, 0, tool_id]
+      value: random_lines1
+
+test_input_shorthand_expanded:
+  fixture: synthetic-input-shorthand.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, $length]
+      value: 1
+    - path: [inputs, 0, id]
+      value: x
+
+test_step_in_shorthand_expanded:
+  fixture: synthetic-step-in-shorthand.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, in_, $length]
+      value: 1
+    - path: [steps, 0, in_, 0, id]
+      value: input1
+    - path: [steps, 0, in_, 0, source]
+      value: x
+
+test_url_run_passes_through:
+  fixture: synthetic-url-run-yml.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, run]
+      value: "https://example.com/wf.yml"
+
+test_steps_without_run_unchanged:
+  fixture: synthetic-step-in-shorthand.gxwf.yml
+  operation: expanded_format2
+  assertions:
+    - path: [steps, 0, run]
+      value: null
+    - path: [steps, 0, tool_id]
+      value: cat1
+
+test_inline_subworkflow_expanded:
+  fixture: synthetic-outer-inline-subworkflow.ga
+  operation: expanded_native
+  assertions:
+    - path: [steps, "1", subworkflow, steps, "1", tool_id]
+      value: random_lines1
