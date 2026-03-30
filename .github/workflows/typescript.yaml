@@ -27,7 +27,7 @@ jobs:
       - run: npm test
       - name: Upload coverage to Codecov
         if: github.repository_owner == 'galaxyproject'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           directory: ./typescript
           fail_ci_if_error: true
