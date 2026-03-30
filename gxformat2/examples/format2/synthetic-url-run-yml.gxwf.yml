@@ -1,0 +1,9 @@
+class: GalaxyWorkflow
+inputs:
+  x: data
+outputs: {}
+steps:
+  nested:
+    run: https://example.com/wf.yml
+    in:
+      x: x

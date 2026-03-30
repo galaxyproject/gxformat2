@@ -33,8 +33,9 @@ uv run --group mypy mypy gxformat2
 - `gxformat2/model.py` - Shared utilities (types, source parsing, step helpers)
 - `gxformat2/lint.py` - Workflow linting
 - `gxformat2/abstract.py` - Abstract CWL export
+- `gxformat2/examples/` - Workflow fixture files and typed catalog (see below)
 - `tests/_helpers.py` - Test utilities: `to_native()`, `from_native()`, `round_trip()`, `MockGalaxyInterface`
-- `tests/example_wfs.py` - Workflow YAML strings used as test fixtures
+- `tests/example_wfs.py` - Legacy inline workflow strings, migrating to `gxformat2/examples/`
 
 ## Schema & Pydantic Models
 
@@ -67,9 +68,39 @@ Uses `schema-salad-plus-pydantic` (Pydantic v2) and `schema-salad-tool` (legacy 
 
 Generated files are excluded from ruff linting in `pyproject.toml`.
 
+## Workflow Fixtures (`gxformat2/examples/`)
+
+Prefer file-based fixtures in `gxformat2/examples/` over inline strings in `tests/example_wfs.py`. File-based fixtures are visible to docs, downstream consumers (Planemo), and the catalog validation.
+
+### Adding a new fixture
+
+1. Create the file with the naming convention `{origin}-{description}[-{variant}].{ext}`:
+   - **Origin**: `real` (unmodified Galaxy export), `real-hacked` (real with manual edits), `synthetic` (hand-written), `converted` (machine-generated)
+   - **Extension**: `.gxwf.yml` (Format2) in `format2/`, `.ga` (native JSON) in `native/`
+2. Add an entry to `gxformat2/examples/catalog.yml` with `file`, `origin`, `format`, and `tests` fields
+3. Use in tests via the API:
+
+```python
+from gxformat2.examples import load, load_contents, get_path
+
+wf_dict = load("synthetic-my-case.gxwf.yml")        # parsed dict
+wf_str = load_contents("synthetic-my-case.gxwf.yml") # raw string
+wf_path = get_path("synthetic-my-case.gxwf.yml")     # absolute path
+```
+
+### Catalog validation
+
+`tests/test_examples_catalog.py` enforces:
+- Every catalog entry points to an existing file
+- Every example file on disk appears in the catalog
+- Every test file referenced in catalog entries exists
+
+### Migration note
+
+`tests/example_wfs.py` still has ~20 inline workflow constants. Two (`BASIC_WORKFLOW`, `NESTED_WORKFLOW`) already delegate to `load_contents()`. Remaining constants should migrate to files when touched.
+
 ## Key Patterns
 
 - **Round-trip testing**: `round_trip(yaml_string)` converts Format2→native→Format2 and validates
 - **Source references**: Format2 uses `step_label/output_name` with `/` as separator. `resolve_source_reference()` in model.py handles labels containing `/`
-- Test workflows are defined as string constants in `tests/example_wfs.py`
 - `walk_id_list_or_dict()` in normalize.py handles both dict and list step/input representations

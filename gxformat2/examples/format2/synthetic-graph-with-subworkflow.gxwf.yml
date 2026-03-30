@@ -1,0 +1,26 @@
+format-version: v2.0
+$graph:
+  - id: subworkflow1
+    class: GalaxyWorkflow
+    inputs:
+      inner_input: data
+    outputs: {}
+    steps:
+      inner_tool:
+        tool_id: random_lines1
+        in:
+          input: inner_input
+  - id: main
+    class: GalaxyWorkflow
+    inputs:
+      outer_input: data
+    outputs: {}
+    steps:
+      first_cat:
+        tool_id: cat1
+        in:
+          input1: outer_input
+      nested_workflow:
+        run: '#subworkflow1'
+        in:
+          inner_input: first_cat/out_file1

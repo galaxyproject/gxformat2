@@ -1,0 +1,18 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Outer",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "data_input",
+            "label": "inp",
+            "tool_state": "{}"
+        },
+        "1": {
+            "id": 1,
+            "type": "subworkflow",
+            "content_id": "https://example.com/inner.ga"
+        }
+    }
+}

@@ -1,0 +1,18 @@
+class: GalaxyWorkflow
+inputs:
+  y: data
+outputs: {}
+steps:
+  inner_sub:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner_input: data
+      outputs: {}
+      steps:
+        inner_tool:
+          tool_id: random_lines1
+          in:
+            input: inner_input
+    in:
+      inner_input: y

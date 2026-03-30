@@ -108,3 +108,95 @@
   format: native
   tests:
     - tests/test_lint_best_practices.py
+
+# --- test_normalized.py fixtures ---
+
+- file: format2/synthetic-graph-simple.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+
+- file: format2/synthetic-graph-with-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+
+- file: format2/synthetic-inner-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+
+- file: format2/synthetic-input-shorthand.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+
+- file: format2/synthetic-step-in-shorthand.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+
+- file: format2/synthetic-url-run-yml.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+
+- file: format2/synthetic-inner-nested-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+
+- file: format2/synthetic-single-versioned-tool.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+
+- file: format2/synthetic-tool-with-inline-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+
+- file: native/synthetic-minimal-tool.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py
+
+- file: native/synthetic-inner-subworkflow.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py
+
+- file: native/synthetic-native-data-input.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py
+
+- file: native/synthetic-outer-inline-subworkflow.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py
+
+- file: native/synthetic-outer-url-subworkflow.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py
+
+- file: native/synthetic-native-tool-with-subworkflow.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py

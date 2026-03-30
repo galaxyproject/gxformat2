@@ -1,0 +1,5 @@
+class: GalaxyWorkflow
+inputs:
+  x: data
+outputs: {}
+steps: {}
