@@ -4,4 +4,5 @@ inputs:
   multi-text:
     optional: false
     type: [string]
+outputs: {}
 steps: []

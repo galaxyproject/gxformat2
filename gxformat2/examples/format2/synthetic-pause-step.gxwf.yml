@@ -1,6 +1,7 @@
 class: GalaxyWorkflow
 inputs:
   test_input: data
+outputs: {}
 steps:
   first_cat:
     tool_id: cat1

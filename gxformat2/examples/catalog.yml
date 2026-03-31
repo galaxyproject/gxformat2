@@ -22,6 +22,7 @@
   format: format2
   tests:
     - tests/test_lint_best_practices.py
+    - tests/test_declarative_normalized.py
 
 - file: native/real-unicycler-assembly.ga
   origin: real
@@ -36,6 +37,7 @@
   format: native
   tests:
     - tests/test_lint.py
+    - tests/test_declarative_normalized.py
 
 - file: native/real-hacked-unicycler-assembly-no-tool.ga
   origin: real-hacked
@@ -56,20 +58,27 @@
   format: native
   tests:
     - tests/test_cytoscape.py
+    - tests/test_declarative_normalized.py
 
 - file: native/real-sars-cov2-variant-calling.ga
   origin: real
   format: native
+  description: >
+    Real Galaxy export with legacy issues: tags exported as empty string
+    instead of list, and extra position fields (bottom, height, right, width)
+    that Galaxy no longer emits.
   tests:
     - tests/test_to_format2.py
     - tests/test_to_native.py
     - tests/test_export_abstract.py
+    - tests/test_declarative_normalized.py
 
 - file: native/real-ecoli-comparison.ga
   origin: real
   format: native
   tests:
     - tests/test_lint.py
+    - tests/test_declarative_normalized.py
 
 - file: native/real-shed-tools-raw.ga
   origin: real
@@ -83,12 +92,14 @@
   format: native
   tests:
     - tests/test_to_format2.py
+    - tests/test_declarative_normalized.py
 
 - file: native/real-multi-string-input.ga
   origin: real
   format: native
   tests:
     - tests/test_to_format2.py
+    - tests/test_declarative_normalized.py
 
 - file: native/real-basic-without-step-input-label.ga
   origin: real
@@ -96,24 +107,28 @@
   tests:
     - tests/test_to_format2.py
     - tests/test_export_abstract.py
+    - tests/test_declarative_normalized.py
 
 - file: native/synthetic-unlinted-best-practices.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_lint_best_practices.py
+    - tests/test_declarative_normalized.py
 
 - file: native/synthetic-unlinted-best-practices-dict-tool-state.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_lint_best_practices.py
+    - tests/test_declarative_normalized.py
 
 - file: native/synthetic-unlinted-best-practices-bad-identifier.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_lint_best_practices.py
+    - tests/test_declarative_normalized.py
 
 # --- test_normalized.py fixtures ---
 
@@ -136,6 +151,7 @@
   format: format2
   tests:
     - tests/test_normalized.py
+    - tests/test_declarative_normalized.py
 
 - file: format2/synthetic-input-shorthand.gxwf.yml
   origin: synthetic
@@ -163,6 +179,7 @@
   format: format2
   tests:
     - tests/test_normalized.py
+    - tests/test_declarative_normalized.py
 
 - file: format2/synthetic-single-versioned-tool.gxwf.yml
   origin: synthetic
@@ -190,6 +207,7 @@
   format: native
   tests:
     - tests/test_normalized.py
+    - tests/test_declarative_normalized.py
 
 - file: native/synthetic-native-data-input.ga
   origin: synthetic

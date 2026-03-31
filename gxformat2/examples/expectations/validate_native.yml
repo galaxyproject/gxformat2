@@ -1,3 +1,5 @@
+# --- existing positive/negative tests ---
+
 test_minimal_valid_native:
   fixture: synthetic-minimal-tool.ga
   operation: validate_native
@@ -24,3 +26,174 @@ test_missing_marker_rejected_native_strict:
   fixture: synthetic-missing-marker.ga
   operation: validate_native_strict
   expect_error: true
+
+# --- comprehensive validation coverage ---
+
+test_unicycler_assembly_valid_native:
+  fixture: real-unicycler-assembly.ga
+  operation: validate_native
+
+test_unicycler_assembly_valid_native_strict:
+  fixture: real-unicycler-assembly.ga
+  operation: validate_native_strict
+
+test_unicycler_assembly_with_tags_valid_native:
+  fixture: real-hacked-unicycler-assembly-with-tags.ga
+  operation: validate_native
+
+test_unicycler_assembly_with_tags_valid_native_strict:
+  fixture: real-hacked-unicycler-assembly-with-tags.ga
+  operation: validate_native_strict
+
+test_unicycler_assembly_no_tool_valid_native:
+  fixture: real-hacked-unicycler-assembly-no-tool.ga
+  operation: validate_native
+
+test_unicycler_assembly_no_tool_valid_native_strict:
+  fixture: real-hacked-unicycler-assembly-no-tool.ga
+  operation: validate_native_strict
+
+test_unicycler_assembly_testtoolshed_valid_native:
+  fixture: real-hacked-unicycler-assembly-testtoolshed.ga
+  operation: validate_native
+
+test_unicycler_assembly_testtoolshed_valid_native_strict:
+  fixture: real-hacked-unicycler-assembly-testtoolshed.ga
+  operation: validate_native_strict
+
+test_unicycler_assembly_extra_annotations_valid_native:
+  fixture: real-hacked-unicycler-assembly-extra-annotations.ga
+  operation: validate_native
+
+test_unicycler_assembly_extra_annotations_valid_native_strict:
+  fixture: real-hacked-unicycler-assembly-extra-annotations.ga
+  operation: validate_native_strict
+
+# real-sars-cov2-variant-calling.ga has legacy Galaxy bugs (tags as empty
+# string, extra position fields) — both lax and strict reject it
+test_sars_cov2_variant_calling_rejected_native:
+  fixture: real-sars-cov2-variant-calling.ga
+  operation: validate_native
+  expect_error: true
+
+test_sars_cov2_variant_calling_rejected_native_strict:
+  fixture: real-sars-cov2-variant-calling.ga
+  operation: validate_native_strict
+  expect_error: true
+
+test_ecoli_comparison_valid_native:
+  fixture: real-ecoli-comparison.ga
+  operation: validate_native
+
+test_ecoli_comparison_valid_native_strict:
+  fixture: real-ecoli-comparison.ga
+  operation: validate_native_strict
+
+test_shed_tools_raw_valid_native:
+  fixture: real-shed-tools-raw.ga
+  operation: validate_native
+
+test_shed_tools_raw_valid_native_strict:
+  fixture: real-shed-tools-raw.ga
+  operation: validate_native_strict
+
+# real-multi-data-input.ga skipped pending galaxyproject/gxformat2#172
+
+test_multi_string_input_valid_native:
+  fixture: real-multi-string-input.ga
+  operation: validate_native
+
+test_multi_string_input_valid_native_strict:
+  fixture: real-multi-string-input.ga
+  operation: validate_native_strict
+
+test_basic_without_step_input_label_valid_native:
+  fixture: real-basic-without-step-input-label.ga
+  operation: validate_native
+
+test_basic_without_step_input_label_valid_native_strict:
+  fixture: real-basic-without-step-input-label.ga
+  operation: validate_native_strict
+
+test_unlinted_best_practices_valid_native:
+  fixture: synthetic-unlinted-best-practices.ga
+  operation: validate_native
+
+test_unlinted_best_practices_rejected_native_strict:
+  fixture: synthetic-unlinted-best-practices.ga
+  operation: validate_native_strict
+  expect_error: true
+
+test_unlinted_best_practices_dict_tool_state_valid_native:
+  fixture: synthetic-unlinted-best-practices-dict-tool-state.ga
+  operation: validate_native
+
+test_unlinted_best_practices_dict_tool_state_rejected_native_strict:
+  fixture: synthetic-unlinted-best-practices-dict-tool-state.ga
+  operation: validate_native_strict
+  expect_error: true
+
+test_unlinted_best_practices_bad_identifier_valid_native:
+  fixture: synthetic-unlinted-best-practices-bad-identifier.ga
+  operation: validate_native
+
+test_unlinted_best_practices_bad_identifier_rejected_native_strict:
+  fixture: synthetic-unlinted-best-practices-bad-identifier.ga
+  operation: validate_native_strict
+  expect_error: true
+
+test_inner_subworkflow_valid_native:
+  fixture: synthetic-inner-subworkflow.ga
+  operation: validate_native
+
+test_inner_subworkflow_valid_native_strict:
+  fixture: synthetic-inner-subworkflow.ga
+  operation: validate_native_strict
+
+test_native_data_input_valid_native:
+  fixture: synthetic-native-data-input.ga
+  operation: validate_native
+
+test_native_data_input_valid_native_strict:
+  fixture: synthetic-native-data-input.ga
+  operation: validate_native_strict
+
+test_outer_inline_subworkflow_valid_native:
+  fixture: synthetic-outer-inline-subworkflow.ga
+  operation: validate_native
+
+test_outer_inline_subworkflow_valid_native_strict:
+  fixture: synthetic-outer-inline-subworkflow.ga
+  operation: validate_native_strict
+
+test_outer_url_subworkflow_valid_native:
+  fixture: synthetic-outer-url-subworkflow.ga
+  operation: validate_native
+
+test_outer_url_subworkflow_valid_native_strict:
+  fixture: synthetic-outer-url-subworkflow.ga
+  operation: validate_native_strict
+
+test_native_tool_with_subworkflow_valid_native:
+  fixture: synthetic-native-tool-with-subworkflow.ga
+  operation: validate_native
+
+test_native_tool_with_subworkflow_valid_native_strict:
+  fixture: synthetic-native-tool-with-subworkflow.ga
+  operation: validate_native_strict
+
+test_labeled_tool_valid_native:
+  fixture: synthetic-labeled-tool.ga
+  operation: validate_native
+
+test_labeled_tool_valid_native_strict:
+  fixture: synthetic-labeled-tool.ga
+  operation: validate_native_strict
+
+test_rename_pja_valid_native:
+  fixture: synthetic-rename-pja.ga
+  operation: validate_native
+
+test_rename_pja_valid_native_strict:
+  fixture: synthetic-rename-pja.ga
+  operation: validate_native_strict

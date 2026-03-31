@@ -3,6 +3,7 @@ inputs:
   the_input:
     type: File
     optional: true
+outputs: {}
 steps:
   cat:
     tool_id: cat_optional

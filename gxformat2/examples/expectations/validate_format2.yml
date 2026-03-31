@@ -1,3 +1,5 @@
+# --- existing positive/negative tests ---
+
 test_basic_valid_format2:
   fixture: synthetic-basic.gxwf.yml
   operation: validate_format2
@@ -24,3 +26,289 @@ test_missing_steps_rejected_format2_strict:
   fixture: synthetic-missing-steps.gxwf.yml
   operation: validate_format2_strict
   expect_error: true
+
+# --- comprehensive validation coverage ---
+
+test_nested_subworkflow_valid_format2:
+  fixture: synthetic-nested-subworkflow.gxwf.yml
+  operation: validate_format2
+
+test_nested_subworkflow_valid_format2_strict:
+  fixture: synthetic-nested-subworkflow.gxwf.yml
+  operation: validate_format2_strict
+
+test_unlinted_best_practices_rejected_format2:
+  fixture: synthetic-unlinted-best-practices.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_unlinted_best_practices_rejected_format2_strict:
+  fixture: synthetic-unlinted-best-practices.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+
+# $graph envelope workflows skipped — validate_format2 doesn't resolve $graph yet
+
+test_inner_subworkflow_valid_format2:
+  fixture: synthetic-inner-subworkflow.gxwf.yml
+  operation: validate_format2
+
+test_inner_subworkflow_valid_format2_strict:
+  fixture: synthetic-inner-subworkflow.gxwf.yml
+  operation: validate_format2_strict
+
+test_input_shorthand_valid_format2:
+  fixture: synthetic-input-shorthand.gxwf.yml
+  operation: validate_format2
+
+test_input_shorthand_valid_format2_strict:
+  fixture: synthetic-input-shorthand.gxwf.yml
+  operation: validate_format2_strict
+
+test_step_in_shorthand_valid_format2:
+  fixture: synthetic-step-in-shorthand.gxwf.yml
+  operation: validate_format2
+
+test_step_in_shorthand_valid_format2_strict:
+  fixture: synthetic-step-in-shorthand.gxwf.yml
+  operation: validate_format2_strict
+
+test_url_run_yml_valid_format2:
+  fixture: synthetic-url-run-yml.gxwf.yml
+  operation: validate_format2
+
+test_url_run_yml_valid_format2_strict:
+  fixture: synthetic-url-run-yml.gxwf.yml
+  operation: validate_format2_strict
+
+test_inner_nested_subworkflow_valid_format2:
+  fixture: synthetic-inner-nested-subworkflow.gxwf.yml
+  operation: validate_format2
+
+test_inner_nested_subworkflow_valid_format2_strict:
+  fixture: synthetic-inner-nested-subworkflow.gxwf.yml
+  operation: validate_format2_strict
+
+test_single_versioned_tool_valid_format2:
+  fixture: synthetic-single-versioned-tool.gxwf.yml
+  operation: validate_format2
+
+test_single_versioned_tool_valid_format2_strict:
+  fixture: synthetic-single-versioned-tool.gxwf.yml
+  operation: validate_format2_strict
+
+test_tool_with_inline_subworkflow_valid_format2:
+  fixture: synthetic-tool-with-inline-subworkflow.gxwf.yml
+  operation: validate_format2
+
+test_tool_with_inline_subworkflow_valid_format2_strict:
+  fixture: synthetic-tool-with-inline-subworkflow.gxwf.yml
+  operation: validate_format2_strict
+
+test_int_input_valid_format2:
+  fixture: synthetic-int-input.gxwf.yml
+  operation: validate_format2
+
+test_int_input_valid_format2_strict:
+  fixture: synthetic-int-input.gxwf.yml
+  operation: validate_format2_strict
+
+test_pause_step_valid_format2:
+  fixture: synthetic-pause-step.gxwf.yml
+  operation: validate_format2
+
+test_pause_step_valid_format2_strict:
+  fixture: synthetic-pause-step.gxwf.yml
+  operation: validate_format2_strict
+
+test_comments_list_valid_format2:
+  fixture: synthetic-comments-list.gxwf.yml
+  operation: validate_format2
+
+test_comments_list_valid_format2_strict:
+  fixture: synthetic-comments-list.gxwf.yml
+  operation: validate_format2_strict
+
+test_doc_array_valid_format2:
+  fixture: synthetic-doc-array.gxwf.yml
+  operation: validate_format2
+
+test_doc_array_valid_format2_strict:
+  fixture: synthetic-doc-array.gxwf.yml
+  operation: validate_format2_strict
+
+test_input_type_aliases_valid_format2:
+  fixture: synthetic-input-type-aliases.gxwf.yml
+  operation: validate_format2
+
+test_input_type_aliases_valid_format2_strict:
+  fixture: synthetic-input-type-aliases.gxwf.yml
+  operation: validate_format2_strict
+
+test_step_out_shorthand_valid_format2:
+  fixture: synthetic-step-out-shorthand.gxwf.yml
+  operation: validate_format2
+
+test_step_out_shorthand_valid_format2_strict:
+  fixture: synthetic-step-out-shorthand.gxwf.yml
+  operation: validate_format2_strict
+
+test_inputs_array_valid_format2:
+  fixture: synthetic-inputs-array.gxwf.yml
+  operation: validate_format2
+
+test_inputs_array_valid_format2_strict:
+  fixture: synthetic-inputs-array.gxwf.yml
+  operation: validate_format2_strict
+
+test_tool_state_json_valid_format2:
+  fixture: synthetic-tool-state-json.gxwf.yml
+  operation: validate_format2
+
+test_tool_state_json_valid_format2_strict:
+  fixture: synthetic-tool-state-json.gxwf.yml
+  operation: validate_format2_strict
+
+test_tags_valid_format2:
+  fixture: synthetic-tags.gxwf.yml
+  operation: validate_format2
+
+test_tags_valid_format2_strict:
+  fixture: synthetic-tags.gxwf.yml
+  operation: validate_format2_strict
+
+test_optional_input_valid_format2:
+  fixture: synthetic-optional-input.gxwf.yml
+  operation: validate_format2
+
+test_optional_input_valid_format2_strict:
+  fixture: synthetic-optional-input.gxwf.yml
+  operation: validate_format2_strict
+
+test_when_step_valid_format2:
+  fixture: synthetic-when-step.gxwf.yml
+  operation: validate_format2
+
+test_when_step_valid_format2_strict:
+  fixture: synthetic-when-step.gxwf.yml
+  operation: validate_format2_strict
+
+test_pja_hide_rename_valid_format2:
+  fixture: synthetic-pja-hide-rename.gxwf.yml
+  operation: validate_format2
+
+test_pja_hide_rename_valid_format2_strict:
+  fixture: synthetic-pja-hide-rename.gxwf.yml
+  operation: validate_format2_strict
+
+test_paired_list_input_valid_format2:
+  fixture: synthetic-paired-list-input.gxwf.yml
+  operation: validate_format2
+
+test_paired_list_input_valid_format2_strict:
+  fixture: synthetic-paired-list-input.gxwf.yml
+  operation: validate_format2_strict
+
+test_float_input_default_valid_format2:
+  fixture: synthetic-float-input-default.gxwf.yml
+  operation: validate_format2
+
+test_float_input_default_valid_format2_strict:
+  fixture: synthetic-float-input-default.gxwf.yml
+  operation: validate_format2_strict
+
+test_string_input_valid_format2:
+  fixture: synthetic-string-input.gxwf.yml
+  operation: validate_format2
+
+test_string_input_valid_format2_strict:
+  fixture: synthetic-string-input.gxwf.yml
+  operation: validate_format2_strict
+
+test_integer_type_alias_valid_format2:
+  fixture: synthetic-integer-type-alias.gxwf.yml
+  operation: validate_format2
+
+test_integer_type_alias_valid_format2_strict:
+  fixture: synthetic-integer-type-alias.gxwf.yml
+  operation: validate_format2_strict
+
+test_multi_data_input_valid_format2:
+  fixture: synthetic-multi-data-input.gxwf.yml
+  operation: validate_format2
+
+test_multi_data_input_valid_format2_strict:
+  fixture: synthetic-multi-data-input.gxwf.yml
+  operation: validate_format2_strict
+
+test_multi_string_input_valid_format2:
+  fixture: synthetic-multi-string-input.gxwf.yml
+  operation: validate_format2
+
+test_multi_string_input_valid_format2_strict:
+  fixture: synthetic-multi-string-input.gxwf.yml
+  operation: validate_format2_strict
+
+test_rules_tool_valid_format2:
+  fixture: synthetic-rules-tool.gxwf.yml
+  operation: validate_format2
+
+test_rules_tool_valid_format2_strict:
+  fixture: synthetic-rules-tool.gxwf.yml
+  operation: validate_format2_strict
+
+test_runtime_inputs_valid_format2:
+  fixture: synthetic-runtime-inputs.gxwf.yml
+  operation: validate_format2
+
+test_runtime_inputs_valid_format2_strict:
+  fixture: synthetic-runtime-inputs.gxwf.yml
+  operation: validate_format2_strict
+
+test_slash_in_input_label_valid_format2:
+  fixture: synthetic-slash-in-input-label.gxwf.yml
+  operation: validate_format2
+
+test_slash_in_input_label_valid_format2_strict:
+  fixture: synthetic-slash-in-input-label.gxwf.yml
+  operation: validate_format2_strict
+
+test_slash_in_step_label_valid_format2:
+  fixture: synthetic-slash-in-step-label.gxwf.yml
+  operation: validate_format2
+
+test_slash_in_step_label_valid_format2_strict:
+  fixture: synthetic-slash-in-step-label.gxwf.yml
+  operation: validate_format2_strict
+
+test_slash_in_label_chained_valid_format2:
+  fixture: synthetic-slash-in-label-chained.gxwf.yml
+  operation: validate_format2
+
+test_slash_in_label_chained_valid_format2_strict:
+  fixture: synthetic-slash-in-label-chained.gxwf.yml
+  operation: validate_format2_strict
+
+test_sample_sheet_input_valid_format2:
+  fixture: synthetic-sample-sheet-input.gxwf.yml
+  operation: validate_format2
+
+test_sample_sheet_input_valid_format2_strict:
+  fixture: synthetic-sample-sheet-input.gxwf.yml
+  operation: validate_format2_strict
+
+test_comments_dict_valid_format2:
+  fixture: synthetic-comments-dict.gxwf.yml
+  operation: validate_format2
+
+test_comments_dict_valid_format2_strict:
+  fixture: synthetic-comments-dict.gxwf.yml
+  operation: validate_format2_strict
+
+test_user_defined_tool_valid_format2:
+  fixture: synthetic-user-defined-tool.gxwf.yml
+  operation: validate_format2
+
+test_user_defined_tool_valid_format2_strict:
+  fixture: synthetic-user-defined-tool.gxwf.yml
+  operation: validate_format2_strict
