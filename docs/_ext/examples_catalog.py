@@ -4,12 +4,13 @@ import json
 import os
 import string
 
+import yaml
 from docutils import nodes
 from docutils.parsers.rst import Directive
 from sphinx.application import Sphinx
 
 from gxformat2.cytoscape import cytoscape_elements
-from gxformat2.examples import load_catalog
+from gxformat2.examples import EXAMPLES_DIR, load_catalog
 
 GITHUB_BASE = "https://github.com/galaxyproject/gxformat2/blob/main"
 
@@ -55,6 +56,31 @@ def _build_cytoscape_elements(workflow_path):
     return elements.to_list()
 
 
+EXPECTATIONS_DIR = os.path.join(EXAMPLES_DIR, "expectations")
+
+DECLARATIVE_TEST = "tests/test_declarative_normalized.py"
+
+
+def _load_fixture_expectations():
+    """Build a mapping from fixture filename to list of (test_id, operation, expectation_file)."""
+    fixture_map = {}
+    if not os.path.isdir(EXPECTATIONS_DIR):
+        return fixture_map
+    for fname in sorted(os.listdir(EXPECTATIONS_DIR)):
+        if not fname.endswith(".yml"):
+            continue
+        fpath = os.path.join(EXPECTATIONS_DIR, fname)
+        with open(fpath) as f:
+            suite = yaml.safe_load(f)
+        if not suite:
+            continue
+        for test_id, case in suite.items():
+            fixture = case.get("fixture", "")
+            operation = case.get("operation", "")
+            fixture_map.setdefault(fixture, []).append((test_id, operation, fname))
+    return fixture_map
+
+
 class ExamplesCatalogDirective(Directive):
     """Directive that renders the examples catalog as rich documentation.
 
@@ -74,6 +100,7 @@ class ExamplesCatalogDirective(Directive):
 
     def run(self):
         catalog = load_catalog()
+        self._fixture_expectations = _load_fixture_expectations()
         result_nodes = []
 
         format2_entries = [e for e in catalog if e.format == "format2"]
@@ -108,8 +135,22 @@ class ExamplesCatalogDirective(Directive):
             if annotation:
                 field_list += self._field("Description", annotation)
 
-            if entry.tests:
-                field_list += self._links_field("Tests", [(t, f"{GITHUB_BASE}/{t}") for t in entry.tests])
+            # Split tests into Python and Interoperable
+            python_tests = [t for t in (entry.tests or []) if t != DECLARATIVE_TEST]
+            interop_cases = self._fixture_expectations.get(entry.name, [])
+
+            if python_tests:
+                field_list += self._links_field(
+                    "Python Tests",
+                    [(t, f"{GITHUB_BASE}/{t}") for t in python_tests],
+                )
+
+            if interop_cases:
+                items = []
+                for test_id, operation, exp_file in interop_cases:
+                    exp_url = f"{GITHUB_BASE}/gxformat2/examples/expectations/{exp_file}"
+                    items.append((f"{test_id} ({operation})", exp_url))
+                field_list += self._links_field("Interoperable Tests", items)
 
             entry_section += field_list
 
@@ -194,6 +235,73 @@ class ExamplesCatalogDirective(Directive):
         return field
 
 
+class ExpectationsCatalogDirective(Directive):
+    """Directive that renders the declarative expectation files as documentation.
+
+    Usage in .rst::
+
+        .. expectations-catalog::
+    """
+
+    has_content = False
+    required_arguments = 0
+    optional_arguments = 0
+
+    def run(self):
+        result_nodes = []
+        expectations_dir = EXPECTATIONS_DIR
+        if not os.path.isdir(expectations_dir):
+            return result_nodes
+
+        for fname in sorted(os.listdir(expectations_dir)):
+            if not fname.endswith(".yml"):
+                continue
+            fpath = os.path.join(expectations_dir, fname)
+            with open(fpath) as f:
+                suite = yaml.safe_load(f)
+            if not suite:
+                continue
+
+            section = nodes.section(ids=[nodes.make_id(fname)])
+            section += nodes.title(text=fname)
+
+            github_url = f"{GITHUB_BASE}/gxformat2/examples/expectations/{fname}"
+            para = nodes.paragraph()
+            para += nodes.reference("", "Source on GitHub", refuri=github_url)
+            section += para
+
+            # Summary table of test cases
+            table = nodes.table()
+            tgroup = nodes.tgroup(cols=3)
+            table += tgroup
+            for _ in range(3):
+                tgroup += nodes.colspec(colwidth=1)
+            thead = nodes.thead()
+            tgroup += thead
+            header_row = nodes.row()
+            for header in ("Test", "Fixture", "Operation"):
+                entry = nodes.entry()
+                entry += nodes.paragraph(text=header)
+                header_row += entry
+            thead += header_row
+
+            tbody = nodes.tbody()
+            tgroup += tbody
+            for test_id, case in suite.items():
+                row = nodes.row()
+                for val in (test_id, case.get("fixture", ""), case.get("operation", "")):
+                    entry = nodes.entry()
+                    entry += nodes.paragraph(text=str(val))
+                    row += entry
+                tbody += row
+            section += table
+
+            result_nodes.append(section)
+
+        return result_nodes
+
+
 def setup(app: Sphinx):
     app.add_directive("examples-catalog", ExamplesCatalogDirective)
-    return {"version": "0.1", "parallel_read_safe": True}
+    app.add_directive("expectations-catalog", ExpectationsCatalogDirective)
+    return {"version": "0.2", "parallel_read_safe": True}

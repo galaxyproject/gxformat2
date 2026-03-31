@@ -5,7 +5,7 @@ Each file contains named test cases with a fixture, operation, and assertions.
 Assertions use path-value pairs navigated against the normalized workflow object.
 
 Path element types:
-  - str: attribute access (falls back to dict key for native step dicts)
+  - str: dict key lookup (falls back to attribute access)
   - int: list index
   - "$length": terminal, returns len(current object)
   - {field: value}: find first list item where item.field == value
@@ -55,6 +55,8 @@ def _load_expectations():
             continue
         with open(os.path.join(EXPECTATIONS_DIR, fname)) as f:
             suite = yaml.safe_load(f)
+        if not suite:
+            continue
         for test_id, case in suite.items():
             yield test_id, case
 

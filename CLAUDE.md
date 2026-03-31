@@ -99,6 +99,48 @@ wf_path = get_path("synthetic-my-case.gxwf.yml")     # absolute path
 
 `tests/example_wfs.py` still has ~20 inline workflow constants. Two (`BASIC_WORKFLOW`, `NESTED_WORKFLOW`) already delegate to `load_contents()`. Remaining constants should migrate to files when touched.
 
+## Declarative Tests (`gxformat2/examples/expectations/`)
+
+**Prefer declarative YAML-driven tests over imperative Python tests** for verifying structural properties of operation results (normalization, conversion, ensure). The YAML format is language-agnostic and reusable from a TypeScript project.
+
+Test runner: `tests/test_declarative_normalized.py`
+Expectation files: `gxformat2/examples/expectations/*.yml`
+
+### Expectation file format
+
+```yaml
+test_name:
+  fixture: synthetic-basic.gxwf.yml       # from gxformat2/examples/
+  operation: to_native                     # function to call on the loaded fixture
+  assertions:
+    - path: [steps, "1", tool_id]          # navigate the result object
+      value: cat1                          # exact equality
+    - path: [steps, "1", workflow_outputs, $length]
+      value: 1
+    - path: [outputs, 0, outputSource]
+      value_contains: the_cat              # substring check
+    - path: [unique_tools]
+      value_set:                           # unordered set comparison
+        - {tool_id: cat1, tool_version: "1.0"}
+```
+
+### Path elements
+- `str` — dict key lookup (falls back to attribute access)
+- `int` — list index
+- `$length` — terminal, returns `len(current)`
+- `{field: value}` — find first list item where `item.field == value`
+
+### Available operations
+`normalized_format2`, `normalized_native`, `expanded_format2`, `expanded_native`, `to_format2`, `to_native`, `ensure_format2`, `ensure_native`
+
+### Adding a declarative test
+1. Pick or create an expectation file named after the operation/feature
+2. Add a named case with `fixture`, `operation`, and `assertions` — test IDs must be unique across all expectation files
+3. Ensure the fixture exists in `gxformat2/examples/` and its `catalog.yml` entry lists `tests/test_declarative_normalized.py`
+
+### When to use imperative tests instead
+Error paths, mutation safety, mocking/resolvers, cycle detection, and scenarios requiring Python-specific setup (e.g. `tmp_path`, custom `ConversionOptions`) stay in `test_normalized.py`.
+
 ## Key Patterns
 
 - **Round-trip testing**: `round_trip(yaml_string)` converts Format2→native→Format2 and validates
