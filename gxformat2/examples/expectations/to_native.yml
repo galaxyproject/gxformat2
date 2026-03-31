@@ -93,3 +93,49 @@ test_to_native_comments:
   assertions:
     - path: [comments, $length]
       value: 1
+
+# --- migrated from test_basic.py ---
+
+test_to_native_when_expression:
+  fixture: synthetic-when-step.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "2", when]
+      value: "$(inputs.seed != 'skip')"
+
+test_to_native_pja_hide:
+  fixture: synthetic-pja-hide-rename.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", post_job_actions, HideDatasetActionout_file1, action_type]
+      value: HideDatasetAction
+
+test_to_native_pja_rename:
+  fixture: synthetic-pja-hide-rename.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", post_job_actions, RenameDatasetActionout_file1, action_arguments, newname]
+      value: "the new value"
+
+test_to_native_multi_data_connections:
+  fixture: synthetic-multi-data-input.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "2", input_connections, input1, $length]
+      value: 2
+
+test_to_native_user_defined_tool:
+  fixture: synthetic-user-defined-tool.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", tool_representation, class]
+      value: GalaxyUserTool
+
+test_to_native_comments_dict:
+  fixture: synthetic-comments-dict.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [comments, $length]
+      value: 3

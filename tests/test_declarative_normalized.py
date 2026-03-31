@@ -28,6 +28,8 @@ import pytest
 import yaml
 
 from gxformat2.examples import EXAMPLES_DIR, load
+from gxformat2.lint import lint_format2 as _lint_format2_impl, lint_ga as _lint_ga_impl
+from gxformat2.linting import LintContext
 from gxformat2.normalized import (
     ensure_format2,
     ensure_native,
@@ -60,6 +62,30 @@ def _validate_native_strict(wf_dict):
     return NativeStrict.model_validate(wf_dict)
 
 
+def _lint_format2(wf_dict):
+    nf2 = ensure_format2(wf_dict, expand=True)
+    ctx = LintContext()
+    _lint_format2_impl(ctx, nf2, raw_dict=wf_dict)
+    return {
+        "errors": ctx.error_messages,
+        "warnings": ctx.warn_messages,
+        "error_count": len(ctx.error_messages),
+        "warn_count": len(ctx.warn_messages),
+    }
+
+
+def _lint_native(wf_dict):
+    nnw = ensure_native(wf_dict)
+    ctx = LintContext()
+    _lint_ga_impl(ctx, nnw, raw_dict=wf_dict)
+    return {
+        "errors": ctx.error_messages,
+        "warnings": ctx.warn_messages,
+        "error_count": len(ctx.error_messages),
+        "warn_count": len(ctx.warn_messages),
+    }
+
+
 EXPECTATIONS_DIR = os.path.join(EXAMPLES_DIR, "expectations")
 OPERATIONS = {
     "normalized_format2": normalized_format2,
@@ -74,6 +100,8 @@ OPERATIONS = {
     "validate_format2_strict": _validate_format2_strict,
     "validate_native": _validate_native,
     "validate_native_strict": _validate_native_strict,
+    "lint_format2": _lint_format2,
+    "lint_native": _lint_native,
 }
 
 

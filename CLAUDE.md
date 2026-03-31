@@ -134,6 +134,7 @@ test_name:
 - Normalization: `normalized_format2`, `normalized_native`, `expanded_format2`, `expanded_native`
 - Conversion: `to_format2`, `to_native`, `ensure_format2`, `ensure_native`
 - Validation: `validate_format2`, `validate_format2_strict`, `validate_native`, `validate_native_strict`
+- Linting: `lint_format2`, `lint_native` — return `{errors: [...], warnings: [...], error_count: N, warn_count: N}`
 
 ### Special keys
 - `assertions` may be omitted or empty — the operation succeeding is the test

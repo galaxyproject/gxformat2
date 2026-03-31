@@ -15,6 +15,7 @@
   tests:
     - tests/test_lint.py
     - tests/test_export_abstract.py
+    - tests/test_declarative_normalized.py
 
 - file: format2/synthetic-unlinted-best-practices.gxwf.yml
   origin: synthetic
@@ -28,6 +29,7 @@
   tests:
     - tests/test_lint.py
     - tests/test_basic.py
+    - tests/test_declarative_normalized.py
 
 - file: native/real-hacked-unicycler-assembly-with-tags.ga
   origin: real-hacked
@@ -40,12 +42,14 @@
   format: native
   tests:
     - tests/test_lint.py
+    - tests/test_declarative_normalized.py
 
 - file: native/real-hacked-unicycler-assembly-testtoolshed.ga
   origin: real-hacked
   format: native
   tests:
     - tests/test_lint.py
+    - tests/test_declarative_normalized.py
 
 - file: native/real-hacked-unicycler-assembly-extra-annotations.ga
   origin: real-hacked
@@ -72,6 +76,7 @@
   format: native
   tests:
     - tests/test_lint.py
+    - tests/test_declarative_normalized.py
 
 - file: native/real-multi-data-input.ga
   origin: real
@@ -282,6 +287,123 @@
   origin: synthetic
   format: format2
   tests:
+    - tests/test_declarative_normalized.py
+
+# --- migrated from example_wfs.py ---
+
+- file: format2/synthetic-optional-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-when-step.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-pja-hide-rename.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-paired-list-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-float-input-default.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-string-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-integer-type-alias.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-multi-data-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_to_native.py
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-multi-string-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_to_native.py
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-rules-tool.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-runtime-inputs.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_to_native.py
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-slash-in-input-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-slash-in-step-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-slash-in-label-chained.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-sample-sheet-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-comments-dict.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_comments.py
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-user-defined-tool.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
     - tests/test_declarative_normalized.py
 
 # --- validation test fixtures ---

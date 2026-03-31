@@ -1,0 +1,30 @@
+class: GalaxyWorkflow
+inputs:
+  input_c: collection
+outputs:
+  out1:
+    outputSource: random_lines/out_file1
+steps:
+  apply:
+    tool_id: __APPLY_RULES__
+    state:
+      input:
+        $link: input_c
+      rules:
+        rules:
+          - type: add_column_metadata
+            value: identifier0
+          - type: add_column_metadata
+            value: identifier0
+        mapping:
+          - type: list_identifiers
+            columns: [0, 1]
+  random_lines:
+    tool_id: random_lines1
+    state:
+      num_lines: 1
+      input:
+        $link: apply/output
+      seed_source:
+        seed_source_selector: set_seed
+        seed: asdf
