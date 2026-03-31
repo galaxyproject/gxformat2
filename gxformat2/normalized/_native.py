@@ -309,6 +309,13 @@ def _normalize_workflow(wf: NativeGalaxyWorkflow) -> NormalizedNativeWorkflow:
     )
 
 
+def _normalize_position(position: StepPosition | None) -> StepPosition | None:
+    """Strip legacy extra fields (bottom, height, right, width, x, y) from step positions."""
+    if position is None:
+        return None
+    return StepPosition(top=position.top, left=position.left)
+
+
 def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
     tool_state: dict[str, Any]
     if isinstance(step.tool_state, str):
@@ -339,7 +346,7 @@ def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
         tool_uuid=step.tool_uuid,
         uuid=step.uuid,
         errors=step.errors,
-        position=step.position,
+        position=_normalize_position(step.position),
         input_connections={k: v if isinstance(v, list) else [v] for k, v in (step.input_connections or {}).items()},
         inputs=step.inputs or [],
         outputs=step.outputs or [],

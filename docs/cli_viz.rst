@@ -2,6 +2,6 @@ gxwf-viz
 ========
 
 .. argparse::
-   :module: gxformat2.cytoscape
+   :module: gxformat2.cytoscape._cli
    :func: _parser
    :prog: gxwf-viz

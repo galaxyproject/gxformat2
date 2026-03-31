@@ -1,0 +1,14 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Test",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "tool",
+            "tool_id": "cat1",
+            "tool_version": "1.0",
+            "tool_state": "{\"input1\": {\"__class__\": \"ConnectedValue\"}}"
+        }
+    }
+}

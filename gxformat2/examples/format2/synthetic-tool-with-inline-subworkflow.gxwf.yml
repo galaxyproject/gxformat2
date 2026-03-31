@@ -1,0 +1,25 @@
+class: GalaxyWorkflow
+inputs:
+  x: data
+outputs: {}
+steps:
+  outer_tool:
+    tool_id: cat1
+    tool_version: '1.0'
+    in:
+      x: x
+  nested:
+    type: subworkflow
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        y: data
+      outputs: {}
+      steps:
+        inner_tool:
+          tool_id: sort1
+          tool_version: '2.0'
+          in:
+            y: y
+    in:
+      y: x

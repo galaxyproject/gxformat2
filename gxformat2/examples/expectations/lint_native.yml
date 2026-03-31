@@ -1,0 +1,47 @@
+# Native workflow linting
+# lint operations return {errors: [...], warnings: [...], error_count: N, warn_count: N}
+
+test_lint_native_unicycler_clean:
+  fixture: real-unicycler-assembly.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_native_no_outputs_warns:
+  fixture: real-shed-tools-raw.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warnings, 0]
+      value_contains: "no outputs"
+
+test_lint_native_missing_tool_warns:
+  fixture: real-hacked-unicycler-assembly-no-tool.ga
+  operation: lint_native
+  assertions:
+    - path: [warn_count]
+      value: 1
+    - path: [warnings, 0]
+      value_contains: "error indicated during Galaxy export"
+
+test_lint_native_testtoolshed_warns:
+  fixture: real-hacked-unicycler-assembly-testtoolshed.ga
+  operation: lint_native
+  assertions:
+    - path: [warn_count]
+      value: 1
+    - path: [warnings, 0]
+      value_contains: "test tool shed"
+
+test_lint_native_minimal_no_outputs:
+  fixture: synthetic-minimal-tool.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warnings, 0]
+      value_contains: "no outputs"

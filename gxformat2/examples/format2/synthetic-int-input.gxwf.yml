@@ -1,0 +1,18 @@
+class: GalaxyWorkflow
+inputs:
+  input_d: File
+  num_lines:
+    type: int
+outputs:
+  out1:
+    outputSource: random_lines/out_file1
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      num_lines: num_lines
+      input: input_d
+    state:
+      seed_source:
+        seed_source_selector: set_seed
+        seed: asdf

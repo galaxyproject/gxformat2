@@ -1,0 +1,21 @@
+test_ensure_native_converts_format2:
+  fixture: synthetic-basic.gxwf.yml
+  operation: ensure_native
+  assertions:
+    - path: [a_galaxy_workflow]
+      value: "true"
+    - path: [name]
+      value: "Simple workflow"
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", tool_id]
+      value: cat1
+
+test_ensure_native_normalizes_native:
+  fixture: synthetic-minimal-tool.ga
+  operation: ensure_native
+  assertions:
+    - path: [a_galaxy_workflow]
+      value: "true"
+    - path: [steps, "0", tool_id]
+      value: cat1

@@ -9,6 +9,7 @@ All step/input ids are populated.
 from __future__ import annotations
 
 import copy
+import json
 import os
 from functools import cached_property
 from pathlib import Path
@@ -118,7 +119,7 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
     position: StepPosition | None = Field(default=None)
     when: str | None = Field(default=None)
     state: dict[str, Any] | None = Field(default=None)
-    tool_state: str | dict[str, Any] | None = Field(default=None)
+    tool_state: dict[str, Any] | None = Field(default=None, description="Always a parsed dict, never a JSON string.")
     runtime_inputs: list[str] | None = Field(default=None)
     errors: str | None = Field(default=None)
     uuid: str | None = Field(default=None)
@@ -508,7 +509,7 @@ def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
         position=step.position,
         when=step.when,
         state=step.state,
-        tool_state=step.tool_state,
+        tool_state=json.loads(step.tool_state) if isinstance(step.tool_state, str) else step.tool_state,
         runtime_inputs=step.runtime_inputs,
         errors=step.errors,
         uuid=step.uuid,

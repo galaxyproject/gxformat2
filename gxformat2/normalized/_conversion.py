@@ -558,7 +558,7 @@ def _build_tool_format2_step(
 
     # Handle tool state
     state: dict[str, Any] | None = None
-    tool_state: str | dict[str, Any] | None = None
+    tool_state: dict[str, Any] | None = None
 
     converted_state = None
     if options.state_encode_to_format2 is not None:

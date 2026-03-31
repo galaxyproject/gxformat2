@@ -1,0 +1,74 @@
+# Format2 workflow linting
+# lint operations return {errors: [...], warnings: [...], error_count: N, warn_count: N}
+
+test_lint_basic_clean:
+  fixture: synthetic-basic.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_nested_subworkflow_clean:
+  fixture: synthetic-nested-subworkflow.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_pja_clean:
+  fixture: synthetic-pja-hide-rename.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_tags_clean:
+  fixture: synthetic-tags.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_rules_tool_clean:
+  fixture: synthetic-rules-tool.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_runtime_inputs_clean:
+  fixture: synthetic-runtime-inputs.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_user_defined_tool_clean:
+  fixture: synthetic-user-defined-tool.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_slash_labels_clean:
+  fixture: synthetic-slash-in-label-chained.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_when_step_clean:
+  fixture: synthetic-when-step.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_float_default_clean:
+  fixture: synthetic-float-input-default.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0

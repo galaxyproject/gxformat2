@@ -1,0 +1,40 @@
+class: GalaxyWorkflow
+inputs:
+  the_input: data
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: the_input
+comments:
+  adapter_warning:
+    type: text
+    position: [100, 200]
+    size: [200, 50]
+    color: blue
+    text: "Check adapters"
+    text_size: 2
+    bold: true
+
+  preprocessing_docs:
+    type: markdown
+    position: [300, 50]
+    size: [400, 300]
+    text: |
+      # Preprocessing Pipeline
+      Quality filtering and adapter trimming.
+
+  preprocessing:
+    type: frame
+    position: [50, 50]
+    size: [600, 400]
+    color: green
+    title: Preprocessing
+    contains_steps:
+      - cat
+    contains_comments:
+      - adapter_warning
+      - preprocessing_docs

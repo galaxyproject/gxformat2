@@ -1,0 +1,38 @@
+# Slash-in-label handling during normalization and conversion
+
+test_slash_in_input_label_normalized:
+  fixture: synthetic-slash-in-input-label.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, 0, id]
+      value: "Host/Contaminant Genome"
+
+test_slash_in_step_label_normalized:
+  fixture: synthetic-slash-in-step-label.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, id]
+      value: "Host/Contaminant Filter"
+
+test_slash_in_label_chained_connection:
+  fixture: synthetic-slash-in-label-chained.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, {id: second_cat}, in_, 0, source]
+      value: "Host/Contaminant Filter/out_file1"
+
+test_slash_in_input_label_to_native:
+  fixture: synthetic-slash-in-input-label.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", label]
+      value: "Host/Contaminant Genome"
+    - path: [steps, "1", input_connections, input1, $length]
+      value: 1
+
+test_slash_in_label_chained_to_native:
+  fixture: synthetic-slash-in-label-chained.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, $length]
+      value: 3

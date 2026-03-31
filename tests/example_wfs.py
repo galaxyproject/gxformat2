@@ -8,6 +8,24 @@ constants defined inline until migrated.
 from gxformat2.examples import load_contents
 
 BASIC_WORKFLOW = load_contents("synthetic-basic.gxwf.yml")
+NESTED_WORKFLOW = load_contents("synthetic-nested-subworkflow.gxwf.yml")
+OPTIONAL_INPUT = load_contents("synthetic-optional-input.gxwf.yml")
+WHEN_EXAMPLE = load_contents("synthetic-when-step.gxwf.yml")
+PJA_1 = load_contents("synthetic-pja-hide-rename.gxwf.yml")
+PAIRED_LIST_COLLECTION_INPUT = load_contents("synthetic-paired-list-input.gxwf.yml")
+FLOAT_INPUT_DEFAULT = load_contents("synthetic-float-input-default.gxwf.yml")
+STRING_INPUT = load_contents("synthetic-string-input.gxwf.yml")
+INTEGER_INPUT = load_contents("synthetic-integer-type-alias.gxwf.yml")
+MULTI_DATA_INPUT_WORKFLOW = load_contents("synthetic-multi-data-input.gxwf.yml")
+MULTI_STRING_INPUT_WORKFLOW = load_contents("synthetic-multi-string-input.gxwf.yml")
+RULES_TOOL = load_contents("synthetic-rules-tool.gxwf.yml")
+RUNTIME_INPUTS = load_contents("synthetic-runtime-inputs.gxwf.yml")
+SLASH_IN_INPUT_LABEL = load_contents("synthetic-slash-in-input-label.gxwf.yml")
+SLASH_IN_STEP_LABEL_EXPLICIT_OUTPUT = load_contents("synthetic-slash-in-step-label.gxwf.yml")
+SLASH_IN_LABEL_CHAINED = load_contents("synthetic-slash-in-label-chained.gxwf.yml")
+SAMPLE_SHEET_COLLECTION_INPUT = load_contents("synthetic-sample-sheet-input.gxwf.yml")
+WORKFLOW_WITH_COMMENTS_DICT = load_contents("synthetic-comments-dict.gxwf.yml")
+USER_DEFINED_TOOL_WORKFLOW = load_contents("synthetic-user-defined-tool.gxwf.yml")
 
 WORKFLOW_WITH_REPEAT = """
 class: GalaxyWorkflow
@@ -24,101 +42,6 @@ steps:
       queries_0|input2: input1
       queries_1|input2: input1
 """
-
-NESTED_WORKFLOW = load_contents("synthetic-nested-subworkflow.gxwf.yml")
-
-RULES_TOOL = """
-class: GalaxyWorkflow
-inputs:
-  input_c: collection
-outputs:
-  out1:
-    outputSource: random_lines/out_file1
-steps:
-  apply:
-    tool_id: __APPLY_RULES__
-    state:
-      input:
-        $link: input_c
-      rules:
-        rules:
-          - type: add_column_metadata
-            value: identifier0
-          - type: add_column_metadata
-            value: identifier0
-        mapping:
-          - type: list_identifiers
-            columns: [0, 1]
-  random_lines:
-    tool_id: random_lines1
-    state:
-      num_lines: 1
-      input:
-        $link: apply/output
-      seed_source:
-        seed_source_selector: set_seed
-        seed: asdf
-"""
-
-RUNTIME_INPUTS = """
-class: GalaxyWorkflow
-inputs:
-  input1: data
-outputs:
-  out1:
-    outputSource: random/out_file1
-steps:
-  the_pause:
-    type: pause
-    in:
-      input: input1
-  random:
-    tool_id: random_lines1
-    runtime_inputs:
-      - num_lines
-    state:
-      input:
-        $link: the_pause
-      seed_source:
-        seed_source_selector: set_seed
-        seed: asdf
-"""
-
-PJA_1 = """
-class: GalaxyWorkflow
-inputs:
-  input1: data
-outputs:
-  out1:
-    outputSource: second_cat/out_file1
-steps:
-  first_cat:
-    tool_id: cat1
-    in:
-      input1: input1
-    out:
-       out_file1:
-         hide: true
-         rename: "the new value"
-  second_cat:
-    tool_id: cat1
-    in:
-      input1: first_cat/out_file1
-"""
-
-OPTIONAL_INPUT = """
-class: GalaxyWorkflow
-inputs:
-  the_input:
-    type: File
-    optional: true
-steps:
-  cat:
-    tool_id: cat_optional
-    in:
-      input1: the_input
-"""
-
 
 INT_INPUT = """
 class: GalaxyWorkflow
@@ -139,179 +62,6 @@ steps:
       seed_source:
         seed_source_selector: set_seed
         seed: asdf
-"""
-
-
-# not valid according to the schema, but the native format calls them
-# integers and some old examples used this syntax. Make illegal post v19.09?
-INTEGER_INPUT = """
-class: GalaxyWorkflow
-inputs:
-  input_d:
-    type: data
-  num_lines:
-    type: integer
-outputs:
-  out1:
-    outputSource: random_lines/out_file1
-steps:
-  random_lines:
-    tool_id: random_lines1
-    in:
-      num_lines: num_lines
-      input: input_d
-    state:
-      seed_source:
-        seed_source_selector: set_seed
-        seed: asdf
-"""
-
-
-FLOAT_INPUT_DEFAULT = """
-class: GalaxyWorkflow
-inputs:
-  input_d: File
-  num_lines:
-    type: float
-    default: 6.0
-outputs:
-  out1:
-    outputSource: random_lines/out_file1
-steps:
-  random_lines:
-    tool_id: random_lines1
-    in:
-      num_lines: num_lines
-      input: input_d
-    state:
-      seed_source:
-        seed_source_selector: set_seed
-        seed: asdf
-"""
-
-
-STRING_INPUT = """
-class: GalaxyWorkflow
-inputs:
-  input_d:
-    type: data
-  seed:
-    type: string
-    default: mycooldefault
-outputs:
-  out1:
-    outputSource: random_lines/out_file1
-steps:
-  random_lines:
-    tool_id: random_lines1
-    in:
-      'seed_source|seed': seed
-      input: input_d
-    state:
-      num_lines: 5
-      seed_source:
-        seed_source_selector: set_seed
-"""
-
-
-PAIRED_LIST_COLLECTION_INPUT = """
-class: GalaxyWorkflow
-inputs:
-  input_list:
-    type: data_collection
-    collection_type: list:paired
-outputs:
-  out1:
-    outputSource: random_lines/out_file1
-steps:
-  random_lines:
-    tool_id: random_lines1
-    in:
-      input: input_list
-    state:
-      num_lines: 5
-"""
-
-
-SAMPLE_SHEET_COLLECTION_INPUT = """
-class: GalaxyWorkflow
-inputs:
-  input_sample_sheet:
-    type: data_collection
-    collection_type: sample_sheet
-    column_definitions:
-    - type: string
-      restrictions:
-        - treatment
-        - control
-      name: condition
-      default_value: treatment
-      optional: false
-outputs:
-  out1:
-    outputSource: random_lines/out_file1
-steps:
-  random_lines:
-    tool_id: random_lines1
-    in:
-      input: input_sample_sheet
-    state:
-      num_lines: 5
-"""
-
-
-WHEN_EXAMPLE = """
-class: GalaxyWorkflow
-inputs:
-  input_d:
-    type: data
-  seed:
-    type: string
-    default: mycooldefault
-outputs:
-  out1:
-    outputSource: random_lines/out_file1
-steps:
-  random_lines:
-    tool_id: random_lines1
-    in:
-      'seed_source|seed': seed
-      input: input_d
-    state:
-      num_lines: 5
-      seed_source:
-        seed_source_selector: set_seed
-    when: $(inputs.seed != 'skip')
-"""
-
-MULTI_DATA_INPUT_WORKFLOW = """
-class: GalaxyWorkflow
-label: Multi-data input
-inputs:
-  optional:
-    optional: true
-    type: data
-  required:
-    optional: false
-    type: data
-steps:
-  count_multi_file:
-    tool_id: count_multi_file
-    in:
-      input1:
-        source:
-        - required
-        - optional
-"""
-
-MULTI_STRING_INPUT_WORKFLOW = """
-class: GalaxyWorkflow
-label: Multi-string input
-inputs:
-  multi-text:
-    optional: false
-    type: [string]
-steps: []
 """
 
 URL_SUBWORKFLOW = """
@@ -380,95 +130,6 @@ comments:
     line: [[210, 310], [220, 330], [250, 360]]
 """
 
-WORKFLOW_WITH_COMMENTS_DICT = """
-class: GalaxyWorkflow
-inputs:
-  the_input: data
-outputs:
-  the_output:
-    outputSource: cat/out_file1
-steps:
-  cat:
-    tool_id: cat1
-    in:
-      input1: the_input
-comments:
-  adapter_warning:
-    type: text
-    position: [100, 200]
-    size: [200, 50]
-    color: blue
-    text: "Check adapters"
-    text_size: 2
-    bold: true
-
-  preprocessing_docs:
-    type: markdown
-    position: [300, 50]
-    size: [400, 300]
-    text: |
-      # Preprocessing Pipeline
-      Quality filtering and adapter trimming.
-
-  preprocessing:
-    type: frame
-    position: [50, 50]
-    size: [600, 400]
-    color: green
-    title: Preprocessing
-    contains_steps:
-      - cat
-    contains_comments:
-      - adapter_warning
-      - preprocessing_docs
-"""
-
-SLASH_IN_INPUT_LABEL = """
-class: GalaxyWorkflow
-inputs:
-  Host/Contaminant Genome: data
-outputs:
-  the_output:
-    outputSource: cat/out_file1
-steps:
-  cat:
-    tool_id: cat1
-    in:
-      input1: Host/Contaminant Genome
-"""
-
-SLASH_IN_STEP_LABEL_EXPLICIT_OUTPUT = """
-class: GalaxyWorkflow
-inputs:
-  the_input: data
-outputs:
-  the_output:
-    outputSource: Host/Contaminant Filter/out_file1
-steps:
-  Host/Contaminant Filter:
-    tool_id: cat1
-    in:
-      input1: the_input
-"""
-
-SLASH_IN_LABEL_CHAINED = """
-class: GalaxyWorkflow
-inputs:
-  Host/Contaminant Genome: data
-outputs:
-  the_output:
-    outputSource: second_cat/out_file1
-steps:
-  Host/Contaminant Filter:
-    tool_id: cat1
-    in:
-      input1: Host/Contaminant Genome
-  second_cat:
-    tool_id: cat1
-    in:
-      input1: Host/Contaminant Filter/out_file1
-"""
-
 WORKFLOW_WITH_FRAME_MIXED_REFS = """
 class: GalaxyWorkflow
 inputs:
@@ -508,34 +169,4 @@ comments:
     contains_comments:
       - my_note
       - 1
-"""
-
-USER_DEFINED_TOOL_WORKFLOW = """
-class: GalaxyWorkflow
-inputs:
-  the_input: data
-outputs:
-  the_output:
-    outputSource: my_tool/output1
-steps:
-  my_tool:
-    run:
-      class: GalaxyUserTool
-      id: cat_user_defined
-      version: "0.1"
-      name: cat_user_defined
-      description: concatenates a file
-      container: busybox
-      shell_command: cat '$(inputs.input1.path)' > output.txt
-      inputs:
-        - name: input1
-          type: data
-          format: txt
-      outputs:
-        - name: output1
-          type: data
-          format: txt
-          from_work_dir: output.txt
-    in:
-      input1: the_input
 """

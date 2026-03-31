@@ -1,0 +1,29 @@
+test_ensure_format2_converts_native:
+  fixture: synthetic-labeled-tool.ga
+  operation: ensure_format2
+  assertions:
+    - path: [label]
+      value: "Test Workflow"
+    - path: [inputs, $length]
+      value: 1
+    - path: [inputs, 0, id]
+      value: the_input
+    - path: [steps, $length]
+      value: 1
+    - path: [steps, 0, tool_id]
+      value: cat1
+
+test_ensure_format2_normalizes_format2:
+  fixture: synthetic-basic.gxwf.yml
+  operation: ensure_format2
+  assertions:
+    - path: [label]
+      value: "Simple workflow"
+    - path: [inputs, $length]
+      value: 1
+    - path: [inputs, 0, id]
+      value: the_input
+    - path: [steps, $length]
+      value: 1
+    - path: [steps, 0, tool_id]
+      value: cat1

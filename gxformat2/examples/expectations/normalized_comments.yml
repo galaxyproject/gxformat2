@@ -1,0 +1,15 @@
+# Comment normalization
+
+test_comments_dict_to_list:
+  fixture: synthetic-comments-dict.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [comments, $length]
+      value: 3
+
+test_comments_list_preserved:
+  fixture: synthetic-comments-list.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [comments, $length]
+      value: 1

@@ -1,0 +1,55 @@
+test_single_tool_format2:
+  fixture: synthetic-single-versioned-tool.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [unique_tools]
+      value_set:
+        - {tool_id: cat1, tool_version: "1.0"}
+
+test_no_tool_steps_format2:
+  fixture: synthetic-input-shorthand.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [unique_tools]
+      value_set: []
+
+test_null_tool_version:
+  fixture: synthetic-step-in-shorthand.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [unique_tools]
+      value_set:
+        - {tool_id: cat1, tool_version: null}
+
+test_inline_subworkflow_format2:
+  fixture: synthetic-tool-with-inline-subworkflow.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [unique_tools]
+      value_set:
+        - {tool_id: cat1, tool_version: "1.0"}
+        - {tool_id: sort1, tool_version: "2.0"}
+
+test_single_tool_native:
+  fixture: synthetic-minimal-tool.ga
+  operation: normalized_native
+  assertions:
+    - path: [unique_tools]
+      value_set:
+        - {tool_id: cat1, tool_version: "1.0"}
+
+test_no_tool_steps_native:
+  fixture: synthetic-native-data-input.ga
+  operation: normalized_native
+  assertions:
+    - path: [unique_tools]
+      value_set: []
+
+test_inline_subworkflow_native:
+  fixture: synthetic-native-tool-with-subworkflow.ga
+  operation: normalized_native
+  assertions:
+    - path: [unique_tools]
+      value_set:
+        - {tool_id: cat1, tool_version: "1.0"}
+        - {tool_id: sort1, tool_version: "2.0"}

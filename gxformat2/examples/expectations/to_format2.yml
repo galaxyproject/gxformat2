@@ -1,0 +1,83 @@
+test_to_format2_metadata:
+  fixture: synthetic-labeled-tool.ga
+  operation: to_format2
+  assertions:
+    - path: [label]
+      value: "Test Workflow"
+    - path: [doc]
+      value: "A test workflow"
+
+test_to_format2_inputs:
+  fixture: synthetic-labeled-tool.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, $length]
+      value: 1
+    - path: [inputs, 0, id]
+      value: the_input
+
+test_to_format2_outputs:
+  fixture: synthetic-labeled-tool.ga
+  operation: to_format2
+  assertions:
+    - path: [outputs, $length]
+      value: 1
+    - path: [outputs, 0, id]
+      value: the_output
+    - path: [outputs, 0, outputSource]
+      value_contains: the_cat
+
+test_to_format2_tool_step:
+  fixture: synthetic-labeled-tool.ga
+  operation: to_format2
+  assertions:
+    - path: [steps, $length]
+      value: 1
+    - path: [steps, 0, tool_id]
+      value: cat1
+    - path: [steps, 0, tool_version]
+      value: "1.0"
+
+test_to_format2_step_inputs:
+  fixture: synthetic-labeled-tool.ga
+  operation: to_format2
+  assertions:
+    - path: [steps, 0, in_, $length]
+      value: 1
+    - path: [steps, 0, in_, 0, id]
+      value: input1
+    - path: [steps, 0, in_, 0, source]
+      value: the_input
+
+test_to_format2_inline_subworkflow:
+  fixture: synthetic-outer-inline-subworkflow.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, $length]
+      value: 1
+    - path: [inputs, 0, id]
+      value: inp
+    - path: [steps, 0, run, inputs, $length]
+      value: 1
+    - path: [steps, 0, run, inputs, 0, id]
+      value: inner_input
+    - path: [steps, 0, run, steps, 0, tool_id]
+      value: random_lines1
+
+test_to_format2_url_subworkflow:
+  fixture: synthetic-outer-url-subworkflow.ga
+  operation: to_format2
+  assertions:
+    - path: [steps, 0, run]
+      value: "https://example.com/inner.ga"
+
+test_to_format2_rename_pja:
+  fixture: synthetic-rename-pja.ga
+  operation: to_format2
+  assertions:
+    - path: [steps, 0, out, $length]
+      value: 1
+    - path: [steps, 0, out, 0, id]
+      value: out_file1
+    - path: [steps, 0, out, 0, rename]
+      value: renamed_output

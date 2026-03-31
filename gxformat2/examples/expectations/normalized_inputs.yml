@@ -1,0 +1,67 @@
+# Input normalization: types, aliases, optional, defaults, collection types
+
+test_optional_input_flag:
+  fixture: synthetic-optional-input.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, 0, optional]
+      value: true
+    - path: [inputs, 0, type_]
+      value: data
+
+test_integer_type_alias:
+  fixture: synthetic-integer-type-alias.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, {id: num_lines}, type_]
+      value: integer
+
+test_float_type_and_default:
+  fixture: synthetic-float-input-default.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, {id: num_lines}, type_]
+      value: float
+    - path: [inputs, {id: num_lines}, default]
+      value: 6.0
+
+test_string_type_and_default:
+  fixture: synthetic-string-input.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, {id: seed}, type_]
+      value: string
+    - path: [inputs, {id: seed}, default]
+      value: mycooldefault
+
+test_paired_list_collection_type:
+  fixture: synthetic-paired-list-input.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, 0, type_]
+      value: collection
+    - path: [inputs, 0, collection_type]
+      value: "list:paired"
+
+test_sample_sheet_collection_type:
+  fixture: synthetic-sample-sheet-input.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, 0, collection_type]
+      value: sample_sheet
+
+test_multi_data_input_sources:
+  fixture: synthetic-multi-data-input.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [label]
+      value: "Multi-data input"
+    - path: [steps, 0, in_, 0, source]
+      value: ["required", "optional"]
+
+test_multi_string_input_type:
+  fixture: synthetic-multi-string-input.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, 0, id]
+      value: "multi-text"

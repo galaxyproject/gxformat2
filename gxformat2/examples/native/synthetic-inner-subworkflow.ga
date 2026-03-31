@@ -1,0 +1,25 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Inner",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "data_input",
+            "label": "inner_input",
+            "tool_state": "{}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
+        },
+        "1": {
+            "id": 1,
+            "type": "tool",
+            "tool_id": "random_lines1",
+            "input_connections": {
+                "input": {"id": 0, "output_name": "output"}
+            }
+        }
+    }
+}
