@@ -58,7 +58,7 @@ def _build_cytoscape_elements(workflow_path):
 
 EXPECTATIONS_DIR = os.path.join(EXAMPLES_DIR, "expectations")
 
-DECLARATIVE_TEST = "tests/test_declarative_normalized.py"
+DECLARATIVE_TEST = "tests/test_interop_tests.py"
 
 
 def _load_fixture_expectations():
