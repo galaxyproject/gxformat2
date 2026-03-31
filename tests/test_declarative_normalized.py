@@ -28,7 +28,8 @@ import pytest
 import yaml
 
 from gxformat2.examples import EXAMPLES_DIR, load
-from gxformat2.lint import lint_format2 as _lint_format2_impl, lint_ga as _lint_ga_impl
+from gxformat2.lint import lint_format2 as _lint_format2_impl
+from gxformat2.lint import lint_ga as _lint_ga_impl
 from gxformat2.linting import LintContext
 from gxformat2.normalized import (
     ensure_format2,
@@ -184,7 +185,7 @@ def test_declarative(test_id, case):
     expect_error = case.get("expect_error", False)
 
     if expect_error:
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match=r".+"):
             operation(load(fixture))
         return
 

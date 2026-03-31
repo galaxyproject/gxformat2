@@ -58,16 +58,16 @@ class TestNormalizedNativeBasics:
         wf = normalized_native(wf_dict)
         assert wf.steps["0"].connected_paths == frozenset({"input1"})
 
-
     def test_extra_position_fields_stripped(self):
         """Legacy Galaxy exports include extra position fields (bottom, height, etc.) that normalization should strip."""
         wf = normalized_native(load("synthetic-unlinted-best-practices.ga"))
         for step_id, step in wf.steps.items():
             if step.position is not None:
                 dumped = step.position.model_dump()
-                assert set(dumped.keys()) == {"top", "left"}, (
-                    f"step {step_id} position has extra keys: {set(dumped.keys()) - {'top', 'left'}}"
-                )
+                assert set(dumped.keys()) == {
+                    "top",
+                    "left",
+                }, f"step {step_id} position has extra keys: {set(dumped.keys()) - {'top', 'left'}}"
 
 
 class TestNormalizedFormat2Basics:
@@ -311,4 +311,3 @@ class TestUniqueToolsFormat2:
         }
         wf = normalized_format2(wf_dict)
         assert wf.unique_tools == frozenset({ToolReference("cat1", "1.0")})
-
