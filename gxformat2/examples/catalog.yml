@@ -245,3 +245,29 @@
   format: format2
   tests:
     - tests/test_declarative_normalized.py
+
+# --- validation test fixtures ---
+
+- file: format2/synthetic-extra-field.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-missing-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: native/synthetic-extra-field.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: native/synthetic-missing-marker.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_declarative_normalized.py

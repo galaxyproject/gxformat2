@@ -125,9 +125,29 @@ an operation, and a list of path-based assertions against the result.
    * - ``value_set``
      - Unordered set comparison (for ``frozenset`` properties like ``unique_tools``)
 
-**Available operations:** ``normalized_format2``, ``normalized_native``,
-``expanded_format2``, ``expanded_native``, ``to_format2``, ``to_native``,
-``ensure_format2``, ``ensure_native``.
+**Available operations:**
+
+- Normalization: ``normalized_format2``, ``normalized_native``, ``expanded_format2``, ``expanded_native``
+- Conversion: ``to_format2``, ``to_native``, ``ensure_format2``, ``ensure_native``
+- Validation: ``validate_format2``, ``validate_format2_strict``, ``validate_native``, ``validate_native_strict``
+
+**Special keys:**
+
+- ``assertions`` may be omitted or empty — the operation succeeding is the test
+- ``expect_error: true`` — the operation must raise; test passes on error, fails on success
+
+.. code-block:: yaml
+
+    # Positive: operation succeeds, no assertions needed
+    test_basic_valid_format2:
+      fixture: synthetic-basic.gxwf.yml
+      operation: validate_format2_strict
+
+    # Negative: operation must fail
+    test_extra_field_rejected:
+      fixture: synthetic-extra-field.gxwf.yml
+      operation: validate_format2_strict
+      expect_error: true
 
 The Python test runner (``tests/test_declarative_normalized.py``) parametrizes
 all cases and runs them via pytest.

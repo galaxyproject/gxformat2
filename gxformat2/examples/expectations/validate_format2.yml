@@ -1,0 +1,26 @@
+test_basic_valid_format2:
+  fixture: synthetic-basic.gxwf.yml
+  operation: validate_format2
+
+test_basic_valid_format2_strict:
+  fixture: synthetic-basic.gxwf.yml
+  operation: validate_format2_strict
+
+test_extra_field_valid_format2_lax:
+  fixture: synthetic-extra-field.gxwf.yml
+  operation: validate_format2
+
+test_extra_field_rejected_format2_strict:
+  fixture: synthetic-extra-field.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+
+test_missing_steps_rejected_format2:
+  fixture: synthetic-missing-steps.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_missing_steps_rejected_format2_strict:
+  fixture: synthetic-missing-steps.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true

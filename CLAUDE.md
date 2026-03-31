@@ -131,15 +131,34 @@ test_name:
 - `{field: value}` — find first list item where `item.field == value`
 
 ### Available operations
-`normalized_format2`, `normalized_native`, `expanded_format2`, `expanded_native`, `to_format2`, `to_native`, `ensure_format2`, `ensure_native`
+- Normalization: `normalized_format2`, `normalized_native`, `expanded_format2`, `expanded_native`
+- Conversion: `to_format2`, `to_native`, `ensure_format2`, `ensure_native`
+- Validation: `validate_format2`, `validate_format2_strict`, `validate_native`, `validate_native_strict`
+
+### Special keys
+- `assertions` may be omitted or empty — the operation succeeding is the test
+- `expect_error: true` — the operation must raise an exception (test passes on error, fails on success)
+
+```yaml
+# Positive validation: operation succeeds, no assertions needed
+test_basic_valid_format2:
+  fixture: synthetic-basic.gxwf.yml
+  operation: validate_format2_strict
+
+# Negative validation: operation must fail
+test_extra_field_rejected:
+  fixture: synthetic-extra-field.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+```
 
 ### Adding a declarative test
 1. Pick or create an expectation file named after the operation/feature
-2. Add a named case with `fixture`, `operation`, and `assertions` — test IDs must be unique across all expectation files
+2. Add a named case with `fixture`, `operation`, and optionally `assertions` / `expect_error` — test IDs must be unique across all expectation files
 3. Ensure the fixture exists in `gxformat2/examples/` and its `catalog.yml` entry lists `tests/test_declarative_normalized.py`
 
 ### When to use imperative tests instead
-Error paths, mutation safety, mocking/resolvers, cycle detection, and scenarios requiring Python-specific setup (e.g. `tmp_path`, custom `ConversionOptions`) stay in `test_normalized.py`.
+Mutation safety, mocking/resolvers, cycle detection, and scenarios requiring Python-specific setup (e.g. `tmp_path`, custom `ConversionOptions`) stay in `test_normalized.py`.
 
 ## Key Patterns
 

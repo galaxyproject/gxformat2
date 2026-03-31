@@ -15,6 +15,10 @@ Assertion modes:
   - value_contains: substring containment check (str in str)
   - value_set: unordered set comparison; each item is a flat {key: value} dict
     compared against NamedTuple._asdict() or plain set membership
+
+Special case:
+  - assertions may be omitted or empty: operation succeeding is the test
+  - expect_error: true: operation must raise an exception
 """
 
 import os
@@ -34,6 +38,27 @@ from gxformat2.normalized import (
     to_format2,
     to_native,
 )
+from gxformat2.schema.gxformat2 import GalaxyWorkflow as Format2Lax
+from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as Format2Strict
+from gxformat2.schema.native import NativeGalaxyWorkflow as NativeLax
+from gxformat2.schema.native_strict import NativeGalaxyWorkflow as NativeStrict
+
+
+def _validate_format2(wf_dict):
+    return Format2Lax.model_validate(wf_dict)
+
+
+def _validate_format2_strict(wf_dict):
+    return Format2Strict.model_validate(wf_dict)
+
+
+def _validate_native(wf_dict):
+    return NativeLax.model_validate(wf_dict)
+
+
+def _validate_native_strict(wf_dict):
+    return NativeStrict.model_validate(wf_dict)
+
 
 EXPECTATIONS_DIR = os.path.join(EXAMPLES_DIR, "expectations")
 OPERATIONS = {
@@ -45,6 +70,10 @@ OPERATIONS = {
     "to_native": to_native,
     "ensure_format2": ensure_format2,
     "ensure_native": ensure_native,
+    "validate_format2": _validate_format2,
+    "validate_format2_strict": _validate_format2_strict,
+    "validate_native": _validate_native,
+    "validate_native_strict": _validate_native_strict,
 }
 
 
@@ -124,8 +153,15 @@ _ALL_CASES = list(_load_expectations())
 def test_declarative(test_id, case):
     fixture = case["fixture"]
     operation = OPERATIONS[case["operation"]]
+    expect_error = case.get("expect_error", False)
+
+    if expect_error:
+        with pytest.raises(Exception):
+            operation(load(fixture))
+        return
+
     wf = operation(load(fixture))
-    for assertion in case["assertions"]:
+    for assertion in case.get("assertions", []):
         path = assertion["path"]
         obj = _navigate(wf, path)
         if "value" in assertion:

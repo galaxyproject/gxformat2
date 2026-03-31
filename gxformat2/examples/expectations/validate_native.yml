@@ -1,0 +1,26 @@
+test_minimal_valid_native:
+  fixture: synthetic-minimal-tool.ga
+  operation: validate_native
+
+test_minimal_valid_native_strict:
+  fixture: synthetic-minimal-tool.ga
+  operation: validate_native_strict
+
+test_extra_field_valid_native_lax:
+  fixture: synthetic-extra-field.ga
+  operation: validate_native
+
+test_extra_field_rejected_native_strict:
+  fixture: synthetic-extra-field.ga
+  operation: validate_native_strict
+  expect_error: true
+
+test_missing_marker_rejected_native:
+  fixture: synthetic-missing-marker.ga
+  operation: validate_native
+  expect_error: true
+
+test_missing_marker_rejected_native_strict:
+  fixture: synthetic-missing-marker.ga
+  operation: validate_native_strict
+  expect_error: true
