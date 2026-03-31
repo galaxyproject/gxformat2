@@ -1,0 +1,8 @@
+class: GalaxyWorkflow
+inputs:
+  file_input:
+    type: data_input
+  collection_input:
+    type: data_collection
+outputs: {}
+steps: {}

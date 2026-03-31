@@ -246,6 +246,44 @@
   tests:
     - tests/test_declarative_normalized.py
 
+# --- normalization gap coverage fixtures ---
+
+- file: format2/synthetic-doc-array.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-input-type-aliases.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-step-out-shorthand.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-inputs-array.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-tool-state-json.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
+- file: format2/synthetic-tags.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_declarative_normalized.py
+
 # --- validation test fixtures ---
 
 - file: format2/synthetic-extra-field.gxwf.yml

@@ -70,3 +70,88 @@ test_inline_subworkflow_expanded:
   assertions:
     - path: [steps, "1", subworkflow, steps, "1", tool_id]
       value: random_lines1
+
+# --- gap coverage: doc, inputs, outputs, type aliases, state, tags, $link ---
+
+test_doc_array_joined:
+  fixture: synthetic-doc-array.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [doc]
+      value_contains: "First line."
+    - path: [doc]
+      value_contains: "Second line."
+
+test_input_type_alias_data_input:
+  fixture: synthetic-input-type-aliases.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, {id: file_input}, type_]
+      value: data
+    - path: [inputs, {id: collection_input}, type_]
+      value: collection
+
+test_input_type_alias_file:
+  fixture: synthetic-basic.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, 0, type_]
+      value: data
+
+test_step_out_shorthand_expanded:
+  fixture: synthetic-step-out-shorthand.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, out, $length]
+      value: 1
+    - path: [steps, 0, out, 0, id]
+      value: out1
+
+test_outputs_dict_to_list:
+  fixture: synthetic-basic.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [outputs, $length]
+      value: 1
+    - path: [outputs, 0, id]
+      value: the_output
+    - path: [outputs, 0, outputSource]
+      value: cat/out_file1
+
+test_inputs_array_form:
+  fixture: synthetic-inputs-array.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, $length]
+      value: 1
+    - path: [inputs, 0, id]
+      value: x
+    - path: [inputs, 0, label]
+      value: "My Input"
+
+test_tool_state_json_parsed:
+  fixture: synthetic-tool-state-json.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, tool_state, num_lines]
+      value: 5
+    - path: [steps, 0, tool_state, input1]
+      value: value1
+
+test_tags_present:
+  fixture: synthetic-tags.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [tags, $length]
+      value: 2
+    - path: [tags, 0]
+      value: genomics
+
+test_link_resolved_to_connected_value:
+  fixture: synthetic-nested-subworkflow.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, {id: nested_workflow}, run, steps, 0, state, input, __class__]
+      value: ConnectedValue
+    - path: [steps, {id: nested_workflow}, run, steps, 0, in_, {id: input}, source]
+      value: inner_input

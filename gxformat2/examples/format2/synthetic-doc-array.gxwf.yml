@@ -1,0 +1,8 @@
+class: GalaxyWorkflow
+doc:
+  - "First line."
+  - "Second line."
+inputs:
+  x: data
+outputs: {}
+steps: {}
