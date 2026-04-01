@@ -128,10 +128,20 @@ test_to_native_user_defined_tool:
   fixture: synthetic-user-defined-tool.gxwf.yml
   operation: to_native
   assertions:
+    - path: [steps, $length]
+      value: 2
     - path: [steps, "1", type_]
       value: tool
     - path: [steps, "1", tool_representation, class]
       value: GalaxyUserTool
+    - path: [steps, "1", tool_representation, name]
+      value: cat_user_defined
+    - path: [steps, "1", tool_representation, container]
+      value: busybox
+    - path: [steps, "1", tool_id]
+      value: null
+    - path: [steps, "1", tool_uuid]
+      value: null
 
 test_to_native_comments_dict:
   fixture: synthetic-comments-dict.gxwf.yml

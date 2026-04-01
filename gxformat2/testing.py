@@ -17,6 +17,7 @@ Assertion modes:
   - value_matches: regex match
   - value_truthy / value_falsy: boolean-ish checks
   - value_type: isinstance check ("dict", "list", "str", "int", "float", "bool")
+  - value_absent: assert that path does NOT resolve (key/attribute missing)
 """
 
 import os
@@ -62,6 +63,7 @@ class Assertion(BaseModel):
     value_truthy: Optional[bool] = None
     value_falsy: Optional[bool] = None
     value_type: Optional[str] = None
+    value_absent: Optional[bool] = None
 
     @model_validator(mode="after")
     def _check_exactly_one_mode(self) -> "Assertion":
@@ -73,10 +75,12 @@ class Assertion(BaseModel):
             self.value_truthy is not None,
             self.value_falsy is not None,
             self.value_type is not None,
+            self.value_absent is not None,
         ]
         if sum(modes) != 1:
             raise ValueError(
-                "Assertion must specify exactly one of: value, value_contains, value_set, value_matches, value_truthy, value_falsy, value_type"
+                "Assertion must specify exactly one of: value, value_contains, value_set, value_matches, "
+                "value_truthy, value_falsy, value_type, value_absent"
             )
         return self
 
@@ -191,6 +195,14 @@ def load_expectation_cases(expectations_dir: str) -> Iterator[Tuple[str, TestCas
 
 def run_assertion(obj: Any, assertion: Assertion):
     """Run a single assertion against a navigated object."""
+    if assertion.value_absent is not None:
+        try:
+            navigate(obj, assertion.path)
+        except (KeyError, IndexError, AttributeError, StopIteration, TypeError):
+            return  # path doesn't resolve — absent as expected
+        path_str = ".".join(str(p) for p in assertion.path)
+        raise AssertionError(f"expected path {path_str!r} to be absent, but it resolved")
+
     navigated = navigate(obj, assertion.path)
     if assertion.value is not _UNSET:
         assert_value(navigated, assertion.value)
