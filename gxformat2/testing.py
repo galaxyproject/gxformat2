@@ -101,6 +101,7 @@ class ExpectationSuite(BaseModel):
 
     @classmethod
     def from_yaml(cls, path: str) -> "ExpectationSuite":
+        """Load an expectation suite from a YAML file."""
         with open(path) as f:
             raw = yaml.safe_load(f)
         if not raw:
@@ -269,6 +270,7 @@ class DeclarativeTestSuite:
         expectations_dir: Optional[str] = None,
         cases: Optional[List[Tuple[str, TestCase]]] = None,
     ):
+        """Initialize with operations map and fixture loader."""
         self.operations = operations
         self.load_fixture = load_fixture
         if cases is not None:
@@ -280,6 +282,7 @@ class DeclarativeTestSuite:
 
     @property
     def cases(self) -> List[Tuple[str, TestCase]]:
+        """Return loaded test cases."""
         return self._cases
 
     def pytest_params(self):
