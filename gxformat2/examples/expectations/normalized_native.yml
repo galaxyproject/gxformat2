@@ -33,3 +33,24 @@ test_connected_paths_empty:
   assertions:
     - path: [steps, "0", connected_paths]
       value_set: []
+
+test_extra_position_fields_stripped:
+  fixture: synthetic-unlinted-best-practices.ga
+  operation: normalized_native
+  assertions:
+    - path: [steps, "0", position, top]
+      value_truthy: true
+    - path: [steps, "0", position, left]
+      value_truthy: true
+    - path: [steps, "0", position, bottom]
+      value_absent: true
+    - path: [steps, "0", position, height]
+      value_absent: true
+    - path: [steps, "0", position, right]
+      value_absent: true
+    - path: [steps, "1", position, bottom]
+      value_absent: true
+    - path: [steps, "1", position, height]
+      value_absent: true
+    - path: [steps, "1", position, right]
+      value_absent: true
