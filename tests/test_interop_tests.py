@@ -6,6 +6,7 @@ the operations dict and fixture loader.
 """
 
 import os
+from typing import Any, Callable, Dict
 
 from gxformat2.examples import EXAMPLES_DIR, load
 from gxformat2.lint import lint_format2 as _lint_format2_impl
@@ -69,7 +70,7 @@ def _lint_native(wf_dict):
 
 
 EXPECTATIONS_DIR = os.path.join(EXAMPLES_DIR, "expectations")
-OPERATIONS = {
+OPERATIONS: Dict[str, Callable[..., Any]] = {
     "normalized_format2": normalized_format2,
     "normalized_native": normalized_native,
     "expanded_format2": expanded_format2,
