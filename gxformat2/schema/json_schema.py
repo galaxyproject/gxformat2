@@ -48,6 +48,30 @@ def workflow_json_schema(*, strict: bool = False, mode: MODE = "validation") -> 
     )
 
 
+def native_workflow_json_schema(*, strict: bool = False, mode: MODE = "validation") -> Dict[str, Any]:
+    """Export NativeGalaxyWorkflow JSON Schema.
+
+    Args:
+        strict: If True, use strict model (extra="forbid" — rejects unknown keys).
+        mode: Pydantic schema mode ("validation" or "serialization").
+    """
+    model_class: Type[BaseModel]
+    if strict:
+        from .native_strict import NativeGalaxyWorkflow as model_class
+    else:
+        from .native import NativeGalaxyWorkflow as model_class
+
+    return model_class.model_json_schema(
+        schema_generator=GxFormat2GenerateJsonSchema,
+        mode=mode,
+    )
+
+
 def workflow_json_schema_string(*, strict: bool = False, mode: MODE = "validation") -> str:
     """Export GalaxyWorkflow JSON Schema as formatted string."""
     return json.dumps(workflow_json_schema(strict=strict, mode=mode), indent=4)
+
+
+def native_workflow_json_schema_string(*, strict: bool = False, mode: MODE = "validation") -> str:
+    """Export NativeGalaxyWorkflow JSON Schema as formatted string."""
+    return json.dumps(native_workflow_json_schema(strict=strict, mode=mode), indent=4)
