@@ -92,3 +92,133 @@ $graph:
       type: string
       doc: |
         The URI of the tool shed containing the repository this tool can be found in - typically this should be toolshed.g2.bx.psu.edu.
+
+# --- Creator types (schema.org Person / Organization) ---
+
+- name: CreatorPersonType
+  type: enum
+  symbols:
+    - Person
+  doc: "Discriminator for schema.org Person creators."
+
+- name: CreatorOrganizationType
+  type: enum
+  symbols:
+    - Organization
+  doc: "Discriminator for schema.org Organization creators."
+
+- name: BaseCreator
+  type: record
+  abstract: true
+  doc: |
+    Base fields shared by all creator types, corresponding to schema.org
+    Thing properties common to both Person and Organization.
+  fields:
+    - name: name
+      type: string?
+      jsonldPredicate: "@id"
+      doc: |
+        Full name of the person or organization.
+    - name: identifier
+      type: string?
+      doc: |
+        Persistent identifier, typically an ORCID URL
+        (e.g. ``https://orcid.org/0000-0001-2345-6789``) or bare ORCID.
+    - name: url
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:Creator/url"
+      doc: |
+        Website or profile URL.
+    - name: email
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:Creator/email"
+      doc: |
+        Email address. May include a ``mailto:`` prefix.
+    - name: image
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:Creator/image"
+      doc: |
+        URL to an image or avatar.
+    - name: address
+      type: string?
+      doc: |
+        Physical or mailing address.
+    - name: alternateName
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:Creator/alternateName"
+      doc: |
+        An alternate name or alias.
+    - name: telephone
+      type: string?
+      doc: |
+        Telephone number.
+    - name: faxNumber
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:Creator/faxNumber"
+      doc: |
+        Fax number.
+
+- name: CreatorPerson
+  type: record
+  extends: BaseCreator
+  doc: |
+    A person who created or contributed to the workflow.
+    Corresponds to a `schema.org Person <https://schema.org/Person>`_.
+  fields:
+    - name: class
+      type: CreatorPersonType
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      doc: |
+        Creator type discriminator (``Person``).
+    - name: givenName
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:CreatorPerson/givenName"
+      doc: |
+        Given (first) name.
+    - name: familyName
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:CreatorPerson/familyName"
+      doc: |
+        Family (last) name.
+    - name: honorificPrefix
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:CreatorPerson/honorificPrefix"
+      doc: |
+        Honorific prefix (e.g. ``Dr``, ``Prof``).
+    - name: honorificSuffix
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:CreatorPerson/honorificSuffix"
+      doc: |
+        Honorific suffix (e.g. ``M.D.``, ``PhD``).
+    - name: jobTitle
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:CreatorPerson/jobTitle"
+      doc: |
+        Job title or role.
+
+- name: CreatorOrganization
+  type: record
+  extends: BaseCreator
+  doc: |
+    An organization that created or contributed to the workflow.
+    Corresponds to a `schema.org Organization <https://schema.org/Organization>`_.
+  fields:
+    - name: class
+      type: CreatorOrganizationType
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      doc: |
+        Creator type discriminator (``Organization``).

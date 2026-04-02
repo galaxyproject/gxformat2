@@ -57,7 +57,7 @@ pick_value: Select the first non-null value from multiple inputs."""
 
 
 def _discriminate_creator(v: Any) -> str:
-    disc_map: dict[str, str] = {"Person": "NativeCreatorPerson", "Organization": "NativeCreatorOrganization"}
+    disc_map: dict[str, str] = {"Person": "CreatorPerson", "Organization": "CreatorOrganization"}
     if isinstance(v, dict):
         disc_val: str = str(v.get("class", ""))
     else:
@@ -144,6 +144,43 @@ class ToolShedRepository(BaseModel):
     changeset_revision: str = Field(description="The revision of the tool shed repository this tool can be found in.")
     owner: str = Field(description="The owner of the tool shed repository this tool can be found in.")
     tool_shed: str = Field(description="The URI of the tool shed containing the repository this tool can be found in - typically this should be toolshed.g2.bx.psu.edu.")
+
+class BaseCreator(BaseModel):
+    """Base fields shared by all creator types, corresponding to schema.org
+Thing properties common to both Person and Organization."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    name: None | str = Field(default=None, description="Full name of the person or organization.")
+    identifier: None | str = Field(default=None, description="Persistent identifier, typically an ORCID URL (e.g. ``https://orcid.org/0000-0001-2345-6789``) or bare ORCID.")
+    url: None | str = Field(default=None, description="Website or profile URL.")
+    email: None | str = Field(default=None, description="Email address. May include a ``mailto:`` prefix.")
+    image: None | str = Field(default=None, description="URL to an image or avatar.")
+    address: None | str = Field(default=None, description="Physical or mailing address.")
+    alternateName: None | str = Field(default=None, description="An alternate name or alias.")
+    telephone: None | str = Field(default=None, description="Telephone number.")
+    faxNumber: None | str = Field(default=None, description="Fax number.")
+
+class CreatorPerson(BaseCreator):
+    """A person who created or contributed to the workflow.
+Corresponds to a `schema.org Person <https://schema.org/Person>`_."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    class_: Literal["Person"] = Field(default="Person", alias="class", description="Creator type discriminator (``Person``).")
+    givenName: None | str = Field(default=None, description="Given (first) name.")
+    familyName: None | str = Field(default=None, description="Family (last) name.")
+    honorificPrefix: None | str = Field(default=None, description="Honorific prefix (e.g. ``Dr``, ``Prof``).")
+    honorificSuffix: None | str = Field(default=None, description="Honorific suffix (e.g. ``M.D.``, ``PhD``).")
+    jobTitle: None | str = Field(default=None, description="Job title or role.")
+
+class CreatorOrganization(BaseCreator):
+    """An organization that created or contributed to the workflow.
+Corresponds to a `schema.org Organization <https://schema.org/Organization>`_."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    class_: Literal["Organization"] = Field(default="Organization", alias="class", description="Creator type discriminator (``Organization``).")
 
 class NativeStepInput(BaseModel):
     """Describes an input parameter on a step. This is metadata about the input,
@@ -322,43 +359,6 @@ class NativeReport(BaseModel):
 
     markdown: str = Field(description="Galaxy-flavored Markdown content for the invocation report. Supports template directives like ``history_dataset_as_image(output=\"...\")``.")
 
-class BaseNativeCreator(BaseModel):
-    """Base fields shared by all creator types, corresponding to schema.org
-Thing properties common to both Person and Organization."""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    name: None | str = Field(default=None, description="Full name of the person or organization.")
-    identifier: None | str = Field(default=None, description="Persistent identifier, typically an ORCID URL (e.g. ``https://orcid.org/0000-0001-2345-6789``) or bare ORCID.")
-    url: None | str = Field(default=None, description="Website or profile URL.")
-    email: None | str = Field(default=None, description="Email address. May include a ``mailto:`` prefix.")
-    image: None | str = Field(default=None, description="URL to an image or avatar.")
-    address: None | str = Field(default=None, description="Physical or mailing address.")
-    alternateName: None | str = Field(default=None, description="An alternate name or alias.")
-    telephone: None | str = Field(default=None, description="Telephone number.")
-    faxNumber: None | str = Field(default=None, description="Fax number.")
-
-class NativeCreatorPerson(BaseNativeCreator):
-    """A person who created or contributed to the workflow.
-Corresponds to a `schema.org Person <https://schema.org/Person>`_."""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    class_: Literal["Person"] = Field(default="Person", alias="class", description="Creator type discriminator (``Person``).")
-    givenName: None | str = Field(default=None, description="Given (first) name.")
-    familyName: None | str = Field(default=None, description="Family (last) name.")
-    honorificPrefix: None | str = Field(default=None, description="Honorific prefix (e.g. ``Dr``, ``Prof``).")
-    honorificSuffix: None | str = Field(default=None, description="Honorific suffix (e.g. ``M.D.``, ``PhD``).")
-    jobTitle: None | str = Field(default=None, description="Job title or role.")
-
-class NativeCreatorOrganization(BaseNativeCreator):
-    """An organization that created or contributed to the workflow.
-Corresponds to a `schema.org Organization <https://schema.org/Organization>`_."""
-
-    model_config = ConfigDict(populate_by_name=True, extra="forbid")
-
-    class_: Literal["Organization"] = Field(default="Organization", alias="class", description="Creator type discriminator (``Organization``).")
-
 class NativeSourceMetadata(BaseModel):
     """Provenance tracking for workflows imported from external sources.
 Contains either a direct URL or TRS (Tool Registry Service) metadata,
@@ -399,7 +399,7 @@ added without version bumps."""
     license: None | str = Field(default=None, description="SPDX license identifier (e.g. ``\"MIT\"``, ``\"CC-BY-4.0\"``).")
     release: None | str = Field(default=None, description="Semantic version for published workflows.")
     # Discriminated union on 'class'
-    creator: list[Annotated[Annotated[NativeCreatorPerson, Tag("NativeCreatorPerson")] | Annotated[NativeCreatorOrganization, Tag("NativeCreatorOrganization")], Discriminator(_discriminate_creator)]] | None = None
+    creator: list[Annotated[Annotated[CreatorPerson, Tag("CreatorPerson")] | Annotated[CreatorOrganization, Tag("CreatorOrganization")], Discriminator(_discriminate_creator)]] | None = None
     report: None | NativeReport = Field(default=None, description="Workflow invocation report template.")
     readme: None | str = Field(default=None, description="Detailed workflow description in Markdown.")
     help: None | str = Field(default=None, description="Help text in Markdown.")
@@ -423,6 +423,9 @@ HasStepPosition.model_rebuild()
 StepPosition.model_rebuild()
 ReferencesTool.model_rebuild()
 ToolShedRepository.model_rebuild()
+BaseCreator.model_rebuild()
+CreatorPerson.model_rebuild()
+CreatorOrganization.model_rebuild()
 NativeStepInput.model_rebuild()
 NativeStepOutput.model_rebuild()
 NativeWorkflowOutput.model_rebuild()
@@ -439,9 +442,6 @@ NativeFrameComment.model_rebuild()
 NativeFreehandComment.model_rebuild()
 NativeStep.model_rebuild()
 NativeReport.model_rebuild()
-BaseNativeCreator.model_rebuild()
-NativeCreatorPerson.model_rebuild()
-NativeCreatorOrganization.model_rebuild()
 NativeSourceMetadata.model_rebuild()
 NativeGalaxyWorkflow.model_rebuild()
 

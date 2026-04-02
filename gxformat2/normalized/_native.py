@@ -19,8 +19,8 @@ from typing_extensions import TypeAlias
 from gxformat2.schema.native import (
     _discriminate_comments,
     _discriminate_creator,
-    NativeCreatorOrganization,
-    NativeCreatorPerson,
+    CreatorOrganization,
+    CreatorPerson,
     NativeFrameComment,
     NativeFreehandComment,
     NativeGalaxyWorkflow,
@@ -53,8 +53,8 @@ NativeComment: TypeAlias = Annotated[
 
 NativeCreator: TypeAlias = Annotated[
     Union[
-        Annotated[NativeCreatorPerson, Tag("NativeCreatorPerson")],
-        Annotated[NativeCreatorOrganization, Tag("NativeCreatorOrganization")],
+        Annotated[CreatorPerson, Tag("CreatorPerson")],
+        Annotated[CreatorOrganization, Tag("CreatorOrganization")],
     ],
     Discriminator(_discriminate_creator),
 ]
