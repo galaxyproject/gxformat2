@@ -72,7 +72,7 @@ def lint_ga(lint_context, nnw: NormalizedNativeWorkflow, raw_dict: dict | None =
 
         if step.type_ == NativeStepType.subworkflow and step.subworkflow is not None:
             if not step.subworkflow.steps:
-                lint_context.error("expected to find key [steps] but absent")
+                lint_context.error("subworkflow is missing steps or steps are empty")
             else:
                 lint_ga(lint_context, step.subworkflow)
 
@@ -116,7 +116,7 @@ def lint_format2(lint_context, nf2: NormalizedFormat2, raw_dict: dict | None = N
         _lint_tool_if_present(lint_context, step.tool_id)
         if isinstance(step.run, NormalizedFormat2):
             if not step.run.steps:
-                lint_context.error("expected to find key [steps] but absent")
+                lint_context.error("subworkflow is missing steps or steps are empty")
             else:
                 lint_format2(lint_context, step.run)
 

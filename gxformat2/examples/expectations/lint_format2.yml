@@ -72,3 +72,103 @@ test_lint_float_default_clean:
   assertions:
     - path: [error_count]
       value: 0
+
+# --- Structural error cases ---
+
+test_lint_format2_missing_class:
+  fixture: synthetic-lint-no-class.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "class"
+
+test_lint_format2_missing_steps:
+  fixture: synthetic-missing-steps.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "steps"
+
+test_lint_format2_nested_no_steps:
+  fixture: synthetic-lint-nested-no-steps.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "subworkflow"
+
+test_lint_format2_step_errors:
+  fixture: synthetic-lint-step-errors.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 1
+    - path: [warnings, 0]
+      value_contains: "error indicated during Galaxy export"
+
+test_lint_format2_testtoolshed:
+  fixture: synthetic-lint-testtoolshed.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 1
+    - path: [warnings, 0]
+      value_contains: "test tool shed"
+
+# --- Output/input validation ---
+
+test_lint_format2_bad_output_source:
+  fixture: synthetic-lint-bad-output-source.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "nonexistent_step"
+
+test_lint_format2_bad_int_default:
+  fixture: synthetic-lint-bad-int-default.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "invalid type"
+
+test_lint_format2_bad_float_default:
+  fixture: synthetic-lint-bad-float-default.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "invalid type"
+
+test_lint_format2_bad_string_default:
+  fixture: synthetic-lint-bad-string-default.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "invalid type"
+
+# --- Report validation ---
+
+test_lint_format2_report_clean:
+  fixture: synthetic-lint-report.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0

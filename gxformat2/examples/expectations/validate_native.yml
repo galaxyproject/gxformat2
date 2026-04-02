@@ -197,3 +197,13 @@ test_rename_pja_valid_native:
 test_rename_pja_valid_native_strict:
   fixture: synthetic-rename-pja.ga
   operation: validate_native_strict
+
+test_report_bad_type_rejected_native:
+  fixture: synthetic-lint-report-bad-type.ga
+  operation: validate_native
+  expect_error: true
+
+test_report_bad_type_rejected_native_strict:
+  fixture: synthetic-lint-report-bad-type.ga
+  operation: validate_native_strict
+  expect_error: true

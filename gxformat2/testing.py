@@ -13,6 +13,7 @@ Path element types for assertions:
 Assertion modes:
   - value: exact equality
   - value_contains: substring containment
+  - value_any_contains: any element in a list contains substring
   - value_set: unordered set comparison
   - value_matches: regex match
   - value_truthy / value_falsy: boolean-ish checks
@@ -58,6 +59,7 @@ class Assertion(BaseModel):
     path: List[PathElement]
     value: Any = _UNSET
     value_contains: Optional[str] = None
+    value_any_contains: Optional[str] = None
     value_set: Optional[List[Any]] = None
     value_matches: Optional[str] = None
     value_truthy: Optional[bool] = None
@@ -70,6 +72,7 @@ class Assertion(BaseModel):
         modes = [
             self.value is not _UNSET,
             self.value_contains is not None,
+            self.value_any_contains is not None,
             self.value_set is not None,
             self.value_matches is not None,
             self.value_truthy is not None,
@@ -79,8 +82,8 @@ class Assertion(BaseModel):
         ]
         if sum(modes) != 1:
             raise ValueError(
-                "Assertion must specify exactly one of: value, value_contains, value_set, value_matches, "
-                "value_truthy, value_falsy, value_type, value_absent"
+                "Assertion must specify exactly one of: value, value_contains, value_any_contains, "
+                "value_set, value_matches, value_truthy, value_falsy, value_type, value_absent"
             )
         return self
 
@@ -139,6 +142,15 @@ def assert_value(obj: Any, expected: Any):
 def assert_value_contains(obj: Any, expected: str):
     """Assert that expected is a substring of obj."""
     assert expected in obj, f"expected {expected!r} in {obj!r}"
+
+
+def assert_value_any_contains(obj: Any, expected: str):
+    """Assert that at least one element in obj contains expected as a substring."""
+    assert isinstance(obj, (list, tuple)), f"expected a list, got {type(obj).__name__}"
+    for item in obj:
+        if isinstance(item, str) and expected in item:
+            return
+    raise AssertionError(f"expected at least one element containing {expected!r} in {obj!r}")
 
 
 def assert_value_set(obj: Any, expected_items: list):
@@ -209,6 +221,8 @@ def run_assertion(obj: Any, assertion: Assertion):
         assert_value(navigated, assertion.value)
     elif assertion.value_contains is not None:
         assert_value_contains(navigated, assertion.value_contains)
+    elif assertion.value_any_contains is not None:
+        assert_value_any_contains(navigated, assertion.value_any_contains)
     elif assertion.value_set is not None:
         assert_value_set(navigated, assertion.value_set)
     elif assertion.value_matches is not None:

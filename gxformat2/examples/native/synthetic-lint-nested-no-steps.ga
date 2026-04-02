@@ -1,0 +1,17 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Nested subworkflow missing steps",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "subworkflow",
+            "subworkflow": {
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "name": "Inner",
+                "steps": {}
+            }
+        }
+    }
+}

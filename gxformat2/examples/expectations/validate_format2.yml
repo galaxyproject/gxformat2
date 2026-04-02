@@ -312,3 +312,13 @@ test_user_defined_tool_valid_format2:
 test_user_defined_tool_valid_format2_strict:
   fixture: synthetic-user-defined-tool.gxwf.yml
   operation: validate_format2_strict
+
+test_report_bad_type_rejected_format2:
+  fixture: synthetic-lint-report-bad-type.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_report_bad_type_rejected_format2_strict:
+  fixture: synthetic-lint-report-bad-type.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true

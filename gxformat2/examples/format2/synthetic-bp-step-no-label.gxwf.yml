@@ -1,0 +1,14 @@
+class: GalaxyWorkflow
+label: Step without label
+doc: A workflow where steps use list form without labels.
+inputs:
+  the_input:
+    type: File
+outputs:
+  the_output:
+    outputSource: 0/out_file1
+steps:
+  - tool_id: cat1
+    doc: cat doc
+    in:
+      input1: the_input
