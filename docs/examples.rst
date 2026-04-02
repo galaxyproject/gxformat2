@@ -150,7 +150,7 @@ an operation, and a list of path-based assertions against the result.
       operation: validate_format2_strict
       expect_error: true
 
-The Python test runner (``tests/test_declarative_normalized.py``) parametrizes
+The Python test runner (``tests/test_interop_tests.py``) parametrizes
 all cases and runs them via pytest.
 
 Expectation Files

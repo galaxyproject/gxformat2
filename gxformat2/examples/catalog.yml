@@ -7,7 +7,7 @@
     - tests/test_schema.py
     - tests/test_to_native.py
     - tests/test_export_abstract.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-nested-subworkflow.gxwf.yml
   origin: synthetic
@@ -15,14 +15,14 @@
   tests:
     - tests/test_lint.py
     - tests/test_export_abstract.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-unlinted-best-practices.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_lint_best_practices.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/real-unicycler-assembly.ga
   origin: real
@@ -30,35 +30,35 @@
   tests:
     - tests/test_lint.py
     - tests/test_basic.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/real-hacked-unicycler-assembly-with-tags.ga
   origin: real-hacked
   format: native
   tests:
     - tests/test_lint.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/real-hacked-unicycler-assembly-no-tool.ga
   origin: real-hacked
   format: native
   tests:
     - tests/test_lint.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/real-hacked-unicycler-assembly-testtoolshed.ga
   origin: real-hacked
   format: native
   tests:
     - tests/test_lint.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/real-hacked-unicycler-assembly-extra-annotations.ga
   origin: real-hacked
   format: native
   tests:
     - tests/test_cytoscape.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/real-sars-cov2-variant-calling.ga
   origin: real
@@ -71,35 +71,35 @@
     - tests/test_to_format2.py
     - tests/test_to_native.py
     - tests/test_export_abstract.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/real-ecoli-comparison.ga
   origin: real
   format: native
   tests:
     - tests/test_lint.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/real-shed-tools-raw.ga
   origin: real
   format: native
   tests:
     - tests/test_lint.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/real-multi-data-input.ga
   origin: real
   format: native
   tests:
     - tests/test_to_format2.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/real-multi-string-input.ga
   origin: real
   format: native
   tests:
     - tests/test_to_format2.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/real-basic-without-step-input-label.ga
   origin: real
@@ -107,28 +107,28 @@
   tests:
     - tests/test_to_format2.py
     - tests/test_export_abstract.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-unlinted-best-practices.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_lint_best_practices.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-unlinted-best-practices-dict-tool-state.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_lint_best_practices.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-unlinted-best-practices-bad-identifier.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_lint_best_practices.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 # --- test_normalized.py fixtures ---
 
@@ -137,137 +137,137 @@
   format: format2
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-graph-with-subworkflow.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-inner-subworkflow.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-input-shorthand.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-step-in-shorthand.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-url-run-yml.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-inner-nested-subworkflow.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-single-versioned-tool.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-tool-with-inline-subworkflow.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-minimal-tool.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-inner-subworkflow.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-native-data-input.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-outer-inline-subworkflow.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-outer-url-subworkflow.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-native-tool-with-subworkflow.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_normalized.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
-# --- test_declarative_normalized.py conversion fixtures ---
+# --- test_interop_tests.py conversion fixtures ---
 
 - file: native/synthetic-labeled-tool.ga
   origin: synthetic
   format: native
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-rename-pja.ga
   origin: synthetic
   format: native
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-int-input.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-pause-step.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-comments-list.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 # --- normalization gap coverage fixtures ---
 
@@ -275,37 +275,37 @@
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-input-type-aliases.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-step-out-shorthand.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-inputs-array.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-tool-state-json.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-tags.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 # --- migrated from example_wfs.py ---
 
@@ -314,45 +314,45 @@
   format: format2
   tests:
     - tests/test_basic.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-when-step.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_basic.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-pja-hide-rename.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-paired-list-input.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_basic.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-float-input-default.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-string-input.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-integer-type-alias.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-multi-data-input.gxwf.yml
   origin: synthetic
@@ -360,69 +360,69 @@
   tests:
     - tests/test_basic.py
     - tests/test_to_native.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-multi-string-input.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_to_native.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-rules-tool.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-runtime-inputs.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_to_native.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-slash-in-input-label.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_basic.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-slash-in-step-label.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_basic.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-slash-in-label-chained.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_basic.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-sample-sheet-input.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_basic.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-comments-dict.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_comments.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-user-defined-tool.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_basic.py
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 # --- validation test fixtures ---
 
@@ -430,22 +430,22 @@
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-missing-steps.gxwf.yml
   origin: synthetic
   format: format2
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-extra-field.ga
   origin: synthetic
   format: native
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-missing-marker.ga
   origin: synthetic
   format: native
   tests:
-    - tests/test_declarative_normalized.py
+    - tests/test_interop_tests.py

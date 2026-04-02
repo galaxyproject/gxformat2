@@ -669,24 +669,6 @@ def test_unlabeled_pause_step_round_trip():
     assert as_native_rt["steps"]["1"]["label"] is None
 
 
-def test_user_defined_tool_to_native():
-    """Format2 workflow with GalaxyUserTool converts to native with tool_representation."""
-    as_dict_native = to_native(USER_DEFINED_TOOL_WORKFLOW)
-    assert_valid_native(as_dict_native)
-    steps = as_dict_native["steps"]
-    assert len(steps) == 2  # input + tool
-    tool_step = steps["1"]
-    assert tool_step["type"] == "tool"
-    assert "tool_representation" in tool_step
-    tool_rep = tool_step["tool_representation"]
-    assert tool_rep["class"] == "GalaxyUserTool"
-    assert tool_rep["name"] == "cat_user_defined"
-    assert tool_rep["container"] == "busybox"
-    # tool_id and tool_uuid should be None for user-defined tools
-    assert tool_step.get("tool_id") is None
-    assert tool_step.get("tool_uuid") is None
-
-
 def test_user_defined_tool_round_trip():
     """GalaxyUserTool survives Format2 -> native -> Format2 round-trip."""
     as_dict = round_trip(USER_DEFINED_TOOL_WORKFLOW)

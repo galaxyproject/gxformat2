@@ -103,7 +103,7 @@ wf_path = get_path("synthetic-my-case.gxwf.yml")     # absolute path
 
 **Prefer declarative YAML-driven tests over imperative Python tests** for verifying structural properties of operation results (normalization, conversion, ensure). The YAML format is language-agnostic and reusable from a TypeScript project.
 
-Test runner: `tests/test_declarative_normalized.py`
+Test runner: `tests/test_interop_tests.py`
 Expectation files: `gxformat2/examples/expectations/*.yml`
 
 ### Expectation file format
@@ -156,7 +156,7 @@ test_extra_field_rejected:
 ### Adding a declarative test
 1. Pick or create an expectation file named after the operation/feature
 2. Add a named case with `fixture`, `operation`, and optionally `assertions` / `expect_error` — test IDs must be unique across all expectation files
-3. Ensure the fixture exists in `gxformat2/examples/` and its `catalog.yml` entry lists `tests/test_declarative_normalized.py`
+3. Ensure the fixture exists in `gxformat2/examples/` and its `catalog.yml` entry lists `tests/test_interop_tests.py`
 
 ### When to use imperative tests instead
 Mutation safety, mocking/resolvers, cycle detection, and scenarios requiring Python-specific setup (e.g. `tmp_path`, custom `ConversionOptions`) stay in `test_normalized.py`.
