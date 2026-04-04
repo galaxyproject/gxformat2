@@ -20,14 +20,39 @@ EMBED_TEMPLATE = string.Template("""\
 <!doctype html>
 <html>
 <head>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.9.4/cytoscape.min.js"></script>
 <style>
-body { margin: 0; }
-#cy { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+body {
+    margin: 0;
+    font-family: "Atkinson Hyperlegible", sans-serif;
+    background: #ffffff;
+    background-image:
+        linear-gradient(to right, rgba(37, 83, 123, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37, 83, 123, 0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+#cy { width: 100%; height: calc(100% - 28px); position: absolute; top: 0; left: 0; }
+.legend {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 28px; display: flex; align-items: center; gap: 16px;
+    padding: 0 12px; font-size: 11px; color: #58585a;
+    background: #f8f9fa; border-top: 1px solid #dee2e6;
+}
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-swatch {
+    width: 12px; height: 12px; border-radius: 2px;
+}
+.legend-swatch.input { background: #ffd700; transform: rotate(45deg); width: 10px; height: 10px; }
+.legend-swatch.step { background: #2c3143; border-radius: 3px; }
 </style>
 </head>
 <body>
 <div id="cy"></div>
+<div class="legend">
+    <div class="legend-item"><div class="legend-swatch input"></div> Input</div>
+    <div class="legend-item"><div class="legend-swatch step"></div> Step</div>
+</div>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     cytoscape({
@@ -35,10 +60,23 @@ document.addEventListener("DOMContentLoaded", function() {
         elements: $elements,
         layout: { name: 'preset' },
         style: [
-            { selector: 'node', style: { 'label': 'data(label)', 'font-size': '10px', 'text-wrap': 'wrap', 'text-max-width': '100px' } },
-            { selector: 'edge', style: { 'curve-style': 'bezier', 'target-arrow-shape': 'vee', 'arrow-scale': 1.5, 'width': 1.5 } },
-            { selector: '.input', style: { shape: 'diamond', 'background-color': '#d0bb46' } },
-            { selector: '.runnable', style: { shape: 'round-rectangle', 'background-color': '#2c3143' } }
+            { selector: 'node', style: {
+                'label': 'data(label)', 'font-size': '11px', 'font-family': '"Atkinson Hyperlegible", sans-serif',
+                'text-wrap': 'wrap', 'text-max-width': '100px', 'text-valign': 'center',
+                'border-width': 1, 'border-color': '#dee2e6'
+            }},
+            { selector: 'edge', style: {
+                'curve-style': 'bezier', 'target-arrow-shape': 'vee', 'arrow-scale': 1.5,
+                'width': 1.5, 'line-color': '#25537b', 'target-arrow-color': '#25537b', 'opacity': 0.6
+            }},
+            { selector: '.input', style: {
+                shape: 'diamond', 'background-color': '#ffd700', 'color': '#2c3143',
+                'border-color': '#d19e00'
+            }},
+            { selector: '.runnable', style: {
+                shape: 'round-rectangle', 'background-color': '#2c3143', 'color': '#f8f9fa',
+                'border-color': '#25537b'
+            }}
         ]
     });
 });

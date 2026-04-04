@@ -27,7 +27,7 @@ DIST_DIRECTORY="${PROJECT_DIRECTORY}/dist/schema"
 rm -rf "${DIST_DIRECTORY}"
 mkdir -p "${DIST_DIRECTORY}"
 cp schema/*png "${DIST_DIRECTORY}"
-curl https://raw.githubusercontent.com/jxtx/galaxy-bootstrap/master/dist/galaxy_bootstrap.min.css -o "$DIST_DIRECTORY/galaxy_bootstrap.min.css"
+cp schema/galaxy_docs.css "${DIST_DIRECTORY}/galaxy_docs.css"
 
 # Requires schema-salad-doc that recognizes --brandstyle and --brandinverse
 for schema in "v19_09";
@@ -38,9 +38,9 @@ do
 
     out="${DIST_DIRECTORY}/${schema}.html"
     schema-salad-doc \
-        --brandstyle '<link rel="stylesheet" href="galaxy_bootstrap.min.css">' \
+        --brandstyle '<link rel="stylesheet" href="galaxy_docs.css">' \
         --brandinverse \
-        --brand '<img src="icon.png" />' \
+        --brand '<img src="icon.png" /> Galaxy Workflow Format 2' \
         --brandlink '' \
         --only "https://galaxyproject.org/gxformat2/${schema}#WorkflowDoc" \
         --only "https://galaxyproject.org/gxformat2/${schema}#GalaxyWorkflow" \
@@ -79,9 +79,9 @@ schema-salad-tool --codegen python workflow.yml > "${SCHEME_SOURCE_DIRECTORY}/na
 
 out="${DIST_DIRECTORY}/native_v0_1.html"
 schema-salad-doc \
-    --brandstyle '<link rel="stylesheet" href="galaxy_bootstrap.min.css">' \
+    --brandstyle '<link rel="stylesheet" href="galaxy_docs.css">' \
     --brandinverse \
-    --brand '<img src="icon.png" />' \
+    --brand '<img src="icon.png" /> Galaxy Workflow Format 2' \
     --brandlink '' \
     --only "https://galaxyproject.org/gxformat2/native_v0_1#NativeWorkflowDoc" \
     --only "https://galaxyproject.org/gxformat2/native_v0_1#NativeGalaxyWorkflow" \
