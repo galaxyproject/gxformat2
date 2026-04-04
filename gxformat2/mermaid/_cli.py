@@ -14,9 +14,9 @@ in a fenced code block.
 """
 
 
-def to_mermaid(workflow_path: str, output_path=None):
+def to_mermaid(workflow_path: str, output_path=None, *, comments: bool = False):
     """Produce mermaid output for the supplied workflow path."""
-    diagram = workflow_to_mermaid(workflow_path)
+    diagram = workflow_to_mermaid(workflow_path, comments=comments)
 
     if output_path is None:
         print(diagram)
@@ -37,7 +37,7 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     args = _parser().parse_args(argv)
-    to_mermaid(args.input_path, args.output_path)
+    to_mermaid(args.input_path, args.output_path, comments=args.comments)
 
 
 def _parser():
@@ -46,4 +46,5 @@ def _parser():
     parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
     parser.add_argument("input_path", metavar="INPUT", type=str, help="input workflow path (.ga/gxwf.yml)")
     parser.add_argument("output_path", metavar="OUTPUT", type=str, nargs="?", help="output path (.mmd/.md)")
+    parser.add_argument("--comments", action="store_true", default=False, help="render frame comments as subgraphs")
     return parser

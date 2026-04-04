@@ -248,7 +248,7 @@ class ExamplesCatalogDirective(Directive):
     def _build_mermaid(self, entry):
         """Generate a mermaid diagram node, or None on failure."""
         try:
-            diagram = workflow_to_mermaid(entry.path)
+            diagram = workflow_to_mermaid(entry.path, comments=True)
         except Exception:
             return None
 
