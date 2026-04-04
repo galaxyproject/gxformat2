@@ -35,7 +35,7 @@ MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
 
 def _sanitize_label(label: str) -> str:
     """Escape characters that have special meaning in Mermaid labels."""
-    label = label.replace('"', '#quot;')
+    label = label.replace('"', "#quot;")
     for ch in "()[]{}<>":
         label = label.replace(ch, f"#{ord(ch)};")
     return label
@@ -85,7 +85,9 @@ def workflow_to_mermaid(
         input_ids[inp_label] = node_id
         label = _sanitize_label(inp_label)
         type_str = _input_type_str(inp)
-        input_lines[inp_label] = _node_line(node_id, f"{label}<br/><i>{type_str}</i>", STEP_TYPE_SHAPES.get(type_str, SHAPE_INPUT))
+        input_lines[inp_label] = _node_line(
+            node_id, f"{label}<br/><i>{type_str}</i>", STEP_TYPE_SHAPES.get(type_str, SHAPE_INPUT)
+        )
 
     step_ids: dict[str, str] = {}
     step_lines: dict[str, str] = {}
@@ -96,7 +98,7 @@ def workflow_to_mermaid(
 
         tool_id = step.tool_id
         if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
-            tool_id = tool_id[len(MAIN_TS_PREFIX):]
+            tool_id = tool_id[len(MAIN_TS_PREFIX) :]
 
         label = _sanitize_label(step.label or step.id or (f"tool:{tool_id}" if tool_id else str(i)))
         step_type = step.type_.value if step.type_ else "tool"
@@ -141,8 +143,8 @@ def workflow_to_mermaid(
                 continue
             sources = step_input.source if isinstance(step_input.source, list) else [step_input.source]
             for source in sources:
-                ref = nf2.resolve_source(source)
-                source_id = input_ids.get(ref.step_label) or step_ids.get(ref.step_label)
+                source_ref = nf2.resolve_source(source)
+                source_id = input_ids.get(source_ref.step_label) or step_ids.get(source_ref.step_label)
                 if source_id:
                     edge_key = (source_id, node_id)
                     if edge_key not in seen_edges:
