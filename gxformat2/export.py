@@ -5,6 +5,7 @@ Planemo.  The typed API is :func:`gxformat2.normalized.to_format2`.
 """
 
 import argparse
+import io
 import json
 import sys
 from collections import OrderedDict
@@ -147,8 +148,6 @@ def main(argv=None):
     if args.json_output:
         output_text = json.dumps(as_dict, indent=4) + "\n"
     else:
-        import io
-
         stream = io.StringIO()
         ordered_dump(as_dict, stream)
         output_text = stream.getvalue()
