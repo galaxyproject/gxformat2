@@ -98,22 +98,28 @@ def main(argv=None):
     args = _parser().parse_args(argv)
 
     format2_path = args.input_path
-    output_path = args.output_path or (format2_path + ".gxwf.yml")
+    output_path = args.output or args.output_path
 
-    workflow_directory = os.path.abspath(format2_path)
+    workflow_directory = os.path.dirname(os.path.abspath(format2_path))
 
     with open(format2_path) as f:
         has_workflow = ordered_load(f)
 
     output = python_to_workflow(has_workflow, workflow_directory=workflow_directory)
-    with open(output_path, "w") as f:
-        json.dump(output, f, indent=4)
+    output_text = json.dumps(output, indent=4) + "\n"
+
+    if output_path:
+        with open(output_path, "w") as f:
+            f.write(output_text)
+    else:
+        sys.stdout.write(output_text)
 
 
 def _parser():
     parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
     parser.add_argument("input_path", metavar="INPUT", type=str, help="input workflow path (.gxwf.yml)")
     parser.add_argument("output_path", metavar="OUTPUT", type=str, nargs="?", help="output workflow path (.ga)")
+    parser.add_argument("--output", "-o", help="output file (default: stdout)")
     return parser
 
 
