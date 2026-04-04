@@ -18,6 +18,7 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinxarg.ext",
     "sphinx_design",
+    "sphinxcontrib.mermaid",
     "examples_catalog",
 ]
 

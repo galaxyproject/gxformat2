@@ -40,6 +40,7 @@ gxwf-to-format2 = "gxformat2.export:main"
 gxwf-lint = "gxformat2.lint:main"
 gxwf-viz = "gxformat2.cytoscape:main"
 gxwf-abstract-export = "gxformat2.abstract:main"
+gxwf-mermaid = "gxformat2.mermaid:main"
 
 [project.urls]
 Homepage = "https://github.com/galaxyproject/gxformat2"
@@ -72,6 +73,7 @@ docs = [
     "sphinx-rtd-theme",
     "myst-parser",
     "sphinx-argparse",
+    "sphinxcontrib-mermaid",
 ]
 
 [tool.ruff]
