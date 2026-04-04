@@ -73,7 +73,10 @@ $graph:
       type:
         type: array
         items: InputParameter
-      pydantic:type: "list[WorkflowInputParameter] | dict[str, WorkflowInputParameter | str] | dict[str, Any]"
+      pydantic:type: "list[WorkflowDataParameter | WorkflowCollectionParameter | WorkflowIntegerParameter | WorkflowFloatParameter | WorkflowTextParameter | WorkflowBooleanParameter] | dict[str, WorkflowDataParameter | WorkflowCollectionParameter | WorkflowIntegerParameter | WorkflowFloatParameter | WorkflowTextParameter | WorkflowBooleanParameter | str] | dict[str, Any]"
+      pydantic:discriminator_field: "type"
+      pydantic:discriminator_map: '{"data": "WorkflowDataParameter", "File": "WorkflowDataParameter", "data_input": "WorkflowDataParameter", "collection": "WorkflowCollectionParameter", "data_collection": "WorkflowCollectionParameter", "data_collection_input": "WorkflowCollectionParameter", "integer": "WorkflowIntegerParameter", "int": "WorkflowIntegerParameter", "text": "WorkflowTextParameter", "string": "WorkflowTextParameter", "float": "WorkflowFloatParameter", "boolean": "WorkflowBooleanParameter", "color": "WorkflowTextParameter"}'
+      pydantic:discriminator_default: "WorkflowDataParameter"
       jsonldPredicate:
         _id: "cwl:inputs"
         mapSubject: id

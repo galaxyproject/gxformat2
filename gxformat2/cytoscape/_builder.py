@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from gxformat2.normalized import ensure_format2, NormalizedFormat2, NormalizedWorkflowStep
-from gxformat2.schema.gxformat2 import GalaxyWorkflow, WorkflowInputParameter
+from gxformat2.schema.gxformat2 import BaseInputParameter, GalaxyType, GalaxyWorkflow
 
 from .models import (
     CytoscapeEdge,
@@ -57,17 +57,20 @@ def _to_position(step_position, order_index: int) -> CytoscapePosition:
     return CytoscapePosition(x=int(step_position.left), y=int(step_position.top))
 
 
-def _input_type_str(inp: WorkflowInputParameter) -> str:
-    if inp.type_ is None:
+def _input_type_str(inp: BaseInputParameter) -> str:
+    # type_ lives on concrete subclasses, not BaseInputParameter
+    type_ = getattr(inp, "type_", None)
+    if type_ is None:
         return "input"
-    if isinstance(inp.type_, list):
-        if inp.type_:
-            return inp.type_[0].value + "[]"
+    if isinstance(type_, list):
+        if type_:
+            t = type_[0]
+            return (t.value if isinstance(t, GalaxyType) else str(t)) + "[]"
         return "input"
-    return inp.type_.value
+    return type_.value if isinstance(type_, GalaxyType) else str(type_)
 
 
-def _input_node(inp: WorkflowInputParameter, order_index: int) -> CytoscapeNode:
+def _input_node(inp: BaseInputParameter, order_index: int) -> CytoscapeNode:
     input_id = inp.id or str(order_index)
     type_str = _input_type_str(inp)
     return CytoscapeNode(

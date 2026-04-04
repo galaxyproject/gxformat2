@@ -15,15 +15,17 @@ from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, SerializeAsAny
 from typing_extensions import TypeAlias
 
 from gxformat2.schema.gxformat2 import (
+    BaseInputParameter,
     CreatorOrganization,
     CreatorPerson,
     FrameComment,
     FreehandComment,
     GalaxyWorkflow,
+    input_parameter_class,
     MarkdownComment,
     Report,
     StepPosition,
@@ -175,7 +177,7 @@ class NormalizedFormat2(_DictMixin, BaseModel):
     class_: Literal["GalaxyWorkflow"] = Field(default="GalaxyWorkflow", alias="class")
     label: str | None = Field(default=None)
     doc: str | None = Field(default=None, description="Annotation, joined if originally a list.")
-    inputs: list[WorkflowInputParameter] = Field(
+    inputs: list[SerializeAsAny[BaseInputParameter]] = Field(
         default_factory=list, description="Always a list, shorthands expanded."
     )
     outputs: list[WorkflowOutputParameter] = Field(default_factory=list, description="Always a list.")
@@ -257,6 +259,7 @@ def normalized_format2(
         if "steps" not in workflow:
             workflow = {**workflow, "steps": {}}
         workflow = _pre_clean_steps(workflow)
+        workflow = _pre_normalize_input_types(workflow)
         workflow = GalaxyWorkflow.model_validate(workflow)
     assert isinstance(workflow, GalaxyWorkflow)
     return _normalize_workflow(workflow)
@@ -310,20 +313,28 @@ def _normalize_input_type(value: Any) -> Any:
     return value
 
 
+def _validate_input_dict(d: dict[str, Any]) -> BaseInputParameter:
+    """Validate an input dict using the specific discriminated type."""
+    type_val = d.get("type")
+    if isinstance(type_val, list):
+        return WorkflowInputParameter.model_validate(d)
+    return input_parameter_class(type_val).model_validate(d)
+
+
 def _normalize_inputs(
-    inputs: list[WorkflowInputParameter] | dict[str, WorkflowInputParameter | str] | dict[str, Any],
-) -> list[WorkflowInputParameter]:
+    inputs: list[BaseInputParameter] | dict[str, BaseInputParameter | str] | dict[str, Any] | Any,
+) -> list[BaseInputParameter]:
     if isinstance(inputs, list):
-        result = []
+        result: list[BaseInputParameter] = []
         for inp in inputs:
-            if isinstance(inp, WorkflowInputParameter):
+            if isinstance(inp, BaseInputParameter):
                 result.append(inp)
             elif isinstance(inp, dict):
                 if "type" in inp:
                     inp = {**inp, "type": _normalize_input_type(inp["type"])}
-                result.append(WorkflowInputParameter.model_validate(inp))
+                result.append(_validate_input_dict(inp))
             else:
-                result.append(WorkflowInputParameter.model_validate(inp))
+                result.append(_validate_input_dict(inp))
         return result
 
     # Dict form — keys are ids, values are WorkflowInputParameter, type string, or dict
@@ -332,8 +343,8 @@ def _normalize_inputs(
         if isinstance(value, str):
             # Shorthand: input_name: "data"
             normalized_type = _normalize_input_type(value)
-            result.append(WorkflowInputParameter.model_validate({"id": key, "type": normalized_type}))
-        elif isinstance(value, WorkflowInputParameter):
+            result.append(input_parameter_class(normalized_type)(id=key, type_=normalized_type))
+        elif isinstance(value, BaseInputParameter):
             if value.id is None:
                 value = value.model_copy(update={"id": key})
             result.append(value)
@@ -344,9 +355,9 @@ def _normalize_inputs(
                 value = {**value, "type": _normalize_input_type(value["type"])}
             if "format" in value and isinstance(value["format"], str):
                 value = {**value, "format": [value["format"]]}
-            result.append(WorkflowInputParameter.model_validate(value))
+            result.append(_validate_input_dict(value))
         else:
-            result.append(WorkflowInputParameter(id=key))
+            result.append(input_parameter_class(None)(id=key))
     return result
 
 
@@ -375,6 +386,33 @@ def _normalize_outputs(
         else:
             result.append(WorkflowOutputParameter(id=key))
     return result
+
+
+def _pre_normalize_input_types(workflow: dict[str, Any]) -> dict[str, Any]:
+    """Normalize input type aliases (File → data, etc.) before discriminator runs.
+
+    The discriminated union on ``Process.inputs`` routes based on the raw
+    ``type`` field, so alias normalization must happen before model validation.
+    """
+    inputs = workflow.get("inputs")
+    if inputs is None:
+        return workflow
+
+    def norm_entry(entry: Any) -> Any:
+        if isinstance(entry, dict) and "type" in entry:
+            return {**entry, "type": _normalize_input_type(entry["type"])}
+        if isinstance(entry, str):
+            return _normalize_input_type(entry)
+        return entry
+
+    new_inputs: dict[str, Any] | list[Any]
+    if isinstance(inputs, dict):
+        new_inputs = {k: norm_entry(v) for k, v in inputs.items()}
+    elif isinstance(inputs, list):
+        new_inputs = [norm_entry(v) for v in inputs]
+    else:
+        return workflow
+    return {**workflow, "inputs": new_inputs}
 
 
 def _pre_clean_steps(workflow: dict[str, Any]) -> dict[str, Any]:

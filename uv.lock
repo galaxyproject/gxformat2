@@ -704,7 +704,7 @@ requires-dist = [
 dev = [
     { name = "cwltool", specifier = ">=3.0.20200807132242" },
     { name = "schema-salad", extras = ["pycodegen"] },
-    { name = "schema-salad-plus-pydantic", specifier = ">=0.1.3" },
+    { name = "schema-salad-plus-pydantic", specifier = ">=0.1.8" },
 ]
 docs = [
     { name = "myst-parser" },
@@ -729,7 +729,7 @@ test = [
     { name = "pydantic", specifier = ">=2.0" },
     { name = "pytest" },
     { name = "schema-salad", extras = ["pycodegen"] },
-    { name = "schema-salad-plus-pydantic", specifier = ">=0.1.3" },
+    { name = "schema-salad-plus-pydantic", specifier = ">=0.1.8" },
 ]
 
 [[package]]
@@ -2381,7 +2381,7 @@ pycodegen = [
 
 [[package]]
 name = "schema-salad-plus-pydantic"
-version = "0.1.4"
+version = "0.1.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
@@ -2389,9 +2389,9 @@ dependencies = [
     { name = "schema-salad", version = "8.8.20250205075315", source = { registry = "https://pypi.org/simple" }, extra = ["pycodegen"], marker = "python_full_version < '3.10'" },
     { name = "schema-salad", version = "8.9.20251102115403", source = { registry = "https://pypi.org/simple" }, extra = ["pycodegen"], marker = "python_full_version >= '3.10'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/09/7d/a836f3fd2a4bf0237ca782d6941761b2cee721b6ee443c07e68d1b9acc5f/schema_salad_plus_pydantic-0.1.4.tar.gz", hash = "sha256:105d3b9e9d29621027af31ffd8e6c08e536f7d5df10b0269d2eb8790b32d2808", size = 19049, upload-time = "2026-03-24T04:43:54.359Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/31/a6/54978cd1afb1f69da70532af489df049fef87b1c225b8f44b7edc3d481f9/schema_salad_plus_pydantic-0.1.8.tar.gz", hash = "sha256:8da404402a53faed2cd7c789fc3effd3b5ef05d64416d8da7793520e15810d5e", size = 28805, upload-time = "2026-04-04T17:06:09.26Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/32/7b/cd00639049e6898bc826e4faf60fd9042d068f33c2371667c703daa5be76/schema_salad_plus_pydantic-0.1.4-py3-none-any.whl", hash = "sha256:ef0851d8144659cc335d889ddedeffd6e113dd7e67598cbbb895ab18b914ed98", size = 15817, upload-time = "2026-03-24T04:43:52.623Z" },
+    { url = "https://files.pythonhosted.org/packages/49/fc/f89aefb5a6c5e88ab875b53e62e5cae4972f67ba00482ff061835229ed98/schema_salad_plus_pydantic-0.1.8-py3-none-any.whl", hash = "sha256:135bdbc7c16d6078596a0f6fa5da96c530b3e159715eee03824e57208a47b641", size = 25340, upload-time = "2026-04-04T17:06:07.641Z" },
 ]
 
 [[package]]

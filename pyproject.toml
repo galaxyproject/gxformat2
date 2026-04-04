@@ -64,7 +64,7 @@ test = [
 ]
 dev = [
     "schema-salad[pycodegen]",
-    "schema-salad-plus-pydantic>=0.1.3",
+    "schema-salad-plus-pydantic>=0.1.8",
     "cwltool>=3.0.20200807132242",
 ]
 docs = [

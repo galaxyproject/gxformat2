@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from enum import Enum
 from pathlib import Path
-from typing import Any, Annotated, Literal, Union
+from typing import Any, Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, Discriminator, Tag
 
@@ -72,6 +72,29 @@ pick_value: Select the first non-null value from multiple inputs. Used to merge 
     subworkflow = "subworkflow"
     pause = "pause"
     pick_value = "pick_value"
+
+
+def _discriminate_inputs(v: Any) -> str:
+    disc_map: dict[str, str] = {
+        "data": "WorkflowDataParameter",
+        "File": "WorkflowDataParameter",
+        "data_input": "WorkflowDataParameter",
+        "collection": "WorkflowCollectionParameter",
+        "data_collection": "WorkflowCollectionParameter",
+        "data_collection_input": "WorkflowCollectionParameter",
+        "integer": "WorkflowIntegerParameter",
+        "int": "WorkflowIntegerParameter",
+        "text": "WorkflowTextParameter",
+        "string": "WorkflowTextParameter",
+        "float": "WorkflowFloatParameter",
+        "boolean": "WorkflowBooleanParameter",
+        "color": "WorkflowTextParameter",
+    }
+    if isinstance(v, dict):
+        disc_val: str = str(v.get("type", ""))
+    else:
+        disc_val = str(getattr(v, "type_", ""))
+    return disc_map.get(disc_val, "WorkflowDataParameter")
 
 
 class Documented(BaseModel):
@@ -145,7 +168,21 @@ directly executed."""
 
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
-    inputs: list[WorkflowInputParameter] | dict[str, WorkflowInputParameter | str] | dict[str, Any] = Field(description="Defines the input parameters of the process.  The process is ready to run when all required input parameters are associated with concrete values.  Input parameters include a schema for each paramet...")
+    # Discriminated union on 'type'
+    inputs: (
+        list[Annotated[
+            Annotated[WorkflowDataParameter, Tag("WorkflowDataParameter")]
+            | Annotated[WorkflowCollectionParameter, Tag("WorkflowCollectionParameter")]
+            | Annotated[WorkflowIntegerParameter, Tag("WorkflowIntegerParameter")]
+            | Annotated[WorkflowFloatParameter, Tag("WorkflowFloatParameter")]
+            | Annotated[WorkflowTextParameter, Tag("WorkflowTextParameter")]
+            | Annotated[WorkflowBooleanParameter, Tag("WorkflowBooleanParameter")],
+            Discriminator(_discriminate_inputs),
+        ]]
+        | dict[str, WorkflowDataParameter | WorkflowCollectionParameter | WorkflowIntegerParameter
+               | WorkflowFloatParameter | WorkflowTextParameter | WorkflowBooleanParameter | str]
+        | dict[str, Any]
+    )
     outputs: list[WorkflowOutputParameter] | dict[str, WorkflowOutputParameter | str] | dict[str, Any] = Field(description="Defines the parameters representing the output of the process.  May be used to generate and/or validate the output object.")
 
 class HasUUID(BaseModel):
@@ -186,15 +223,76 @@ class ToolShedRepository(BaseModel):
     owner: str = Field(description="The owner of the tool shed repository this tool can be found in.")
     tool_shed: str = Field(description="The URI of the tool shed containing the repository this tool can be found in - typically this should be toolshed.g2.bx.psu.edu.")
 
-class WorkflowInputParameter(InputParameter, HasStepPosition):
+class BaseInputParameter(InputParameter, HasStepPosition):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
     id: None | str = Field(default=None, description="The unique identifier for this object.")
     label: None | str = Field(default=None, description="A short, human-readable label of this object.")
     doc: None | str | list[str] = Field(default=None, description="A documentation string for this object, or an array of strings which should be concatenated.")
-    type_: GalaxyType | None | list[GalaxyType] = Field(default=None, alias="type", description="Specify valid types of data that may be assigned to this parameter.")
     optional: bool | None = Field(default=None, description="If set to true, `WorkflowInputParameter` is not required to submit the workflow.")
-    format: None | list[str] = Field(default=None, description="Specify datatype extension for valid input datasets.")
+
+class BaseDataParameter(BaseInputParameter):
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    format: None | list[str] = Field(default=None, description="Specify datatype extensions for valid input datasets.")
+
+class WorkflowDataParameter(BaseDataParameter):
+    """A data input parameter for a Galaxy workflow - represents a dataset."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: Literal["data", "File"] | None = Field(default=None, alias="type", description="Specify valid types of data that may be assigned to this parameter.")
+
+class WorkflowCollectionParameter(BaseDataParameter):
+    """A collection input parameter for a Galaxy workflow - represents a dataset collection."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: Literal["collection"] = Field(default="collection", alias="type", description="Must be ``collection``.")
+    collection_type: None | str = Field(default=None, description="Collection type (defaults to `list` if `type` is `collection`). Nested collection types are separated with colons, e.g. `list:list:paired`.")
+
+class MinMax(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    min: int | float | None = Field(default=None, description="Minimum allowed value (inclusive).")
+    max: int | float | None = Field(default=None, description="Maximum allowed value (inclusive).")
+
+class WorkflowIntegerParameter(BaseInputParameter, MinMax):
+    """An integer input parameter for a Galaxy workflow."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: Literal["integer", "int"] = Field(default="integer", alias="type", description="Must be ``integer`` or ``int``.")
+
+class WorkflowFloatParameter(BaseInputParameter, MinMax):
+    """A float input parameter for a Galaxy workflow."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: Literal["float"] = Field(default="float", alias="type", description="Must be ``float``.")
+
+class WorkflowTextParameter(BaseInputParameter):
+    """A text input parameter for a Galaxy workflow."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: Literal["text", "string"] = Field(default="text", alias="type", description="Must be ``text`` or ``string``.")
+
+class WorkflowBooleanParameter(BaseInputParameter):
+    """A boolean input parameter for a Galaxy workflow."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: Literal["boolean"] = Field(default="boolean", alias="type", description="Must be ``boolean``.")
+
+class WorkflowInputParameter(BaseDataParameter, MinMax):
+    """An input parameter to a Galaxy workflow. This is the catch-all type used
+by the Schema Salad codegen. The pydantic layer uses a discriminated union
+of the specific parameter types instead."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: GalaxyType | None | list[GalaxyType] = Field(default=None, alias="type", description="Specify valid types of data that may be assigned to this parameter.")
     collection_type: None | str = Field(default=None, description="Collection type (defaults to `list` if `type` is `collection`). Nested collection types are separated with colons, e.g. `list:list:paired`.")
 
 class WorkflowOutputParameter(OutputParameter):
@@ -410,6 +508,15 @@ HasStepPosition.model_rebuild()
 StepPosition.model_rebuild()
 ReferencesTool.model_rebuild()
 ToolShedRepository.model_rebuild()
+BaseInputParameter.model_rebuild()
+BaseDataParameter.model_rebuild()
+WorkflowDataParameter.model_rebuild()
+WorkflowCollectionParameter.model_rebuild()
+MinMax.model_rebuild()
+WorkflowIntegerParameter.model_rebuild()
+WorkflowFloatParameter.model_rebuild()
+WorkflowTextParameter.model_rebuild()
+WorkflowBooleanParameter.model_rebuild()
 WorkflowInputParameter.model_rebuild()
 WorkflowOutputParameter.model_rebuild()
 WorkflowStep.model_rebuild()
@@ -440,3 +547,30 @@ def load_document(path: str | Path) -> GalaxyWorkflow | list[GalaxyWorkflow]:
 def _load_single(data: dict[str, Any]) -> GalaxyWorkflow:
     """Load a single document dict."""
     return GalaxyWorkflow.model_validate(data)
+
+
+_INPUT_TYPE_TO_CLASS: dict[str, type[BaseInputParameter]] = {
+    "data": WorkflowDataParameter,
+    "File": WorkflowDataParameter,
+    "data_input": WorkflowDataParameter,
+    "collection": WorkflowCollectionParameter,
+    "data_collection": WorkflowCollectionParameter,
+    "data_collection_input": WorkflowCollectionParameter,
+    "integer": WorkflowIntegerParameter,
+    "int": WorkflowIntegerParameter,
+    "text": WorkflowTextParameter,
+    "string": WorkflowTextParameter,
+    "float": WorkflowFloatParameter,
+    "boolean": WorkflowBooleanParameter,
+    "color": WorkflowTextParameter,
+}
+
+
+def input_parameter_class(type_value: str | None) -> type[BaseInputParameter]:
+    """Return the specific input parameter class for a Format2 type string.
+
+    Falls back to WorkflowDataParameter for unknown or None types.
+    """
+    if type_value is None:
+        return WorkflowDataParameter
+    return _INPUT_TYPE_TO_CLASS.get(type_value, WorkflowDataParameter)
