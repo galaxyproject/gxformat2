@@ -15,8 +15,8 @@ StateEncodeToNativeFn = Optional[Callable[[dict, Dict[str, Any]], Optional[Dict[
 
 Accepts (step, state) where step is the partially-built native step dict
 and state is the format2 state dict after setup_connected_values processing.
-Returns {param_name: encoded_value} for native tool_state, or None to fall
-back to default json.dumps encoding.
+Returns {param_name: encoded_value} as clean dicts for native tool_state,
+or None to fall back to default dict passthrough (no JSON encoding).
 """
 
 StateEncodeToFormat2Fn = Optional[Callable[[dict], Optional[Dict[str, Any]]]]
@@ -56,6 +56,7 @@ class ConversionOptions:
         state_encode_to_format2: StateEncodeToFormat2Fn = None,
         compact: bool = False,
         url_resolver: UrlResolverFn = None,
+        strict_structure: bool = False,
     ):
         self.workflow_directory = str(workflow_directory) if workflow_directory else None
         self.encode_tool_state_json = encode_tool_state_json
@@ -64,6 +65,7 @@ class ConversionOptions:
         self.state_encode_to_format2 = state_encode_to_format2
         self.compact = compact
         self.url_resolver = url_resolver
+        self.strict_structure = strict_structure
 
 
 def default_url_resolver(url: str) -> dict[str, Any]:

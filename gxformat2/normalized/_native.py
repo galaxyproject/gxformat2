@@ -38,6 +38,7 @@ from gxformat2.schema.native import (
     StepPosition,
     ToolShedRepository,
 )
+from gxformat2.schema.native_strict import NativeGalaxyWorkflow as StrictNativeGalaxyWorkflow
 
 from ._types import ToolReference
 
@@ -77,7 +78,7 @@ class NormalizedNativeStep(_DictMixin, BaseModel):
     tool_state is guaranteed to be a parsed dict.
     """
 
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     id: int = Field(description="Step ID.")
     name: str | None = Field(default=None)
@@ -148,7 +149,7 @@ class NormalizedNativeWorkflow(_DictMixin, BaseModel):
     Steps contain NormalizedNativeStep instances.
     """
 
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     name: str | None = Field(default=None)
     a_galaxy_workflow: str = Field(default="true")
@@ -260,6 +261,8 @@ def _normalize_tags(data: dict[str, Any]) -> None:
 
 def normalized_native(
     workflow: dict[str, Any] | str | Path | os.PathLike[str] | NativeGalaxyWorkflow,
+    *,
+    strict_structure: bool = False,
 ) -> NormalizedNativeWorkflow:
     """Normalize a native Galaxy workflow into a fully typed model.
 
@@ -267,11 +270,17 @@ def normalized_native(
     ``NativeGalaxyWorkflow``.  Returns a ``NormalizedNativeWorkflow``
     where tool_state is always a dict, and all optional containers are
     resolved to empty defaults.
+
+    When *strict_structure* is True, the raw input dict is validated
+    against the strict schema (``extra="forbid"``) before normalization,
+    raising ``ValidationError`` on any unrecognised keys.
     """
     if isinstance(workflow, (str, Path)):
         with open(workflow) as f:
             workflow = json.load(f)
     if isinstance(workflow, dict):
+        if strict_structure:
+            StrictNativeGalaxyWorkflow.model_validate(workflow)
         workflow = load_native(workflow, strict=False)
     assert isinstance(workflow, NativeGalaxyWorkflow)
     return _normalize_workflow(workflow)

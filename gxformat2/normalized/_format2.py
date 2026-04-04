@@ -36,6 +36,7 @@ from gxformat2.schema.gxformat2 import (
     WorkflowStepOutput,
     WorkflowStepType,
 )
+from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWorkflow
 from gxformat2.yaml import ordered_load_path
 
 from ._types import ToolReference
@@ -107,7 +108,7 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
     Ids are guaranteed populated.
     """
 
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     id: str = Field(description="Step identifier — always populated.")
     label: str | None = Field(default=None)
@@ -170,7 +171,7 @@ class NormalizedFormat2(_DictMixin, BaseModel):
     Step ids are always populated.
     """
 
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     class_: Literal["GalaxyWorkflow"] = Field(default="GalaxyWorkflow", alias="class")
     label: str | None = Field(default=None)
@@ -222,6 +223,8 @@ NormalizedFormat2.model_rebuild()
 
 def normalized_format2(
     workflow: dict[str, Any] | str | Path | os.PathLike[str] | GalaxyWorkflow,
+    *,
+    strict_structure: bool = False,
 ) -> NormalizedFormat2:
     """Normalize a Format 2 Galaxy workflow into a fully typed model.
 
@@ -235,6 +238,10 @@ def normalized_format2(
 
     Returns a ``NormalizedFormat2`` where steps/inputs/outputs are always
     lists, shorthands are expanded, and ids are populated.
+
+    When *strict_structure* is True, the raw input dict is validated
+    against the strict schema (``extra="forbid"``) before normalization,
+    raising ``ValidationError`` on any unrecognised keys.
     """
     if isinstance(workflow, (str, Path)):
         workflow = ordered_load_path(str(workflow))
@@ -246,6 +253,8 @@ def normalized_format2(
         elif "$graph" in workflow and "class" not in workflow:
             workflow = _resolve_graph(workflow)
         assert isinstance(workflow, dict)
+        if strict_structure:
+            StrictGalaxyWorkflow.model_validate(workflow)
         # Migrate legacy 'name' to 'label'
         if "name" in workflow and "label" not in workflow:
             workflow = {**workflow, "label": workflow["name"]}
@@ -258,14 +267,20 @@ def normalized_format2(
             workflow = {**workflow, "steps": {}}
         workflow = _pre_clean_steps(workflow)
         workflow = GalaxyWorkflow.model_validate(workflow)
+    elif isinstance(workflow, GalaxyWorkflow) and strict_structure:
+        # Typed model input (e.g. nested sub-workflow recursion) -- dump and
+        # strict-validate since the lax model carries extras (extra="allow")
+        # that strict forbids, and the parent's strict pre-validation doesn't
+        # recurse through the run union (which includes dict[str, Any]).
+        StrictGalaxyWorkflow.model_validate(workflow.model_dump(by_alias=True, exclude_none=True))
     assert isinstance(workflow, GalaxyWorkflow)
-    return _normalize_workflow(workflow)
+    return _normalize_workflow(workflow, strict_structure=strict_structure)
 
 
-def _normalize_workflow(wf: GalaxyWorkflow) -> NormalizedFormat2:
+def _normalize_workflow(wf: GalaxyWorkflow, strict_structure: bool = False) -> NormalizedFormat2:
     inputs = _normalize_inputs(wf.inputs)
     outputs = _normalize_outputs(wf.outputs)
-    steps = _normalize_steps(wf.steps, inputs_offset=len(inputs))
+    steps = _normalize_steps(wf.steps, inputs_offset=len(inputs), strict_structure=strict_structure)
     comments = _normalize_comments(wf.comments)
     doc = _join_doc(wf.doc)
 
@@ -432,6 +447,7 @@ def _pre_clean_step(step: dict[str, Any]) -> dict[str, Any]:
 def _normalize_steps(
     steps: list[WorkflowStep] | dict[str, WorkflowStep],
     inputs_offset: int = 0,
+    strict_structure: bool = False,
 ) -> list[NormalizedWorkflowStep]:
     if isinstance(steps, dict):
         step_list = []
@@ -464,26 +480,26 @@ def _normalize_steps(
             else:
                 step_list.append(step)
 
-    return [_normalize_step(s) for s in step_list]
+    return [_normalize_step(s, strict_structure=strict_structure) for s in step_list]
 
 
 _CONNECTED_VALUE = {"__class__": "ConnectedValue"}
 
 
-def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
+def _normalize_step(step: WorkflowStep, strict_structure: bool = False) -> NormalizedWorkflowStep:
     in_list = _normalize_step_inputs(step.in_)
     out_list = _normalize_step_outputs(step.out)
 
     run: NormalizedFormat2 | GalaxyUserToolStub | ImportReference | str | None = None
     if isinstance(step.run, GalaxyWorkflow):
-        run = _normalize_workflow(step.run)
+        run = normalized_format2(step.run, strict_structure=strict_structure)
     elif isinstance(step.run, dict):
         if "@import" in step.run:
             run = ImportReference.model_validate(step.run)
         elif step.run.get("class") == "GalaxyUserTool":
             run = GalaxyUserToolStub.model_validate(step.run)
         else:
-            run = normalized_format2(step.run)
+            run = normalized_format2(step.run, strict_structure=strict_structure)
     elif isinstance(step.run, str):
         run = step.run
 
