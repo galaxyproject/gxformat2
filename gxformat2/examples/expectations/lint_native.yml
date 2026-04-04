@@ -45,3 +45,72 @@ test_lint_native_minimal_no_outputs:
       value: 0
     - path: [warnings, 0]
       value_contains: "no outputs"
+
+# --- Structural error cases ---
+
+test_lint_native_missing_steps:
+  fixture: synthetic-lint-no-steps.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "steps"
+
+test_lint_native_bad_format_version:
+  fixture: synthetic-lint-bad-format-version.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "format-version"
+
+test_lint_native_bad_marker:
+  fixture: synthetic-lint-bad-marker.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "a_galaxy_workflow"
+
+test_lint_native_non_integer_step_key:
+  fixture: synthetic-lint-non-integer-step.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "integer"
+
+test_lint_native_nested_no_steps:
+  fixture: synthetic-lint-nested-no-steps.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "subworkflow"
+
+test_lint_native_output_no_label:
+  fixture: synthetic-lint-output-no-label.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 1
+    - path: [warnings, 0]
+      value_contains: "output without a label"
+
+# --- Report validation ---
+
+test_lint_native_report_clean:
+  fixture: synthetic-lint-report.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0

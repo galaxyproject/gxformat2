@@ -1,0 +1,17 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Output without label",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "tool",
+            "tool_id": "cat1",
+            "workflow_outputs": [
+                {
+                    "output_name": "out_file1"
+                }
+            ]
+        }
+    }
+}

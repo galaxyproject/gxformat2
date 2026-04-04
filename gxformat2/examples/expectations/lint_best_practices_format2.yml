@@ -1,0 +1,46 @@
+# Format2 best practices linting
+# lint_best_practices_format2 returns {errors: [...], warnings: [...], error_count: N, warn_count: N}
+
+test_bp_format2_clean:
+  fixture: synthetic-basic.gxwf.yml
+  operation: lint_best_practices_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 2
+
+test_bp_format2_no_annotation:
+  fixture: synthetic-bp-no-annotation.gxwf.yml
+  operation: lint_best_practices_format2
+  assertions:
+    - path: [warnings]
+      value_any_contains: "not annotated"
+
+test_bp_format2_no_creator:
+  fixture: synthetic-basic.gxwf.yml
+  operation: lint_best_practices_format2
+  assertions:
+    - path: [warnings]
+      value_any_contains: "creator"
+
+test_bp_format2_no_license:
+  fixture: synthetic-basic.gxwf.yml
+  operation: lint_best_practices_format2
+  assertions:
+    - path: [warnings]
+      value_any_contains: "license"
+
+test_bp_format2_disconnected_input:
+  fixture: synthetic-bp-disconnected-input.gxwf.yml
+  operation: lint_best_practices_format2
+  assertions:
+    - path: [warnings]
+      value_any_contains: "disconnected"
+
+test_bp_format2_step_no_label:
+  fixture: synthetic-bp-step-no-label.gxwf.yml
+  operation: lint_best_practices_format2
+  assertions:
+    - path: [warnings]
+      value_any_contains: "no label"

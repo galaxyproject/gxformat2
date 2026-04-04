@@ -1,0 +1,14 @@
+class: GalaxyWorkflow
+label: Bad int default
+inputs:
+  the_input:
+    type: int
+    default: "not_an_int"
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: the_input

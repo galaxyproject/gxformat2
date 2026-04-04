@@ -1,0 +1,60 @@
+# Native best practices linting
+# lint_best_practices_native returns {errors: [...], warnings: [...], error_count: N, warn_count: N}
+
+test_bp_native_no_annotation:
+  fixture: synthetic-minimal-tool.ga
+  operation: lint_best_practices_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warnings]
+      value_any_contains: "not annotated"
+
+test_bp_native_no_creator:
+  fixture: synthetic-minimal-tool.ga
+  operation: lint_best_practices_native
+  assertions:
+    - path: [warnings]
+      value_any_contains: "creator"
+
+test_bp_native_no_license:
+  fixture: synthetic-minimal-tool.ga
+  operation: lint_best_practices_native
+  assertions:
+    - path: [warnings]
+      value_any_contains: "license"
+
+test_bp_native_step_no_label:
+  fixture: synthetic-minimal-tool.ga
+  operation: lint_best_practices_native
+  assertions:
+    - path: [warnings]
+      value_any_contains: "no label"
+
+test_bp_native_bad_creator_id:
+  fixture: synthetic-unlinted-best-practices-bad-identifier.ga
+  operation: lint_best_practices_native
+  assertions:
+    - path: [warnings]
+      value_any_contains: "fully qualified URI"
+
+test_bp_native_untyped_param:
+  fixture: synthetic-unlinted-best-practices.ga
+  operation: lint_best_practices_native
+  assertions:
+    - path: [warn_count]
+      value: 9
+
+test_bp_native_disconnected_input:
+  fixture: synthetic-unlinted-best-practices.ga
+  operation: lint_best_practices_native
+  assertions:
+    - path: [warnings]
+      value_any_contains: "disconnected"
+
+test_bp_native_untyped_pja:
+  fixture: synthetic-unlinted-best-practices.ga
+  operation: lint_best_practices_native
+  assertions:
+    - path: [warnings]
+      value_any_contains: "untyped parameter in the post-job actions"

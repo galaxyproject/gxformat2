@@ -449,3 +449,154 @@
   format: native
   tests:
     - tests/test_interop_tests.py
+
+# --- lint error/warning fixture files ---
+
+- file: format2/synthetic-lint-no-class.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Missing class key — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-nested-no-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Inline subworkflow with no steps — triggers nested lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-step-errors.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Step with errors field set — triggers Galaxy export error warning.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-testtoolshed.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Step referencing test tool shed — triggers warning.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-bad-output-source.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: outputSource pointing to nonexistent step — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-bad-int-default.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: String default on int input — triggers type mismatch lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-bad-float-default.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: String default on float input — triggers type mismatch lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-bad-string-default.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Integer default on string input — triggers type mismatch lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-report.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Valid workflow report — verifies clean lint pass.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-report-bad-type.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Report with non-string markdown (integer) — pydantic rejects.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-no-steps.ga
+  origin: synthetic
+  format: native
+  description: Missing steps key — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-bad-format-version.ga
+  origin: synthetic
+  format: native
+  description: Invalid format-version value — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-bad-marker.ga
+  origin: synthetic
+  format: native
+  description: a_galaxy_workflow set to "false" — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-non-integer-step.ga
+  origin: synthetic
+  format: native
+  description: Non-integer step key — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-nested-no-steps.ga
+  origin: synthetic
+  format: native
+  description: Subworkflow with empty steps — triggers nested lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-output-no-label.ga
+  origin: synthetic
+  format: native
+  description: Workflow output without label — triggers warning.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-report.ga
+  origin: synthetic
+  format: native
+  description: Valid workflow report — verifies clean lint pass.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-report-bad-type.ga
+  origin: synthetic
+  format: native
+  description: Report with non-string markdown (integer) — pydantic rejects.
+  tests:
+    - tests/test_interop_tests.py
+
+# --- best practices lint fixture files ---
+
+- file: format2/synthetic-bp-no-annotation.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: No doc field — triggers "not annotated" best practice warning.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bp-disconnected-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Step input with no source or default — triggers disconnected warning.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bp-step-no-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: List-form steps without labels — triggers "no label" warning.
+  tests:
+    - tests/test_interop_tests.py

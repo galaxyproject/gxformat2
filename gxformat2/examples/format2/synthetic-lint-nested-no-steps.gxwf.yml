@@ -1,0 +1,20 @@
+class: GalaxyWorkflow
+label: Nested subworkflow missing steps
+inputs:
+  the_input:
+    type: File
+outputs:
+  the_output:
+    outputSource: subwf/out
+steps:
+  subwf:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner_input:
+          type: File
+      outputs:
+        out:
+          outputSource: missing/out_file1
+    in:
+      inner_input: the_input
