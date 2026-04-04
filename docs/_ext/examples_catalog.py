@@ -11,6 +11,7 @@ from sphinx.application import Sphinx
 
 from gxformat2.cytoscape import cytoscape_elements
 from gxformat2.examples import EXAMPLES_DIR, load_catalog
+from gxformat2.mermaid import workflow_to_mermaid
 
 GITHUB_BASE = "https://github.com/galaxyproject/gxformat2/blob/main"
 
@@ -197,6 +198,11 @@ class ExamplesCatalogDirective(Directive):
             if viz_node is not None:
                 entry_section += viz_node
 
+            # Mermaid diagram
+            mermaid_node = self._build_mermaid(entry)
+            if mermaid_node is not None:
+                entry_section += mermaid_node
+
             # Workflow source (collapsible)
             contents = entry.load_contents()
             if entry.format == "format2":
@@ -238,6 +244,23 @@ class ExamplesCatalogDirective(Directive):
             f'loading="lazy"></iframe>'
         )
         return nodes.raw("", iframe_html, format="html")
+
+    def _build_mermaid(self, entry):
+        """Generate a mermaid diagram node, or None on failure."""
+        try:
+            diagram = workflow_to_mermaid(entry.path, comments=True)
+        except Exception:
+            return None
+
+        from sphinxcontrib.mermaid import mermaid as mermaid_node
+
+        container = nodes.container(classes=["toggle"])
+        container += nodes.caption(text="Mermaid diagram")
+        node = mermaid_node()
+        node["code"] = diagram
+        node["options"] = {}
+        container += node
+        return container
 
     def _field(self, name, value):
         field = nodes.field()
