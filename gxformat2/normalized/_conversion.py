@@ -58,6 +58,7 @@ from ..schema.gxformat2 import (
     WorkflowStepOutput,
     WorkflowStepType,
 )
+from ..schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWorkflow
 from ..schema.native import (
     NativeCreatorOrganization,
     NativeCreatorPerson,
@@ -73,6 +74,7 @@ from ..schema.native import StepPosition as NativeStepPosition
 from ..schema.native import (
     ToolShedRepository,
 )
+from ..schema.native_strict import NativeGalaxyWorkflow as StrictNativeGalaxyWorkflow
 from ..yaml import ordered_load_path
 from ._format2 import (
     GalaxyUserToolStub,
@@ -89,6 +91,16 @@ from ._native import (
 )
 
 log = logging.getLogger(__name__)
+
+
+def _validate_format2_output(result: NormalizedFormat2) -> None:
+    """Validate conversion output against the strict Format2 schema."""
+    StrictGalaxyWorkflow.model_validate(result.to_dict())
+
+
+def _validate_native_output(result: NormalizedNativeWorkflow) -> None:
+    """Validate conversion output against the strict native schema."""
+    StrictNativeGalaxyWorkflow.model_validate(result.to_dict())
 
 
 # --- Expanded model definitions ---
@@ -168,13 +180,13 @@ def _ensure_format2(resolved: dict[str, Any], options: ConversionOptions) -> Nor
     """Convert a fetched workflow dict to NormalizedFormat2, handling cross-format."""
     if resolved.get("a_galaxy_workflow") == "true":
         return to_format2(resolved, options=options, expand=False)
-    return normalized_format2(resolved)
+    return normalized_format2(resolved, strict_structure=options.strict_structure)
 
 
 def _ensure_native(resolved: dict[str, Any], options: ConversionOptions) -> NormalizedNativeWorkflow:
     """Convert a fetched workflow dict to NormalizedNativeWorkflow, handling cross-format."""
     if resolved.get("a_galaxy_workflow") == "true":
-        return normalized_native(resolved)
+        return normalized_native(resolved, strict_structure=options.strict_structure)
     return to_native(resolved, options=options, expand=False)
 
 
@@ -258,13 +270,16 @@ def ensure_format2(
     if isinstance(workflow, NormalizedFormat2):
         result = workflow
     elif isinstance(workflow, GalaxyWorkflow):
-        result = normalized_format2(workflow)
+        result = normalized_format2(workflow, strict_structure=options.strict_structure)
     elif isinstance(workflow, (NativeGalaxyWorkflow, NormalizedNativeWorkflow)):
         result = to_format2(workflow, options=options, expand=False)
     elif isinstance(workflow, dict) and workflow.get("a_galaxy_workflow") == "true":
         result = to_format2(workflow, options=options, expand=False)
     else:
-        result = normalized_format2(workflow)
+        result = normalized_format2(workflow, strict_structure=options.strict_structure)
+
+    if options.strict_structure:
+        _validate_format2_output(result)
 
     if expand:
         return expanded_format2(result, options)
@@ -327,20 +342,23 @@ def ensure_native(
     if isinstance(workflow, NormalizedNativeWorkflow):
         result = workflow
     elif isinstance(workflow, NativeGalaxyWorkflow):
-        result = normalized_native(workflow)
+        result = normalized_native(workflow, strict_structure=options.strict_structure)
     elif isinstance(workflow, (NormalizedFormat2, GalaxyWorkflow)):
         result = to_native(workflow, options=options, expand=False)
     elif isinstance(workflow, dict) and workflow.get("a_galaxy_workflow") == "true":
-        result = normalized_native(workflow)
+        result = normalized_native(workflow, strict_structure=options.strict_structure)
     elif isinstance(workflow, dict) and workflow.get("class") == "GalaxyWorkflow":
         result = to_native(workflow, options=options, expand=False)
     else:
         # str or Path — could be either format, try native first
         loaded = ordered_load_path(str(workflow)) if isinstance(workflow, (str, Path)) else workflow
         if isinstance(loaded, dict) and loaded.get("a_galaxy_workflow") == "true":
-            result = normalized_native(loaded)
+            result = normalized_native(loaded, strict_structure=options.strict_structure)
         else:
             result = to_native(loaded, options=options, expand=False)
+
+    if options.strict_structure:
+        _validate_native_output(result)
 
     if expand:
         return expanded_native(result, options)
@@ -417,9 +435,12 @@ def to_format2(
     """
     options = options or ConversionOptions()
     if not isinstance(workflow, NormalizedNativeWorkflow):
-        workflow = normalized_native(workflow)
+        workflow = normalized_native(workflow, strict_structure=options.strict_structure)
 
     result = _build_format2_workflow(workflow, options)
+
+    if options.strict_structure:
+        _validate_format2_output(result)
 
     if expand:
         return expanded_format2(result, options)
@@ -1000,7 +1021,7 @@ def to_native(
                 if graph_id == "main":
                     main_dict = entry
                 elif graph_id:
-                    sub_wf = normalized_format2(entry)
+                    sub_wf = normalized_format2(entry, strict_structure=options.strict_structure)
                     sub_ctx = _ConversionContext(options)
                     _register_labels(sub_wf, sub_ctx)
                     deduplicated_subworkflows[graph_id] = _build_native_workflow(sub_wf, sub_ctx)
@@ -1009,7 +1030,7 @@ def to_native(
             workflow = main_dict
 
     if not isinstance(workflow, NormalizedFormat2):
-        workflow = normalized_format2(workflow)
+        workflow = normalized_format2(workflow, strict_structure=options.strict_structure)
 
     ctx = _ConversionContext(options)
     _register_labels(workflow, ctx)
@@ -1017,6 +1038,9 @@ def to_native(
     result = _build_native_workflow(workflow, ctx)
     if deduplicated_subworkflows is not None:
         result = result.model_copy(update={"subworkflows": deduplicated_subworkflows})
+
+    if options.strict_structure:
+        _validate_native_output(result)
 
     if expand:
         return expanded_native(result, options)
@@ -1306,7 +1330,7 @@ def _build_subworkflow_step(
     elif isinstance(step.run, dict):
         # Dict subworkflow -- normalize and convert
         subworkflow_child_ctx = ctx.child_context()
-        sub_fmt2 = normalized_format2(step.run)
+        sub_fmt2 = normalized_format2(step.run, strict_structure=ctx.options.strict_structure)
         _register_subworkflow_labels(sub_fmt2, subworkflow_child_ctx)
         subworkflow = _build_native_workflow(sub_fmt2, subworkflow_child_ctx)
 
@@ -1649,7 +1673,7 @@ def expanded_native(
     """
     options = options or ConversionOptions()
     if not isinstance(workflow, NormalizedNativeWorkflow):
-        workflow = normalized_native(workflow)
+        workflow = normalized_native(workflow, strict_structure=options.strict_structure)
     ctx = _ExpansionContext(options)
     return _expand_native(workflow, ctx)
 

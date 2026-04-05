@@ -4,16 +4,20 @@ import base64
 import copy
 
 import pytest
+from pydantic import ValidationError
 
 from gxformat2.examples import load, load_contents
 from gxformat2.normalized import (
     ensure_format2,
+    ensure_native,
     expanded_format2,
     expanded_native,
     ExpandedFormat2,
     ExpandedNativeWorkflow,
     normalized_format2,
     normalized_native,
+    to_format2,
+    to_native,
     ToolReference,
 )
 from gxformat2.options import ConversionOptions
@@ -300,3 +304,169 @@ class TestUniqueToolsFormat2:
         }
         wf = normalized_format2(wf_dict)
         assert wf.unique_tools == frozenset({ToolReference("cat1", "1.0")})
+
+
+class TestStrictStructure:
+    """Tests for strict_structure parameter on normalization and conversion."""
+
+    # --- normalized_format2 ---
+
+    def test_format2_extra_field_accepted_by_default(self):
+        wf_dict = load("synthetic-extra-field.gxwf.yml")
+        result = normalized_format2(wf_dict)
+        assert result.label == "Extra field workflow"
+
+    def test_format2_extra_field_rejected_when_strict(self):
+        wf_dict = load("synthetic-extra-field.gxwf.yml")
+        with pytest.raises(ValidationError):
+            normalized_format2(wf_dict, strict_structure=True)
+
+    def test_format2_clean_input_passes_strict(self):
+        wf_dict = load("synthetic-basic.gxwf.yml")
+        result = normalized_format2(wf_dict, strict_structure=True)
+        assert result is not None
+
+    # --- normalized_native ---
+
+    def test_native_extra_field_accepted_by_default(self):
+        wf_dict = load("synthetic-extra-field.ga")
+        result = normalized_native(wf_dict)
+        assert result.name == "Extra field native"
+
+    def test_native_extra_field_rejected_when_strict(self):
+        wf_dict = load("synthetic-extra-field.ga")
+        with pytest.raises(ValidationError):
+            normalized_native(wf_dict, strict_structure=True)
+
+    def test_native_clean_input_passes_strict(self):
+        wf_dict = load("real-unicycler-assembly.ga")
+        result = normalized_native(wf_dict, strict_structure=True)
+        assert result is not None
+
+    # --- extra="ignore" on normalized models ---
+
+    def test_extra_fields_silently_dropped(self):
+        """extra="ignore" means extras are never stored or emitted."""
+        wf_dict = load("synthetic-extra-field.gxwf.yml")
+        result = normalized_format2(wf_dict)
+        dumped = result.to_dict()
+        assert "not_a_real_field" not in dumped
+
+    def test_native_extra_fields_silently_dropped(self):
+        wf_dict = load("synthetic-extra-field.ga")
+        result = normalized_native(wf_dict)
+        dumped = result.to_dict()
+        assert "not_a_real_field" not in dumped
+
+    # --- threaded through conversion ---
+
+    def test_to_native_strict_rejects_extra_fields(self):
+        wf_dict = load("synthetic-extra-field.gxwf.yml")
+        opts = ConversionOptions(strict_structure=True)
+        with pytest.raises(ValidationError):
+            to_native(wf_dict, options=opts)
+
+    def test_to_format2_strict_rejects_extra_fields(self):
+        wf_dict = load("synthetic-extra-field.ga")
+        opts = ConversionOptions(strict_structure=True)
+        with pytest.raises(ValidationError):
+            to_format2(wf_dict, options=opts)
+
+    def test_ensure_format2_strict_rejects_extra_fields(self):
+        wf_dict = load("synthetic-extra-field.gxwf.yml")
+        opts = ConversionOptions(strict_structure=True)
+        with pytest.raises(ValidationError):
+            ensure_format2(wf_dict, options=opts)
+
+    def test_ensure_native_strict_rejects_extra_fields(self):
+        wf_dict = load("synthetic-extra-field.ga")
+        opts = ConversionOptions(strict_structure=True)
+        with pytest.raises(ValidationError):
+            ensure_native(wf_dict, options=opts)
+
+    # --- output validation ---
+
+    def test_to_native_strict_validates_output(self):
+        """Strict conversion on clean input succeeds (output sanity check passes)."""
+        wf_dict = load("synthetic-basic.gxwf.yml")
+        opts = ConversionOptions(strict_structure=True)
+        result = to_native(wf_dict, options=opts)
+        assert result is not None
+
+    def test_to_format2_strict_validates_output(self):
+        wf_dict = load("real-unicycler-assembly.ga")
+        opts = ConversionOptions(strict_structure=True)
+        result = to_format2(wf_dict, options=opts)
+        assert result is not None
+
+    # --- sub-workflow / $graph paths ---
+
+    def test_to_native_graph_subworkflow_strict_rejects(self):
+        """$graph dedup path threads strict_structure into sub-workflow normalization."""
+        wf_dict = load("synthetic-graph-simple.gxwf.yml")
+        # Inject extra field into a sub-workflow entry (not main)
+        wf_dict["$graph"].append(
+            {
+                "id": "sub1",
+                "class": "GalaxyWorkflow",
+                "not_a_real_field": "bad",
+                "inputs": {"x": "data"},
+                "outputs": {},
+                "steps": {},
+            }
+        )
+        opts = ConversionOptions(strict_structure=True, deduplicate_subworkflows=True)
+        with pytest.raises(ValidationError):
+            to_native(wf_dict, options=opts)
+
+    def test_to_native_inline_subworkflow_strict_rejects(self):
+        """Inline `run:` dict sub-workflow threads strict_structure."""
+        wf_dict = load("synthetic-basic.gxwf.yml")
+        wf_dict["steps"]["nested"] = {
+            "type": "subworkflow",
+            "run": {
+                "class": "GalaxyWorkflow",
+                "not_a_real_field": "bad",
+                "inputs": {"y": "data"},
+                "outputs": {},
+                "steps": {},
+            },
+            "in": {"y": "the_input"},
+        }
+        opts = ConversionOptions(strict_structure=True)
+        with pytest.raises(ValidationError):
+            to_native(wf_dict, options=opts)
+
+    # --- ensure_* output validation + typed-model paths ---
+
+    def test_ensure_format2_strict_validates_clean_input(self):
+        wf_dict = load("synthetic-basic.gxwf.yml")
+        opts = ConversionOptions(strict_structure=True)
+        result = ensure_format2(wf_dict, options=opts)
+        assert result is not None
+
+    def test_ensure_native_strict_validates_clean_input(self):
+        wf_dict = load("real-unicycler-assembly.ga")
+        opts = ConversionOptions(strict_structure=True)
+        result = ensure_native(wf_dict, options=opts)
+        assert result is not None
+
+    def test_ensure_format2_strict_typed_galaxy_workflow(self):
+        """GalaxyWorkflow typed input still gets output-validated in strict mode."""
+        from gxformat2.schema.gxformat2 import GalaxyWorkflow
+
+        wf_dict = load("synthetic-basic.gxwf.yml")
+        gw = GalaxyWorkflow.model_validate(wf_dict)
+        opts = ConversionOptions(strict_structure=True)
+        result = ensure_format2(gw, options=opts)
+        assert result is not None
+
+    def test_ensure_native_strict_typed_native_workflow(self):
+        """NativeGalaxyWorkflow typed input still gets output-validated in strict mode."""
+        from gxformat2.schema.native import NativeGalaxyWorkflow
+
+        wf_dict = load("real-unicycler-assembly.ga")
+        nw = NativeGalaxyWorkflow.model_validate(wf_dict)
+        opts = ConversionOptions(strict_structure=True)
+        result = ensure_native(nw, options=opts)
+        assert result is not None

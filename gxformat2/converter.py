@@ -22,8 +22,8 @@ NativeStateEncoderFn = Optional[Callable[[dict, Dict[str, Any]], Optional[Dict[s
 
 Accepts (step, state) where step is the partially-built native step dict
 and state is the format2 state dict after setup_connected_values processing.
-Returns {param_name: encoded_value} for native tool_state, or None to fall
-back to default json.dumps encoding.
+Returns {param_name: encoded_value} as clean dicts for native tool_state,
+or None to fall back to default dict passthrough (no JSON encoding).
 """
 
 SCRIPT_DESCRIPTION = """
