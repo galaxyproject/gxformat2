@@ -46,6 +46,8 @@ linting, normalization, and Pydantic-based validation.
    :caption: Reference
    :hidden:
 
+   Format 2 Schema <https://galaxyproject.github.io/gxformat2/v19_09.html>
+   Native Schema <https://galaxyproject.github.io/gxformat2/native_v0_1.html>
    Examples <examples>
    Design <design>
 
