@@ -48,6 +48,8 @@ linting, normalization, and Pydantic-based validation.
 
    Examples <examples>
    Design <design>
+   Format 2 Schema <https://galaxyproject.github.io/gxformat2/v19_09.html>
+   Native Schema <https://galaxyproject.github.io/gxformat2/native_v0_1.html>
 
 .. toctree::
    :maxdepth: 2

@@ -49,7 +49,7 @@ html_theme_options = {
     "logo": {
         "text": "gxformat2",
     },
-    "header_links_before_dropdown": 6,
+    "header_links_before_dropdown": 8,
     "pygment_light_style": "default",
     "navbar_align": "left",
     "show_prev_next": True,
