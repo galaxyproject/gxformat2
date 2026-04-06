@@ -159,7 +159,8 @@ def _validate_input_types(lint_context: LintContext, nf2: NormalizedFormat2):
     for inp in nf2.inputs:
         if inp.default is None:
             continue
-        input_type = inp.type_
+        # type_ lives on concrete subclasses, not BaseInputParameter
+        input_type = getattr(inp, "type_", None)
         if isinstance(input_type, list):
             # Array type like [string] — skip default validation for now
             continue

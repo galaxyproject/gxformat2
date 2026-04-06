@@ -14,7 +14,11 @@ from typing_extensions import TypeAlias
 
 from gxformat2.normalized import ensure_format2, NormalizedFormat2, NormalizedNativeWorkflow, NormalizedWorkflowStep
 from gxformat2.options import ConversionOptions
-from gxformat2.schema.gxformat2 import GalaxyWorkflow, WorkflowInputParameter, WorkflowOutputParameter
+from gxformat2.schema.gxformat2 import (
+    BaseInputParameter,
+    GalaxyWorkflow,
+    WorkflowOutputParameter,
+)
 from gxformat2.schema.native import NativeGalaxyWorkflow
 
 # Any input ensure_format2 accepts
@@ -37,7 +41,7 @@ def steps(
     workflow_path: str | PathLike | None = None,
     options: ConversionOptions | None = None,
     expand: bool = False,
-) -> list[WorkflowInputParameter | NormalizedWorkflowStep]:
+) -> list[BaseInputParameter | NormalizedWorkflowStep]:
     """Return input parameters followed by steps as typed models."""
     nf2 = _ensure_format2(workflow_dict, workflow_path, options, expand)
     return list(nf2.inputs) + list(nf2.steps)
@@ -48,7 +52,7 @@ def inputs(
     workflow_path: str | PathLike | None = None,
     options: ConversionOptions | None = None,
     expand: bool = False,
-) -> list[WorkflowInputParameter]:
+) -> list[BaseInputParameter]:
     """Return normalized inputs as typed models."""
     nf2 = _ensure_format2(workflow_dict, workflow_path, options, expand)
     return list(nf2.inputs)

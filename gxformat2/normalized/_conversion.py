@@ -38,11 +38,13 @@ from ..options import (
     MAX_EXPANSION_DEPTH,
 )
 from ..schema.gxformat2 import (
+    BaseInputParameter,
     CreatorOrganization,
     CreatorPerson,
     FrameComment,
     FreehandComment,
     GalaxyWorkflow,
+    input_parameter_class,
     MarkdownComment,
     Report,
 )
@@ -464,7 +466,7 @@ def _build_format2_workflow(
             label_map[str(key)] = f"{UNLABELED_STEP_PREFIX}{step.id}"
 
     # Separate inputs from non-input steps
-    input_params: list[WorkflowInputParameter] = []
+    input_params: list[BaseInputParameter] = []
     fmt2_steps: list[NormalizedWorkflowStep] = []
     labels = Labels()
 
@@ -512,7 +514,7 @@ def _build_format2_workflow(
     )
 
 
-def _build_input_param(step: NormalizedNativeStep) -> WorkflowInputParameter:
+def _build_input_param(step: NormalizedNativeStep) -> BaseInputParameter:
     step_id = step.label if step.label is not None else f"{UNLABELED_INPUT_PREFIX}{step.id}"
     tool_state = step.tool_state
     input_type = native_input_to_format2_type({"type": step.type_}, tool_state)
@@ -542,7 +544,12 @@ def _build_input_param(step: NormalizedNativeStep) -> WorkflowInputParameter:
     if step.position:
         kwargs["position"] = _convert_position(step.position)
 
-    return WorkflowInputParameter(**kwargs)
+    # Use the specific discriminated type when possible; fall back to
+    # WorkflowInputParameter for list types (multiple inputs) since the
+    # specific classes only accept scalar Literal type_ values.
+    if isinstance(input_type, list):
+        return WorkflowInputParameter(**kwargs)
+    return input_parameter_class(input_type)(**kwargs)
 
 
 def _build_format2_step(
@@ -1118,13 +1125,14 @@ def _build_native_workflow(
 
 
 def _build_input_step(
-    inp: WorkflowInputParameter,
+    inp: BaseInputParameter,
     order_index: int,
     ctx: _ConversionContext,
 ) -> NormalizedNativeStep:
     raw_label = inp.id or f"Input {order_index}"
     label = None if Labels.is_unlabeled(raw_label) else raw_label
-    input_type = inp.type_
+    # type_ lives on concrete subclasses, not BaseInputParameter
+    input_type = getattr(inp, "type_", None)
     if isinstance(input_type, list):
         if len(input_type) != 1:
             raise Exception("Only simple arrays of workflow inputs are currently supported")
@@ -1159,10 +1167,15 @@ def _build_input_step(
         tool_state["multiple"] = True
     if inp.optional is not None:
         tool_state["optional"] = inp.optional
-    if inp.format:
-        tool_state["format"] = inp.format
-    if inp.collection_type:
-        tool_state["collection_type"] = inp.collection_type
+    # getattr because inp is typed as BaseInputParameter but may be any subclass:
+    # format lives on BaseDataParameter, collection_type on WorkflowCollectionParameter
+    # and WorkflowInputParameter (catch-all). Non-data types (integer, text, etc.) lack these.
+    fmt = getattr(inp, "format", None)
+    if fmt:
+        tool_state["format"] = fmt
+    collection_type = getattr(inp, "collection_type", None)
+    if collection_type:
+        tool_state["collection_type"] = collection_type
     if inp.default is not None:
         tool_state["default"] = inp.default
 
@@ -1706,8 +1719,8 @@ def _expand_format2(wf: NormalizedFormat2, ctx: _ExpansionContext) -> ExpandedFo
         step_data = step.model_dump(by_alias=True, exclude={"run"})
         expanded_steps.append(ExpandedWorkflowStep(**step_data, run=expanded_run))
 
-    wf_data = wf.model_dump(by_alias=True, exclude={"steps"})
-    return ExpandedFormat2(**wf_data, steps=expanded_steps)
+    wf_data = wf.model_dump(by_alias=True, exclude={"steps", "inputs"})
+    return ExpandedFormat2(**wf_data, inputs=wf.inputs, steps=expanded_steps)
 
 
 def _expand_native(wf: NormalizedNativeWorkflow, ctx: _ExpansionContext) -> ExpandedNativeWorkflow:

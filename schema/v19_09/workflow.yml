@@ -44,6 +44,7 @@ $graph:
     - "data: a Galaxy dataset"
     - "collection: a Galaxy dataset collection"
 
+
 - name: WorkflowStepType
   type: enum
   symbols:
@@ -60,12 +61,195 @@ $graph:
     - "pause: Pause computation on this branch of workflow until user allows it to continue."
     - "pick_value: Select the first non-null value from multiple inputs. Used to merge branches of conditional or optional workflow paths."
 
-- name: WorkflowInputParameter
+- name: BaseInputParameter
   type: record
   extends:
     - cwl:InputParameter
     - gxformat2common:HasStepPosition
+  fields:
+    - name: optional
+      type:
+      - boolean
+      - "null"
+      default: false
+      doc: |
+        If set to true, `WorkflowInputParameter` is not required to submit the workflow.
+
+- name: BaseDataParameter
+  type: record
+  extends: [BaseInputParameter]
+  fields:
+    - name: format
+      doc: |
+        Specify datatype extensions for valid input datasets.
+      type:
+        - "null"
+        - type: array
+          items: string
+
+- name: WorkflowDataParameter
+  type: record
+  extends:
+    - BaseDataParameter
   docParent: "#GalaxyWorkflow"
+  doc: |
+    A data input parameter for a Galaxy workflow - represents a dataset.
+  fields:
+    - name: type
+      type:
+        - string
+        - "null"
+      default: data
+      pydantic:type: 'Literal["data", "File"] | None'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Specify valid types of data that may be assigned to this parameter.
+
+- name: WorkflowCollectionParameter
+  type: record
+  extends:
+    - BaseDataParameter
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A collection input parameter for a Galaxy workflow - represents a dataset collection.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["collection"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``collection``.
+    - name: collection_type
+      doc: |
+        Collection type (defaults to `list` if `type` is `collection`). Nested
+        collection types are separated with colons, e.g. `list:list:paired`.
+      type:
+        - "null"
+        - string
+      jsonldPredicate:
+        _id: "gxformat2:collection_type"
+        noLinkCheck: true
+
+- name: MinMax
+  type: record
+  fields:
+    - name: min
+      type:
+        - int
+        - float
+        - "null"
+      jsonldPredicate:
+        _id: "gxformat2:MinMax/min"
+        noLinkCheck: true
+      doc: |
+        Minimum allowed value (inclusive).
+    - name: max
+      type:
+        - int
+        - float
+        - "null"
+      jsonldPredicate:
+        _id: "gxformat2:MinMax/max"
+        noLinkCheck: true
+      doc: |
+        Maximum allowed value (inclusive).
+
+- name: WorkflowIntegerParameter
+  type: record
+  extends:
+    - BaseInputParameter
+    - MinMax
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    An integer input parameter for a Galaxy workflow.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["integer", "int"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``integer`` or ``int``.
+
+- name: WorkflowFloatParameter
+  type: record
+  extends:
+    - BaseInputParameter
+    - MinMax
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A float input parameter for a Galaxy workflow.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["float"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``float``.
+
+- name: WorkflowTextParameter
+  type: record
+  extends:
+    - BaseInputParameter
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A text input parameter for a Galaxy workflow.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["text", "string"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``text`` or ``string``.
+
+- name: WorkflowBooleanParameter
+  type: record
+  extends:
+    - BaseInputParameter
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A boolean input parameter for a Galaxy workflow.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["boolean"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``boolean``.
+
+- name: WorkflowInputParameter
+  type: record
+  extends:
+    - BaseDataParameter
+    - MinMax
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    An input parameter to a Galaxy workflow. This is the catch-all type used
+    by the Schema Salad codegen. The pydantic layer uses a discriminated union
+    of the specific parameter types instead.
   fields:
     - name: type
       type:
@@ -82,20 +266,6 @@ $graph:
         typeDSL: True
       doc: |
         Specify valid types of data that may be assigned to this parameter.
-    - name: optional
-      type:
-      - boolean
-      - "null"
-      default: false
-      doc: |
-        If set to true, `WorkflowInputParameter` is not required to submit the workflow.
-    - name: format
-      doc: |
-        Specify datatype extension for valid input datasets.
-      type:
-        - "null"
-        - type: array
-          items: string
     - name: collection_type
       doc: |
         Collection type (defaults to `list` if `type` is `collection`). Nested
@@ -103,6 +273,9 @@ $graph:
       type:
         - "null"
         - string
+      jsonldPredicate:
+        _id: "gxformat2:collection_type"
+        noLinkCheck: true
 
 - name: WorkflowOutputParameter
   type: record

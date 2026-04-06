@@ -7,7 +7,7 @@ import sys
 from typing import Any
 
 from gxformat2.normalized import ensure_format2, NormalizedFormat2, NormalizedWorkflowStep
-from gxformat2.schema.gxformat2 import GalaxyType, WorkflowInputParameter, WorkflowOutputParameter, WorkflowStepOutput
+from gxformat2.schema.gxformat2 import BaseInputParameter, GalaxyType, WorkflowOutputParameter, WorkflowStepOutput
 from gxformat2.yaml import ordered_dump_to_path, ordered_load
 
 CWL_VERSION = "v1.2"
@@ -105,7 +105,7 @@ def _step_outputs_to_abstract(step: NormalizedWorkflowStep):
     return [out.id for out in step.out if out.id is not None]
 
 
-def _inputs_to_abstract(inputs: list[WorkflowInputParameter]):
+def _inputs_to_abstract(inputs: list[BaseInputParameter]):
     """Convert Format2 inputs to abstract CWL inputs."""
     abstract_inputs: dict[str, Any] = {}
     for inp in inputs:
@@ -114,8 +114,8 @@ def _inputs_to_abstract(inputs: list[WorkflowInputParameter]):
             continue
         input_def: dict[str, Any] = {}
 
-        # Convert type
-        cwl_type = _galaxy_type_to_cwl(inp.type_)
+        # Convert type (type_ lives on concrete subclasses, not BaseInputParameter)
+        cwl_type = _galaxy_type_to_cwl(getattr(inp, "type_", None))
         if inp.optional:
             cwl_type += "?"
         input_def["type"] = cwl_type
@@ -134,7 +134,7 @@ def _inputs_to_abstract(inputs: list[WorkflowInputParameter]):
     return abstract_inputs
 
 
-def _galaxy_type_to_cwl(galaxy_type: GalaxyType | list[GalaxyType] | None) -> str:
+def _galaxy_type_to_cwl(galaxy_type: GalaxyType | str | list[GalaxyType | str] | None) -> str:
     """Map a Galaxy/Format2 type to a CWL type string."""
     if galaxy_type is None:
         return "File"
@@ -144,12 +144,13 @@ def _galaxy_type_to_cwl(galaxy_type: GalaxyType | list[GalaxyType] | None) -> st
             if t != GalaxyType.null:
                 return _galaxy_type_to_cwl(t) + "[]"
         return "File"
-    if galaxy_type == GalaxyType.data:
+    type_str = galaxy_type.value if isinstance(galaxy_type, GalaxyType) else str(galaxy_type)
+    if type_str in ("data", "File"):
         return "File"
-    if galaxy_type == GalaxyType.collection:
+    if type_str == "collection":
         # TODO: handle nested collections, pairs, etc...
         return "File[]"
-    return galaxy_type.value
+    return type_str
 
 
 def _outputs_to_abstract(outputs: list[WorkflowOutputParameter]):
