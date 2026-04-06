@@ -248,7 +248,8 @@ or Organization (<a href="https://schema.org/Organization">https://schema.org/Or
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>If listed should correspond to the release of the workflow in its source reposiory.</p>
 </div>
-</div></div><h2 id="WorkflowInputParameter" class="section">WorkflowInputParameter <a href="#WorkflowInputParameter">&sect;</a></h2><h3>Fields</h3>
+</div></div><h2 id="WorkflowDataParameter" class="section">WorkflowDataParameter <a href="#WorkflowDataParameter">&sect;</a></h2><p>A data input parameter for a Galaxy workflow - represents a dataset.</p>
+<h3>Fields</h3>
 <div class="responsive-table">
 <div class="row responsive-table-header">
 <div class="col-xs-3 col-lg-2">field</div>
@@ -257,17 +258,17 @@ or Organization (<a href="https://schema.org/Organization">https://schema.org/Or
 <div class="col-xs-12 col-lg-6 description-header">description</div>
 </div>
 <div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>type</code></div>
-<div class="col-xs-2 col-lg-1">required</div>
-<div class="col-xs-7 col-lg-3"><a href="#GalaxyType">GalaxyType</a> | <a href="#PrimitiveType">null</a> | array&lt;<a href="#GalaxyType">GalaxyType</a>&gt;</div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Specify valid types of data that may be assigned to this parameter.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>optional</code></div>
 <div class="col-xs-2 col-lg-1">required</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specify valid types of data that may be assigned to this parameter.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -311,15 +312,7 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-3 col-lg-2"><code>format</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Specify datatype extension for valid input datasets.</p>
-</div>
-</div>
-<div class="row responsive-table-row">
-<div class="col-xs-3 col-lg-2"><code>collection_type</code></div>
-<div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>Collection type (defaults to <code>list</code> if <code>type</code> is <code>collection</code>). Nested
-collection types are separated with colons, e.g. <code>list:list:paired</code>.</p>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specify datatype extensions for valid input datasets.</p>
 </div>
 </div></div><h3 id="Any" class="section">Any <a href="#Any">&sect;</a></h3><p>The <strong>Any</strong> type validates for any non-null value.</p>
 <h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Any</code></td><td></td></tr></table><h3 id="StepPosition" class="section">StepPosition <a href="#StepPosition">&sect;</a></h3><p>This field specifies the location of the step's node when rendered in the workflow editor.</p>
@@ -343,6 +336,434 @@ collection types are separated with colons, e.g. <code>list:list:paired</code>.<
 <div class="col-xs-2 col-lg-1">required</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">int</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Relative horizontal position of the step's node when rendered in the workflow editor.</p>
+</div>
+</div></div><h2 id="WorkflowCollectionParameter" class="section">WorkflowCollectionParameter <a href="#WorkflowCollectionParameter">&sect;</a></h2><p>A collection input parameter for a Galaxy workflow - represents a dataset collection.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>optional</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Must be <code>collection</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A short, human-readable label of this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>doc</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A documentation string for this object, or an array of strings which should be concatenated.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>default</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The default value to use for this parameter if the parameter is missing
+from the input object, or if the value of the parameter in the input
+object is <code>null</code>.  Default values are applied before evaluating expressions
+(e.g. dependent <code>valueFrom</code> fields).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>format</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specify datatype extensions for valid input datasets.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>collection_type</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Collection type (defaults to <code>list</code> if <code>type</code> is <code>collection</code>). Nested
+collection types are separated with colons, e.g. <code>list:list:paired</code>.</p>
+</div>
+</div></div><h2 id="WorkflowIntegerParameter" class="section">WorkflowIntegerParameter <a href="#WorkflowIntegerParameter">&sect;</a></h2><p>An integer input parameter for a Galaxy workflow.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>optional</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>min</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a> | <a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Minimum allowed value (inclusive).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>max</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a> | <a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Maximum allowed value (inclusive).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Must be <code>integer</code> or <code>int</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A short, human-readable label of this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>doc</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A documentation string for this object, or an array of strings which should be concatenated.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>default</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The default value to use for this parameter if the parameter is missing
+from the input object, or if the value of the parameter in the input
+object is <code>null</code>.  Default values are applied before evaluating expressions
+(e.g. dependent <code>valueFrom</code> fields).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div></div><h2 id="WorkflowFloatParameter" class="section">WorkflowFloatParameter <a href="#WorkflowFloatParameter">&sect;</a></h2><p>A float input parameter for a Galaxy workflow.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>optional</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>min</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a> | <a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Minimum allowed value (inclusive).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>max</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a> | <a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Maximum allowed value (inclusive).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Must be <code>float</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A short, human-readable label of this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>doc</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A documentation string for this object, or an array of strings which should be concatenated.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>default</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The default value to use for this parameter if the parameter is missing
+from the input object, or if the value of the parameter in the input
+object is <code>null</code>.  Default values are applied before evaluating expressions
+(e.g. dependent <code>valueFrom</code> fields).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div></div><h2 id="WorkflowTextParameter" class="section">WorkflowTextParameter <a href="#WorkflowTextParameter">&sect;</a></h2><p>A text input parameter for a Galaxy workflow.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>optional</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Must be <code>text</code> or <code>string</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A short, human-readable label of this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>doc</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A documentation string for this object, or an array of strings which should be concatenated.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>default</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The default value to use for this parameter if the parameter is missing
+from the input object, or if the value of the parameter in the input
+object is <code>null</code>.  Default values are applied before evaluating expressions
+(e.g. dependent <code>valueFrom</code> fields).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div></div><h2 id="WorkflowBooleanParameter" class="section">WorkflowBooleanParameter <a href="#WorkflowBooleanParameter">&sect;</a></h2><p>A boolean input parameter for a Galaxy workflow.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>optional</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Must be <code>boolean</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A short, human-readable label of this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>doc</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A documentation string for this object, or an array of strings which should be concatenated.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>default</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The default value to use for this parameter if the parameter is missing
+from the input object, or if the value of the parameter in the input
+object is <code>null</code>.  Default values are applied before evaluating expressions
+(e.g. dependent <code>valueFrom</code> fields).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div></div><h2 id="WorkflowInputParameter" class="section">WorkflowInputParameter <a href="#WorkflowInputParameter">&sect;</a></h2><p>An input parameter to a Galaxy workflow. This is the catch-all type used
+by the Schema Salad codegen. The pydantic layer uses a discriminated union
+of the specific parameter types instead.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>optional</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>min</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a> | <a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Minimum allowed value (inclusive).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>max</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">int</a> | <a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">null</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Maximum allowed value (inclusive).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#GalaxyType">GalaxyType</a> | <a href="#PrimitiveType">null</a> | array&lt;<a href="#GalaxyType">GalaxyType</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specify valid types of data that may be assigned to this parameter.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A short, human-readable label of this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>doc</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A documentation string for this object, or an array of strings which should be concatenated.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>id</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The unique identifier for this object.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>default</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The default value to use for this parameter if the parameter is missing
+from the input object, or if the value of the parameter in the input
+object is <code>null</code>.  Default values are applied before evaluating expressions
+(e.g. dependent <code>valueFrom</code> fields).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>position</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
+<div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>format</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Specify datatype extensions for valid input datasets.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>collection_type</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Collection type (defaults to <code>list</code> if <code>type</code> is <code>collection</code>). Nested
+collection types are separated with colons, e.g. <code>list:list:paired</code>.</p>
 </div>
 </div></div><h3 id="GalaxyType" class="section">GalaxyType <a href="#GalaxyType">&sect;</a></h3><p>Extends primitive types with the native Galaxy concepts such datasets and collections.</p>
 <h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> 32-bit signed integer</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> Unicode character sequence</td></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> 32-bit signed integer</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> Unicode character sequence</td></tr><tr><td><code>integer</code></td><td> an alias for int type - matches syntax used by Galaxy tools</td></tr><tr><td><code>text</code></td><td> an alias for string type - matches syntax used by Galaxy tools</td></tr><tr><td><code>File</code></td><td> an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future</td></tr><tr><td><code>data</code></td><td> a Galaxy dataset</td></tr><tr><td><code>collection</code></td><td> a Galaxy dataset collection</td></tr></table><h2 id="WorkflowOutputParameter" class="section">WorkflowOutputParameter <a href="#WorkflowOutputParameter">&sect;</a></h2><p>Describe an output parameter of a workflow.  The parameter must be
