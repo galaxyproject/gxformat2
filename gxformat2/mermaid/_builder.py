@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from gxformat2.normalized import ensure_format2, NormalizedFormat2
-from gxformat2.schema.gxformat2 import FrameComment, GalaxyWorkflow, WorkflowInputParameter
+from gxformat2.schema.gxformat2 import BaseInputParameter, FrameComment, GalaxyWorkflow
 
 # Standard Mermaid shape wrappers: (open, close) bracket pairs.
 #   >label]   = asymmetric / flag (inputs)
@@ -41,14 +41,15 @@ def _sanitize_label(label: str) -> str:
     return label
 
 
-def _input_type_str(inp: WorkflowInputParameter) -> str:
-    if inp.type_ is None:
+def _input_type_str(inp: BaseInputParameter) -> str:
+    type_ = getattr(inp, "type_", None)
+    if type_ is None:
         return "input"
-    if isinstance(inp.type_, list):
-        if inp.type_:
-            return inp.type_[0].value
+    if isinstance(type_, list):
+        if type_:
+            return type_[0].value
         return "input"
-    return inp.type_.value
+    return type_.value
 
 
 def _node_line(node_id: str, label: str, shape: tuple[str, str]) -> str:
