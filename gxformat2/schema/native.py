@@ -391,8 +391,8 @@ added without version bumps."""
 
     name: None | str = Field(default=None, description="Workflow display name.")
     class_: Literal["NativeGalaxyWorkflow"] = Field(default="NativeGalaxyWorkflow", alias="class")
-    a_galaxy_workflow: str = Field(description="Format marker. Always the string ``\"true\"``.")
-    format_version: str = Field(alias="format-version", description="Format version. Always ``\"0.1\"`` currently. In the JSON document this field is written as ``format-version``.")
+    a_galaxy_workflow: Literal['true'] = Field(description="Format marker. Always the string ``\"true\"``.")
+    format_version: Literal['0.1'] = Field(alias="format-version", description="Format version. Always ``\"0.1\"`` currently. In the JSON document this field is written as ``format-version``.")
     annotation: None | str = Field(default=None, description="Human-readable workflow description.")
     tags: None | list[str] = Field(default=None, description="Classification tags for the workflow.")
     version: None | int = Field(default=None, description="Internal revision counter.")

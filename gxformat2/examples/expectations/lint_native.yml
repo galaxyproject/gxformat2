@@ -106,6 +106,15 @@ test_lint_native_output_no_label:
 
 # --- Report validation ---
 
+test_lint_native_missing_marker:
+  fixture: synthetic-missing-marker.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "a_galaxy_workflow"
+
 test_lint_native_report_clean:
   fixture: synthetic-lint-report.ga
   operation: lint_native
