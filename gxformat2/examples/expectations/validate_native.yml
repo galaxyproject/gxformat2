@@ -207,3 +207,23 @@ test_report_bad_type_rejected_native_strict:
   fixture: synthetic-lint-report-bad-type.ga
   operation: validate_native_strict
   expect_error: true
+
+test_bad_marker_rejected_native:
+  fixture: synthetic-lint-bad-marker.ga
+  operation: validate_native
+  expect_error: true
+
+test_bad_marker_rejected_native_strict:
+  fixture: synthetic-lint-bad-marker.ga
+  operation: validate_native_strict
+  expect_error: true
+
+test_bad_format_version_rejected_native:
+  fixture: synthetic-lint-bad-format-version.ga
+  operation: validate_native
+  expect_error: true
+
+test_bad_format_version_rejected_native_strict:
+  fixture: synthetic-lint-bad-format-version.ga
+  operation: validate_native_strict
+  expect_error: true

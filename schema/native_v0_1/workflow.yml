@@ -810,6 +810,7 @@ $graph:
         symbols: [ gxnative:NativeGalaxyWorkflow ]
     - name: a_galaxy_workflow
       type: string
+      pydantic:type: "Literal['true']"
       doc: |
         Format marker. Always the string ``"true"``.
     - name: format_version
@@ -817,6 +818,7 @@ $graph:
       jsonldPredicate:
         _id: "gxnative:format_version"
       pydantic:alias: "format-version"
+      pydantic:type: "Literal['0.1']"
       doc: |
         Format version. Always ``"0.1"`` currently.
         In the JSON document this field is written as ``format-version``.
