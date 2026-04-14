@@ -1,0 +1,69 @@
+# Schema rule catalog.
+#
+# Each entry keys a schema-decode-enforced rule. Positive fixtures must pass
+# both lax and strict validation; negative fixtures must fail per `scope`.
+# Catalog contract is verified end-to-end by tests/test_schema_rules_catalog.py;
+# no pydantic error shapes are introspected.
+
+Format2MissingSteps:
+  severity: error
+  applies_to: [format2]
+  scope: both
+  description: "Format2 workflow missing required `steps` field."
+  tests:
+    positive: [synthetic-basic.gxwf.yml]
+    negative: [synthetic-missing-steps.gxwf.yml]
+
+NativeMissingMarker:
+  severity: error
+  applies_to: [native]
+  scope: both
+  description: "Native workflow missing required `a_galaxy_workflow` marker."
+  tests:
+    positive: [real-unicycler-assembly.ga]
+    negative: [synthetic-missing-marker.ga]
+
+NativeMarkerNotTrue:
+  severity: error
+  applies_to: [native]
+  scope: both
+  description: "`a_galaxy_workflow` must be literal string \"true\"."
+  tests:
+    positive: [real-unicycler-assembly.ga]
+    negative: [synthetic-lint-bad-marker.ga]
+
+NativeMissingFormatVersion:
+  severity: error
+  applies_to: [native]
+  scope: both
+  description: "Native workflow missing required `format-version` field."
+  tests:
+    positive: [real-unicycler-assembly.ga]
+    negative: [real-hacked-basic-missing-format-version.ga]
+
+NativeFormatVersionNotSupported:
+  severity: error
+  applies_to: [native]
+  scope: both
+  description: "`format-version` must be literal string \"0.1\"."
+  tests:
+    positive: [real-unicycler-assembly.ga]
+    negative: [synthetic-lint-bad-format-version.ga]
+
+ReportMarkdownNotString:
+  severity: error
+  applies_to: [format2, native]
+  scope: both
+  description: "Workflow `report.markdown` must be a string."
+  tests:
+    positive: [synthetic-basic.gxwf.yml, real-unicycler-assembly.ga]
+    negative: [synthetic-lint-report-bad-type.gxwf.yml, synthetic-lint-report-bad-type.ga]
+
+SchemaStrictExtraField:
+  severity: warning
+  applies_to: [format2, native]
+  scope: strict
+  description: "Unknown field present on a closed record under strict validation."
+  tests:
+    positive: [synthetic-basic.gxwf.yml, real-unicycler-assembly.ga]
+    negative: [synthetic-extra-field.gxwf.yml, synthetic-extra-field.ga]

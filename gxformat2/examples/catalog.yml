@@ -8,6 +8,7 @@
     - tests/test_to_native.py
     - tests/test_export_abstract.py
     - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
 
 - file: format2/synthetic-nested-subworkflow.gxwf.yml
   origin: synthetic
@@ -31,6 +32,7 @@
     - tests/test_lint.py
     - tests/test_basic.py
     - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
 
 - file: native/real-hacked-unicycler-assembly-with-tags.ga
   origin: real-hacked
@@ -431,24 +433,35 @@
   format: format2
   tests:
     - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
 
 - file: format2/synthetic-missing-steps.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
 
 - file: native/synthetic-extra-field.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
 
 - file: native/synthetic-missing-marker.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
+- file: native/real-hacked-basic-missing-format-version.ga
+  origin: real-hacked
+  format: native
+  description: real-basic-without-step-input-label.ga with format-version removed.
+  tests:
+    - tests/test_schema_rules_catalog.py
 
 # --- lint error/warning fixture files ---
 
@@ -521,6 +534,7 @@
   description: Report with non-string markdown (integer) — pydantic rejects.
   tests:
     - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
 
 - file: native/synthetic-lint-no-steps.ga
   origin: synthetic
@@ -535,6 +549,7 @@
   description: Invalid format-version value — triggers lint error.
   tests:
     - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
 
 - file: native/synthetic-lint-bad-marker.ga
   origin: synthetic
@@ -542,6 +557,7 @@
   description: a_galaxy_workflow set to "false" — triggers lint error.
   tests:
     - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
 
 - file: native/synthetic-lint-non-integer-step.ga
   origin: synthetic
@@ -577,6 +593,7 @@
   description: Report with non-string markdown (integer) — pydantic rejects.
   tests:
     - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
 
 # --- best practices lint fixture files ---
 
