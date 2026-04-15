@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 
 from pydantic import ValidationError
 
+from gxformat2.lint_rules import NativeStepKeyNotInteger
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
 from gxformat2.normalized import (
@@ -72,7 +73,11 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
 
     for order_index_str, step in nnw.steps.items():
         if not order_index_str.isdigit():
-            lint_context.error("expected step_key to be integer not [{value}]", value=order_index_str)
+            lint_context.error(
+                f"expected step_key to be integer not [{order_index_str}]",
+                linter=NativeStepKeyNotInteger,
+                json_pointer=f"/steps/{order_index_str}",
+            )
 
         for workflow_output in step.workflow_outputs:
             found_outputs = True
