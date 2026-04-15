@@ -40,8 +40,17 @@ LINT_FAILED_NO_OUTPUTS = "Workflow contained no outputs"
 LINT_FAILED_OUTPUT_NO_LABEL = "Workflow contained output without a label"
 
 
-def lint_ga(lint_context, nnw: NormalizedNativeWorkflow, raw_dict: dict | None = None):
-    """Lint a native Galaxy workflow and populate the corresponding LintContext."""
+def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
+    """Lint a native Galaxy workflow and populate the corresponding LintContext.
+
+    Backward-compat: ``nnw`` may be a raw dict (legacy Planemo signature), in
+    which case it is expanded to ``NormalizedNativeWorkflow`` internally.
+    ``path`` is accepted for Planemo compatibility and currently ignored.
+    """
+    if isinstance(nnw, dict):
+        if raw_dict is None:
+            raw_dict = nnw
+        nnw = ensure_native(nnw)
     # Check fields that the model defaults mask
     if raw_dict is not None:
         if "a_galaxy_workflow" not in raw_dict:
@@ -103,8 +112,17 @@ def lint_format2_path(lint_context, path):
     return lint_format2(lint_context, nf2, raw_dict=workflow_dict)
 
 
-def lint_format2(lint_context, nf2: NormalizedFormat2, raw_dict: dict | None = None):
-    """Lint a Format 2 Galaxy workflow and populate the corresponding LintContext."""
+def lint_format2(lint_context, nf2, raw_dict: dict | None = None, path=None):
+    """Lint a Format 2 Galaxy workflow and populate the corresponding LintContext.
+
+    Backward-compat: ``nf2`` may be a raw dict (legacy Planemo signature), in
+    which case it is expanded to ``NormalizedFormat2`` internally. ``path`` is
+    accepted for Planemo compatibility and currently ignored.
+    """
+    if isinstance(nf2, dict):
+        if raw_dict is None:
+            raw_dict = nf2
+        nf2 = ensure_format2(nf2, expand=True)
     if raw_dict is not None:
         if "steps" not in raw_dict:
             lint_context.error("expected to find key [steps] but absent")
