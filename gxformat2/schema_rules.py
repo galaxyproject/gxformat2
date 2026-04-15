@@ -17,11 +17,15 @@ SCHEMA_RULES_PATH = os.path.join(os.path.dirname(__file__), "schema_rules.yml")
 
 
 class Severity(str, Enum):
+    """Rule severity level."""
+
     error = "error"
     warning = "warning"
 
 
 class AppliesTo(str, Enum):
+    """Which workflow format a schema rule applies to."""
+
     format2 = "format2"
     native = "native"
 
@@ -40,11 +44,15 @@ class Scope(str, Enum):
 
 
 class SchemaRuleTests(BaseModel):
+    """Positive/negative fixture references for a schema rule."""
+
     positive: List[str]
     negative: List[str]
 
 
 class SchemaRule(BaseModel):
+    """Declarative schema-rule entry loaded from schema_rules.yml."""
+
     id: str
     severity: Severity
     applies_to: List[AppliesTo]

@@ -16,6 +16,8 @@ LINT_PROFILES_PATH = os.path.join(os.path.dirname(__file__), "lint_profiles.yml"
 
 
 class LintProfile(BaseModel):
+    """Named set of lint-rule IDs loaded from lint_profiles.yml."""
+
     id: str
     description: str = ""
     rules: List[str]

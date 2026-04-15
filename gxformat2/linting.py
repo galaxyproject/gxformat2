@@ -46,6 +46,7 @@ class LintMessage(str):
         linter: Optional[str] = None,
         json_pointer: str = "",
     ) -> "LintMessage":
+        """Construct a ``LintMessage`` with prose and structured metadata."""
         self = super().__new__(cls, message)
         self.level = level
         self.linter = linter

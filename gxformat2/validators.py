@@ -14,18 +14,22 @@ from gxformat2.schema.native_strict import NativeGalaxyWorkflow as NativeStrict
 
 
 def validate_format2(wf_dict):
+    """Validate a Format2 workflow dict with the lax (open) schema."""
     return Format2Lax.model_validate(wf_dict)
 
 
 def validate_format2_strict(wf_dict):
+    """Validate a Format2 workflow dict with the strict (closed) schema."""
     return Format2Strict.model_validate(wf_dict)
 
 
 def validate_native(wf_dict):
+    """Validate a native Galaxy workflow dict with the lax (open) schema."""
     return NativeLax.model_validate(wf_dict)
 
 
 def validate_native_strict(wf_dict):
+    """Validate a native Galaxy workflow dict with the strict (closed) schema."""
     return NativeStrict.model_validate(wf_dict)
 
 
