@@ -1,58 +1,131 @@
 """Generic utilities for linting.
 
-Largely derived in large part from galaxy.tool_util.lint.
+Largely derived from galaxy.tool_util.lint. ``LintMessage`` is a ``str``
+subclass so existing code that treats ``warn_messages`` / ``error_messages``
+as lists of strings keeps working; new metadata (``level``, ``linter``,
+``json_pointer``) is accessible as attributes.
 """
 
-LEVEL_ALL = "all"
-LEVEL_WARN = "warn"
-LEVEL_ERROR = "error"
+from __future__ import annotations
+
+import enum
+from typing import ClassVar, List, Optional, Tuple, Union
+
+
+class LintLevel(str, enum.Enum):
+    """Lint severity levels."""
+
+    ERROR = "error"
+    WARN = "warn"
+    ALL = "all"
+
+
+# Back-compat string constants.
+LEVEL_ALL = LintLevel.ALL.value
+LEVEL_WARN = LintLevel.WARN.value
+LEVEL_ERROR = LintLevel.ERROR.value
 DEFAULT_TRAINING_LINT = None
+
+
+class LintMessage(str):
+    """A single lint emission: prose + structured metadata.
+
+    Subclassing ``str`` keeps ``"substring" in message`` and
+    ``str(message)`` working for existing callers/tests.
+    """
+
+    level: str
+    linter: Optional[str]
+    json_pointer: str
+
+    def __new__(
+        cls,
+        message: str,
+        *,
+        level: str = LEVEL_WARN,
+        linter: Optional[str] = None,
+        json_pointer: str = "",
+    ) -> "LintMessage":
+        self = super().__new__(cls, message)
+        self.level = level
+        self.linter = linter
+        self.json_pointer = json_pointer
+        return self
+
+
+class Linter:
+    """Metadata-only base class for lint rules.
+
+    Subclasses carry class-level metadata; emission is performed by
+    ``LintContext.warn`` / ``LintContext.error`` with ``linter=SubclassName``.
+    """
+
+    severity: ClassVar[str] = "warning"
+    applies_to: ClassVar[Tuple[str, ...]] = ()
+    profile: ClassVar[str] = "structural"
+
+
+def _escape_pointer_segment(segment) -> str:
+    """Escape an RFC 6901 JSON Pointer segment."""
+    return str(segment).replace("~", "~0").replace("/", "~1")
 
 
 class LintContext:
     """Track running status (state) of linting."""
 
-    def __init__(self, level=LEVEL_WARN, training_topic=DEFAULT_TRAINING_LINT, _prefix=""):
+    def __init__(self, level=LEVEL_WARN, training_topic=DEFAULT_TRAINING_LINT, _pointer: str = ""):
         """Create LintContext with specified 'level' (currently unused)."""
         self.level = level
         self.training_topic = training_topic
         self.found_errors = False
         self.found_warns = False
-        self._prefix = _prefix
+        self._pointer = _pointer
 
-        # self.valid_messages = []
-        # self.info_messages = []
-        self.warn_messages = []
-        self.error_messages = []
+        self.warn_messages: List[LintMessage] = []
+        self.error_messages: List[LintMessage] = []
 
-    def child(self, prefix):
-        """Create child context that prefixes messages and shares parent message lists."""
-        full_prefix = f"{self._prefix}[{prefix}] " if not self._prefix else f"{self._prefix[:-1]} > {prefix}] "
-        child_ctx = LintContext(level=self.level, training_topic=self.training_topic, _prefix=full_prefix)
+    def child(self, pointer_segment) -> "LintContext":
+        """Create child context whose default json_pointer is prefixed."""
+        new_pointer = f"{self._pointer}/{_escape_pointer_segment(pointer_segment)}"
+        child_ctx = LintContext(
+            level=self.level,
+            training_topic=self.training_topic,
+            _pointer=new_pointer,
+        )
         child_ctx.warn_messages = self.warn_messages
         child_ctx.error_messages = self.error_messages
         return child_ctx
 
-    def __handle_message(self, message_list, message, *args, **kwds):
-        if kwds or args:
-            message = message.format(*args, **kwds)
-        message_list.append(f"{self._prefix}{message}")
-
-    # def valid(self, message, *args, **kwds):
-    #     self.__handle_message(self.valid_messages, message, *args, **kwds)
-
-    # def info(self, message, *args, **kwds):
-    #     self.__handle_message(self.info_messages, message, *args, **kwds)
-
-    def error(self, message, *args, **kwds):
+    def error(
+        self,
+        message: str,
+        *args,
+        linter: Union[type, str, None] = None,
+        json_pointer: Optional[str] = None,
+        **kwds,
+    ) -> None:
         """Track a linting error - a serious problem with the artifact preventing execution."""
-        self.__handle_message(self.error_messages, message, *args, **kwds)
+        self._emit(self.error_messages, LEVEL_ERROR, message, args, kwds, linter, json_pointer)
 
-    def warn(self, message, *args, **kwds):
+    def warn(
+        self,
+        message: str,
+        *args,
+        linter: Union[type, str, None] = None,
+        json_pointer: Optional[str] = None,
+        **kwds,
+    ) -> None:
         """Track a linting warning - a deviation from best practices."""
-        self.__handle_message(self.warn_messages, message, *args, **kwds)
+        self._emit(self.warn_messages, LEVEL_WARN, message, args, kwds, linter, json_pointer)
 
-    def print_messages(self):
+    def _emit(self, message_list, level, message, args, kwds, linter, json_pointer) -> None:
+        if args or kwds:
+            message = message.format(*args, **kwds)
+        pointer = json_pointer if json_pointer is not None else self._pointer
+        linter_name = linter.__name__ if isinstance(linter, type) else linter
+        message_list.append(LintMessage(message, level=level, linter=linter_name, json_pointer=pointer))
+
+    def print_messages(self) -> None:
         """Print error messages and update state at the end of linting."""
         for message in self.error_messages:
             self.found_errors = True
@@ -62,9 +135,3 @@ class LintContext:
             for message in self.warn_messages:
                 self.found_warns = True
                 print(f".. WARNING: {message}")
-
-        if self.level == LEVEL_ALL:
-            for message in self.info_messages:
-                print(f".. INFO: {message}")
-            for message in self.valid_messages:
-                print(f".. CHECK: {message}")
