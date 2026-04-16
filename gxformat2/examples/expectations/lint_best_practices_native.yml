@@ -43,7 +43,7 @@ test_bp_native_untyped_param:
   operation: lint_best_practices_native
   assertions:
     - path: [warn_count]
-      value: 9
+      value: 10
 
 test_bp_native_disconnected_input:
   fixture: synthetic-unlinted-best-practices.ga

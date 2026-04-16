@@ -106,14 +106,18 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
 def lint_ga_path(lint_context, path):
     """Apply linting of native workflows to specified path."""
     workflow_dict = ordered_load_path(path)
-    nnw = ensure_native(workflow_dict)
+    nnw = _try_build_nnw(lint_context, workflow_dict)
+    if nnw is None:
+        return None
     return lint_ga(lint_context, nnw, raw_dict=workflow_dict)
 
 
 def lint_format2_path(lint_context, path):
     """Apply linting of Format2 workflows to specified path."""
     workflow_dict = ordered_load_path(path)
-    nf2 = ensure_format2(workflow_dict, expand=True)
+    nf2 = _try_build_nf2(lint_context, workflow_dict)
+    if nf2 is None:
+        return None
     return lint_format2(lint_context, nf2, raw_dict=workflow_dict)
 
 
@@ -258,14 +262,12 @@ def lint_pydantic_validation(lint_context, workflow_dict, format2=False):
             lint_context.error(f"Schema validation: {error['msg']} at {loc}")
 
 
-def lint_best_practices(lint_context, nf2: NormalizedFormat2):
-    """Lint best practices for a Galaxy workflow (works for both native and Format2 input)."""
-    # annotation / doc
+def _lint_workflow_top_level(lint_context, nf2: NormalizedFormat2):
+    """Top-level (non step-level) best practices shared by native and Format2 paths."""
     doc = nf2.doc
     if not doc or not doc.strip():
         lint_context.warn("Workflow is not annotated.")
 
-    # creator
     creators = nf2.creator or []
     if not creators:
         lint_context.warn("Workflow does not specify a creator.")
@@ -279,11 +281,13 @@ def lint_best_practices(lint_context, nf2: NormalizedFormat2):
                         f'for example "https://orcid.org/0000-0002-1825-0097".'
                     )
 
-    # license
     if not nf2.license:
         lint_context.warn("Workflow does not specify a license.")
 
-    # step-level best practices
+
+def lint_best_practices(lint_context, nf2: NormalizedFormat2):
+    """Lint best practices for a Format2 workflow (top-level + format2 step-level)."""
+    _lint_workflow_top_level(lint_context, nf2)
     for step in nf2.steps:
         _lint_step_best_practices(lint_context, step)
 
@@ -330,7 +334,7 @@ SKIP_DISCONNECTED_CHECK_TYPES_NATIVE = {
 
 
 def _lint_native_step_best_practices(lint_context, step: NormalizedNativeStep):
-    """Native-specific step best practice checks that don't survive format2 conversion."""
+    """Native step best practice checks using native step fields (avoids format2 sentinel ids)."""
     step_id = step.label or step.annotation or step.id
 
     # disconnected inputs — compare declared inputs against input_connections
@@ -340,13 +344,28 @@ def _lint_native_step_best_practices(lint_context, step: NormalizedNativeStep):
             if input_def.name and input_def.name not in input_connections:
                 lint_context.warn(f"Input {input_def.name} of workflow step {step_id} is disconnected.")
 
+    # missing metadata
+    if not step.annotation:
+        lint_context.warn(f"Workflow step {step_id} has no annotation.")
+    if not step.label:
+        lint_context.warn(f"Workflow step {step_id} has no label.")
+
+    # untyped parameters in tool_state
+    tool_state = step.tool_state
+    if tool_state:
+        if isinstance(tool_state, str):
+            try:
+                tool_state = json.loads(tool_state)
+            except (json.JSONDecodeError, TypeError):
+                tool_state = {}
+        if isinstance(tool_state, dict) and _check_json_for_untyped_params(tool_state):
+            lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter as an input.")
+
     # untyped parameters in post_job_actions
     if step.post_job_actions:
         pjas = {k: v.model_dump(by_alias=True) for k, v in step.post_job_actions.items()}
         if _check_json_for_untyped_params(pjas):
-            lint_context.warn(
-                f"Workflow step with ID {step.id} specifies an untyped parameter in the post-job actions."
-            )
+            lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter in the post-job actions.")
 
 
 def _try_build_nf2(lint_context, workflow_dict) -> NormalizedFormat2 | None:
@@ -380,13 +399,14 @@ def _try_build_nnw(lint_context, workflow_dict) -> NormalizedNativeWorkflow | No
 def lint_best_practices_ga(lint_context, workflow_dict):
     """Lint best practices for a native Galaxy workflow.
 
-    Runs shared best practices on NormalizedFormat2 plus native-specific
-    checks (disconnected inputs, PJA untyped params) on NormalizedNativeWorkflow.
+    Runs top-level checks on NormalizedFormat2 (for shared doc/creator/license
+    interpretation) plus step-level checks on NormalizedNativeWorkflow so step
+    messages reference native ids / labels / annotations rather than format2
+    sentinels like ``_unlabeled_step_1``.
     """
     nf2 = _try_build_nf2(lint_context, workflow_dict)
     if nf2 is not None:
-        lint_best_practices(lint_context, nf2)
-    # Native-specific checks that don't survive format2 conversion
+        _lint_workflow_top_level(lint_context, nf2)
     nnw = _try_build_nnw(lint_context, workflow_dict)
     if nnw is not None:
         for step in nnw.steps.values():
@@ -397,7 +417,9 @@ def lint_best_practices_format2(lint_context, workflow_dict):
     """Lint best practices for a Format2 Galaxy workflow."""
     nf2 = _try_build_nf2(lint_context, workflow_dict)
     if nf2 is not None:
-        lint_best_practices(lint_context, nf2)
+        _lint_workflow_top_level(lint_context, nf2)
+        for step in nf2.steps:
+            _lint_step_best_practices(lint_context, step)
 
 
 def _check_json_for_untyped_params(j):
@@ -449,13 +471,12 @@ def main(argv=None):
     # Pydantic strict/lax validation (always runs on raw dict)
     lint_pydantic_validation(lint_context, workflow_dict, format2=is_format2)
 
-    # Best practices (merged, runs on NormalizedFormat2)
-    if not args.skip_best_practices and nf2 is not None:
-        lint_best_practices(lint_context, nf2)
-        # Native-specific best practice checks
-        if not is_format2 and nnw is not None:
-            for step in nnw.steps.values():
-                _lint_native_step_best_practices(lint_context, step)
+    # Best practices — dispatch by format; native path uses native step ids.
+    if not args.skip_best_practices:
+        if is_format2:
+            lint_best_practices_format2(lint_context, workflow_dict)
+        else:
+            lint_best_practices_ga(lint_context, workflow_dict)
 
     lint_context.print_messages()
     if lint_context.found_errors:
