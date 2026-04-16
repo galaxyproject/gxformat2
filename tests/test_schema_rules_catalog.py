@@ -13,7 +13,7 @@ import pytest
 from pydantic import ValidationError
 
 from gxformat2.examples import EXAMPLES_DIR, load, load_catalog
-from gxformat2.schema_rules import AppliesTo, load_schema_rules, Scope, SchemaRule
+from gxformat2.schema_rules import AppliesTo, load_schema_rules, SchemaRule, Scope
 from gxformat2.validators import validator_for_fixture
 
 RUNNER = "tests/test_schema_rules_catalog.py"

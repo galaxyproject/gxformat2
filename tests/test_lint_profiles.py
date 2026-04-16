@@ -2,8 +2,8 @@
 
 from gxformat2.lint_profiles import (
     iwc_rule_ids,
-    LINT_PROFILES_PATH,
     lint_profiles_by_id,
+    LINT_PROFILES_PATH,
     load_lint_profiles,
     rules_for_profile,
 )
