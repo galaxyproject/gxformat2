@@ -6,6 +6,12 @@ History
 .. to_doc
 
 ---------------------
+0.26.0.dev0
+---------------------
+
+    
+
+---------------------
 0.25.0 (2026-04-16)
 ---------------------
 * Schema Salad Modeling for Native Workflows (thanks to `@jmchilton`_). `Pull Request 153`_
