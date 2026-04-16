@@ -26,27 +26,13 @@ from gxformat2.normalized import (
 )
 from gxformat2.normalized._conversion import ExpandedFormat2
 from gxformat2.normalized._native import NormalizedNativeWorkflow
-from gxformat2.schema.gxformat2 import GalaxyWorkflow as Format2Lax
-from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as Format2Strict
-from gxformat2.schema.native import NativeGalaxyWorkflow as NativeLax
-from gxformat2.schema.native_strict import NativeGalaxyWorkflow as NativeStrict
 from gxformat2.testing import DeclarativeTestSuite
-
-
-def _validate_format2(wf_dict):
-    return Format2Lax.model_validate(wf_dict)
-
-
-def _validate_format2_strict(wf_dict):
-    return Format2Strict.model_validate(wf_dict)
-
-
-def _validate_native(wf_dict):
-    return NativeLax.model_validate(wf_dict)
-
-
-def _validate_native_strict(wf_dict):
-    return NativeStrict.model_validate(wf_dict)
+from gxformat2.validators import (
+    validate_format2,
+    validate_format2_strict,
+    validate_native,
+    validate_native_strict,
+)
 
 
 def _lint_format2(wf_dict):
@@ -123,10 +109,10 @@ OPERATIONS: Dict[str, Callable[..., Any]] = {
     "to_native": to_native,
     "ensure_format2": ensure_format2,
     "ensure_native": ensure_native,
-    "validate_format2": _validate_format2,
-    "validate_format2_strict": _validate_format2_strict,
-    "validate_native": _validate_native,
-    "validate_native_strict": _validate_native_strict,
+    "validate_format2": validate_format2,
+    "validate_format2_strict": validate_format2_strict,
+    "validate_native": validate_native,
+    "validate_native_strict": validate_native_strict,
     "lint_format2": _lint_format2,
     "lint_native": _lint_native,
     "lint_best_practices_format2": _lint_best_practices_format2,

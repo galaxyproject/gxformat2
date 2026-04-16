@@ -1,0 +1,41 @@
+# Lint profile catalog.
+#
+# Profiles group lint-rule IDs into named sets. Profiles apply only to
+# lint rules (schema rules always run as part of validate_*). Unknown IDs
+# are tolerated by the loader; audit tooling can flag them.
+#
+# Rule IDs mirror the ``Linter`` class names in gxformat2/lint_rules.py.
+
+structural:
+  description: "Checks that prevent execution or indicate structural breakage."
+  rules:
+    - NativeStepKeyNotInteger
+    - StepExportError
+    - StepUsesTestToolshed
+    - WorkflowHasNoOutputs
+    - WorkflowOutputMissingLabel
+    - OutputSourceNotFound
+    - InputDefaultTypeInvalid
+    - ReportMarkdownInvalid
+
+best-practices:
+  description: "Deviations from recommended authoring practice."
+  rules:
+    - WorkflowMissingAnnotation
+    - WorkflowMissingCreator
+    - WorkflowMissingLicense
+    - CreatorIdentifierNotURI
+    - StepMissingLabel
+    - StepMissingAnnotation
+    - StepInputDisconnected
+    - StepToolStateUntypedParameter
+    - StepPJAUntypedParameter
+    - TrainingWorkflowMissingTag
+    - TrainingWorkflowWrongTopic
+    - TrainingWorkflowMissingDoc
+    - TrainingWorkflowEmptyDoc
+
+release:
+  description: "Additional gates for workflows being released."
+  rules:
+    - WorkflowMissingRelease
