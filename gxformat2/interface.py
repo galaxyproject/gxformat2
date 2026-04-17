@@ -36,7 +36,7 @@ class ImporterGalaxyInterface(metaclass=abc.ABCMeta):
         """Import a workflow via POST /api/workflows or comparable interface into Galaxy."""
 
 
-class BioBlendImporterGalaxyInterface:
+class BioBlendImporterGalaxyInterface(ImporterGalaxyInterface):
     """Implementation of :class:`ImporterGalaxyInterface` using bioblend.
 
     ``bioblend`` is imported lazily so importing :mod:`gxformat2.interface`

@@ -33,4 +33,4 @@ def test_bioblend_importer_class_importable_without_bioblend():
     """Importing the class must not require bioblend; only instantiation does."""
     from gxformat2.interface import BioBlendImporterGalaxyInterface
 
-    assert BioBlendImporterGalaxyInterface.__name__ == "BioBlendImporterGalaxyInterface"
+    assert not BioBlendImporterGalaxyInterface.__abstractmethods__
