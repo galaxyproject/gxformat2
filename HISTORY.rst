@@ -6,8 +6,9 @@ History
 .. to_doc
 
 ---------------------
-0.26.0.dev0
+0.26.0 (2026-04-17)
 ---------------------
+* Restore Planemo compatibility for lint API and gxformat2.interface (thanks to `@mvdbeek`_). `Pull Request 191`_
 * Restore Planemo-compatible ``lint_format2`` / ``lint_ga`` signatures: accept a
   raw ``dict`` in the second position (normalized internally) and a trailing
   ``path=`` keyword (currently ignored). `Issue 187`_
@@ -385,6 +386,7 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 191: https://github.com/galaxyproject/gxformat2/pull/191
 .. _Pull Request 153: https://github.com/galaxyproject/gxformat2/pull/153
 .. _Pull Request 154: https://github.com/galaxyproject/gxformat2/pull/154
 .. _Pull Request 160: https://github.com/galaxyproject/gxformat2/pull/160
