@@ -120,7 +120,12 @@ class LintContext:
         self._emit(self.warn_messages, LEVEL_WARN, message, args, kwds, linter, json_pointer)
 
     def _emit(self, message_list, level, message, args, kwds, linter, json_pointer) -> None:
-        if args or kwds:
+        if args and not kwds:
+            try:
+                message = message % args
+            except (TypeError, ValueError):
+                message = message.format(*args)
+        elif args or kwds:
             message = message.format(*args, **kwds)
         pointer = json_pointer if json_pointer is not None else self._pointer
         linter_name = linter.__name__ if isinstance(linter, type) else linter
