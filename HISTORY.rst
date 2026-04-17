@@ -6,6 +6,12 @@ History
 .. to_doc
 
 ---------------------
+0.27.0.dev0
+---------------------
+
+    
+
+---------------------
 0.26.0 (2026-04-17)
 ---------------------
 * Restore Planemo compatibility for lint API and gxformat2.interface (thanks to `@mvdbeek`_). `Pull Request 191`_
