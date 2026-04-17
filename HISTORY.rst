@@ -8,8 +8,18 @@ History
 ---------------------
 0.26.0.dev0
 ---------------------
+* Restore Planemo-compatible ``lint_format2`` / ``lint_ga`` signatures: accept a
+  raw ``dict`` in the second position (normalized internally) and a trailing
+  ``path=`` keyword (currently ignored). `Issue 187`_
+* Make ``LintContext`` message formatting compatible with
+  ``galaxy.tool_util.lint`` by using ``%``-style substitution for positional
+  arguments, falling back to ``.format()``. `Issue 187`_
+* Restore ``gxformat2.interface`` as a deprecated compatibility shim for
+  Planemo. ``bioblend`` is now an optional dependency (install
+  ``gxformat2[bioblend]``) and is imported lazily inside
+  ``BioBlendImporterGalaxyInterface``. `Issue 187`_
 
-    
+.. _Issue 187: https://github.com/galaxyproject/gxformat2/issues/187
 
 ---------------------
 0.25.0 (2026-04-16)

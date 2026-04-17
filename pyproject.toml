@@ -34,6 +34,9 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 
+[project.optional-dependencies]
+bioblend = ["bioblend"]
+
 [project.scripts]
 gxwf-to-native = "gxformat2.converter:main"
 gxwf-to-format2 = "gxformat2.export:main"

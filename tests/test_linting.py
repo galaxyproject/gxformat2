@@ -62,3 +62,23 @@ def test_unannotated_emission_has_empty_pointer_and_no_linter():
     msg = ctx.warn_messages[0]
     assert msg.linter is None
     assert msg.json_pointer == ""
+
+
+def test_percent_style_positional_substitution():
+    """Positional args use %-style formatting to match galaxy.tool_util.lint."""
+    ctx = LintContext()
+    ctx.warn("found %d issues in %s", 3, "step")
+    assert ctx.warn_messages[0] == "found 3 issues in step"
+
+
+def test_format_style_keyword_substitution_still_works():
+    ctx = LintContext()
+    ctx.warn("bad {value}", value="x")
+    assert ctx.warn_messages[0] == "bad x"
+
+
+def test_positional_without_percent_placeholders_falls_back_to_format():
+    """Message with no %-placeholders should not raise; falls back to .format()."""
+    ctx = LintContext()
+    ctx.warn("plain {0}", "x")
+    assert ctx.warn_messages[0] == "plain x"
