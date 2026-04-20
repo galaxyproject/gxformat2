@@ -46,7 +46,7 @@ clean-test: ## remove test and coverage artifacts
 
 setup-venv: ## setup a development virutalenv in current directory
 	if command -v uv > /dev/null 2>&1; then \
-		uv sync --group test --group lint --group mypy --group docs; \
+		uv sync; \
 	else \
 		if [ ! -d $(VENV) ]; then \
 			python3 -m venv $(VENV); \

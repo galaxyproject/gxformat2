@@ -12,8 +12,9 @@ Create a virtualenv with dev dependencies installed::
 
     make setup-venv
 
-This runs ``uv sync`` with the ``test``, ``lint``, ``mypy``, and ``docs``
-dependency groups.
+This runs ``uv sync``. The ``test``, ``lint``, ``mypy``, and ``docs``
+dependency groups are marked as ``default-groups`` in ``pyproject.toml``
+so they install automatically.
 
 Optional pre-commit hooks are configured via `pre-commit
 <https://pre-commit.com/>`_. A sample configuration ships as
