@@ -1,4 +1,5 @@
 """Fail if HISTORY.rst's current .devN section has no bullet entries."""
+
 import re
 import sys
 from pathlib import Path
