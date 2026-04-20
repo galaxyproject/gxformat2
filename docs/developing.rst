@@ -15,10 +15,15 @@ Create a virtualenv with dev dependencies installed::
 This runs ``uv sync`` with the ``test``, ``lint``, ``mypy``, and ``docs``
 dependency groups.
 
-Optional pre-commit hooks::
+Optional pre-commit hooks are configured via `pre-commit
+<https://pre-commit.com/>`_. A sample configuration ships as
+``.pre-commit-config.yaml.sample``. Install the hook with::
 
-    make setup-git-hook-lint            # lint on commit
-    make setup-git-hook-lint-and-test   # lint + test on commit
+    make setup-pre-commit
+
+This uses ``.pre-commit-config.yaml`` if you have one (copy the sample and
+customize), and otherwise falls back to the committed
+``.pre-commit-config.yaml.sample``.
 
 Running Tests and Linters
 =========================

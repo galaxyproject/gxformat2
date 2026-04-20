@@ -54,11 +54,12 @@ setup-venv: ## setup a development virutalenv in current directory
 		$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt; \
 	fi
 
-setup-git-hook-lint: ## setup precommit hook for linting project
-	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint .git/hooks/pre-commit
-
-setup-git-hook-lint-and-test: ## setup precommit hook for linting and testing project
-	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint-and-test .git/hooks/pre-commit
+setup-pre-commit: ## install pre-commit hook (uses .pre-commit-config.yaml if present, else the .sample)
+	@if [ -f .pre-commit-config.yaml ]; then \
+		$(IN_VENV) pre-commit install; \
+	else \
+		$(IN_VENV) pre-commit install --config .pre-commit-config.yaml.sample; \
+	fi
 
 lint: ## check style with ruff, flake8, black, and mypy
 	uv run --group lint isort --check --diff .
