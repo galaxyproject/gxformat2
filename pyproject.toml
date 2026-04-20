@@ -79,6 +79,9 @@ docs = [
     "sphinxcontrib-mermaid",
 ]
 
+[tool.uv]
+default-groups = ["test", "lint", "mypy", "docs"]
+
 [tool.ruff]
 exclude = [
     "gxformat2/schema/v19_09.py",

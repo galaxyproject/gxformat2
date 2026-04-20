@@ -15,8 +15,9 @@ BUILD_SCRIPTS_DIR=scripts
 DEV_RELEASE?=0
 VERSION?=$(shell DEV_RELEASE=$(DEV_RELEASE) python $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR) $(DEV_RELEASE))
 DOC_URL?=https://gxformat2.readthedocs.org
-PROJECT_URL?=https://github.com/jmchilton/gxformat2
 PROJECT_NAME?=gxformat2
+UPSTREAM_REPO?=$(UPSTREAM)/$(PROJECT_NAME)
+PROJECT_URL?=https://github.com/$(UPSTREAM_REPO)
 TEST_DIR?=tests
 DOCS_DIR?=docs
 
@@ -45,7 +46,7 @@ clean-test: ## remove test and coverage artifacts
 
 setup-venv: ## setup a development virutalenv in current directory
 	if command -v uv > /dev/null 2>&1; then \
-		uv sync --group test --group lint --group mypy; \
+		uv sync; \
 	else \
 		if [ ! -d $(VENV) ]; then \
 			python3 -m venv $(VENV); \
@@ -53,11 +54,12 @@ setup-venv: ## setup a development virutalenv in current directory
 		$(IN_VENV) pip install -r requirements.txt && pip install -r dev-requirements.txt; \
 	fi
 
-setup-git-hook-lint: ## setup precommit hook for linting project
-	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint .git/hooks/pre-commit
-
-setup-git-hook-lint-and-test: ## setup precommit hook for linting and testing project
-	cp $(BUILD_SCRIPTS_DIR)/pre-commit-lint-and-test .git/hooks/pre-commit
+setup-pre-commit: ## install pre-commit hook (uses .pre-commit-config.yaml if present, else the .sample)
+	@if [ -f .pre-commit-config.yaml ]; then \
+		$(IN_VENV) pre-commit install; \
+	else \
+		$(IN_VENV) pre-commit install --config .pre-commit-config.yaml.sample; \
+	fi
 
 lint: ## check style with ruff, flake8, black, and mypy
 	uv run --group lint isort --check --diff .
@@ -113,6 +115,26 @@ commit-version: ## Update version and history, commit.
 
 new-version: ## Mint a new version
 	$(IN_VENV) DEV_RELEASE=$(DEV_RELEASE) python $(BUILD_SCRIPTS_DIR)/new_version.py $(SOURCE_DIR) $(VERSION)
+
+check-release: ## pre-release checklist: venv, clean tree, history entries, lint, lint-docs
+	@echo "==> checking $(VENV) exists"
+	@test -d $(VENV) || \
+		(echo "ERROR: $(VENV) does not exist; run 'make setup-venv'"; exit 1)
+	@echo "==> checking working tree is clean"
+	@test -z "$$(git status --porcelain)" || \
+		(echo "ERROR: working tree has uncommitted changes or untracked files"; git status --short; exit 1)
+	@echo "==> checking UPSTREAM remote '$(UPSTREAM)' points to $(UPSTREAM_REPO)"
+	@git remote get-url $(UPSTREAM) 2>/dev/null | grep -q "$(UPSTREAM_REPO)" || \
+		(echo "ERROR: remote '$(UPSTREAM)' missing or not pointing to $(UPSTREAM_REPO)."; \
+		 echo "  Fix:      git remote add $(UPSTREAM) git@github.com:$(UPSTREAM_REPO).git"; \
+		 echo "  Or fork:  make check-release UPSTREAM=<name> UPSTREAM_REPO=<owner>/<repo>"; exit 1)
+	@echo "==> checking HISTORY.rst has entries under current .devN header"
+	@$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/check_history_entries.py
+	@echo "==> make clean && make lint && make lint-docs"
+	@$(MAKE) clean
+	@$(MAKE) lint
+	@$(MAKE) lint-docs
+	@echo "==> check-release OK"
 
 release-local: commit-version new-version
 
