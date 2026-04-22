@@ -13,7 +13,7 @@ UPSTREAM?=galaxyproject
 SOURCE_DIR?=gxformat2
 BUILD_SCRIPTS_DIR=scripts
 DEV_RELEASE?=0
-VERSION?=$(shell DEV_RELEASE=$(DEV_RELEASE) python $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR) $(DEV_RELEASE))
+VERSION?=$(shell $(IN_VENV) DEV_RELEASE=$(DEV_RELEASE) python $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR) $(DEV_RELEASE))
 DOC_URL?=https://gxformat2.readthedocs.org
 PROJECT_NAME?=gxformat2
 UPSTREAM_REPO?=$(UPSTREAM)/$(PROJECT_NAME)
