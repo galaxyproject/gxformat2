@@ -86,7 +86,8 @@ test_frame_comments_not_emitted_without_flag:
   operation: workflow_to_mermaid
   assertions:
     - path: []
-      value_matches: '(?s)\A(?!.*subgraph).*\Z'
+      # Use [\s\S] instead of (?s) + . so both Python re and JS RegExp accept it.
+      value_matches: '^(?![\s\S]*subgraph)'
 
 test_frame_comments_rendered_as_subgraph:
   fixture: synthetic-comments-dict.gxwf.yml
