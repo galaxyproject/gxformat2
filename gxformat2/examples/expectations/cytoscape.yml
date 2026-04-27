@@ -1,0 +1,144 @@
+# Cytoscape.js element generation from Galaxy workflows.
+# cytoscape_elements_to_list returns the flat list-of-dicts cytoscape.js consumes:
+#   [{group: "nodes"|"edges", data: {...}, classes?: [...], position?: {x,y}}, ...]
+# Inputs come first (in declaration order), then steps, then edges (one per resolved source).
+# cytoscape_node_ids / cytoscape_edge_ids are list-of-string conveniences for
+# value_set and value_any_contains assertions.
+
+test_simple_graph_emits_two_nodes_one_edge:
+  fixture: synthetic-graph-simple.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    - path: [$length]
+      value: 3
+    - path: [0, "group"]
+      value: "nodes"
+    - path: [2, "group"]
+      value: "edges"
+
+test_simple_graph_input_node_shape:
+  fixture: synthetic-graph-simple.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    - path: [0, "data", "id"]
+      value: "the_input"
+    - path: [0, "data", "step_type"]
+      value: "data"
+    - path: [0, "data", "tool_id"]
+      value: null
+    - path: [0, "classes"]
+      value_set: ["type_data", "input"]
+
+test_simple_graph_tool_step_shape:
+  fixture: synthetic-graph-simple.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    - path: [1, "data", "id"]
+      value: "cat"
+    - path: [1, "data", "tool_id"]
+      value: "cat1"
+    - path: [1, "data", "step_type"]
+      value: "tool"
+    - path: [1, "classes"]
+      value_set: ["type_tool", "runnable"]
+
+test_simple_graph_edge_shape:
+  fixture: synthetic-graph-simple.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    - path: [2, "data", "id"]
+      value: "cat__input1__from__the_input"
+    - path: [2, "data", "source"]
+      value: "the_input"
+    - path: [2, "data", "target"]
+      value: "cat"
+    - path: [2, "data", "input"]
+      value: "input1"
+    - path: [2, "data", "output"]
+      value: null
+
+test_int_input_step_type:
+  fixture: synthetic-int-input.gxwf.yml
+  operation: cytoscape_node_ids
+  assertions:
+    - path: []
+      value_set: ["input_d", "num_lines", "random_lines"]
+
+test_int_input_carries_int_step_type:
+  fixture: synthetic-int-input.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    - path: [1, "data", "id"]
+      value: "num_lines"
+    - path: [1, "data", "step_type"]
+      value: "int"
+    - path: [1, "classes"]
+      value_set: ["type_int", "input"]
+
+test_subworkflow_step_classes:
+  fixture: synthetic-graph-with-subworkflow.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    - path: [2, "data", "id"]
+      value: "nested_workflow"
+    - path: [2, "data", "step_type"]
+      value: "subworkflow"
+    - path: [2, "classes"]
+      value_set: ["type_subworkflow", "runnable"]
+
+test_subworkflow_edges:
+  fixture: synthetic-graph-with-subworkflow.gxwf.yml
+  operation: cytoscape_edge_ids
+  assertions:
+    - path: []
+      value_set:
+        - "first_cat__input1__from__outer_input"
+        - "nested_workflow__inner_input__from__first_cat"
+
+test_subworkflow_edge_named_output:
+  fixture: synthetic-graph-with-subworkflow.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    # Edge from first_cat (named output 'out_file1') to nested_workflow.
+    - path: [4, "data", "id"]
+      value: "nested_workflow__inner_input__from__first_cat"
+    - path: [4, "data", "output"]
+      value: "out_file1"
+
+test_multi_data_inputs_distinct_ids:
+  fixture: synthetic-multi-data-input.gxwf.yml
+  operation: cytoscape_node_ids
+  assertions:
+    - path: []
+      value_set: ["optional", "required", "count_multi_file"]
+
+test_multi_data_inputs_two_edges:
+  fixture: synthetic-multi-data-input.gxwf.yml
+  operation: cytoscape_edge_ids
+  assertions:
+    - path: [$length]
+      value: 2
+    - path: []
+      value_any_contains: "from__required"
+    - path: []
+      value_any_contains: "from__optional"
+
+test_real_hacked_unicycler_repo_link_populated:
+  fixture: real-hacked-unicycler-assembly-extra-annotations.ga
+  operation: cytoscape_elements_to_list
+  assertions:
+    # First tool step in this workflow is fastQC; its tool_shed_repository should
+    # produce a tool-shed view URL on the corresponding cytoscape node.
+    - path: [3, "data", "id"]
+      value: "fastQC"
+    - path: [3, "data", "repo_link"]
+      value_matches: "^https://toolshed\\.g2\\.bx\\.psu\\.edu/view/devteam/fastqc/"
+
+test_real_sars_cov2_smoke:
+  fixture: real-sars-cov2-variant-calling.ga
+  operation: cytoscape_node_ids
+  assertions:
+    - path: []
+      value_any_contains: "Accessions file"
+    - path: []
+      value_any_contains: "SnpSift"
