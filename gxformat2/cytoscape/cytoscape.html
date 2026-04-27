@@ -4,11 +4,11 @@
 
 <head>
     <title>Galaxy Workflow</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.9.4/cytoscape.min.js"></script>
-    <script src="https://unpkg.com/popper.js@1.14.7/dist/umd/popper.js"></script>
-    <script src="https://unpkg.com/tippy.js@4.0.1/umd/index.all.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/tippy.js@4.0.1/index.css" />
-    <script src="https://cdn.jsdelivr.net/npm/cytoscape-popper@1.0.4/cytoscape-popper.min.js"></script>
+    <script src="https://unpkg.com/cytoscape@3.33.2/dist/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://unpkg.com/cytoscape-popper@2.0.0/cytoscape-popper.js"></script>
+    <script src="https://unpkg.com/tippy.js@6.3.7/dist/tippy.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6.3.7/dist/tippy.css" />
     <script>
 document.addEventListener("DOMContentLoaded", function() {
     var cy = cytoscape({
@@ -52,8 +52,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
   function makePopper(ele) {
     let ref = ele.popperRef(); // used only for positioning
+    let dummyDomEle = document.createElement('div');
 
-    ele.tippy = new tippy(ref, { // tippy options:
+    ele.tippy = tippy(dummyDomEle, { // tippy options:
+      getReferenceClientRect: ref.getBoundingClientRect.bind(ref),
       content: function() {
         let content = document.createElement('div');
 
@@ -89,7 +91,8 @@ document.addEventListener("DOMContentLoaded", function() {
       delay: [0,1000],
       interactive: true,
       placement: 'bottom',
-      trigger: 'manual' // probably want manual mode
+      trigger: 'manual', // probably want manual mode
+      appendTo: document.body
     });
   }
 
@@ -118,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function() {
         top: 0px;
         left: 0px;
     }
-    a { 
+    a {
         color: #d0bb46
     }
 </style>
