@@ -12,6 +12,9 @@ History
 * Declarative YAML-driven test coverage for ``gxformat2.mermaid``; fix
   ``_input_type_str`` to accept string input types (previous ``.value``
   attribute access crashed on real workflows).
+* Declarative YAML-driven test coverage for ``gxformat2.cytoscape``; stop
+  ``test_interop_generation`` from leaking ``tmp*.gxwf.*`` files into
+  ``tests/examples/cytoscape/`` on each run.
 
 
 ---------------------

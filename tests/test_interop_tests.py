@@ -8,6 +8,7 @@ the operations dict and fixture loader.
 import os
 from typing import Any, Callable, Dict
 
+from gxformat2.cytoscape import cytoscape_elements as _cytoscape_impl
 from gxformat2.examples import EXAMPLES_DIR, load
 from gxformat2.lint import lint_best_practices_format2 as _lint_bp_format2_impl
 from gxformat2.lint import lint_best_practices_ga as _lint_bp_ga_impl
@@ -112,6 +113,20 @@ def _workflow_to_mermaid_with_comments_lines(wf_dict):
     return _mermaid_impl(wf_dict, comments=True).split("\n")
 
 
+def _cytoscape_elements_to_list(wf_dict):
+    return _cytoscape_impl(wf_dict).to_list()
+
+
+def _cytoscape_node_ids(wf_dict):
+    flat = _cytoscape_impl(wf_dict).to_list()
+    return [el["data"]["id"] for el in flat if el["group"] == "nodes"]
+
+
+def _cytoscape_edge_ids(wf_dict):
+    flat = _cytoscape_impl(wf_dict).to_list()
+    return [el["data"]["id"] for el in flat if el["group"] == "edges"]
+
+
 EXPECTATIONS_DIR = os.path.join(EXAMPLES_DIR, "expectations")
 OPERATIONS: Dict[str, Callable[..., Any]] = {
     "normalized_format2": normalized_format2,
@@ -133,6 +148,9 @@ OPERATIONS: Dict[str, Callable[..., Any]] = {
     "workflow_to_mermaid": _workflow_to_mermaid,
     "workflow_to_mermaid_lines": _workflow_to_mermaid_lines,
     "workflow_to_mermaid_with_comments_lines": _workflow_to_mermaid_with_comments_lines,
+    "cytoscape_elements_to_list": _cytoscape_elements_to_list,
+    "cytoscape_node_ids": _cytoscape_node_ids,
+    "cytoscape_edge_ids": _cytoscape_edge_ids,
 }
 
 suite = DeclarativeTestSuite(
