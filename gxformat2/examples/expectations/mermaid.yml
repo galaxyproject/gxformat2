@@ -1,0 +1,131 @@
+# Mermaid flowchart generation from Galaxy workflows.
+# workflow_to_mermaid returns a single string; the _lines variants split on "\n"
+# so per-line assertions can use list-mode helpers ($length, value_any_contains).
+
+test_simple_graph_header:
+  fixture: synthetic-graph-simple.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: [0]
+      value: "graph LR"
+
+test_simple_graph_data_input_shape:
+  fixture: synthetic-graph-simple.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: []
+      value_any_contains: 'input_0>"the_input<br/><i>data</i>"]'
+
+test_simple_graph_tool_step_shape:
+  fixture: synthetic-graph-simple.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: []
+      value_any_contains: 'step_0["cat"]'
+
+test_simple_graph_edge:
+  fixture: synthetic-graph-simple.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: []
+      value_any_contains: "input_0 --> step_0"
+
+test_simple_graph_exact:
+  fixture: synthetic-graph-simple.gxwf.yml
+  operation: workflow_to_mermaid
+  assertions:
+    - path: []
+      value: |-
+        graph LR
+            input_0>"the_input<br/><i>data</i>"]
+            step_0["cat"]
+            input_0 --> step_0
+
+test_multi_data_inputs_distinct_ids:
+  fixture: synthetic-multi-data-input.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: []
+      value_any_contains: 'input_0>"optional<br/><i>data</i>"]'
+    - path: []
+      value_any_contains: 'input_1>"required<br/><i>data</i>"]'
+    - path: []
+      value_any_contains: "input_1 --> step_0"
+    - path: []
+      value_any_contains: "input_0 --> step_0"
+
+test_int_input_renders:
+  fixture: synthetic-int-input.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: []
+      value_any_contains: '"num_lines<br/><i>int</i>"'
+    - path: []
+      value_any_contains: '"input_d<br/><i>data</i>"'
+
+test_subworkflow_step_uses_double_bracket_shape:
+  fixture: synthetic-graph-with-subworkflow.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: []
+      value_any_contains: 'step_1[["nested_workflow"]]'
+    - path: []
+      value_any_contains: 'step_0["first_cat"]'
+    - path: []
+      value_any_contains: "step_0 --> step_1"
+
+test_frame_comments_ignored_by_default:
+  fixture: synthetic-comments-dict.gxwf.yml
+  operation: workflow_to_mermaid
+  assertions:
+    - path: []
+      value_contains: 'step_0["cat"]'
+
+test_frame_comments_not_emitted_without_flag:
+  fixture: synthetic-comments-dict.gxwf.yml
+  operation: workflow_to_mermaid
+  assertions:
+    - path: []
+      # Use [\s\S] instead of (?s) + . so both Python re and JS RegExp accept it.
+      value_matches: '^(?![\s\S]*subgraph)'
+
+test_frame_comments_rendered_as_subgraph:
+  fixture: synthetic-comments-dict.gxwf.yml
+  operation: workflow_to_mermaid_with_comments_lines
+  assertions:
+    - path: []
+      value_any_contains: 'subgraph sub_0 ["Preprocessing"]'
+    - path: []
+      value_any_contains: 'step_0["cat"]'
+    - path: []
+      value_any_contains: "end"
+    - path: []
+      value_any_contains: "input_0 --> step_0"
+
+test_basic_workflow_single_edge:
+  fixture: synthetic-basic.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: [0]
+      value: "graph LR"
+    - path: []
+      value_any_contains: 'input_0>"the_input<br/><i>data</i>"]'
+    - path: []
+      value_any_contains: 'step_0["cat"]'
+    - path: []
+      value_any_contains: "input_0 --> step_0"
+
+test_real_sars_cov2_shape:
+  fixture: real-sars-cov2-variant-calling.ga
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: [0]
+      value: "graph LR"
+    - path: []
+      value_any_contains: 'input_0>"Accessions file<br/><i>data</i>"]'
+    - path: []
+      value_any_contains: 'step_8["SnpSift summary table"]'
+    - path: []
+      value_any_contains: "input_0 --> step_0"
+    - path: []
+      value_any_contains: "step_6 --> step_8"

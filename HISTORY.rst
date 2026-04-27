@@ -9,7 +9,10 @@ History
 0.27.0.dev0
 ---------------------
 
-    
+* Declarative YAML-driven test coverage for ``gxformat2.mermaid``; fix
+  ``_input_type_str`` to accept string input types (previous ``.value``
+  attribute access crashed on real workflows).
+
 
 ---------------------
 0.26.0 (2026-04-17)

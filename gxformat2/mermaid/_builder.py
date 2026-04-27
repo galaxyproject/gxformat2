@@ -46,10 +46,10 @@ def _input_type_str(inp: BaseInputParameter) -> str:
     if type_ is None:
         return "input"
     if isinstance(type_, list):
-        if type_:
-            return type_[0].value
-        return "input"
-    return type_.value
+        if not type_:
+            return "input"
+        type_ = type_[0]
+    return getattr(type_, "value", type_)
 
 
 def _node_line(node_id: str, label: str, shape: tuple[str, str]) -> str:
