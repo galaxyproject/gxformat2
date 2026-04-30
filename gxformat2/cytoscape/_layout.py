@@ -32,6 +32,7 @@ LAYOUT_NAMES: tuple[str, ...] = get_args(LayoutName)
 
 
 def is_layout_name(value: str) -> bool:
+    """Return True if ``value`` is one of the supported Cytoscape layout names."""
     return value in LAYOUT_NAMES
 
 
