@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from gxformat2._labels import Labels
 from gxformat2.normalized import ensure_format2, NormalizedFormat2, NormalizedWorkflowStep
 from gxformat2.schema.gxformat2 import BaseInputParameter, GalaxyType, GalaxyWorkflow
 
@@ -125,7 +126,8 @@ def _step_node(step: NormalizedWorkflowStep, order_index: int) -> CytoscapeNode:
     if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
         tool_id = tool_id[len(MAIN_TS_PREFIX) :]
 
-    label = step.label or step.id or (f"tool:{tool_id}" if tool_id else str(order_index))
+    display_id = step.id if step.id and not Labels.is_unlabeled(step.id) else None
+    label = step.label or display_id or (f"tool:{tool_id}" if tool_id else str(order_index))
 
     repo_link = None
     if step.tool_shed_repository:
