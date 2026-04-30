@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from gxformat2._labels import Labels
 from gxformat2.normalized import ensure_format2, NormalizedFormat2
 from gxformat2.schema.gxformat2 import BaseInputParameter, FrameComment, GalaxyWorkflow
 
@@ -101,7 +102,8 @@ def workflow_to_mermaid(
         if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
             tool_id = tool_id[len(MAIN_TS_PREFIX) :]
 
-        label = _sanitize_label(step.label or step.id or (f"tool:{tool_id}" if tool_id else str(i)))
+        display_id = step.id if step.id and not Labels.is_unlabeled(step.id) else None
+        label = _sanitize_label(step.label or display_id or (f"tool:{tool_id}" if tool_id else str(i)))
         step_type = step.type_.value if step.type_ else "tool"
         step_lines[step_label] = _node_line(node_id, label, STEP_TYPE_SHAPES.get(step_type, SHAPE_TOOL))
 

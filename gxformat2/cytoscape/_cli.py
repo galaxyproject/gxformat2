@@ -5,6 +5,7 @@ import os
 import sys
 
 from ._builder import cytoscape_elements
+from ._layout import LAYOUT_NAMES
 from ._render import render_html
 
 SCRIPT_DESCRIPTION = """
@@ -19,20 +20,23 @@ Cytoscape.
 """
 
 
-def to_cytoscape(workflow_path: str, output_path=None):
+def to_cytoscape(workflow_path: str, output_path=None, layout: str = "preset"):
     """Produce cytoscape output for supplied workflow path."""
     if output_path is None:
         output_path, _ = os.path.splitext(workflow_path)
         output_path += ".html"
 
-    elements = cytoscape_elements(workflow_path)
+    elements = cytoscape_elements(workflow_path, layout=layout)
 
     if output_path.endswith(".html"):
         with open(output_path, "w") as f:
-            f.write(render_html(elements))
+            f.write(render_html(elements, layout=layout))
     else:
+        # Bare flat list for ``preset`` (back-compat); wrapped {elements, layout}
+        # otherwise so the layout hint travels with the JSON.
+        payload = elements.to_list() if layout == "preset" else elements.to_dict()
         with open(output_path, "w") as f:
-            json.dump(elements.to_list(), f)
+            json.dump(payload, f)
 
 
 def main(argv=None):
@@ -41,7 +45,7 @@ def main(argv=None):
         argv = sys.argv[1:]
 
     args = _parser().parse_args(argv)
-    to_cytoscape(args.input_path, args.output_path)
+    to_cytoscape(args.input_path, args.output_path, layout=args.layout)
 
 
 def _parser():
@@ -50,4 +54,14 @@ def _parser():
     parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
     parser.add_argument("input_path", metavar="INPUT", type=str, help="input workflow path (.ga/gxwf.yml)")
     parser.add_argument("output_path", metavar="OUTPUT", type=str, nargs="?", help="output viz path (.json/.html)")
+    parser.add_argument(
+        "--layout",
+        type=str,
+        default="preset",
+        choices=list(LAYOUT_NAMES),
+        help=(
+            "Layout strategy: preset (default; honors workflow positions), "
+            "topological (computed leveled layout), dagre, breadthfirst, grid, cose, random"
+        ),
+    )
     return parser

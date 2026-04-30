@@ -5,13 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from gxformat2._labels import Labels
 from gxformat2.normalized import ensure_format2, NormalizedFormat2, NormalizedWorkflowStep
 from gxformat2.schema.gxformat2 import BaseInputParameter, GalaxyType, GalaxyWorkflow
 
+from ._layout import bakes_coordinates, is_layout_name, topological_positions
 from .models import (
     CytoscapeEdge,
     CytoscapeEdgeData,
     CytoscapeElements,
+    CytoscapeLayout,
     CytoscapeNode,
     CytoscapeNodeData,
     CytoscapePosition,
@@ -22,12 +25,22 @@ MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
 
 def cytoscape_elements(
     workflow: dict[str, Any] | str | Path | GalaxyWorkflow | NormalizedFormat2,
+    *,
+    layout: str = "preset",
 ) -> CytoscapeElements:
     """Build Cytoscape visualization elements from a Galaxy workflow.
 
     Accepts anything ``normalized_format2()`` supports, plus an already
     normalized ``NormalizedFormat2`` instance.
+
+    ``layout`` selects the placement strategy (default ``preset``); see
+    ``_layout.py`` and the cross-language spec for details.
     """
+    if not is_layout_name(layout):
+        raise ValueError(
+            f'Unknown layout "{layout}". Valid values: ' "preset, topological, dagre, breadthfirst, grid, cose, random."
+        )
+
     if isinstance(workflow, NormalizedFormat2):
         nf2 = workflow
     else:
@@ -44,7 +57,25 @@ def cytoscape_elements(
         nodes.append(_step_node(step, i + inputs_offset))
         edges.extend(_step_edges(step, nf2))
 
-    return CytoscapeElements(nodes=nodes, edges=edges)
+    elements = CytoscapeElements(nodes=nodes, edges=edges)
+
+    if layout == "preset":
+        return elements
+
+    if bakes_coordinates(layout):
+        # Currently only ``topological`` reaches here.
+        positions = topological_positions(elements)
+        for node in nodes:
+            p = positions.get(node.data.id)
+            if p is not None:
+                node.position = p
+    else:
+        # Hint-only layout: drop coordinates; the runtime renderer places nodes.
+        for node in nodes:
+            node.position = None
+
+    elements.layout = CytoscapeLayout(name=layout)
+    return elements
 
 
 def _fallback_position(order_index: int) -> CytoscapePosition:
@@ -95,7 +126,8 @@ def _step_node(step: NormalizedWorkflowStep, order_index: int) -> CytoscapeNode:
     if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
         tool_id = tool_id[len(MAIN_TS_PREFIX) :]
 
-    label = step.label or step.id or (f"tool:{tool_id}" if tool_id else str(order_index))
+    display_id = step.id if step.id and not Labels.is_unlabeled(step.id) else None
+    label = step.label or display_id or (f"tool:{tool_id}" if tool_id else str(order_index))
 
     repo_link = None
     if step.tool_shed_repository:
