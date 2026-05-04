@@ -216,7 +216,7 @@ def _normalize_native_for_validation(data: dict[str, Any]) -> dict[str, Any]:
         for key, step in data["steps"].items():
             if isinstance(step, dict):
                 step = _normalize_step_for_validation(step)
-            steps[key] = step
+            steps[str(key)] = step  # Galaxy may use integer order_index as keys
         data["steps"] = steps
     return data
 
