@@ -44,10 +44,10 @@ from ..schema.gxformat2 import (
     FrameComment,
     FreehandComment,
     GalaxyWorkflow,
-    input_parameter_class,
     MarkdownComment,
     Report,
 )
+from ..schema._input_parameter import input_parameter_class
 from ..schema.gxformat2 import StepPosition as Format2StepPosition
 from ..schema.gxformat2 import (
     TextComment,
