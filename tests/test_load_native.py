@@ -31,6 +31,19 @@ class TestLoadNativeStrict:
         result = load_native(wf, strict=True)
         assert result.tags == ["a", "b"]
 
+    def test_integer_step_keys_rejected(self):
+        wf = {
+            **MINIMAL_WORKFLOW,
+            "steps": {
+                0: {
+                    "id": 0,
+                    "type": "data_input",
+                },
+            },
+        }
+        with pytest.raises(ValidationError, match="Input should be a valid string"):
+            load_native(wf, strict=True)
+
 
 class TestLoadNativeLax:
     """Lax mode normalizes known quirks."""
@@ -126,6 +139,20 @@ class TestLoadNativeLax:
         result = load_native(wf, strict=False)
         pja = result.steps["0"].post_job_actions["RenameOut"]
         assert pja.action_arguments == {"newname": "renamed"}
+
+    def test_integer_step_keys_normalized_to_strings(self):
+        """Galaxy serializes steps with integer order_index keys; lax mode converts them to strings."""
+        wf = {
+            **MINIMAL_WORKFLOW,
+            "steps": {
+                0: {
+                    "id": 0,
+                    "type": "data_input",
+                },
+            },
+        }
+        result = load_native(wf, strict=False)
+        assert set(result.steps.keys()) == {"0"}
 
     def test_does_not_mutate_input(self):
         wf = {**MINIMAL_WORKFLOW, "tags": "a,b"}
