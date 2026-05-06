@@ -3569,7 +3569,10 @@ class BaseDataParameter(BaseInputParameter):
 
 class WorkflowDataParameter(BaseDataParameter):
     """
-    A data input parameter for a Galaxy workflow - represents a dataset.
+    A data input parameter for a Galaxy workflow. Represents one Galaxy dataset.
+    Normalized gxformat2 output uses ``type: data``. ``type: File`` is accepted as
+    an alias, but should not be confused with workflow test job syntax where
+    ``type: File`` means stage a file as test input data.
 
     """
 
@@ -4957,7 +4960,9 @@ class MinMax(Saveable):
 
 class WorkflowIntegerParameter(BaseInputParameter, MinMax):
     """
-    An integer input parameter for a Galaxy workflow.
+    A scalar integer workflow parameter. Normalized gxformat2 output uses
+    ``type: int``. ``type: integer`` is accepted for compatibility with native
+    Galaxy parameter state and Galaxy tool XML terminology.
 
     """
 
@@ -6191,7 +6196,9 @@ class WorkflowFloatParameter(BaseInputParameter, MinMax):
 
 class WorkflowTextParameter(BaseInputParameter):
     """
-    A text input parameter for a Galaxy workflow.
+    A scalar text workflow parameter. Normalized gxformat2 output uses
+    ``type: string``. ``type: text`` is accepted for compatibility with native
+    Galaxy parameter state and Galaxy tool XML terminology.
 
     """
 
@@ -15376,12 +15383,15 @@ GalaxyTypeLoader = _EnumLoader(
     "GalaxyType",
 )
 """
-Extends primitive types with the native Galaxy concepts such datasets and collections.
-integer: an alias for int type - matches syntax used by Galaxy tools
-text: an alias for string type - matches syntax used by Galaxy tools
-File: an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future
-data: a Galaxy dataset
-collection: a Galaxy dataset collection
+Extends primitive types with the native Galaxy concepts such as datasets and collections.
+Normalized gxformat2 workflow input declaration spellings are ``data``, ``collection``, ``string``, ``int``, ``float``, and ``boolean``. Other spellings are accepted as compatibility aliases on import but normalized gxformat2 output emits the normalized spellings.
+data: one Galaxy dataset input. Native Galaxy ``data_input`` converts to this spelling.
+File: accepted alias for ``data``, but normalized gxformat2 output emits ``data``. Note: workflow **test job** YAML uses ``type: File`` to mean 'stage this file as test input data', which is a separate concept from workflow input declaration.
+collection: one Galaxy dataset collection input. Native Galaxy ``data_collection_input`` converts to this spelling.
+string: normalized gxformat2 spelling for native Galaxy text workflow parameters.
+text: accepted alias for ``string`` because native Galaxy parameter state and Galaxy tool XML terminology use ``text``.
+int: normalized gxformat2 spelling for native Galaxy integer workflow parameters.
+integer: accepted alias for ``int`` because native Galaxy parameter state and Galaxy tool XML terminology use ``integer``.
 """
 WorkflowStepTypeLoader = _EnumLoader(
     (
