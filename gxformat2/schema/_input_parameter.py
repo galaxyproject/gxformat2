@@ -8,6 +8,8 @@ Lives outside the generated modules in this package so ``build_schema.sh``
 regeneration does not clobber it.
 """
 
+from __future__ import annotations
+
 from .gxformat2 import (
     BaseInputParameter,
     WorkflowBooleanParameter,
