@@ -1,5 +1,4 @@
-"""Hand-written helper for resolving Format2 input ``type`` strings to the
-corresponding pydantic model class.
+"""Resolve Format2 input ``type`` strings to pydantic model classes.
 
 The discriminator map mirrors ``pydantic:discriminator_map`` on
 ``Process.inputs`` in ``schema/v19_09/Process.yml``. Keep the two in sync.
