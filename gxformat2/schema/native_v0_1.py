@@ -3677,54 +3677,53 @@ class NativePostJobAction(Saveable):
                             "is not valid because:",
                         )
                     )
-        try:
-            if _doc.get("output_name") is None:
-                raise ValidationException("missing required field `output_name`", None, [])
-
-            output_name = load_field(
-                _doc.get("output_name"),
-                strtype,
-                baseuri,
-                loadingOptions,
-                lc=_doc.get("output_name")
-            )
-
-        except ValidationException as e:
-            error_message, to_print, verb_tensage = parse_errors(str(e))
-
-            if str(e) == "missing required field `output_name`":
-                _errors__.append(
-                    ValidationException(
-                        str(e),
-                        None
-                    )
+        output_name = None
+        if "output_name" in _doc:
+            try:
+                output_name = load_field(
+                    _doc.get("output_name"),
+                    union_of_strtype_or_None_type,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("output_name")
                 )
-            else:
-                val = _doc.get("output_name")
-                if error_message != str(e):
-                    val_type = convert_typing(extract_type(type(val)))
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `output_name`":
                     _errors__.append(
                         ValidationException(
-                            "the `output_name` field is not valid because:",
-                            SourceLine(_doc, "output_name", str),
-                            [ValidationException(f"Value is a {val_type}, "
-                                                 f"but valid {to_print} for this field "
-                                                 f"{verb_tensage} {error_message}",
-                                                 detailed_message=f"Value `{val}` is a {val_type}, "
-                                                 f"but valid {to_print} for this field "
-                                                 f"{verb_tensage} {error_message}")],
+                            str(e),
+                            None
                         )
                     )
                 else:
-                    _errors__.append(
-                        ValidationException(
-                            "the `output_name` field is not valid because:",
-                            SourceLine(_doc, "output_name", str),
-                            [e],
-                            detailed_message=f"the `output_name` field with value `{val}` "
-                            "is not valid because:",
+                    val = _doc.get("output_name")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `output_name` field is not valid because:",
+                                SourceLine(_doc, "output_name", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
                         )
-                    )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `output_name` field is not valid because:",
+                                SourceLine(_doc, "output_name", str),
+                                [e],
+                                detailed_message=f"the `output_name` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
         action_arguments = None
         if "action_arguments" in _doc:
             try:
@@ -11766,6 +11765,12 @@ union_of_None_type_or_inttype = _UnionLoader(
     (
         None_type,
         inttype,
+    )
+)
+union_of_strtype_or_None_type = _UnionLoader(
+    (
+        strtype,
+        None_type,
     )
 )
 union_of_None_type_or_Any_type = _UnionLoader(

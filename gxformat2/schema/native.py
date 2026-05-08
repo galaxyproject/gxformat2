@@ -198,7 +198,7 @@ Common action types: ``HideDatasetAction``, ``RenameDatasetAction``,
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
     action_type: str = Field(description="The action type identifier (e.g. ``HideDatasetAction``).")
-    output_name: str = Field(description="The step output this action applies to.")
+    output_name: str | None = Field(default=None, description="The step output this action applies to.  Optional: action types that operate on the step as a whole (e.g. ``ValidateOutputsAction``) omit this field.")
     action_arguments: dict[str, Any] | None = Field(default=None, description="Action-specific arguments. For ``RenameDatasetAction``: ``{\"newname\": \"...\"}``; for ``ChangeDatatypeAction``: ``{\"newtype\": \"tabular\"}``; for ``TagDatasetAction``: ``{\"tags\": \"name:tag\"...")
 
 class NativeTextCommentData(BaseModel):

@@ -1,0 +1,31 @@
+test_step_post_job_actions_normalized:
+  fixture: synthetic-step-post-job-actions.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, post_job_actions, ValidateOutputsAction, action_type]
+      value: ValidateOutputsAction
+
+test_step_post_job_actions_to_native:
+  fixture: synthetic-step-post-job-actions.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", post_job_actions, ValidateOutputsAction, action_type]
+      value: ValidateOutputsAction
+
+test_step_post_job_actions_round_trip:
+  fixture: synthetic-step-post-job-actions.gxwf.yml
+  operation: ensure_native
+  assertions:
+    - path: [steps, "1", post_job_actions, ValidateOutputsAction, action_type]
+      value: ValidateOutputsAction
+
+test_step_post_job_actions_merged_with_out_shorthand:
+  fixture: synthetic-step-post-job-actions-merged.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", post_job_actions, ValidateOutputsAction, action_type]
+      value: ValidateOutputsAction
+    - path: [steps, "1", post_job_actions, RenameDatasetActionout_file1, action_type]
+      value: RenameDatasetAction
+    - path: [steps, "1", post_job_actions, RenameDatasetActionout_file1, output_name]
+      value: out_file1

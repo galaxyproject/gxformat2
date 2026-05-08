@@ -358,6 +358,7 @@ to representing `state` this way is defining inputs with default values."""
     out: list[WorkflowStepOutput | str] | dict[str, WorkflowStepOutput | str] | None = Field(default=None, description="Defines the parameters representing the output of the process.  May be used to generate and/or validate the output object.  This can also be called 'outputs' for legacy reasons - but the resulting ...")
     state: dict[str, Any] | None = Field(default=None, description="Structured tool state.")
     tool_state: str | dict[str, Any] | None = Field(default=None, description="Unstructured tool state.")
+    post_job_actions: dict[str, Any] | None = Field(default=None, description="Optional dict of post-job actions keyed by ``{ActionType}{OutputName}`` compound strings.  Same shape as the native ``post_job_actions`` field; each value is a record with ``action_type``, ``output...")
     type_: None | WorkflowStepType = Field(default=None, alias="type", description="Workflow step module's type (defaults to 'tool').")
     run: GalaxyWorkflow | str | dict[str, Any] | None = Field(default=None, description="Specifies a subworkflow to run. May be an inline workflow definition, a URL string, or an @import reference dict.")
     runtime_inputs: None | list[str] = Field(default=None)

@@ -399,6 +399,21 @@ $graph:
         noLinkCheck: true
       doc: |
         Unstructured tool state.
+    - name: post_job_actions
+      type: Any?
+      pydantic:type: "dict[str, Any] | None"
+      jsonldPredicate:
+        _id: "gxformat2:post_job_actions"
+        noLinkCheck: true
+      doc: |
+        Optional dict of post-job actions keyed by ``{ActionType}{OutputName}``
+        compound strings.  Same shape as the native ``post_job_actions`` field;
+        each value is a record with ``action_type``, ``output_name``,
+        ``action_arguments``.  Use the ``out:`` shorthand (``rename:``,
+        ``hide:``, ``change_datatype:``, etc.) for common actions; this
+        explicit form covers actions without an ``out:`` shorthand
+        (``ValidateOutputsAction``, etc.) and any case where the typed
+        record is preferred.
     - name: type
       type: WorkflowStepType?
       jsonldPredicate:
