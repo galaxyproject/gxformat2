@@ -617,3 +617,17 @@
   description: List-form steps without labels — triggers "no label" warning.
   tests:
     - tests/test_interop_tests.py
+
+- file: format2/synthetic-int-link.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: $link value as a YAML integer; coerced to str during source resolution.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-multisource-bare-list.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: "Dict-form in: value as a bare list of source references (mapPredicate shorthand for multi-source)."
+  tests:
+    - tests/test_interop_tests.py
