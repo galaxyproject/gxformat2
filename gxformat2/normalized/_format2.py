@@ -25,7 +25,6 @@ from gxformat2.schema.gxformat2 import (
     FrameComment,
     FreehandComment,
     GalaxyWorkflow,
-    input_parameter_class,
     MarkdownComment,
     Report,
     StepPosition,
@@ -38,6 +37,7 @@ from gxformat2.schema.gxformat2 import (
     WorkflowStepOutput,
     WorkflowStepType,
 )
+from gxformat2.schema._input_parameter import input_parameter_class
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWorkflow
 from gxformat2.yaml import ordered_load_path
 
