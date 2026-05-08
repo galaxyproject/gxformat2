@@ -248,7 +248,10 @@ or Organization (<a href="https://schema.org/Organization">https://schema.org/Or
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>If listed should correspond to the release of the workflow in its source reposiory.</p>
 </div>
-</div></div><h2 id="WorkflowDataParameter" class="section">WorkflowDataParameter <a href="#WorkflowDataParameter">&sect;</a></h2><p>A data input parameter for a Galaxy workflow - represents a dataset.</p>
+</div></div><h2 id="WorkflowDataParameter" class="section">WorkflowDataParameter <a href="#WorkflowDataParameter">&sect;</a></h2><p>A data input parameter for a Galaxy workflow. Represents one Galaxy dataset.
+Normalized gxformat2 output uses <code>type: data</code>. <code>type: File</code> is accepted as
+an alias, but should not be confused with workflow test job syntax where
+<code>type: File</code> means stage a file as test input data.</p>
 <h3>Fields</h3>
 <div class="responsive-table">
 <div class="row responsive-table-header">
@@ -261,7 +264,13 @@ or Organization (<a href="https://schema.org/Organization">https://schema.org/Or
 <div class="col-xs-3 col-lg-2"><code>optional</code></div>
 <div class="col-xs-2 col-lg-1">required</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+<div class="col-xs-12 col-lg-6 description-col"><p>Controls whether Galaxy allows invocation of the workflow without a
+user-supplied value for this input. If <code>true</code>, the input may be omitted
+at invocation time. <code>optional</code> and <code>default</code> are independent: a
+required input (<code>optional: false</code>) may still declare a <code>default</code>,
+and an optional input may have no <code>default</code>. <code>default</code> supplies a
+value when the invocation input is missing or <code>null</code>; <code>optional</code>
+controls whether the missing case is even permitted.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -350,7 +359,13 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-3 col-lg-2"><code>optional</code></div>
 <div class="col-xs-2 col-lg-1">required</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+<div class="col-xs-12 col-lg-6 description-col"><p>Controls whether Galaxy allows invocation of the workflow without a
+user-supplied value for this input. If <code>true</code>, the input may be omitted
+at invocation time. <code>optional</code> and <code>default</code> are independent: a
+required input (<code>optional: false</code>) may still declare a <code>default</code>,
+and an optional input may have no <code>default</code>. <code>default</code> supplies a
+value when the invocation input is missing or <code>null</code>; <code>optional</code>
+controls whether the missing case is even permitted.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -411,7 +426,9 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-12 col-lg-6 description-col"><p>Collection type (defaults to <code>list</code> if <code>type</code> is <code>collection</code>). Nested
 collection types are separated with colons, e.g. <code>list:list:paired</code>.</p>
 </div>
-</div></div><h2 id="WorkflowIntegerParameter" class="section">WorkflowIntegerParameter <a href="#WorkflowIntegerParameter">&sect;</a></h2><p>An integer input parameter for a Galaxy workflow.</p>
+</div></div><h2 id="WorkflowIntegerParameter" class="section">WorkflowIntegerParameter <a href="#WorkflowIntegerParameter">&sect;</a></h2><p>A scalar integer workflow parameter. Normalized gxformat2 output uses
+<code>type: int</code>. <code>type: integer</code> is accepted for compatibility with native
+Galaxy parameter state and Galaxy tool XML terminology.</p>
 <h3>Fields</h3>
 <div class="responsive-table">
 <div class="row responsive-table-header">
@@ -424,7 +441,13 @@ collection types are separated with colons, e.g. <code>list:list:paired</code>.<
 <div class="col-xs-3 col-lg-2"><code>optional</code></div>
 <div class="col-xs-2 col-lg-1">required</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+<div class="col-xs-12 col-lg-6 description-col"><p>Controls whether Galaxy allows invocation of the workflow without a
+user-supplied value for this input. If <code>true</code>, the input may be omitted
+at invocation time. <code>optional</code> and <code>default</code> are independent: a
+required input (<code>optional: false</code>) may still declare a <code>default</code>,
+and an optional input may have no <code>default</code>. <code>default</code> supplies a
+value when the invocation input is missing or <code>null</code>; <code>optional</code>
+controls whether the missing case is even permitted.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -497,7 +520,13 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-3 col-lg-2"><code>optional</code></div>
 <div class="col-xs-2 col-lg-1">required</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+<div class="col-xs-12 col-lg-6 description-col"><p>Controls whether Galaxy allows invocation of the workflow without a
+user-supplied value for this input. If <code>true</code>, the input may be omitted
+at invocation time. <code>optional</code> and <code>default</code> are independent: a
+required input (<code>optional: false</code>) may still declare a <code>default</code>,
+and an optional input may have no <code>default</code>. <code>default</code> supplies a
+value when the invocation input is missing or <code>null</code>; <code>optional</code>
+controls whether the missing case is even permitted.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -557,7 +586,9 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
 <div class="col-xs-12 col-lg-6 description-col"></div>
-</div></div><h2 id="WorkflowTextParameter" class="section">WorkflowTextParameter <a href="#WorkflowTextParameter">&sect;</a></h2><p>A text input parameter for a Galaxy workflow.</p>
+</div></div><h2 id="WorkflowTextParameter" class="section">WorkflowTextParameter <a href="#WorkflowTextParameter">&sect;</a></h2><p>A scalar text workflow parameter. Normalized gxformat2 output uses
+<code>type: string</code>. <code>type: text</code> is accepted for compatibility with native
+Galaxy parameter state and Galaxy tool XML terminology.</p>
 <h3>Fields</h3>
 <div class="responsive-table">
 <div class="row responsive-table-header">
@@ -570,7 +601,13 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-3 col-lg-2"><code>optional</code></div>
 <div class="col-xs-2 col-lg-1">required</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+<div class="col-xs-12 col-lg-6 description-col"><p>Controls whether Galaxy allows invocation of the workflow without a
+user-supplied value for this input. If <code>true</code>, the input may be omitted
+at invocation time. <code>optional</code> and <code>default</code> are independent: a
+required input (<code>optional: false</code>) may still declare a <code>default</code>,
+and an optional input may have no <code>default</code>. <code>default</code> supplies a
+value when the invocation input is missing or <code>null</code>; <code>optional</code>
+controls whether the missing case is even permitted.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -629,7 +666,13 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-3 col-lg-2"><code>optional</code></div>
 <div class="col-xs-2 col-lg-1">required</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+<div class="col-xs-12 col-lg-6 description-col"><p>Controls whether Galaxy allows invocation of the workflow without a
+user-supplied value for this input. If <code>true</code>, the input may be omitted
+at invocation time. <code>optional</code> and <code>default</code> are independent: a
+required input (<code>optional: false</code>) may still declare a <code>default</code>,
+and an optional input may have no <code>default</code>. <code>default</code> supplies a
+value when the invocation input is missing or <code>null</code>; <code>optional</code>
+controls whether the missing case is even permitted.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -690,7 +733,13 @@ of the specific parameter types instead.</p>
 <div class="col-xs-3 col-lg-2"><code>optional</code></div>
 <div class="col-xs-2 col-lg-1">required</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a> | <a href="#PrimitiveType">null</a></div>
-<div class="col-xs-12 col-lg-6 description-col"><p>If set to true, <code>WorkflowInputParameter</code> is not required to submit the workflow.</p>
+<div class="col-xs-12 col-lg-6 description-col"><p>Controls whether Galaxy allows invocation of the workflow without a
+user-supplied value for this input. If <code>true</code>, the input may be omitted
+at invocation time. <code>optional</code> and <code>default</code> are independent: a
+required input (<code>optional: false</code>) may still declare a <code>default</code>,
+and an optional input may have no <code>default</code>. <code>default</code> supplies a
+value when the invocation input is missing or <code>null</code>; <code>optional</code>
+controls whether the missing case is even permitted.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
@@ -765,8 +814,8 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-12 col-lg-6 description-col"><p>Collection type (defaults to <code>list</code> if <code>type</code> is <code>collection</code>). Nested
 collection types are separated with colons, e.g. <code>list:list:paired</code>.</p>
 </div>
-</div></div><h3 id="GalaxyType" class="section">GalaxyType <a href="#GalaxyType">&sect;</a></h3><p>Extends primitive types with the native Galaxy concepts such datasets and collections.</p>
-<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> 32-bit signed integer</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> Unicode character sequence</td></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> 32-bit signed integer</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> Unicode character sequence</td></tr><tr><td><code>integer</code></td><td> an alias for int type - matches syntax used by Galaxy tools</td></tr><tr><td><code>text</code></td><td> an alias for string type - matches syntax used by Galaxy tools</td></tr><tr><td><code>File</code></td><td> an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future</td></tr><tr><td><code>data</code></td><td> a Galaxy dataset</td></tr><tr><td><code>collection</code></td><td> a Galaxy dataset collection</td></tr></table><h2 id="WorkflowOutputParameter" class="section">WorkflowOutputParameter <a href="#WorkflowOutputParameter">&sect;</a></h2><p>Describe an output parameter of a workflow.  The parameter must be
+</div></div><h3 id="GalaxyType" class="section">GalaxyType <a href="#GalaxyType">&sect;</a></h3><p>Extends primitive types with the native Galaxy concepts such as datasets and collections.Normalized gxformat2 workflow input declaration spellings are <code>data</code>, <code>collection</code>, <code>string</code>, <code>int</code>, <code>float</code>, and <code>boolean</code>. Other spellings are accepted as compatibility aliases on import but normalized gxformat2 output emits the normalized spellings.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> normalized gxformat2 spelling for native Galaxy integer workflow parameters.</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> normalized gxformat2 spelling for native Galaxy text workflow parameters.</td></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> normalized gxformat2 spelling for native Galaxy integer workflow parameters.</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> normalized gxformat2 spelling for native Galaxy text workflow parameters.</td></tr><tr><td><code>integer</code></td><td> accepted alias for ``int`` because native Galaxy parameter state and Galaxy tool XML terminology use ``integer``.</td></tr><tr><td><code>text</code></td><td> accepted alias for ``string`` because native Galaxy parameter state and Galaxy tool XML terminology use ``text``.</td></tr><tr><td><code>File</code></td><td> accepted alias for ``data``, but normalized gxformat2 output emits ``data``. Note: workflow **test job** YAML uses ``type: File`` to mean 'stage this file as test input data', which is a separate concept from workflow input declaration.</td></tr><tr><td><code>data</code></td><td> one Galaxy dataset input. Native Galaxy ``data_input`` converts to this spelling.</td></tr><tr><td><code>collection</code></td><td> one Galaxy dataset collection input. Native Galaxy ``data_collection_input`` converts to this spelling.</td></tr></table><h2 id="WorkflowOutputParameter" class="section">WorkflowOutputParameter <a href="#WorkflowOutputParameter">&sect;</a></h2><p>Describe an output parameter of a workflow.  The parameter must be
 connected to one parameter defined in the workflow that
 will provide the value of the output parameter. It is legal to
 connect a WorkflowInputParameter to a WorkflowOutputParameter.</p>
