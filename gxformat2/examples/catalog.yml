@@ -649,3 +649,19 @@
   description: Step has both out:-shorthand and explicit post_job_actions; both flow to native.
   tests:
     - tests/test_interop_tests.py
+
+# --- step-input default fixtures (issue #207) ---
+
+- file: format2/synthetic-step-input-default-scalar.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: "Tool step with scalar tool-state defaults via in/param/default."
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-step-input-default-file.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: "Tool step with an inline File-class default via in/input1/default."
+  tests:
+    - tests/test_interop_tests.py

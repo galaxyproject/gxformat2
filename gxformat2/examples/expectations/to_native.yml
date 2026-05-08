@@ -149,3 +149,31 @@ test_to_native_comments_dict:
   assertions:
     - path: [comments, $length]
       value: 3
+
+test_to_native_step_input_default_scalar:
+  fixture: synthetic-step-input-default-scalar.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", tool_id]
+      value: random_lines1
+    - path: [steps, "1", in_,num_lines, default]
+      value: 2
+    - path: [steps, "1", in_,"seed_source|seed_source_selector", default]
+      value: set_seed
+    - path: [steps, "1", in_,"seed_source|seed", default]
+      value: asdf
+
+test_to_native_step_input_default_file:
+  fixture: synthetic-step-input-default-file.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", type_]
+      value: tool
+    - path: [steps, "0", tool_id]
+      value: cat1
+    - path: [steps, "0", in_,input1, default, class]
+      value: File
+    - path: [steps, "0", in_,input1, default, basename]
+      value: a file

@@ -1335,6 +1335,7 @@ def _build_tool_step(
         when=step.when,
         uuid=step.uuid,
         errors=step.errors,
+        in_=_extract_step_in_defaults(step),
     )
 
 
@@ -1383,6 +1384,7 @@ def _build_subworkflow_step(
         position=position,
         when=step.when,
         uuid=step.uuid,
+        in_=_extract_step_in_defaults(step),
     )
 
 
@@ -1462,6 +1464,27 @@ def _extract_connections(step: NormalizedWorkflowStep) -> dict[str, list]:
             else:
                 connect[input_id] = [source]
     return connect
+
+
+def _extract_step_in_defaults(step: NormalizedWorkflowStep) -> dict[str, Any] | None:
+    """Collect ``in: {param: {default: ...}}`` entries for native ``step["in"]``.
+
+    Galaxy reads ``step_dict["in"][name]["default"]`` to seed
+    ``WorkflowStepInput.default_value`` (see
+    ``galaxy.managers.workflows`` ``__module_from_dict``). Format2 surfaces
+    these as ``WorkflowStepInput.default`` on the normalized step; keep them
+    on the native side so tool-state defaults and File-class defaults are
+    not lost.
+    """
+    in_defaults: dict[str, Any] = {}
+    for step_input in step.in_:
+        input_id = step_input.id
+        if input_id is None:
+            continue
+        if step_input.default is None:
+            continue
+        in_defaults[input_id] = {"default": step_input.default}
+    return in_defaults or None
 
 
 def _build_input_connections(
