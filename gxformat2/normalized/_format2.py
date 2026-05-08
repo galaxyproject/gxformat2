@@ -587,6 +587,8 @@ def _resolve_links(
 
     if isinstance(value, dict) and "$link" in value:
         link_value = value["$link"]
+        if isinstance(link_value, int) and not isinstance(link_value, bool):
+            link_value = str(link_value)
         connections.setdefault(key, []).append(link_value)
         return dict(_CONNECTED_VALUE), connections
 
@@ -602,6 +604,8 @@ def _resolve_links(
         for i, v in enumerate(value):
             if isinstance(v, dict) and "$link" in v:
                 link_value = v["$link"]
+                if isinstance(link_value, int) and not isinstance(link_value, bool):
+                    link_value = str(link_value)
                 connections.setdefault(key, []).append(link_value)
                 new_list.append(None)
             else:
@@ -614,7 +618,7 @@ def _resolve_links(
 
 
 def _normalize_step_inputs(
-    in_: list[WorkflowStepInput] | dict[str, WorkflowStepInput | str] | None,
+    in_: list[WorkflowStepInput] | dict[str, WorkflowStepInput | str | list[str]] | None,
 ) -> list[WorkflowStepInput]:
     if in_ is None:
         return []
@@ -625,6 +629,9 @@ def _normalize_step_inputs(
     for key, value in in_.items():
         if isinstance(value, str):
             # Shorthand: input_name: "source_step/output"
+            result.append(WorkflowStepInput(id=key, source=value))
+        elif isinstance(value, list):
+            # Shorthand (mapPredicate: source): bare list value is the multi-source.
             result.append(WorkflowStepInput(id=key, source=value))
         elif isinstance(value, WorkflowStepInput):
             if value.id is None:
