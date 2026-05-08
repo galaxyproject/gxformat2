@@ -984,6 +984,20 @@ interface for constructing the input object.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>post_job_actions</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Optional dict of post-job actions keyed by <code>{ActionType}{OutputName}</code>
+compound strings.  Same shape as the native <code>post_job_actions</code> field;
+each value is a record with <code>action_type</code>, <code>output_name</code>,
+<code>action_arguments</code>.  Use the <code>out:</code> shorthand (<code>rename:</code>,
+<code>hide:</code>, <code>change_datatype:</code>, etc.) for common actions; this
+explicit form covers actions without an <code>out:</code> shorthand
+(<code>ValidateOutputsAction</code>, etc.) and any case where the typed
+record is preferred.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>type</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#WorkflowStepType">WorkflowStepType</a></div>
