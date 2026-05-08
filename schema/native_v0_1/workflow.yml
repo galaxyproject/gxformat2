@@ -153,11 +153,15 @@ $graph:
       doc: |
         The action type identifier (e.g. ``HideDatasetAction``).
     - name: output_name
-      type: string
+      type:
+        - string
+        - "null"
       jsonldPredicate:
         _id: "gxnative:output_name"
       doc: |
-        The step output this action applies to.
+        The step output this action applies to.  Optional: action types that
+        operate on the step as a whole (e.g. ``ValidateOutputsAction``) omit
+        this field.
     - name: action_arguments
       type: Any?
       pydantic:type: "dict[str, Any] | None"

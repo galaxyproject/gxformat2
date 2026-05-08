@@ -8380,6 +8380,7 @@ class WorkflowStep(
         in_: Optional[Any] = None,
         state: Optional[Any] = None,
         tool_state: Optional[Any] = None,
+        post_job_actions: Optional[Any] = None,
         type_: Optional[Any] = None,
         run: Optional[Any] = None,
         runtime_inputs: Optional[Any] = None,
@@ -8408,6 +8409,7 @@ class WorkflowStep(
         self.out = out
         self.state = state
         self.tool_state = tool_state
+        self.post_job_actions = post_job_actions
         self.type_ = type_
         self.run = run
         self.runtime_inputs = runtime_inputs
@@ -8429,6 +8431,7 @@ class WorkflowStep(
                 and self.out == other.out
                 and self.state == other.state
                 and self.tool_state == other.tool_state
+                and self.post_job_actions == other.post_job_actions
                 and self.type_ == other.type_
                 and self.run == other.run
                 and self.runtime_inputs == other.runtime_inputs
@@ -8452,6 +8455,7 @@ class WorkflowStep(
                 self.out,
                 self.state,
                 self.tool_state,
+                self.post_job_actions,
                 self.type_,
                 self.run,
                 self.runtime_inputs,
@@ -9093,6 +9097,53 @@ class WorkflowStep(
                                 "is not valid because:",
                             )
                         )
+        post_job_actions = None
+        if "post_job_actions" in _doc:
+            try:
+                post_job_actions = load_field(
+                    _doc.get("post_job_actions"),
+                    union_of_None_type_or_Any_type,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("post_job_actions")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `post_job_actions`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("post_job_actions")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `post_job_actions` field is not valid because:",
+                                SourceLine(_doc, "post_job_actions", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `post_job_actions` field is not valid because:",
+                                SourceLine(_doc, "post_job_actions", str),
+                                [e],
+                                detailed_message=f"the `post_job_actions` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
         type_ = None
         if "type" in _doc:
             try:
@@ -9298,7 +9349,7 @@ class WorkflowStep(
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `{}`, expected one of: `id`, `label`, `doc`, `position`, `tool_id`, `tool_shed_repository`, `tool_version`, `errors`, `uuid`, `in`, `out`, `state`, `tool_state`, `type`, `run`, `runtime_inputs`, `when`".format(
+                            "invalid field `{}`, expected one of: `id`, `label`, `doc`, `position`, `tool_id`, `tool_shed_repository`, `tool_version`, `errors`, `uuid`, `in`, `out`, `state`, `tool_state`, `post_job_actions`, `type`, `run`, `runtime_inputs`, `when`".format(
                                 k
                             ),
                             SourceLine(_doc, k, str),
@@ -9321,6 +9372,7 @@ class WorkflowStep(
             out=out,
             state=state,
             tool_state=tool_state,
+            post_job_actions=post_job_actions,
             type_=type_,
             run=run,
             runtime_inputs=runtime_inputs,
@@ -9402,6 +9454,13 @@ class WorkflowStep(
                 base_url=self.id,
                 relative_uris=relative_uris,
             )
+        if self.post_job_actions is not None:
+            r["post_job_actions"] = save(
+                self.post_job_actions,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris,
+            )
         if self.type_ is not None:
             r["type"] = save(
                 self.type_, top=False, base_url=self.id, relative_uris=relative_uris
@@ -9444,6 +9503,7 @@ class WorkflowStep(
             "out",
             "state",
             "tool_state",
+            "post_job_actions",
             "type",
             "run",
             "runtime_inputs",

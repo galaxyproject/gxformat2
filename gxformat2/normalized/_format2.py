@@ -39,6 +39,7 @@ from gxformat2.schema.gxformat2 import (
 )
 from gxformat2.schema._input_parameter import input_parameter_class
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWorkflow
+from gxformat2.schema.native import NativePostJobAction
 from gxformat2.yaml import ordered_load_path
 
 from ._types import ToolReference
@@ -130,6 +131,10 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
         default_factory=list, alias="in", description="Always a list, shorthands expanded."
     )
     out: list[WorkflowStepOutput] = Field(default_factory=list, description="Always a list, shorthands expanded.")
+    post_job_actions: dict[str, NativePostJobAction] | None = Field(
+        default=None,
+        description="Explicit post-job actions keyed by ``{ActionType}{OutputName}`` compound strings.",
+    )
     run: NormalizedFormat2 | GalaxyUserToolStub | ImportReference | str | None = Field(default=None)
 
     @field_validator("run", mode="before")
@@ -568,8 +573,23 @@ def _normalize_step(step: WorkflowStep, strict_structure: bool = False) -> Norma
         errors=step.errors,
         uuid=step.uuid,
         out=out_list,
+        post_job_actions=_normalize_post_job_actions(step.post_job_actions),
         run=run,
     )
+
+
+def _normalize_post_job_actions(
+    raw: dict[str, Any] | None,
+) -> dict[str, NativePostJobAction] | None:
+    """Validate raw PJA dict-of-dicts into typed records.
+
+    Galaxy emits explicit ``post_job_actions:`` as plain mapping; the schema
+    field is ``Any?`` to keep the raw model lax.  Coerce here so downstream
+    code (lint, conversion) sees the same typed shape as the native side.
+    """
+    if not raw:
+        return None
+    return {key: NativePostJobAction.model_validate(value) for key, value in raw.items()}
 
 
 def _resolve_links(

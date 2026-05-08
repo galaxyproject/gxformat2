@@ -618,6 +618,8 @@
   tests:
     - tests/test_interop_tests.py
 
+# --- schema-vs-codegen mismatches (issue #205) ---
+
 - file: format2/synthetic-int-link.gxwf.yml
   origin: synthetic
   format: format2
@@ -629,5 +631,21 @@
   origin: synthetic
   format: format2
   description: "Dict-form in: value as a bare list of source references (mapPredicate shorthand for multi-source)."
+  tests:
+    - tests/test_interop_tests.py
+
+# --- post_job_actions fixtures (issue #206) ---
+
+- file: format2/synthetic-step-post-job-actions.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Step-level explicit post_job_actions map (ValidateOutputsAction).
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-step-post-job-actions-merged.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Step has both out:-shorthand and explicit post_job_actions; both flow to native.
   tests:
     - tests/test_interop_tests.py
