@@ -57,6 +57,7 @@ class ConversionOptions:
         compact: bool = False,
         url_resolver: UrlResolverFn = None,
         strict_structure: bool = False,
+        legacy_compat: bool = True,
     ):
         self.workflow_directory = str(workflow_directory) if workflow_directory else None
         self.encode_tool_state_json = encode_tool_state_json
@@ -66,6 +67,7 @@ class ConversionOptions:
         self.compact = compact
         self.url_resolver = url_resolver
         self.strict_structure = strict_structure
+        self.legacy_compat = legacy_compat
 
 
 def default_url_resolver(url: str) -> dict[str, Any]:

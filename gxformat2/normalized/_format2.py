@@ -41,6 +41,7 @@ from gxformat2.schema._input_parameter import input_parameter_class
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWorkflow
 from gxformat2.yaml import ordered_load_path
 
+from ._legacy_compat import apply_legacy_compat
 from ._types import ToolReference
 
 
@@ -227,6 +228,7 @@ def normalized_format2(
     workflow: dict[str, Any] | str | Path | os.PathLike[str] | GalaxyWorkflow,
     *,
     strict_structure: bool = False,
+    legacy_compat: bool = True,
 ) -> NormalizedFormat2:
     """Normalize a Format 2 Galaxy workflow into a fully typed model.
 
@@ -267,7 +269,9 @@ def normalized_format2(
             workflow = {**workflow, "outputs": {}}
         if "steps" not in workflow:
             workflow = {**workflow, "steps": {}}
-        workflow = _pre_clean_steps(workflow)
+        if legacy_compat:
+            workflow = apply_legacy_compat(workflow)
+        workflow = _pre_clean_steps(workflow, legacy_compat=legacy_compat)
         workflow = _pre_normalize_input_types(workflow)
         workflow = GalaxyWorkflow.model_validate(workflow)
     elif isinstance(workflow, GalaxyWorkflow) and strict_structure:
@@ -277,13 +281,22 @@ def normalized_format2(
         # recurse through the run union (which includes dict[str, Any]).
         StrictGalaxyWorkflow.model_validate(workflow.model_dump(by_alias=True, exclude_none=True))
     assert isinstance(workflow, GalaxyWorkflow)
-    return _normalize_workflow(workflow, strict_structure=strict_structure)
+    return _normalize_workflow(workflow, strict_structure=strict_structure, legacy_compat=legacy_compat)
 
 
-def _normalize_workflow(wf: GalaxyWorkflow, strict_structure: bool = False) -> NormalizedFormat2:
+def _normalize_workflow(
+    wf: GalaxyWorkflow,
+    strict_structure: bool = False,
+    legacy_compat: bool = True,
+) -> NormalizedFormat2:
     inputs = _normalize_inputs(wf.inputs)
     outputs = _normalize_outputs(wf.outputs)
-    steps = _normalize_steps(wf.steps, inputs_offset=len(inputs), strict_structure=strict_structure)
+    steps = _normalize_steps(
+        wf.steps,
+        inputs_offset=len(inputs),
+        strict_structure=strict_structure,
+        legacy_compat=legacy_compat,
+    )
     comments = _normalize_comments(wf.comments)
     doc = _join_doc(wf.doc)
 
@@ -430,7 +443,7 @@ def _pre_normalize_input_types(workflow: dict[str, Any]) -> dict[str, Any]:
     return {**workflow, "inputs": new_inputs}
 
 
-def _pre_clean_steps(workflow: dict[str, Any]) -> dict[str, Any]:
+def _pre_clean_steps(workflow: dict[str, Any], legacy_compat: bool = True) -> dict[str, Any]:
     """Resolve ``$link`` entries in step state dicts before model validation.
 
     ``$link`` in ``state`` is a Format2 shorthand for connections embedded in
@@ -440,22 +453,24 @@ def _pre_clean_steps(workflow: dict[str, Any]) -> dict[str, Any]:
     steps = workflow.get("steps", {})
     cleaned: dict[str, Any] | list[Any]
     if isinstance(steps, dict):
-        cleaned = {k: _pre_clean_step(v) if isinstance(v, dict) else v for k, v in steps.items()}
+        cleaned = {
+            k: _pre_clean_step(v, legacy_compat=legacy_compat) if isinstance(v, dict) else v for k, v in steps.items()
+        }
     elif isinstance(steps, list):
-        cleaned = [_pre_clean_step(s) if isinstance(s, dict) else s for s in steps]
+        cleaned = [_pre_clean_step(s, legacy_compat=legacy_compat) if isinstance(s, dict) else s for s in steps]
     else:
         return workflow
     return {**workflow, "steps": cleaned}
 
 
-def _pre_clean_step(step: dict[str, Any]) -> dict[str, Any]:
+def _pre_clean_step(step: dict[str, Any], legacy_compat: bool = True) -> dict[str, Any]:
     """Resolve $link in state on a single step dict."""
     state = step.get("state")
     if not isinstance(state, dict):
         # Recursively clean subworkflow runs even if no state
         run = step.get("run")
         if isinstance(run, dict) and run.get("class") == "GalaxyWorkflow":
-            return {**step, "run": _pre_clean_steps(run)}
+            return {**step, "run": _pre_clean_steps(run, legacy_compat=legacy_compat)}
         return step
 
     step = dict(step)
@@ -477,7 +492,7 @@ def _pre_clean_step(step: dict[str, Any]) -> dict[str, Any]:
     # Recursively clean subworkflow runs
     run = step.get("run")
     if isinstance(run, dict) and run.get("class") == "GalaxyWorkflow":
-        step["run"] = _pre_clean_steps(run)
+        step["run"] = _pre_clean_steps(run, legacy_compat=legacy_compat)
 
     return step
 
@@ -486,6 +501,7 @@ def _normalize_steps(
     steps: list[WorkflowStep] | dict[str, WorkflowStep],
     inputs_offset: int = 0,
     strict_structure: bool = False,
+    legacy_compat: bool = True,
 ) -> list[NormalizedWorkflowStep]:
     if isinstance(steps, dict):
         step_list = []
@@ -518,13 +534,15 @@ def _normalize_steps(
             else:
                 step_list.append(step)
 
-    return [_normalize_step(s, strict_structure=strict_structure) for s in step_list]
+    return [_normalize_step(s, strict_structure=strict_structure, legacy_compat=legacy_compat) for s in step_list]
 
 
 _CONNECTED_VALUE = {"__class__": "ConnectedValue"}
 
 
-def _normalize_step(step: WorkflowStep, strict_structure: bool = False) -> NormalizedWorkflowStep:
+def _normalize_step(
+    step: WorkflowStep, strict_structure: bool = False, legacy_compat: bool = True
+) -> NormalizedWorkflowStep:
     in_list = _normalize_step_inputs(step.in_)
     out_list = _normalize_step_outputs(step.out)
 
@@ -537,7 +555,7 @@ def _normalize_step(step: WorkflowStep, strict_structure: bool = False) -> Norma
         elif step.run.get("class") == "GalaxyUserTool":
             run = GalaxyUserToolStub.model_validate(step.run)
         else:
-            run = normalized_format2(step.run, strict_structure=strict_structure)
+            run = normalized_format2(step.run, strict_structure=strict_structure, legacy_compat=legacy_compat)
     elif isinstance(step.run, str):
         run = step.run
 
@@ -587,6 +605,8 @@ def _resolve_links(
 
     if isinstance(value, dict) and "$link" in value:
         link_value = value["$link"]
+        if isinstance(link_value, (int, float)) and not isinstance(link_value, bool):
+            link_value = str(link_value)
         connections.setdefault(key, []).append(link_value)
         return dict(_CONNECTED_VALUE), connections
 
@@ -602,6 +622,8 @@ def _resolve_links(
         for i, v in enumerate(value):
             if isinstance(v, dict) and "$link" in v:
                 link_value = v["$link"]
+                if isinstance(link_value, (int, float)) and not isinstance(link_value, bool):
+                    link_value = str(link_value)
                 connections.setdefault(key, []).append(link_value)
                 new_list.append(None)
             else:
@@ -614,7 +636,7 @@ def _resolve_links(
 
 
 def _normalize_step_inputs(
-    in_: list[WorkflowStepInput] | dict[str, WorkflowStepInput | str] | None,
+    in_: list[WorkflowStepInput] | dict[str, WorkflowStepInput | str | list[str]] | None,
 ) -> list[WorkflowStepInput]:
     if in_ is None:
         return []
@@ -625,6 +647,9 @@ def _normalize_step_inputs(
     for key, value in in_.items():
         if isinstance(value, str):
             # Shorthand: input_name: "source_step/output"
+            result.append(WorkflowStepInput(id=key, source=value))
+        elif isinstance(value, list):
+            # Shorthand (mapPredicate: source): bare list value is the multi-source.
             result.append(WorkflowStepInput(id=key, source=value))
         elif isinstance(value, WorkflowStepInput):
             if value.id is None:

@@ -1,0 +1,13 @@
+class: GalaxyWorkflow
+doc: |
+  Legacy compat D: unquoted ``tool_version: 0.1`` parses as a YAML float.
+  Pydantic v2 ``str | None`` does not coerce; legacy_compat coerces in
+  pre-pass.
+inputs:
+  input1: data
+steps:
+  cat:
+    tool_id: cat1
+    tool_version: 0.1
+    in:
+      input1: input1

@@ -356,7 +356,7 @@ $graph:
   fields:
     - name: in
       type:  WorkflowStepInput[]?
-      pydantic:type: "list[WorkflowStepInput] | dict[str, WorkflowStepInput | str] | None"
+      pydantic:type: "list[WorkflowStepInput] | dict[str, WorkflowStepInput | str | list[str]] | None"
       jsonldPredicate:
         _id: "gxformat2:in"
         mapSubject: id

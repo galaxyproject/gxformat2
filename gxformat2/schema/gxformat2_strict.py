@@ -354,7 +354,7 @@ to representing `state` this way is defining inputs with default values."""
 
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
-    in_: list[WorkflowStepInput] | dict[str, WorkflowStepInput | str] | None = Field(default=None, alias="in", description="Defines the input parameters of the workflow step.  The process is ready to run when all required input parameters are associated with concrete values.  Input parameters include a schema for each p...")
+    in_: list[WorkflowStepInput] | dict[str, WorkflowStepInput | str | list[str]] | None = Field(default=None, alias="in", description="Defines the input parameters of the workflow step.  The process is ready to run when all required input parameters are associated with concrete values.  Input parameters include a schema for each p...")
     out: list[WorkflowStepOutput | str] | dict[str, WorkflowStepOutput | str] | None = Field(default=None, description="Defines the parameters representing the output of the process.  May be used to generate and/or validate the output object.  This can also be called 'outputs' for legacy reasons - but the resulting ...")
     state: dict[str, Any] | None = Field(default=None, description="Structured tool state.")
     tool_state: str | dict[str, Any] | None = Field(default=None, description="Unstructured tool state.")

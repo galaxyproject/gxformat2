@@ -617,3 +617,40 @@
   description: List-form steps without labels — triggers "no label" warning.
   tests:
     - tests/test_interop_tests.py
+
+# --- legacy compat fixtures (issue #205) ---
+
+- file: format2/synthetic-legacy-outputs-alias.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Step-level "outputs:" alias for "out:" (legacy compat A).
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-legacy-step-form-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: 'Step entries with "type: input/input_collection" lifted to top-level inputs (legacy compat B).'
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-legacy-int-link.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: "$link with integer value coerced to string (legacy compat C)."
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-legacy-float-tool-version.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Unquoted float tool_version coerced to string (legacy compat D).
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-legacy-list-source.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: 'Bare list value in dict-form "in:" expanded to {source: [...]} (legacy compat F).'
+  tests:
+    - tests/test_interop_tests.py

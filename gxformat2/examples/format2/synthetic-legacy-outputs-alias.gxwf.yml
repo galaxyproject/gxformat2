@@ -1,0 +1,15 @@
+class: GalaxyWorkflow
+doc: |
+  Legacy compat A: step-level ``outputs:`` is an alias for ``out:``.
+  Old gxformat2/converter.py accepted both; the rewrite drops it without
+  legacy_compat.  See gxformat2 issue #205.
+inputs:
+  input1: data
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: input1
+    outputs:
+      out_file1:
+        rename: renamed.txt

@@ -1,0 +1,13 @@
+class: GalaxyWorkflow
+doc: |
+  Legacy compat C: ``$link`` value as a YAML integer (``$link: 0``).
+  Old converter accepted; new pipeline must coerce to str before
+  source resolution.
+inputs:
+  myinput: data
+steps:
+  cat:
+    tool_id: cat1
+    state:
+      input1:
+        $link: 0

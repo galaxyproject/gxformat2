@@ -182,7 +182,11 @@ def _ensure_format2(resolved: dict[str, Any], options: ConversionOptions) -> Nor
     """Convert a fetched workflow dict to NormalizedFormat2, handling cross-format."""
     if resolved.get("a_galaxy_workflow") == "true":
         return to_format2(resolved, options=options, expand=False)
-    return normalized_format2(resolved, strict_structure=options.strict_structure)
+    return normalized_format2(
+        resolved,
+        strict_structure=options.strict_structure,
+        legacy_compat=options.legacy_compat,
+    )
 
 
 def _ensure_native(resolved: dict[str, Any], options: ConversionOptions) -> NormalizedNativeWorkflow:
@@ -272,13 +276,17 @@ def ensure_format2(
     if isinstance(workflow, NormalizedFormat2):
         result = workflow
     elif isinstance(workflow, GalaxyWorkflow):
-        result = normalized_format2(workflow, strict_structure=options.strict_structure)
+        result = normalized_format2(
+            workflow, strict_structure=options.strict_structure, legacy_compat=options.legacy_compat
+        )
     elif isinstance(workflow, (NativeGalaxyWorkflow, NormalizedNativeWorkflow)):
         result = to_format2(workflow, options=options, expand=False)
     elif isinstance(workflow, dict) and workflow.get("a_galaxy_workflow") == "true":
         result = to_format2(workflow, options=options, expand=False)
     else:
-        result = normalized_format2(workflow, strict_structure=options.strict_structure)
+        result = normalized_format2(
+            workflow, strict_structure=options.strict_structure, legacy_compat=options.legacy_compat
+        )
 
     if options.strict_structure:
         _validate_format2_output(result)
@@ -1028,7 +1036,9 @@ def to_native(
                 if graph_id == "main":
                     main_dict = entry
                 elif graph_id:
-                    sub_wf = normalized_format2(entry, strict_structure=options.strict_structure)
+                    sub_wf = normalized_format2(
+                        entry, strict_structure=options.strict_structure, legacy_compat=options.legacy_compat
+                    )
                     sub_ctx = _ConversionContext(options)
                     _register_labels(sub_wf, sub_ctx)
                     deduplicated_subworkflows[graph_id] = _build_native_workflow(sub_wf, sub_ctx)
@@ -1037,7 +1047,9 @@ def to_native(
             workflow = main_dict
 
     if not isinstance(workflow, NormalizedFormat2):
-        workflow = normalized_format2(workflow, strict_structure=options.strict_structure)
+        workflow = normalized_format2(
+            workflow, strict_structure=options.strict_structure, legacy_compat=options.legacy_compat
+        )
 
     ctx = _ConversionContext(options)
     _register_labels(workflow, ctx)

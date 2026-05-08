@@ -1,0 +1,16 @@
+class: GalaxyWorkflow
+doc: |
+  Legacy compat B: ``type: input`` / ``input_collection`` declared as a
+  step entry must be lifted to the top-level ``inputs:`` map.  Old
+  gxformat2/converter.py did this via STEP_TYPE_ALIASES.
+steps:
+  myinput:
+    type: input
+    label: myinput
+  mycoll:
+    type: input_collection
+    label: mycoll
+  cat:
+    tool_id: cat1
+    in:
+      input1: myinput

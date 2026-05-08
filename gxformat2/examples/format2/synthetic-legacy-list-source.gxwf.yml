@@ -1,0 +1,16 @@
+class: GalaxyWorkflow
+doc: |
+  Legacy compat F: dict-form ``in:`` value as a bare YAML list of source
+  references (multi-source input).  ``Sink.source`` already accepts
+  ``list[str]``; the case is rewritten to ``{source: [...]}`` in pre-pass
+  to satisfy strict pydantic validation.
+inputs:
+  input1: data
+  input2: data
+steps:
+  count_multi_file:
+    tool_id: count_multi_file
+    in:
+      input1:
+        - input1
+        - input2

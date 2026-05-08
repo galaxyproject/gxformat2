@@ -1,0 +1,65 @@
+test_legacy_outputs_alias:
+  fixture: synthetic-legacy-outputs-alias.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, $length]
+      value: 1
+    - path: [steps, 0, out, $length]
+      value: 1
+    - path: [steps, 0, out, 0, id]
+      value: out_file1
+    - path: [steps, 0, out, 0, rename]
+      value: renamed.txt
+
+test_legacy_outputs_alias_to_native_pja:
+  fixture: synthetic-legacy-outputs-alias.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", post_job_actions, RenameDatasetActionout_file1, action_type]
+      value: RenameDatasetAction
+
+test_legacy_step_form_input_lifted:
+  fixture: synthetic-legacy-step-form-input.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, $length]
+      value: 2
+    - path: [inputs, {id: myinput}, type_]
+      value: data
+    - path: [inputs, {id: mycoll}, type_]
+      value: collection
+    - path: [steps, $length]
+      value: 1
+    - path: [steps, 0, tool_id]
+      value: cat1
+
+test_legacy_int_link_coerced:
+  fixture: synthetic-legacy-int-link.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, in_, $length]
+      value: 1
+    - path: [steps, 0, in_, 0, id]
+      value: input1
+    - path: [steps, 0, in_, 0, source]
+      value: "0"
+
+test_legacy_float_tool_version_coerced:
+  fixture: synthetic-legacy-float-tool-version.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, tool_version]
+      value: "0.1"
+
+test_legacy_list_source_in:
+  fixture: synthetic-legacy-list-source.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, in_, $length]
+      value: 1
+    - path: [steps, 0, in_, 0, id]
+      value: input1
+    - path: [steps, 0, in_, 0, source]
+      value:
+        - input1
+        - input2
