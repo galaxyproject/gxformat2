@@ -1,0 +1,9 @@
+class: GalaxyWorkflow
+inputs:
+  treatment:
+    type: text
+    restrictions:
+      - {value: control, label: Control}
+      - {value: treatment, label: Treatment}
+outputs: {}
+steps: {}

@@ -1,0 +1,7 @@
+class: GalaxyWorkflow
+inputs:
+  select_text:
+    type: text
+    restrictOnConnections: true
+outputs: {}
+steps: {}

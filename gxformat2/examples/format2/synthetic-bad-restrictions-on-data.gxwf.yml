@@ -1,0 +1,8 @@
+class: GalaxyWorkflow
+inputs:
+  bad:
+    type: data
+    restrictions:
+      - x
+outputs: {}
+steps: {}

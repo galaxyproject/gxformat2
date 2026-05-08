@@ -412,6 +412,48 @@
     - tests/test_basic.py
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-text-restrictions.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-text-restrictions-options.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-text-suggestions.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-text-restrict-on-connections.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-restrictions-on-data.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-column-defs-on-list.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-column-default-mismatch.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-comments-dict.gxwf.yml
   origin: synthetic
   format: format2

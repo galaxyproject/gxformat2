@@ -1,0 +1,12 @@
+class: GalaxyWorkflow
+inputs:
+  ss:
+    type: collection
+    collection_type: sample_sheet
+    column_definitions:
+      - name: replicate
+        type: int
+        optional: false
+        default_value: not_an_int
+outputs: {}
+steps: {}

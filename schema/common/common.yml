@@ -72,6 +72,105 @@ $graph:
         The tool version corresponding used to run this step of the workflow. For tool shed installed tools, the ID generally uniquely specifies a version
         and this field is optional.
 
+- name: SampleSheetColumnDefinition
+  type: record
+  doc: |
+    Describes one column of a sample-sheet collection input.
+    Used in `column_definitions` on a `collection_type: sample_sheet[:<type>]`
+    workflow input.
+  fields:
+    - name: name
+      type: string
+      jsonldPredicate: "@id"
+      doc: |
+        Column name. Must not contain special characters (matches
+        `^[\w\-_ \?]*$`).
+    - name: description
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepInput/description"
+      doc: Optional human-readable column description.
+    - name: type
+      type: string
+      pydantic:type: 'Literal["string", "int", "float", "boolean", "element_identifier"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Value type for this column. One of `string`, `int`, `float`, `boolean`,
+        or `element_identifier`. Mirrors Galaxy's runtime
+        `SampleSheetColumnType`.
+    - name: optional
+      type: boolean
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#BaseInputParameter/optional"
+      doc: |
+        If true, rows may omit a value for this column.
+    - name: default_value
+      type:
+        - "null"
+        - string
+        - int
+        - float
+        - boolean
+      jsonldPredicate: "gxformat2common:default_value"
+      doc: |
+        Default value used when a row omits this column. Type must be
+        compatible with `type` - validated by the pydantic post-validator.
+    - name: validators
+      type:
+        - "null"
+        - type: array
+          items: Any
+      jsonldPredicate: "gxformat2common:validators"
+      doc: |
+        Galaxy-style parameter validators. Modelled as opaque records here -
+        full validator schema lives in galaxy.tool_util_models.
+    - name: restrictions
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - int
+            - float
+            - boolean
+      jsonldPredicate: "gxformat2common:restrictions"
+      doc: |
+        Closed set of permitted values for this column. Item type must be
+        compatible with the column `type` (post-validated).
+    - name: suggestions
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - int
+            - float
+            - boolean
+      jsonldPredicate: "gxformat2common:suggestions"
+      doc: |
+        Open suggestion list for this column.
+
+- name: WorkflowTextOption
+  type: record
+  doc: |
+    A `{value, label}` option used in `restrictions` or `suggestions` on a
+    text workflow parameter. Plain strings are also accepted in those
+    arrays as shorthand for `{value: <str>, label: <str>}`.
+  fields:
+    - name: value
+      type: string
+      jsonldPredicate:
+        _id: "gxformat2common:WorkflowTextOption/value"
+        noLinkCheck: true
+      doc: Machine value submitted to the connected tool input.
+    - name: label
+      type: string?
+      jsonldPredicate: "rdfs:label"
+      doc: |
+        Human label shown in Galaxy. Defaults to `value` when omitted.
+
 - name: ToolShedRepository
   type: record
   fields:

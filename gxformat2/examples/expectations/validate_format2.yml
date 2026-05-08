@@ -297,6 +297,68 @@ test_sample_sheet_input_valid_format2_strict:
   fixture: synthetic-sample-sheet-input.gxwf.yml
   operation: validate_format2_strict
 
+test_text_restrictions_valid_format2:
+  fixture: synthetic-text-restrictions.gxwf.yml
+  operation: validate_format2
+
+test_text_restrictions_valid_format2_strict:
+  fixture: synthetic-text-restrictions.gxwf.yml
+  operation: validate_format2_strict
+
+test_text_restrictions_options_valid_format2:
+  fixture: synthetic-text-restrictions-options.gxwf.yml
+  operation: validate_format2
+
+test_text_restrictions_options_valid_format2_strict:
+  fixture: synthetic-text-restrictions-options.gxwf.yml
+  operation: validate_format2_strict
+
+test_text_suggestions_valid_format2:
+  fixture: synthetic-text-suggestions.gxwf.yml
+  operation: validate_format2
+
+test_text_suggestions_valid_format2_strict:
+  fixture: synthetic-text-suggestions.gxwf.yml
+  operation: validate_format2_strict
+
+test_text_restrict_on_connections_valid_format2:
+  fixture: synthetic-text-restrict-on-connections.gxwf.yml
+  operation: validate_format2
+
+test_text_restrict_on_connections_valid_format2_strict:
+  fixture: synthetic-text-restrict-on-connections.gxwf.yml
+  operation: validate_format2_strict
+
+test_restrictions_on_data_rejected_format2:
+  fixture: synthetic-bad-restrictions-on-data.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_restrictions_on_data_rejected_format2_strict:
+  fixture: synthetic-bad-restrictions-on-data.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+
+test_column_defs_on_list_rejected_format2:
+  fixture: synthetic-bad-column-defs-on-list.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_column_defs_on_list_rejected_format2_strict:
+  fixture: synthetic-bad-column-defs-on-list.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+
+test_column_default_mismatch_rejected_format2:
+  fixture: synthetic-bad-column-default-mismatch.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_column_default_mismatch_rejected_format2_strict:
+  fixture: synthetic-bad-column-default-mismatch.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+
 test_comments_dict_valid_format2:
   fixture: synthetic-comments-dict.gxwf.yml
   operation: validate_format2
