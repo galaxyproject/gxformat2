@@ -823,7 +823,7 @@ def _build_format2_step_outputs(
             else:
                 handled = False
                 if not output_dict:
-                    outputs_by_name.pop(output_name, None)
+                    del outputs_by_name[output_name]
         else:
             handled = False
 
