@@ -100,6 +100,76 @@ steps:
     }
 
 
+def test_step_input_default_file_inline_to_native():
+    as_dict_native = to_native("""
+class: GalaxyWorkflow
+steps:
+  cat1:
+    tool_id: cat1
+    in:
+      input1:
+        default:
+          class: File
+          basename: a file
+          format: txt
+          location: test.txt
+""")
+    cat_step = as_dict_native["steps"]["0"]
+    assert cat_step["tool_id"] == "cat1"
+    assert cat_step["in"]["input1"]["default"] == {
+        "class": "File",
+        "basename": "a file",
+        "format": "txt",
+        "location": "test.txt",
+    }
+
+
+def test_step_input_default_scalar_to_native():
+    as_dict_native = to_native("""
+class: GalaxyWorkflow
+inputs:
+  inner_input: data
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      input: inner_input
+      num_lines:
+        default: 2
+      seed_source|seed_source_selector:
+        default: set_seed
+      seed_source|seed:
+        default: asdf
+""")
+    rl_step = as_dict_native["steps"]["1"]
+    assert rl_step["tool_id"] == "random_lines1"
+    assert rl_step["in"]["num_lines"] == {"default": 2}
+    assert rl_step["in"]["seed_source|seed_source_selector"] == {"default": "set_seed"}
+    assert rl_step["in"]["seed_source|seed"] == {"default": "asdf"}
+
+
+def test_step_input_default_round_trip():
+    fmt2 = round_trip("""
+class: GalaxyWorkflow
+inputs:
+  inner_input: data
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      input: inner_input
+      num_lines:
+        default: 2
+""")
+    step = fmt2["steps"]["random_lines"]
+    in_entries = {entry["id"]: entry for entry in step["in"]} if isinstance(step["in"], list) else step["in"]
+    num_lines_entry = in_entries["num_lines"]
+    if isinstance(num_lines_entry, dict):
+        assert num_lines_entry.get("default") == 2
+    else:
+        assert num_lines_entry == 2
+
+
 def test_docs_round_trip():
     as_dict = round_trip("""
 class: GalaxyWorkflow
