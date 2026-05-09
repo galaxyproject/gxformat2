@@ -173,7 +173,7 @@ test_to_native_step_input_default_file:
       value: tool
     - path: [steps, "0", tool_id]
       value: cat1
-    - path: [steps, "0", in_,input1, default, class]
+    - path: [steps, "0", in_, input1, default, class]
       value: File
-    - path: [steps, "0", in_,input1, default, basename]
+    - path: [steps, "0", in_, input1, default, basename]
       value: a file
