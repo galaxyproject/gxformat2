@@ -426,6 +426,87 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-12 col-lg-6 description-col"><p>Collection type (defaults to <code>list</code> if <code>type</code> is <code>collection</code>). Nested
 collection types are separated with colons, e.g. <code>list:list:paired</code>.</p>
 </div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>column_definitions</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#SampleSheetColumnDefinition">SampleSheetColumnDefinition</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Column schema for sample-sheet collection inputs. Only meaningful when
+<code>collection_type</code> begins with <code>sample_sheet</code> - cross-field validation is
+applied in the pydantic post-validator.</p>
+</div>
+</div></div><h3 id="SampleSheetColumnDefinition" class="section">SampleSheetColumnDefinition <a href="#SampleSheetColumnDefinition">&sect;</a></h3><p>Describes one column of a sample-sheet collection input.
+Used in <code>column_definitions</code> on a <code>collection_type: sample_sheet[:&lt;type&gt;]</code>
+workflow input.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Column name. Must not contain special characters (matches
+<code>^[\w\-_ \?]*$</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Value type for this column. One of <code>string</code>, <code>int</code>, <code>float</code>, <code>boolean</code>,
+or <code>element_identifier</code>. Mirrors Galaxy's runtime
+<code>SampleSheetColumnType</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>optional</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>If true, rows may omit a value for this column.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>description</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Optional human-readable column description.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>default_value</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | <a href="#PrimitiveType">int</a> | <a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">boolean</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Default value used when a row omits this column. Type must be
+compatible with <code>type</code> - validated by the pydantic post-validator.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>validators</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#Any">Any</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Galaxy-style parameter validators. Modelled as opaque records here -
+full validator schema lives in galaxy.tool_util_models.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>restrictions</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a> | <a href="#PrimitiveType">int</a> | <a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">boolean</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Closed set of permitted values for this column. Item type must be
+compatible with the column <code>type</code> (post-validated).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>suggestions</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a> | <a href="#PrimitiveType">int</a> | <a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">boolean</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Open suggestion list for this column.</p>
+</div>
 </div></div><h2 id="WorkflowIntegerParameter" class="section">WorkflowIntegerParameter <a href="#WorkflowIntegerParameter">&sect;</a></h2><p>A scalar integer workflow parameter. Normalized gxformat2 output uses
 <code>type: int</code>. <code>type: integer</code> is accepted for compatibility with native
 Galaxy parameter state and Galaxy tool XML terminology.</p>
@@ -653,6 +734,56 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#StepPosition">StepPosition</a></div>
 <div class="col-xs-12 col-lg-6 description-col"></div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>restrictions</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&nbsp;|&nbsp;<a href="#WorkflowTextOption">WorkflowTextOption</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Closed set of permitted values. When present, Galaxy renders the
+runtime input as a select. Items may be plain strings or
+<code>{value, label}</code> records.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>suggestions</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&nbsp;|&nbsp;<a href="#WorkflowTextOption">WorkflowTextOption</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Open suggestion list. Galaxy still treats the input as text but
+offers these as suggestions.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>restrictOnConnections</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Ask Galaxy to derive valid choices from connected tool or
+subworkflow select inputs at runtime. Falls back to free text when
+derivation fails.</p>
+</div>
+</div></div><h3 id="WorkflowTextOption" class="section">WorkflowTextOption <a href="#WorkflowTextOption">&sect;</a></h3><p>A <code>{value, label}</code> option used in <code>restrictions</code> or <code>suggestions</code> on a
+text workflow parameter. Plain strings are also accepted in those
+arrays as shorthand for <code>{value: &lt;str&gt;, label: &lt;str&gt;}</code>.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>value</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Machine value submitted to the connected tool input.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>label</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Human label shown in Galaxy. Defaults to <code>value</code> when omitted.</p>
+</div>
 </div></div><h2 id="WorkflowBooleanParameter" class="section">WorkflowBooleanParameter <a href="#WorkflowBooleanParameter">&sect;</a></h2><p>A boolean input parameter for a Galaxy workflow.</p>
 <h3>Fields</h3>
 <div class="responsive-table">
@@ -813,6 +944,37 @@ object is <code>null</code>.  Default values are applied before evaluating expre
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Collection type (defaults to <code>list</code> if <code>type</code> is <code>collection</code>). Nested
 collection types are separated with colons, e.g. <code>list:list:paired</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>column_definitions</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#SampleSheetColumnDefinition">SampleSheetColumnDefinition</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Column schema for sample-sheet collection inputs. Only meaningful when
+<code>collection_type</code> begins with <code>sample_sheet</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>restrictions</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&nbsp;|&nbsp;<a href="#WorkflowTextOption">WorkflowTextOption</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Closed set of permitted values for text-typed inputs. See
+<code>WorkflowTextParameter.restrictions</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>suggestions</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a>&nbsp;|&nbsp;<a href="#WorkflowTextOption">WorkflowTextOption</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Open suggestion list for text-typed inputs.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>restrictOnConnections</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>For text-typed inputs - derive runtime choices from connected
+tool/subworkflow select inputs.</p>
 </div>
 </div></div><h3 id="GalaxyType" class="section">GalaxyType <a href="#GalaxyType">&sect;</a></h3><p>Extends primitive types with the native Galaxy concepts such as datasets and collections.Normalized gxformat2 workflow input declaration spellings are <code>data</code>, <code>collection</code>, <code>string</code>, <code>int</code>, <code>float</code>, and <code>boolean</code>. Other spellings are accepted as compatibility aliases on import but normalized gxformat2 output emits the normalized spellings.</p>
 <h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> normalized gxformat2 spelling for native Galaxy integer workflow parameters.</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> normalized gxformat2 spelling for native Galaxy text workflow parameters.</td></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> normalized gxformat2 spelling for native Galaxy integer workflow parameters.</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> normalized gxformat2 spelling for native Galaxy text workflow parameters.</td></tr><tr><td><code>integer</code></td><td> accepted alias for ``int`` because native Galaxy parameter state and Galaxy tool XML terminology use ``integer``.</td></tr><tr><td><code>text</code></td><td> accepted alias for ``string`` because native Galaxy parameter state and Galaxy tool XML terminology use ``text``.</td></tr><tr><td><code>File</code></td><td> accepted alias for ``data``, but normalized gxformat2 output emits ``data``. Note: workflow **test job** YAML uses ``type: File`` to mean 'stage this file as test input data', which is a separate concept from workflow input declaration.</td></tr><tr><td><code>data</code></td><td> one Galaxy dataset input. Native Galaxy ``data_input`` converts to this spelling.</td></tr><tr><td><code>collection</code></td><td> one Galaxy dataset collection input. Native Galaxy ``data_collection_input`` converts to this spelling.</td></tr></table><h2 id="WorkflowOutputParameter" class="section">WorkflowOutputParameter <a href="#WorkflowOutputParameter">&sect;</a></h2><p>Describe an output parameter of a workflow.  The parameter must be
