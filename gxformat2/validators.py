@@ -7,6 +7,7 @@ schema-rule catalog runner.
 
 from typing import Callable
 
+from gxformat2._semantic_validators import validate_workflow as _validate_semantics
 from gxformat2.schema.gxformat2 import GalaxyWorkflow as Format2Lax
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as Format2Strict
 from gxformat2.schema.native import NativeGalaxyWorkflow as NativeLax
@@ -15,12 +16,16 @@ from gxformat2.schema.native_strict import NativeGalaxyWorkflow as NativeStrict
 
 def validate_format2(wf_dict):
     """Validate a Format2 workflow dict with the lax (open) schema."""
-    return Format2Lax.model_validate(wf_dict)
+    model = Format2Lax.model_validate(wf_dict)
+    _validate_semantics(wf_dict)
+    return model
 
 
 def validate_format2_strict(wf_dict):
     """Validate a Format2 workflow dict with the strict (closed) schema."""
-    return Format2Strict.model_validate(wf_dict)
+    model = Format2Strict.model_validate(wf_dict)
+    _validate_semantics(wf_dict)
+    return model
 
 
 def validate_native(wf_dict):

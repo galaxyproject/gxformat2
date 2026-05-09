@@ -98,6 +98,15 @@ if [ $SKIP_PYDANTIC -eq 0 ]; then
     schema-salad-plus-pydantic generate schema/native_v0_1/workflow.yml -o "${SCHEME_SOURCE_DIRECTORY}/native.py"
     schema-salad-plus-pydantic generate schema/native_v0_1/workflow.yml --strict -o "${SCHEME_SOURCE_DIRECTORY}/native_strict.py"
     schema-salad-plus-pydantic enhance-docs schema/native_v0_1/workflow.yml "${DIST_DIRECTORY}/native_v0_1.html"
+
+    # Post-codegen patches: fix Field(default=...) emitted with positional
+    # extras for multi-symbol Literals, and re-add the input_parameter_class
+    # dispatcher helper that newer generators no longer emit.
+    python3 "${PROJECT_DIRECTORY}/scripts/patch_generated_pydantic.py" \
+        "${SCHEME_SOURCE_DIRECTORY}/gxformat2.py" \
+        "${SCHEME_SOURCE_DIRECTORY}/gxformat2_strict.py" \
+        "${SCHEME_SOURCE_DIRECTORY}/native.py" \
+        "${SCHEME_SOURCE_DIRECTORY}/native_strict.py"
 else
     # Fallback post-processing without schema-salad-plus-pydantic
     sed -i.bak 's/format_version/format-version/g' "$out"

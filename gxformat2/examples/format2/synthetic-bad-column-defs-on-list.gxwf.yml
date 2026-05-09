@@ -1,0 +1,11 @@
+class: GalaxyWorkflow
+inputs:
+  bad:
+    type: collection
+    collection_type: list
+    column_definitions:
+      - name: cond
+        type: string
+        optional: false
+outputs: {}
+steps: {}

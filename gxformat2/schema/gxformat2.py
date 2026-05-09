@@ -191,6 +191,32 @@ class ReferencesTool(BaseModel):
     tool_shed_repository: None | ToolShedRepository = Field(default=None, description="The Galaxy Tool Shed repository that should be installed in order to use this tool.")
     tool_version: None | str = Field(default=None, description="The tool version corresponding used to run this step of the workflow. For tool shed installed tools, the ID generally uniquely specifies a version and this field is optional.")
 
+class SampleSheetColumnDefinition(BaseModel):
+    """Describes one column of a sample-sheet collection input.
+Used in `column_definitions` on a `collection_type: sample_sheet[:<type>]`
+workflow input."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    name: str = Field(description="Column name. Must not contain special characters (matches `^[\\w\\-_ \\?]*$`).")
+    description: None | str = Field(default=None, description="Optional human-readable column description.")
+    type_: Literal["string", "int", "float", "boolean", "element_identifier"] = Field(default="string", alias="type", description="Value type for this column. One of `string`, `int`, `float`, `boolean`, or `element_identifier`. Mirrors Galaxy's runtime `SampleSheetColumnType`.")
+    optional: bool = Field(description="If true, rows may omit a value for this column.")
+    default_value: None | str | int | float | bool = Field(default=None, description="Default value used when a row omits this column. Type must be compatible with `type` - validated by the pydantic post-validator.")
+    validators: None | list[Any] = Field(default=None, description="Galaxy-style parameter validators. Modelled as opaque records here - full validator schema lives in galaxy.tool_util_models.")
+    restrictions: None | list[str | int | float | bool] = Field(default=None, description="Closed set of permitted values for this column. Item type must be compatible with the column `type` (post-validated).")
+    suggestions: None | list[str | int | float | bool] = Field(default=None, description="Open suggestion list for this column.")
+
+class WorkflowTextOption(BaseModel):
+    """A `{value, label}` option used in `restrictions` or `suggestions` on a
+text workflow parameter. Plain strings are also accepted in those
+arrays as shorthand for `{value: <str>, label: <str>}`."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    value: str = Field(description="Machine value submitted to the connected tool input.")
+    label: None | str = Field(default=None, description="Human label shown in Galaxy. Defaults to `value` when omitted.")
+
 class ToolShedRepository(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
@@ -246,6 +272,7 @@ class WorkflowCollectionParameter(BaseDataParameter):
     optional: bool | None = Field(default=None, description="Controls whether Galaxy allows invocation of the workflow without a user-supplied value for this input. If ``true``, the input may be omitted at invocation time. ``optional`` and ``default`` are in...")
     type_: Literal["collection"] = Field(default="collection", alias="type", description="Must be ``collection``.")
     collection_type: None | str = Field(default=None, description="Collection type (defaults to `list` if `type` is `collection`). Nested collection types are separated with colons, e.g. `list:list:paired`.")
+    column_definitions: None | list[SampleSheetColumnDefinition] = Field(default=None, description="Column schema for sample-sheet collection inputs. Only meaningful when `collection_type` begins with `sample_sheet` - cross-field validation is applied in the pydantic post-validator.")
 
 class MinMax(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
@@ -292,6 +319,9 @@ Galaxy parameter state and Galaxy tool XML terminology."""
     default: None | Any = Field(default=None, description="The default value to use for this parameter if the parameter is missing from the input object, or if the value of the parameter in the input object is `null`.  Default values are applied before eva...")
     position: None | StepPosition = Field(default=None)
     type_: Literal["text", "string"] = Field(default="text", alias="type", description="Must be ``text`` or ``string``.")
+    restrictions: None | list[str | WorkflowTextOption] = Field(default=None, description="Closed set of permitted values. When present, Galaxy renders the runtime input as a select. Items may be plain strings or `{value, label}` records.")
+    suggestions: None | list[str | WorkflowTextOption] = Field(default=None, description="Open suggestion list. Galaxy still treats the input as text but offers these as suggestions.")
+    restrictOnConnections: None | bool = Field(default=None, description="Ask Galaxy to derive valid choices from connected tool or subworkflow select inputs at runtime. Falls back to free text when derivation fails.")
 
 class WorkflowBooleanParameter(BaseInputParameter):
     """A boolean input parameter for a Galaxy workflow."""
@@ -320,6 +350,10 @@ of the specific parameter types instead."""
     optional: bool | None = Field(default=None, description="Controls whether Galaxy allows invocation of the workflow without a user-supplied value for this input. If ``true``, the input may be omitted at invocation time. ``optional`` and ``default`` are in...")
     type_: GalaxyType | None | list[GalaxyType] = Field(default=None, alias="type", description="Specify valid types of data that may be assigned to this parameter.")
     collection_type: None | str = Field(default=None, description="Collection type (defaults to `list` if `type` is `collection`). Nested collection types are separated with colons, e.g. `list:list:paired`.")
+    column_definitions: None | list[SampleSheetColumnDefinition] = Field(default=None, description="Column schema for sample-sheet collection inputs. Only meaningful when `collection_type` begins with `sample_sheet`.")
+    restrictions: None | list[str | WorkflowTextOption] = Field(default=None, description="Closed set of permitted values for text-typed inputs. See `WorkflowTextParameter.restrictions`.")
+    suggestions: None | list[str | WorkflowTextOption] = Field(default=None, description="Open suggestion list for text-typed inputs.")
+    restrictOnConnections: None | bool = Field(default=None, description="For text-typed inputs - derive runtime choices from connected tool/subworkflow select inputs.")
 
 class WorkflowOutputParameter(OutputParameter):
     """Describe an output parameter of a workflow.  The parameter must be
@@ -534,6 +568,8 @@ HasStepErrors.model_rebuild()
 HasStepPosition.model_rebuild()
 StepPosition.model_rebuild()
 ReferencesTool.model_rebuild()
+SampleSheetColumnDefinition.model_rebuild()
+WorkflowTextOption.model_rebuild()
 ToolShedRepository.model_rebuild()
 BaseInputParameter.model_rebuild()
 BaseDataParameter.model_rebuild()

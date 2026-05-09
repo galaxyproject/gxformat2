@@ -137,6 +137,32 @@ class ReferencesTool(BaseModel):
     tool_shed_repository: None | ToolShedRepository = Field(default=None, description="The Galaxy Tool Shed repository that should be installed in order to use this tool.")
     tool_version: None | str = Field(default=None, description="The tool version corresponding used to run this step of the workflow. For tool shed installed tools, the ID generally uniquely specifies a version and this field is optional.")
 
+class SampleSheetColumnDefinition(BaseModel):
+    """Describes one column of a sample-sheet collection input.
+Used in `column_definitions` on a `collection_type: sample_sheet[:<type>]`
+workflow input."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    name: str = Field(description="Column name. Must not contain special characters (matches `^[\\w\\-_ \\?]*$`).")
+    description: None | str = Field(default=None, description="Optional human-readable column description.")
+    type_: Literal["string", "int", "float", "boolean", "element_identifier"] = Field(default="string", alias="type", description="Value type for this column. One of `string`, `int`, `float`, `boolean`, or `element_identifier`. Mirrors Galaxy's runtime `SampleSheetColumnType`.")
+    optional: bool = Field(description="If true, rows may omit a value for this column.")
+    default_value: None | str | int | float | bool = Field(default=None, description="Default value used when a row omits this column. Type must be compatible with `type` - validated by the pydantic post-validator.")
+    validators: None | list[Any] = Field(default=None, description="Galaxy-style parameter validators. Modelled as opaque records here - full validator schema lives in galaxy.tool_util_models.")
+    restrictions: None | list[str | int | float | bool] = Field(default=None, description="Closed set of permitted values for this column. Item type must be compatible with the column `type` (post-validated).")
+    suggestions: None | list[str | int | float | bool] = Field(default=None, description="Open suggestion list for this column.")
+
+class WorkflowTextOption(BaseModel):
+    """A `{value, label}` option used in `restrictions` or `suggestions` on a
+text workflow parameter. Plain strings are also accepted in those
+arrays as shorthand for `{value: <str>, label: <str>}`."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    value: str = Field(description="Machine value submitted to the connected tool input.")
+    label: None | str = Field(default=None, description="Human label shown in Galaxy. Defaults to `value` when omitted.")
+
 class ToolShedRepository(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
@@ -422,6 +448,8 @@ HasStepErrors.model_rebuild()
 HasStepPosition.model_rebuild()
 StepPosition.model_rebuild()
 ReferencesTool.model_rebuild()
+SampleSheetColumnDefinition.model_rebuild()
+WorkflowTextOption.model_rebuild()
 ToolShedRepository.model_rebuild()
 NativeStepInput.model_rebuild()
 NativeStepOutput.model_rebuild()

@@ -149,6 +149,16 @@ $graph:
       jsonldPredicate:
         _id: "gxformat2:collection_type"
         noLinkCheck: true
+    - name: column_definitions
+      doc: |
+        Column schema for sample-sheet collection inputs. Only meaningful when
+        `collection_type` begins with `sample_sheet` - cross-field validation is
+        applied in the pydantic post-validator.
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:SampleSheetColumnDefinition
+      jsonldPredicate: "gxformat2:column_definitions"
 
 - name: MinMax
   type: record
@@ -236,6 +246,36 @@ $graph:
         typeDSL: True
       doc: |
         Must be ``text`` or ``string``.
+    - name: restrictions
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - gxformat2common:WorkflowTextOption
+      jsonldPredicate: "gxformat2common:restrictions"
+      doc: |
+        Closed set of permitted values. When present, Galaxy renders the
+        runtime input as a select. Items may be plain strings or
+        `{value, label}` records.
+    - name: suggestions
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - gxformat2common:WorkflowTextOption
+      jsonldPredicate: "gxformat2common:suggestions"
+      doc: |
+        Open suggestion list. Galaxy still treats the input as text but
+        offers these as suggestions.
+    - name: restrictOnConnections
+      type: boolean?
+      jsonldPredicate: "gxformat2:restrictOnConnections"
+      doc: |
+        Ask Galaxy to derive valid choices from connected tool or
+        subworkflow select inputs at runtime. Falls back to free text when
+        derivation fails.
 
 - name: WorkflowBooleanParameter
   type: record
@@ -292,6 +332,42 @@ $graph:
       jsonldPredicate:
         _id: "gxformat2:collection_type"
         noLinkCheck: true
+    - name: column_definitions
+      doc: |
+        Column schema for sample-sheet collection inputs. Only meaningful when
+        `collection_type` begins with `sample_sheet`.
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:SampleSheetColumnDefinition
+      jsonldPredicate: "gxformat2:column_definitions"
+    - name: restrictions
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - gxformat2common:WorkflowTextOption
+      jsonldPredicate: "gxformat2common:restrictions"
+      doc: |
+        Closed set of permitted values for text-typed inputs. See
+        `WorkflowTextParameter.restrictions`.
+    - name: suggestions
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - gxformat2common:WorkflowTextOption
+      jsonldPredicate: "gxformat2common:suggestions"
+      doc: |
+        Open suggestion list for text-typed inputs.
+    - name: restrictOnConnections
+      type: boolean?
+      jsonldPredicate: "gxformat2:restrictOnConnections"
+      doc: |
+        For text-typed inputs - derive runtime choices from connected
+        tool/subworkflow select inputs.
 
 - name: WorkflowOutputParameter
   type: record
