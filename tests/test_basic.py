@@ -162,12 +162,10 @@ steps:
         default: 2
 """)
     step = fmt2["steps"]["random_lines"]
-    in_entries = {entry["id"]: entry for entry in step["in"]} if isinstance(step["in"], list) else step["in"]
-    num_lines_entry = in_entries["num_lines"]
-    if isinstance(num_lines_entry, dict):
-        assert num_lines_entry.get("default") == 2
-    else:
-        assert num_lines_entry == 2
+    assert isinstance(step["in"], dict)
+    num_lines_entry = step["in"]["num_lines"]
+    assert isinstance(num_lines_entry, dict)
+    assert num_lines_entry["default"] == 2
 
 
 def test_docs_round_trip():

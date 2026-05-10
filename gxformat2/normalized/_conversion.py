@@ -1350,7 +1350,7 @@ def _build_tool_step(
         when=step.when,
         uuid=step.uuid,
         errors=step.errors,
-        in_=_extract_step_in_defaults(step),
+        in_=_extract_step_in_defaults(step.in_),
     )
 
 
@@ -1399,7 +1399,7 @@ def _build_subworkflow_step(
         position=position,
         when=step.when,
         uuid=step.uuid,
-        in_=_extract_step_in_defaults(step),
+        in_=_extract_step_in_defaults(step.in_),
     )
 
 
@@ -1481,7 +1481,7 @@ def _extract_connections(step: NormalizedWorkflowStep) -> dict[str, list]:
     return connect
 
 
-def _extract_step_in_defaults(step: NormalizedWorkflowStep) -> dict[str, Any] | None:
+def _extract_step_in_defaults(step_in_: list[WorkflowStepInput]) -> dict[str, Any] | None:
     """Collect ``in: {param: {default: ...}}`` entries for native ``step["in"]``.
 
     Galaxy reads ``step_dict["in"][name]["default"]`` to seed
@@ -1492,7 +1492,7 @@ def _extract_step_in_defaults(step: NormalizedWorkflowStep) -> dict[str, Any] | 
     not lost.
     """
     in_defaults: dict[str, Any] = {}
-    for step_input in step.in_:
+    for step_input in step_in_:
         input_id = step_input.id
         if input_id is None:
             continue
