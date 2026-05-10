@@ -152,6 +152,42 @@ $graph:
       doc: |
         Open suggestion list for this column.
 
+- name: RecordFieldDefinition
+  type: record
+  doc: |
+    Describes one field of a `record` collection input.
+    Used in `fields` on a `collection_type` containing `record` (e.g.
+    `record`, `list:record`, `sample_sheet:record`). Mirrors a subset of
+    the CWL `InputRecordSchema` shape that Galaxy persists on
+    `DatasetCollection.fields`.
+  fields:
+    - name: name
+      type: string
+      jsonldPredicate: "@id"
+      doc: |
+        Field name. Must equal the corresponding element identifier in
+        the materialized record collection.
+    - name: type
+      type:
+        - string
+        - type: array
+          items: string
+      pydantic:type: 'Literal["File", "null", "boolean", "int", "float", "string"] | list[Literal["File", "null", "boolean", "int", "float", "string"]]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Field value type. A subset of the CWL primitive types: `File`,
+        `null`, `boolean`, `int`, `float`, `string`. May be a list to
+        express a union (e.g. `["File", "null"]` for an optional file).
+    - name: format
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#BaseDataParameter/format"
+      doc: |
+        Optional Galaxy datatype hint for `File`-typed fields.
+
 - name: WorkflowTextOption
   type: record
   doc: |

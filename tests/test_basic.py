@@ -14,6 +14,7 @@ from ._helpers import (
 from .example_wfs import (
     OPTIONAL_INPUT,
     PAIRED_LIST_COLLECTION_INPUT,
+    RECORD_COLLECTION_INPUT,
     SAMPLE_SHEET_COLLECTION_INPUT,
     SLASH_IN_INPUT_LABEL,
     SLASH_IN_LABEL_CHAINED,
@@ -395,6 +396,18 @@ def test_optional_inputs():
 def test_paired_list_inputs():
     as_dict = round_trip(PAIRED_LIST_COLLECTION_INPUT)
     assert as_dict["inputs"]["input_list"]["collection_type"] == "list:paired"
+
+
+def test_record_inputs():
+    as_dict = round_trip(RECORD_COLLECTION_INPUT)
+    assert as_dict["inputs"]["input_record"]["collection_type"] == "record"
+    fields = as_dict["inputs"]["input_record"]["fields"]
+    assert fields
+    assert len(fields) == 2
+    assert fields[0]["name"] == "parent"
+    assert fields[0]["type"] == "File"
+    assert fields[1]["name"] == "child"
+    assert fields[1]["type"] == ["File", "null"]
 
 
 def test_sample_sheet_inputs():

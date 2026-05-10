@@ -159,6 +159,19 @@ $graph:
         - type: array
           items: gxformat2common:SampleSheetColumnDefinition
       jsonldPredicate: "gxformat2:column_definitions"
+    - name: fields
+      doc: |
+        Field schema for `record` collection inputs. Only meaningful when
+        `collection_type` contains `record` (e.g. `record`, `list:record`,
+        `sample_sheet:record`).
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:RecordFieldDefinition
+      jsonldPredicate:
+        _id: "sld:fields"
+        mapSubject: name
+        mapPredicate: type
 
 - name: MinMax
   type: record
@@ -341,6 +354,18 @@ $graph:
         - type: array
           items: gxformat2common:SampleSheetColumnDefinition
       jsonldPredicate: "gxformat2:column_definitions"
+    - name: fields
+      doc: |
+        Field schema for `record` collection inputs. Only meaningful when
+        `collection_type` contains `record`.
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:RecordFieldDefinition
+      jsonldPredicate:
+        _id: "sld:fields"
+        mapSubject: name
+        mapPredicate: type
     - name: restrictions
       type:
         - "null"

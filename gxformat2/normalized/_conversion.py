@@ -1194,11 +1194,8 @@ def _build_input_step(
     if inp.default is not None:
         tool_state["default"] = inp.default
 
-    # Copy text-parameter / sample-sheet fields. Most live on the typed model
-    # now (restrictions / suggestions / restrictOnConnections / column_definitions),
-    # but legacy / unmodelled keys (e.g. `fields`) may still arrive via
-    # ``model_extra``.
-    for key in ("restrictions", "suggestions", "restrictOnConnections", "column_definitions"):
+    # Copy text-parameter / sample-sheet / record fields from the typed model.
+    for key in ("restrictions", "suggestions", "restrictOnConnections", "column_definitions", "fields"):
         value = getattr(inp, key, None)
         if value is None:
             continue
@@ -1210,10 +1207,6 @@ def _build_input_step(
             tool_state[key] = value.model_dump(by_alias=True, exclude_none=True)
         else:
             tool_state[key] = value
-    if inp.model_extra:
-        for key in ("fields",):
-            if key in inp.model_extra:
-                tool_state[key] = inp.model_extra[key]
 
     position = _default_position(inp.position, order_index)
 
