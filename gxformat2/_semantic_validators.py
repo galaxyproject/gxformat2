@@ -16,6 +16,7 @@ import re
 from typing import Any, Iterable, Mapping
 
 _COLUMN_NAME_RE = re.compile(r"^[\w\-_ \?]*$")
+_RECORD_RANK_RE = re.compile(r"(?:^|:)record(?::|$)")
 
 _TEXT_TYPE_VALUES = {"text", "string"}
 _COLLECTION_TYPE_VALUES = {"collection", "data_collection", "data_collection_input"}
@@ -103,6 +104,14 @@ def validate_input_parameter(input_param: Any) -> None:
             )
         for column in column_definitions:
             validate_column_definition(column)
+
+    fields = data.get("fields")
+    if fields:
+        if not is_collection_only and type_values:
+            raise ValueError(f"fields is only valid on collection inputs, got type={type_value!r}")
+        collection_type = data.get("collection_type") or ""
+        if not _RECORD_RANK_RE.search(collection_type):
+            raise ValueError(f"fields requires collection_type containing 'record', got {collection_type!r}")
 
     text_only_fields = ("restrictions", "suggestions", "restrictOnConnections")
     for field in text_only_fields:

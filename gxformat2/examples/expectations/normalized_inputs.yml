@@ -43,6 +43,34 @@ test_paired_list_collection_type:
     - path: [inputs, 0, collection_type]
       value: "list:paired"
 
+test_record_collection_type_and_fields:
+  fixture: synthetic-record-input.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [inputs, 0, collection_type]
+      value: record
+    - path: [inputs, 0, fields, $length]
+      value: 2
+    - path: [inputs, 0, fields, 0, name]
+      value: parent
+    - path: [inputs, 0, fields, 0, type_]
+      value: File
+    - path: [inputs, 0, fields, 1, name]
+      value: child
+    - path: [inputs, 0, fields, 1, type_]
+      value: ["File", "null"]
+
+test_record_fields_round_trip_to_native:
+  fixture: synthetic-record-input.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", tool_state, fields, $length]
+      value: 2
+    - path: [steps, "0", tool_state, fields, 0, name]
+      value: parent
+    - path: [steps, "0", tool_state, fields, 1, type]
+      value: ["File", "null"]
+
 test_sample_sheet_collection_type:
   fixture: synthetic-sample-sheet-input.gxwf.yml
   operation: normalized_format2

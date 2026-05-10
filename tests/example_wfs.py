@@ -24,6 +24,7 @@ SLASH_IN_INPUT_LABEL = load_contents("synthetic-slash-in-input-label.gxwf.yml")
 SLASH_IN_STEP_LABEL_EXPLICIT_OUTPUT = load_contents("synthetic-slash-in-step-label.gxwf.yml")
 SLASH_IN_LABEL_CHAINED = load_contents("synthetic-slash-in-label-chained.gxwf.yml")
 SAMPLE_SHEET_COLLECTION_INPUT = load_contents("synthetic-sample-sheet-input.gxwf.yml")
+RECORD_COLLECTION_INPUT = load_contents("synthetic-record-input.gxwf.yml")
 WORKFLOW_WITH_COMMENTS_DICT = load_contents("synthetic-comments-dict.gxwf.yml")
 USER_DEFINED_TOOL_WORKFLOW = load_contents("synthetic-user-defined-tool.gxwf.yml")
 

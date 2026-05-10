@@ -454,6 +454,19 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-record-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-fields-on-list.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-comments-dict.gxwf.yml
   origin: synthetic
   format: format2

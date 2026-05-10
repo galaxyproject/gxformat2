@@ -153,6 +153,19 @@ workflow input."""
     restrictions: None | list[str | int | float | bool] = Field(default=None, description="Closed set of permitted values for this column. Item type must be compatible with the column `type` (post-validated).")
     suggestions: None | list[str | int | float | bool] = Field(default=None, description="Open suggestion list for this column.")
 
+class RecordFieldDefinition(BaseModel):
+    """Describes one field of a `record` collection input.
+Used in `fields` on a `collection_type` containing `record` (e.g.
+`record`, `list:record`, `sample_sheet:record`). Mirrors a subset of
+the CWL `InputRecordSchema` shape that Galaxy persists on
+`DatasetCollection.fields`."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    name: str = Field(description="Field name. Must equal the corresponding element identifier in the materialized record collection.")
+    type_: Literal["File", "null", "boolean", "int", "float", "string"] | list[Literal["File", "null", "boolean", "int", "float", "string"]] = Field(default="File", alias="type", description="Field value type. A subset of the CWL primitive types: `File`, `null`, `boolean`, `int`, `float`, `string`. May be a list to express a union (e.g. `[\"File\", \"null\"]` for an optional file).")
+    format: None | str = Field(default=None, description="Optional Galaxy datatype hint for `File`-typed fields.")
+
 class WorkflowTextOption(BaseModel):
     """A `{value, label}` option used in `restrictions` or `suggestions` on a
 text workflow parameter. Plain strings are also accepted in those
@@ -449,6 +462,7 @@ HasStepPosition.model_rebuild()
 StepPosition.model_rebuild()
 ReferencesTool.model_rebuild()
 SampleSheetColumnDefinition.model_rebuild()
+RecordFieldDefinition.model_rebuild()
 WorkflowTextOption.model_rebuild()
 ToolShedRepository.model_rebuild()
 NativeStepInput.model_rebuild()

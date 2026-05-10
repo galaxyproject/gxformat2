@@ -2857,6 +2857,283 @@ class SampleSheetColumnDefinition(Saveable):
     )
 
 
+class RecordFieldDefinition(Saveable):
+    """
+    Describes one field of a `record` collection input.
+    Used in `fields` on a `collection_type` containing `record` (e.g.
+    `record`, `list:record`, `sample_sheet:record`). Mirrors a subset of
+    the CWL `InputRecordSchema` shape that Galaxy persists on
+    `DatasetCollection.fields`.
+
+    """
+
+    name: str
+
+    def __init__(
+        self,
+        name: Any,
+        type_: Any,
+        format: Optional[Any] = None,
+        extension_fields: Optional[dict[str, Any]] = None,
+        loadingOptions: Optional[LoadingOptions] = None,
+    ) -> None:
+        if extension_fields:
+            self.extension_fields = extension_fields
+        else:
+            self.extension_fields = CommentedMap()
+        if loadingOptions:
+            self.loadingOptions = loadingOptions
+        else:
+            self.loadingOptions = LoadingOptions()
+        self.name = name if name is not None else "_:" + str(_uuid__.uuid4())
+        self.type_ = type_
+        self.format = format
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, RecordFieldDefinition):
+            return bool(
+                self.name == other.name
+                and self.type_ == other.type_
+                and self.format == other.format
+            )
+        return False
+
+    def __hash__(self) -> int:
+        return hash((self.name, self.type_, self.format))
+
+    @classmethod
+    def fromDoc(
+        cls,
+        doc: Any,
+        baseuri: str,
+        loadingOptions: LoadingOptions,
+        docRoot: Optional[str] = None
+    ) -> "RecordFieldDefinition":
+        _doc = copy.copy(doc)
+
+        if hasattr(doc, "lc"):
+            _doc.lc.data = doc.lc.data
+            _doc.lc.filename = doc.lc.filename
+        _errors__ = []
+        name = None
+        if "name" in _doc:
+            try:
+                name = load_field(
+                    _doc.get("name"),
+                    uri_strtype_True_False_None_None,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("name")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `name`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("name")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `name` field is not valid because:",
+                                SourceLine(_doc, "name", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `name` field is not valid because:",
+                                SourceLine(_doc, "name", str),
+                                [e],
+                                detailed_message=f"the `name` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+
+        __original_name_is_none = name is None
+        if name is None:
+            if docRoot is not None:
+                name = docRoot
+            else:
+                _errors__.append(ValidationException("missing name"))
+        if not __original_name_is_none:
+            baseuri = cast(str, name)
+        try:
+            if _doc.get("type") is None:
+                raise ValidationException("missing required field `type`", None, [])
+
+            type_ = load_field(
+                _doc.get("type"),
+                typedsl_union_of_strtype_or_array_of_strtype_2,
+                baseuri,
+                loadingOptions,
+                lc=_doc.get("type")
+            )
+
+        except ValidationException as e:
+            error_message, to_print, verb_tensage = parse_errors(str(e))
+
+            if str(e) == "missing required field `type`":
+                _errors__.append(
+                    ValidationException(
+                        str(e),
+                        None
+                    )
+                )
+            else:
+                val = _doc.get("type")
+                if error_message != str(e):
+                    val_type = convert_typing(extract_type(type(val)))
+                    _errors__.append(
+                        ValidationException(
+                            "the `type` field is not valid because:",
+                            SourceLine(_doc, "type", str),
+                            [ValidationException(f"Value is a {val_type}, "
+                                                 f"but valid {to_print} for this field "
+                                                 f"{verb_tensage} {error_message}",
+                                                 detailed_message=f"Value `{val}` is a {val_type}, "
+                                                 f"but valid {to_print} for this field "
+                                                 f"{verb_tensage} {error_message}")],
+                        )
+                    )
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "the `type` field is not valid because:",
+                            SourceLine(_doc, "type", str),
+                            [e],
+                            detailed_message=f"the `type` field with value `{val}` "
+                            "is not valid because:",
+                        )
+                    )
+        format = None
+        if "format" in _doc:
+            try:
+                format = load_field(
+                    _doc.get("format"),
+                    union_of_None_type_or_strtype,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("format")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `format`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("format")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `format` field is not valid because:",
+                                SourceLine(_doc, "format", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `format` field is not valid because:",
+                                SourceLine(_doc, "format", str),
+                                [e],
+                                detailed_message=f"the `format` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        extension_fields: dict[str, Any] = {}
+        for k in _doc.keys():
+            if k not in cls.attrs:
+                if not k:
+                    _errors__.append(
+                        ValidationException("mapping with implicit null key")
+                    )
+                elif ":" in k:
+                    ex = expand_url(
+                        k, "", loadingOptions, scoped_id=False, vocab_term=False
+                    )
+                    extension_fields[ex] = _doc[k]
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "invalid field `{}`, expected one of: `name`, `type`, `format`".format(
+                                k
+                            ),
+                            SourceLine(_doc, k, str),
+                        )
+                    )
+
+        if _errors__:
+            raise ValidationException("", None, _errors__, "*")
+        _constructed = cls(
+            name=name,
+            type_=type_,
+            format=format,
+            extension_fields=extension_fields,
+            loadingOptions=loadingOptions,
+        )
+        loadingOptions.idx[cast(str, name)] = (_constructed, loadingOptions)
+        return _constructed
+
+    def save(
+        self, top: bool = False, base_url: str = "", relative_uris: bool = True
+    ) -> dict[str, Any]:
+        r: dict[str, Any] = {}
+
+        if relative_uris:
+            for ef in self.extension_fields:
+                r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+        else:
+            for ef in self.extension_fields:
+                r[ef] = self.extension_fields[ef]
+        if self.name is not None:
+            u = save_relative_uri(self.name, base_url, True, None, relative_uris)
+            r["name"] = u
+        if self.type_ is not None:
+            r["type"] = save(
+                self.type_, top=False, base_url=self.name, relative_uris=relative_uris
+            )
+        if self.format is not None:
+            r["format"] = save(
+                self.format, top=False, base_url=self.name, relative_uris=relative_uris
+            )
+
+        # top refers to the directory level
+        if top:
+            if self.loadingOptions.namespaces:
+                r["$namespaces"] = self.loadingOptions.namespaces
+            if self.loadingOptions.schemas:
+                r["$schemas"] = self.loadingOptions.schemas
+        return r
+
+    attrs = frozenset(["name", "type", "format"])
+
+
 class WorkflowTextOption(Saveable):
     """
     A `{value, label}` option used in `restrictions` or `suggestions` on a
@@ -12280,6 +12557,7 @@ _vocab = {
     "Person": "https://galaxyproject.org/gxformat2/native_v0_1#NativeCreatorPersonType/Person",
     "PrimitiveType": "https://w3id.org/cwl/salad#PrimitiveType",
     "RecordField": "https://w3id.org/cwl/salad#RecordField",
+    "RecordFieldDefinition": "https://galaxyproject.org/gxformat2/gxformat2common#RecordFieldDefinition",
     "RecordSchema": "https://w3id.org/cwl/salad#RecordSchema",
     "ReferencesTool": "https://galaxyproject.org/gxformat2/gxformat2common#ReferencesTool",
     "SampleSheetColumnDefinition": "https://galaxyproject.org/gxformat2/gxformat2common#SampleSheetColumnDefinition",
@@ -12342,6 +12620,7 @@ _rvocab = {
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeCreatorPersonType/Person": "Person",
     "https://w3id.org/cwl/salad#PrimitiveType": "PrimitiveType",
     "https://w3id.org/cwl/salad#RecordField": "RecordField",
+    "https://galaxyproject.org/gxformat2/gxformat2common#RecordFieldDefinition": "RecordFieldDefinition",
     "https://w3id.org/cwl/salad#RecordSchema": "RecordSchema",
     "https://galaxyproject.org/gxformat2/gxformat2common#ReferencesTool": "ReferencesTool",
     "https://galaxyproject.org/gxformat2/gxformat2common#SampleSheetColumnDefinition": "SampleSheetColumnDefinition",
@@ -12410,6 +12689,7 @@ StepPositionLoader = _RecordLoader(StepPosition, None, None)
 SampleSheetColumnDefinitionLoader = _RecordLoader(
     SampleSheetColumnDefinition, None, None
 )
+RecordFieldDefinitionLoader = _RecordLoader(RecordFieldDefinition, None, None)
 WorkflowTextOptionLoader = _RecordLoader(WorkflowTextOption, None, None)
 ToolShedRepositoryLoader = _RecordLoader(ToolShedRepository, None, None)
 NativeStepTypeLoader = _EnumLoader(
@@ -12598,6 +12878,15 @@ union_of_None_type_or_array_of_union_of_strtype_or_inttype_or_floattype_or_boolt
             array_of_union_of_strtype_or_inttype_or_floattype_or_booltype,
         )
     )
+)
+union_of_strtype_or_array_of_strtype = _UnionLoader(
+    (
+        strtype,
+        array_of_strtype,
+    )
+)
+typedsl_union_of_strtype_or_array_of_strtype_2 = _TypeDSLLoader(
+    union_of_strtype_or_array_of_strtype, 2, "v1.1"
 )
 typedsl_union_of_None_type_or_strtype_2 = _TypeDSLLoader(
     union_of_None_type_or_strtype, 2, "v1.1"

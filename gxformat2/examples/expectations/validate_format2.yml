@@ -359,6 +359,24 @@ test_column_default_mismatch_rejected_format2_strict:
   operation: validate_format2_strict
   expect_error: true
 
+test_record_input_valid_format2:
+  fixture: synthetic-record-input.gxwf.yml
+  operation: validate_format2
+
+test_record_input_valid_format2_strict:
+  fixture: synthetic-record-input.gxwf.yml
+  operation: validate_format2_strict
+
+test_fields_on_list_rejected_format2:
+  fixture: synthetic-bad-fields-on-list.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_fields_on_list_rejected_format2_strict:
+  fixture: synthetic-bad-fields-on-list.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+
 test_comments_dict_valid_format2:
   fixture: synthetic-comments-dict.gxwf.yml
   operation: validate_format2
