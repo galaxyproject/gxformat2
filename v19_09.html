@@ -435,6 +435,15 @@ collection types are separated with colons, e.g. <code>list:list:paired</code>.<
 <code>collection_type</code> begins with <code>sample_sheet</code> - cross-field validation is
 applied in the pydantic post-validator.</p>
 </div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>fields</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#RecordFieldDefinition">RecordFieldDefinition</a>&gt; | <br><a href='#map'>map</a>&lt;<code>name</code>,&nbsp;<code>type</code> | <a href="#RecordFieldDefinition">RecordFieldDefinition</a>&gt</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Field schema for <code>record</code> collection inputs. Only meaningful when
+<code>collection_type</code> contains <code>record</code> (e.g. <code>record</code>, <code>list:record</code>,
+<code>sample_sheet:record</code>).</p>
+</div>
 </div></div><h3 id="SampleSheetColumnDefinition" class="section">SampleSheetColumnDefinition <a href="#SampleSheetColumnDefinition">&sect;</a></h3><p>Describes one column of a sample-sheet collection input.
 Used in <code>column_definitions</code> on a <code>collection_type: sample_sheet[:&lt;type&gt;]</code>
 workflow input.</p>
@@ -506,6 +515,42 @@ compatible with the column <code>type</code> (post-validated).</p>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3">array&lt;<a href="#PrimitiveType">string</a> | <a href="#PrimitiveType">int</a> | <a href="#PrimitiveType">float</a> | <a href="#PrimitiveType">boolean</a>&gt;</div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Open suggestion list for this column.</p>
+</div>
+</div></div><h3 id="RecordFieldDefinition" class="section">RecordFieldDefinition <a href="#RecordFieldDefinition">&sect;</a></h3><p>Describes one field of a <code>record</code> collection input.
+Used in <code>fields</code> on a <code>collection_type</code> containing <code>record</code> (e.g.
+<code>record</code>, <code>list:record</code>, <code>sample_sheet:record</code>). Mirrors a subset of
+the CWL <code>InputRecordSchema</code> shape that Galaxy persists on
+<code>DatasetCollection.fields</code>.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Field name. Must equal the corresponding element identifier in
+the materialized record collection.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a> | array&lt;<a href="#PrimitiveType">string</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Field value type. A subset of the CWL primitive types: <code>File</code>,
+<code>null</code>, <code>boolean</code>, <code>int</code>, <code>float</code>, <code>string</code>. May be a list to
+express a union (e.g. <code>[&quot;File&quot;, &quot;null&quot;]</code> for an optional file).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>format</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Optional Galaxy datatype hint for <code>File</code>-typed fields.</p>
 </div>
 </div></div><h2 id="WorkflowIntegerParameter" class="section">WorkflowIntegerParameter <a href="#WorkflowIntegerParameter">&sect;</a></h2><p>A scalar integer workflow parameter. Normalized gxformat2 output uses
 <code>type: int</code>. <code>type: integer</code> is accepted for compatibility with native
@@ -952,6 +997,14 @@ collection types are separated with colons, e.g. <code>list:list:paired</code>.<
 <div class="col-xs-7 col-lg-3">array&lt;<a href="#SampleSheetColumnDefinition">SampleSheetColumnDefinition</a>&gt;</div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Column schema for sample-sheet collection inputs. Only meaningful when
 <code>collection_type</code> begins with <code>sample_sheet</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>fields</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#RecordFieldDefinition">RecordFieldDefinition</a>&gt; | <br><a href='#map'>map</a>&lt;<code>name</code>,&nbsp;<code>type</code> | <a href="#RecordFieldDefinition">RecordFieldDefinition</a>&gt</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Field schema for <code>record</code> collection inputs. Only meaningful when
+<code>collection_type</code> contains <code>record</code>.</p>
 </div>
 </div>
 <div class="row responsive-table-row">
