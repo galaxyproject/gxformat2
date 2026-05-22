@@ -1,0 +1,21 @@
+class: GalaxyWorkflowDraft
+label: invalid top-level draft plan
+_plan_context: top-level planning fields are not part of the draft contract
+inputs:
+  input:
+    type: data
+outputs:
+  output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    label: cat
+    in:
+      input1: input
+    out:
+      - id: out_file1
+    state:
+      input1:
+        $link: input

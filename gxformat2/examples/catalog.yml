@@ -18,6 +18,26 @@
     - tests/test_export_abstract.py
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-draft-tool-step.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_pydantic_schema.py
+
+- file: format2/synthetic-draft-plan-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_pydantic_schema.py
+
+- file: format2/synthetic-draft-plan-top-level.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-unlinted-best-practices.gxwf.yml
   origin: synthetic
   format: format2

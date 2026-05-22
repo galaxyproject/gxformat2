@@ -1,0 +1,31 @@
+class: GalaxyWorkflowDraft
+label: draft tool step
+inputs:
+  reads:
+    type: collection
+    collection_type: list:paired
+    format: fastqsanger.gz
+outputs:
+  trimmed:
+    outputSource: fastp/TODO_trimmed_paired
+steps:
+  fastp:
+    tool_id: TODO
+    tool_version: TODO
+    label: trim and QC paired reads
+    in:
+      TODO_input: reads
+    out:
+      - id: TODO_trimmed_paired
+      - id: TODO_html_report
+    _plan_state: |
+      Adapter trimming on, quality cutoff around Q20, minimum length around 50.
+      Preserve paired-end pairing for downstream alignment.
+    _plan_context: |
+      Upstream process used fastp from bioconda. Prefer a Tool Shed wrapper
+      that exposes paired collection input and paired collection output.
+    _plan_in: |
+      TODO_input is the paired reads collection.
+    _plan_out: |
+      TODO_trimmed_paired feeds the public trimmed workflow output.
+      TODO_html_report is a QC checkpoint.

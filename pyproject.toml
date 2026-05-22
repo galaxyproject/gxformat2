@@ -84,9 +84,12 @@ default-groups = ["test", "lint", "mypy", "docs"]
 [tool.ruff]
 exclude = [
     "gxformat2/schema/v19_09.py",
+    "gxformat2/schema/v19_09_draft.py",
     "gxformat2/schema/native_v0_1.py",
     "gxformat2/schema/gxformat2.py",
     "gxformat2/schema/gxformat2_strict.py",
+    "gxformat2/schema/gxformat2_draft.py",
+    "gxformat2/schema/gxformat2_draft_strict.py",
     "gxformat2/schema/native.py",
     "gxformat2/schema/native_strict.py",
 ]
@@ -98,9 +101,12 @@ known_first_party = ["gxformat2"]
 force_alphabetical_sort_within_sections = true
 skip_glob = [
     "gxformat2/schema/v19_09.py",
+    "gxformat2/schema/v19_09_draft.py",
     "gxformat2/schema/native_v0_1.py",
     "gxformat2/schema/gxformat2.py",
     "gxformat2/schema/gxformat2_strict.py",
+    "gxformat2/schema/gxformat2_draft.py",
+    "gxformat2/schema/gxformat2_draft_strict.py",
     "gxformat2/schema/native.py",
     "gxformat2/schema/native_strict.py",
 ]
@@ -108,7 +114,7 @@ skip_glob = [
 [tool.black]
 line-length = 120
 extend-exclude = '''
-^/gxformat2/schema/(v19_09|native_v0_1|gxformat2|gxformat2_strict|native|native_strict).py
+^/gxformat2/schema/(v19_09|v19_09_draft|native_v0_1|gxformat2|gxformat2_strict|gxformat2_draft|gxformat2_draft_strict|native|native_strict).py
 '''
 
 [tool.setuptools.dynamic]

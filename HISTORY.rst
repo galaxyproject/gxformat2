@@ -9,7 +9,9 @@ History
 0.28.0.dev0
 ---------------------
 
-    
+* Add draft workflow schema metadata: explicit ``_plan_*`` step fields,
+  TODO sentinel pattern constants, and structural fixtures for draft tool and
+  subworkflow planning states.
 
 ---------------------
 0.27.0 (2026-05-27)

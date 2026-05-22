@@ -32,6 +32,8 @@ from gxformat2.normalized._native import NormalizedNativeWorkflow
 from gxformat2.testing import DeclarativeTestSuite
 from gxformat2.validators import (
     validate_format2,
+    validate_format2_draft,
+    validate_format2_draft_strict,
     validate_format2_strict,
     validate_native,
     validate_native_strict,
@@ -139,6 +141,8 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "ensure_format2": ensure_format2,
     "ensure_native": ensure_native,
     "validate_format2": validate_format2,
+    "validate_format2_draft": validate_format2_draft,
+    "validate_format2_draft_strict": validate_format2_draft_strict,
     "validate_format2_strict": validate_format2_strict,
     "validate_native": validate_native,
     "validate_native_strict": validate_native_strict,

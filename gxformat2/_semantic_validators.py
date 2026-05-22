@@ -154,5 +154,5 @@ def validate_workflow(workflow: Any) -> None:
         if not isinstance(step, Mapping):
             continue
         run = step.get("run")
-        if isinstance(run, Mapping) and run.get("class") == "GalaxyWorkflow":
+        if isinstance(run, Mapping) and run.get("class") in {"GalaxyWorkflow", "GalaxyWorkflowDraft"}:
             validate_workflow(run)
