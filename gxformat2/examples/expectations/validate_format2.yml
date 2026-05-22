@@ -8,6 +8,32 @@ test_basic_valid_format2_strict:
   fixture: synthetic-basic.gxwf.yml
   operation: validate_format2_strict
 
+test_draft_tool_step_valid_format2_draft:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: validate_format2_draft
+
+test_draft_tool_step_valid_format2_draft_strict:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: validate_format2_draft_strict
+
+test_draft_tool_step_rejected_format2_strict:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+
+test_draft_plan_subworkflow_valid_format2_draft:
+  fixture: synthetic-draft-plan-subworkflow.gxwf.yml
+  operation: validate_format2_draft
+
+test_draft_plan_subworkflow_valid_format2_draft_strict:
+  fixture: synthetic-draft-plan-subworkflow.gxwf.yml
+  operation: validate_format2_draft_strict
+
+test_draft_plan_top_level_rejected_format2_draft_strict:
+  fixture: synthetic-draft-plan-top-level.gxwf.yml
+  operation: validate_format2_draft_strict
+  expect_error: true
+
 test_extra_field_valid_format2_lax:
   fixture: synthetic-extra-field.gxwf.yml
   operation: validate_format2
