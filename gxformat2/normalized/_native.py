@@ -138,6 +138,25 @@ class NormalizedNativeStep(_DictMixin, BaseModel):
         return self.type_ == NativeStepType.pick_value
 
     @property
+    def is_inline_tool_step(self) -> bool:
+        """The step carries an inline tool source via ``tool_representation``.
+
+        Covers both ``class: GalaxyUserTool`` (per-user) and ``class: GalaxyTool``
+        (admin dynamic) representations.
+        """
+        return bool(self.tool_representation) and self.tool_representation.get("class") in (
+            "GalaxyUserTool",
+            "GalaxyTool",
+        )
+
+    @property
+    def inline_tool_class(self) -> str | None:
+        """The ``class`` field of an inline tool representation, or ``None``."""
+        if not self.tool_representation:
+            return None
+        return self.tool_representation.get("class")
+
+    @property
     def connected_paths(self) -> frozenset[str]:
         """State paths that have incoming connections."""
         return frozenset(self.input_connections.keys())

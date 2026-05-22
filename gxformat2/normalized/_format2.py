@@ -165,6 +165,29 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
         return self.type_ == WorkflowStepType.pick_value
 
     @property
+    def is_inline_tool_step(self) -> bool:
+        """The step embeds an inline tool source via ``run``.
+
+        True when ``run`` is a ``GalaxyUserToolStub`` or a dict whose ``class``
+        is ``GalaxyUserTool`` or ``GalaxyTool``. Native-validated stubs always
+        normalize through ``GalaxyUserToolStub``; the dict branch is defensive.
+        """
+        if isinstance(self.run, GalaxyUserToolStub):
+            return True
+        if isinstance(self.run, dict) and self.run.get("class") in ("GalaxyUserTool", "GalaxyTool"):
+            return True
+        return False
+
+    @property
+    def inline_tool_representation(self) -> dict[str, Any] | None:
+        """The embedded tool source as a dict, or ``None`` if not an inline tool step."""
+        if isinstance(self.run, GalaxyUserToolStub):
+            return self.run.model_dump(by_alias=True, exclude_none=True)
+        if isinstance(self.run, dict) and self.run.get("class") in ("GalaxyUserTool", "GalaxyTool"):
+            return self.run
+        return None
+
+    @property
     def connected_paths(self) -> frozenset[str]:
         """State paths that have incoming connections."""
         return frozenset(si.id for si in self.in_ if si.source is not None and si.id is not None)
