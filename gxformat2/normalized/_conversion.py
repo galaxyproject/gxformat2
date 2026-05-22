@@ -109,9 +109,16 @@ def _validate_native_output(result: NormalizedNativeWorkflow) -> None:
 
 
 class ExpandedWorkflowStep(NormalizedWorkflowStep):
-    """Format2 step with run fully resolved."""
+    """Format2 step with run fully resolved.
 
-    run: ExpandedFormat2 | None = Field(default=None, description="Always resolved or absent.")
+    Inline tool stubs (``GalaxyUserToolStub``) pass through expansion unchanged
+    -- they're already self-contained and have no references to resolve.
+    """
+
+    run: ExpandedFormat2 | GalaxyUserToolStub | None = Field(
+        default=None,
+        description="Resolved subworkflow, inline tool stub, or absent.",
+    )
 
 
 class ExpandedFormat2(NormalizedFormat2):
@@ -1745,8 +1752,10 @@ def expanded_native(
 def _expand_format2(wf: NormalizedFormat2, ctx: _ExpansionContext) -> ExpandedFormat2:
     expanded_steps: list[ExpandedWorkflowStep] = []
     for step in wf.steps:
-        expanded_run: ExpandedFormat2 | None = None
-        if isinstance(step.run, NormalizedFormat2):
+        expanded_run: ExpandedFormat2 | GalaxyUserToolStub | None = None
+        if isinstance(step.run, GalaxyUserToolStub):
+            expanded_run = step.run
+        elif isinstance(step.run, NormalizedFormat2):
             expanded_run = _expand_format2(step.run, ctx)
         elif isinstance(step.run, str):
             resolved = _resolve_run_reference(step.run, ctx)
