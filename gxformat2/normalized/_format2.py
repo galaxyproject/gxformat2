@@ -42,7 +42,7 @@ from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWork
 from gxformat2.schema.native import NativePostJobAction
 from gxformat2.yaml import ordered_load_path
 
-from ._types import ToolReference
+from ._types import INLINE_TOOL_CLASSES, ToolReference
 
 
 class GalaxyUserToolStub(BaseModel):
@@ -169,12 +169,12 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
         """The step embeds an inline tool source via ``run``.
 
         True when ``run`` is a ``GalaxyUserToolStub`` or a dict whose ``class``
-        is ``GalaxyUserTool`` or ``GalaxyTool``. Native-validated stubs always
-        normalize through ``GalaxyUserToolStub``; the dict branch is defensive.
+        is in ``INLINE_TOOL_CLASSES``. Native-validated stubs always normalize
+        through ``GalaxyUserToolStub``; the dict branch is defensive.
         """
         if isinstance(self.run, GalaxyUserToolStub):
             return True
-        if isinstance(self.run, dict) and self.run.get("class") in ("GalaxyUserTool", "GalaxyTool"):
+        if isinstance(self.run, dict) and self.run.get("class") in INLINE_TOOL_CLASSES:
             return True
         return False
 
@@ -183,7 +183,7 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
         """The embedded tool source as a dict, or ``None`` if not an inline tool step."""
         if isinstance(self.run, GalaxyUserToolStub):
             return self.run.model_dump(by_alias=True, exclude_none=True)
-        if isinstance(self.run, dict) and self.run.get("class") in ("GalaxyUserTool", "GalaxyTool"):
+        if isinstance(self.run, dict) and self.run.get("class") in INLINE_TOOL_CLASSES:
             return self.run
         return None
 

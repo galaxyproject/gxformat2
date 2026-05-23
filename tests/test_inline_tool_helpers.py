@@ -3,7 +3,6 @@
 from gxformat2.examples import load
 from gxformat2.normalized import (
     ensure_format2,
-    normalized_native,
     NormalizedNativeStep,
     NormalizedWorkflowStep,
 )
@@ -37,9 +36,10 @@ class TestNormalizedNativeStepInlineHelpers:
         assert step.is_inline_tool_step
         assert step.inline_tool_class == "GalaxyUserTool"
 
-    def test_is_inline_tool_step_admin_tool(self):
+    def test_is_inline_tool_step_admin_tool_not_yet_supported(self):
+        """``class: GalaxyTool`` is reserved but not yet wired through the converters."""
         step = _native_step_with_representation("GalaxyTool")
-        assert step.is_inline_tool_step
+        assert not step.is_inline_tool_step
         assert step.inline_tool_class == "GalaxyTool"
 
     def test_is_inline_tool_step_false_when_no_representation(self):
@@ -69,10 +69,19 @@ class TestNormalizedWorkflowStepInlineHelpers:
         assert rep["id"] == "cat_user_defined"
 
     def test_inline_tool_representation_excludes_none(self):
-        wf = ensure_format2(load("synthetic-user-defined-tool.gxwf.yml"))
-        rep = wf.steps[0].inline_tool_representation
+        step = NormalizedWorkflowStep.model_validate(
+            {
+                "id": "s1",
+                "type": "tool",
+                "run": {"class": "GalaxyUserTool", "id": "x", "version": "0.1"},
+            }
+        )
+        assert isinstance(step.run, GalaxyUserToolStub)
+        assert step.run.name is None
+        rep = step.inline_tool_representation
         assert rep is not None
-        assert all(v is not None for v in rep.values())
+        assert "name" not in rep
+        assert rep == {"class": "GalaxyUserTool", "id": "x", "version": "0.1"}
 
     def test_subworkflow_step_is_not_inline_tool(self):
         outer = {

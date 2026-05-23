@@ -64,10 +64,10 @@ class TestInlineToolRoundTrip:
         original = copy.deepcopy(SYNTHETIC_NATIVE_UDT)
         original_rep = _udt_step(original)["tool_representation"]
 
-        f2 = to_format2(SYNTHETIC_NATIVE_UDT)
-        assert isinstance(f2.steps[0].run, GalaxyUserToolStub) or isinstance(
-            f2.steps[1].run, GalaxyUserToolStub
-        )
+        f2 = to_format2(copy.deepcopy(SYNTHETIC_NATIVE_UDT))
+        tool_step = next(s for s in f2.steps if s.is_inline_tool_step)
+        assert isinstance(tool_step.run, GalaxyUserToolStub)
+        assert tool_step.run.class_ == "GalaxyUserTool"
 
         roundtripped = to_native(f2.to_dict())
         rt_rep = next(
