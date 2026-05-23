@@ -9,7 +9,6 @@ from gxformat2.normalized import (
 )
 from gxformat2.normalized._format2 import GalaxyUserToolStub
 
-
 SYNTHETIC_NATIVE_UDT = {
     "a_galaxy_workflow": "true",
     "format-version": "0.1",
@@ -70,9 +69,7 @@ class TestInlineToolRoundTrip:
         assert tool_step.run.class_ == "GalaxyUserTool"
 
         roundtripped = to_native(f2.to_dict())
-        rt_rep = next(
-            s.tool_representation for s in roundtripped.steps.values() if s.tool_representation is not None
-        )
+        rt_rep = next(s.tool_representation for s in roundtripped.steps.values() if s.tool_representation is not None)
         assert rt_rep == original_rep
 
     def test_format2_to_native_to_format2_preserves_user_tool_stub(self):
@@ -81,9 +78,7 @@ class TestInlineToolRoundTrip:
         original_run = original["steps"]["my_tool"]["run"]
 
         native = to_native(wf_dict)
-        rt_rep = next(
-            s.tool_representation for s in native.steps.values() if s.tool_representation is not None
-        )
+        rt_rep = next(s.tool_representation for s in native.steps.values() if s.tool_representation is not None)
         assert rt_rep == original_run
 
         f2 = to_format2(native.to_dict())

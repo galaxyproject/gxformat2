@@ -22,9 +22,7 @@ def _native_step_with_representation(class_: str) -> NormalizedNativeStep:
                 "container": "busybox",
                 "shell_command": "cat '$(inputs.input1.path)' > output.txt",
                 "inputs": [{"name": "input1", "type": "data", "format": "txt"}],
-                "outputs": [
-                    {"name": "output1", "type": "data", "format": "txt", "from_work_dir": "output.txt"}
-                ],
+                "outputs": [{"name": "output1", "type": "data", "format": "txt", "from_work_dir": "output.txt"}],
             },
         }
     )
@@ -43,9 +41,7 @@ class TestNormalizedNativeStepInlineHelpers:
         assert step.inline_tool_class == "GalaxyTool"
 
     def test_is_inline_tool_step_false_when_no_representation(self):
-        step = NormalizedNativeStep.model_validate(
-            {"id": 0, "type": "tool", "tool_id": "cat", "tool_version": "1.0"}
-        )
+        step = NormalizedNativeStep.model_validate({"id": 0, "type": "tool", "tool_id": "cat", "tool_version": "1.0"})
         assert not step.is_inline_tool_step
         assert step.inline_tool_class is None
 
