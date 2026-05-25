@@ -1,0 +1,16 @@
+class: GalaxyWorkflowDraft
+label: "invalid — step input references a nonexistent step"
+inputs:
+  reads:
+    type: data
+outputs:
+  final:
+    outputSource: missing_step/out
+steps:
+  a:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: missing_step/out
+    out:
+      - id: out

@@ -38,6 +38,54 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/draft/synthetic-draft-chain.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-subworkflow-inner-draft.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-extract-cascade.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-fully-concrete.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-next-step-tiebreak.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-todo-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-dangling-edge.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-plan-on-concrete.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-unlinted-best-practices.gxwf.yml
   origin: synthetic
   format: format2

@@ -1,0 +1,25 @@
+class: GalaxyWorkflowDraft
+label: cascade extract — A is drafty, B consumes from A
+inputs:
+  reads:
+    type: data
+outputs:
+  final:
+    outputSource: B/out
+steps:
+  A:
+    tool_id: TODO
+    tool_version: TODO
+    label: drafty source
+    in:
+      TODO_input: reads
+    out:
+      - id: TODO_out
+  B:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    label: concrete consumer
+    in:
+      input1: A/TODO_out
+    out:
+      - id: out
