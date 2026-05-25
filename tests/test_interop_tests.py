@@ -175,7 +175,7 @@ def _skip_unported_op(name: str) -> Callable[..., Any]:
     return _stub
 
 
-for _unported in ("detect_draft", "validate_draft"):
+for _unported in ("detect_draft", "validate_draft", "extract_draft_subset"):
     OPERATIONS[_unported] = _skip_unported_op(_unported)
 
 suite = DeclarativeTestSuite(
