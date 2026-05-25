@@ -1,0 +1,151 @@
+# extractConcreteSubset trims a draft workflow to its concrete subset.
+# Result shape:
+#   { workflow, dropped_steps[{path, reason}], dropped_outputs[{path, label, reason}],
+#     rewritten_step_inputs[{path, in_key, removed_refs, surviving_refs}] }
+# reason.kind ∈ {step_has_todo, step_has_plan_field, cascade}.
+# Drop ordering within a level: alphabetical at round 0 (direct), then by
+# cascade round. workflow.steps is preserved as dict-form when the source
+# used dict-form steps (all draft fixtures here).
+
+test_extract_draft_tool_step_drops_only_step_and_dangling_output:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [workflow, steps, fastp]
+      value_absent: true
+    - path: [dropped_steps, $length]
+      value: 1
+    - path: [dropped_steps, 0, path, 0]
+      value: fastp
+    - path: [dropped_steps, 0, reason, kind]
+      value: step_has_todo
+    - path: [dropped_outputs, $length]
+      value: 1
+    - path: [dropped_outputs, 0, label]
+      value: trimmed
+    - path: [dropped_outputs, 0, reason, kind]
+      value: cascade
+
+test_extract_draft_chain_keeps_head_drops_tail:
+  fixture: synthetic-draft-chain.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [workflow, steps, a, tool_id]
+      value: cat1
+    - path: [workflow, steps, b]
+      value_absent: true
+    - path: [workflow, steps, c]
+      value_absent: true
+    - path: [dropped_steps, $length]
+      value: 2
+    - path: [dropped_steps, 0, path, 0]
+      value: b
+    - path: [dropped_steps, 0, reason, kind]
+      value: step_has_todo
+    - path: [dropped_steps, 1, path, 0]
+      value: c
+    - path: [dropped_steps, 1, reason, kind]
+      value: step_has_todo
+    - path: [dropped_outputs, $length]
+      value: 1
+    - path: [dropped_outputs, 0, label]
+      value: final
+
+test_extract_draft_subworkflow_inner_shrinks_outer_survives:
+  fixture: synthetic-draft-subworkflow-inner-draft.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [workflow, steps, outer_subwf, type]
+      value: subworkflow
+    - path: [dropped_steps, $length]
+      value: 1
+    - path: [dropped_steps, 0, path, 0]
+      value: outer_subwf
+    - path: [dropped_steps, 0, path, 1]
+      value: inner_tool
+    - path: [dropped_steps, 0, reason, kind]
+      value: step_has_todo
+    # Inner subworkflow's only output (`inner_tool/TODO_out`) goes away when
+    # `inner_tool` drops; the outer step survives but loses that port, which
+    # cascades the outer workflow's `out` output too.
+    - path: [dropped_outputs, $length]
+      value: 2
+
+test_extract_draft_cascade_drops_dependent_and_dangling_output:
+  fixture: synthetic-draft-extract-cascade.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [workflow, steps, A]
+      value_absent: true
+    - path: [workflow, steps, B]
+      value_absent: true
+    - path: [dropped_steps, $length]
+      value: 2
+    - path: [dropped_steps, 0, path, 0]
+      value: A
+    - path: [dropped_steps, 0, reason, kind]
+      value: step_has_todo
+    - path: [dropped_steps, 1, path, 0]
+      value: B
+    - path: [dropped_steps, 1, reason, kind]
+      value: cascade
+    - path: [dropped_outputs, $length]
+      value: 1
+    - path: [dropped_outputs, 0, label]
+      value: final
+
+test_extract_draft_fully_concrete_identity:
+  fixture: synthetic-draft-fully-concrete.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [workflow, steps, cat, tool_id]
+      value: cat1
+    - path: [dropped_steps, $length]
+      value: 0
+    - path: [dropped_outputs, $length]
+      value: 0
+    - path: [rewritten_step_inputs, $length]
+      value: 0
+
+test_extract_draft_tiebreak_drops_both_alphabetical:
+  fixture: synthetic-draft-next-step-tiebreak.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [dropped_steps, $length]
+      value: 2
+    - path: [dropped_steps, 0, path, 0]
+      value: apple
+    - path: [dropped_steps, 1, path, 0]
+      value: zebra
+
+# v1 carveout: validate_draft allows _plan_* on a non-tool step, but extract
+# still drops it as step_has_plan_field. This encodes the L180-181 open
+# question in the F plan: the existing fixture is a passing-with-extract-drop
+# case, not a passing-clean case.
+test_extract_draft_plan_subworkflow_drops_outer_plan_step:
+  fixture: synthetic-draft-plan-subworkflow.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [workflow, steps, qc]
+      value_absent: true
+    - path: [dropped_steps, $length]
+      value: 1
+    - path: [dropped_steps, 0, path, 0]
+      value: qc
+    - path: [dropped_steps, 0, reason, kind]
+      value: step_has_plan_field
+    - path: [dropped_outputs, $length]
+      value: 1
+
+test_extract_draft_bad_plan_on_concrete_drops_step:
+  fixture: synthetic-draft-bad-plan-on-concrete.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [workflow, steps, cat]
+      value_absent: true
+    - path: [dropped_steps, $length]
+      value: 1
+    - path: [dropped_steps, 0, reason, kind]
+      value: step_has_plan_field
+    - path: [dropped_outputs, $length]
+      value: 1
