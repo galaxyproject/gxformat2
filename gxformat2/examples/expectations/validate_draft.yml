@@ -1,0 +1,122 @@
+# validateDraft returns (snake-cased):
+#   { ok, structure_errors[], topology_errors[], semantic_errors[], warnings[], survey }
+# Diagnostic items are { path, message }. Negatives assert per-category count
+# plus `value_contains` over the message body (mirrors lint_format2.yml).
+
+test_validate_draft_tool_step_clean:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 0
+    - path: [semantic_errors, $length]
+      value: 0
+    - path: [warnings, $length]
+      value: 0
+
+test_validate_draft_chain_clean:
+  fixture: synthetic-draft-chain.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [topology_errors, $length]
+      value: 0
+    - path: [semantic_errors, $length]
+      value: 0
+
+test_validate_draft_subworkflow_inner_draft_clean:
+  fixture: synthetic-draft-subworkflow-inner-draft.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+
+test_validate_draft_fully_concrete_clean:
+  fixture: synthetic-draft-fully-concrete.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [topology_errors, $length]
+      value: 0
+    - path: [semantic_errors, $length]
+      value: 0
+
+test_validate_draft_extract_cascade_clean:
+  fixture: synthetic-draft-extract-cascade.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+
+test_validate_draft_tiebreak_clean:
+  fixture: synthetic-draft-next-step-tiebreak.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+
+# Top-level _plan_* — passing-with-warning. Lock the warning contract.
+test_validate_draft_plan_top_level_passes_with_warning:
+  fixture: synthetic-draft-plan-top-level.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [warnings, $length]
+      value: 1
+    - path: [warnings, 0, message]
+      value_contains: "top-level `_plan_context`"
+
+# _plan_* on a non-tool step is allowed in v1 — clean validate, but extract
+# still drops it (see extract_draft_subset.yml).
+test_validate_draft_plan_on_subworkflow_step_clean_v1_carveout:
+  fixture: synthetic-draft-plan-subworkflow.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [semantic_errors, $length]
+      value: 0
+
+# Negative cases.
+
+test_validate_draft_bad_todo_label_topology_error:
+  fixture: synthetic-draft-bad-todo-label.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [topology_errors, $length]
+      value: 1
+    - path: [topology_errors, 0, message]
+      value_contains: "step label cannot be a TODO sentinel"
+
+test_validate_draft_bad_dangling_edge_two_topology_errors:
+  fixture: synthetic-draft-bad-dangling-edge.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [topology_errors, $length]
+      value: 2
+    - path: [topology_errors, 0, message]
+      value_contains: "references unknown step"
+
+test_validate_draft_bad_plan_on_concrete_semantic_error:
+  fixture: synthetic-draft-bad-plan-on-concrete.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [topology_errors, $length]
+      value: 0
+    - path: [semantic_errors, $length]
+      value: 1
+    - path: [semantic_errors, 0, message]
+      value_contains: "tool step has no TODO sentinels but still carries planning fields"
