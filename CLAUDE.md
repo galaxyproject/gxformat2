@@ -106,6 +106,8 @@ wf_path = get_path("synthetic-my-case.gxwf.yml")     # absolute path
 Test runner: `tests/test_interop_tests.py`
 Expectation files: `gxformat2/examples/expectations/*.yml`
 
+**Casing convention.** Operation names and operation result-shape keys are snake_case (`detect_draft`, `is_draft`, `plan_fields`, `topology_errors`, `error_count`). Paths that navigate into the loaded workflow document itself follow the workflow schema's native casing — mostly snake_case, with camelCase for CWL-inherited fields like `outputSource`, and `type_`/`in_` aliases for pydantic-reserved words. TS mirrors snake_case at the test boundary via a `toSnakeCaseKeys` wrapper; keep result shapes snake_case so that wrapper keeps working.
+
 ### Expectation file format
 
 ```yaml
