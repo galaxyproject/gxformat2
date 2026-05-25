@@ -81,11 +81,15 @@ def load_catalog() -> list[CatalogEntry]:
 
 
 def get_path(name: str) -> str:
-    """Return absolute path to an example workflow file by name (with extension)."""
-    for subdir in [FORMAT2_DIR, NATIVE_DIR]:
-        path = os.path.join(subdir, name)
-        if os.path.exists(path):
-            return path
+    """Return absolute path to an example workflow file by name (with extension).
+
+    Recursively searches FORMAT2_DIR / NATIVE_DIR so callers can use bare names
+    regardless of subdir nesting (e.g. format2/draft/).
+    """
+    for root in [FORMAT2_DIR, NATIVE_DIR]:
+        for dirpath, _dirnames, filenames in os.walk(root):
+            if name in filenames:
+                return os.path.join(dirpath, name)
     raise FileNotFoundError(f"Example workflow not found: {name}")
 
 
