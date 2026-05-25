@@ -583,10 +583,10 @@ unresolved."""
     tool_version: None | str = Field(default=None, description="The tool version corresponding used to run this step of the workflow. For tool shed installed tools, the ID generally uniquely specifies a version and this field is optional.")
     errors: None | str = Field(default=None, description="During Galaxy export there may be some problem validating the tool state, tool used, etc.. that will be indicated by this field. The Galaxy user should be warned of these problems before the workfl...")
     uuid: None | str = Field(default=None, description="UUID uniquely representing this element.")
-    plan_state: None | str = Field(alias="_plan_state", default=None, description="Draft-only free-text parameter binding intent for this step. This field must be removed before the workflow is treated as runnable gxformat2.")
-    plan_context: None | str = Field(alias="_plan_context", default=None, description="Draft-only free-text wrapper selection context for this step, such as source command details, conda packages, containers, environment variables, and pre/postconditions. This field must be removed b...")
-    plan_in: None | str = Field(alias="_plan_in", default=None, description="Draft-only free-text wrapper input-port mapping intent for this step. This field must be removed before the workflow is treated as runnable gxformat2.")
-    plan_out: None | str = Field(alias="_plan_out", default=None, description="Draft-only free-text wrapper output-surface intent for this step. This field must be removed before the workflow is treated as runnable gxformat2.")
+    plan_state: None | str = Field(default=None, alias="_plan_state", description="Draft-only free-text parameter binding intent for this step. This field must be removed before the workflow is treated as runnable gxformat2.")
+    plan_context: None | str = Field(default=None, alias="_plan_context", description="Draft-only free-text wrapper selection context for this step, such as source command details, conda packages, containers, environment variables, and pre/postconditions. This field must be removed b...")
+    plan_in: None | str = Field(default=None, alias="_plan_in", description="Draft-only free-text wrapper input-port mapping intent for this step. This field must be removed before the workflow is treated as runnable gxformat2.")
+    plan_out: None | str = Field(default=None, alias="_plan_out", description="Draft-only free-text wrapper output-surface intent for this step. This field must be removed before the workflow is treated as runnable gxformat2.")
 
 class GalaxyWorkflowDraft(Process, HasUUID):
     """A draft Galaxy workflow description. A draft workflow has concrete workflow
