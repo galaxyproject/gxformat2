@@ -325,9 +325,11 @@ class TestFormat2Pydantic:
             StrictGalaxyWorkflow.model_validate(draft)
 
     def test_todo_sentinel_metadata(self):
-        assert TODO_SENTINEL_PATTERN == r"^TODO(_[a-z0-9_]+)?$"
+        assert TODO_SENTINEL_PATTERN == r"^TODO(_[a-zA-Z0-9_]+)?$"
         assert is_todo_sentinel("TODO")
         assert is_todo_sentinel("TODO_trimmed_paired")
+        assert is_todo_sentinel("TODO_Trimmed")
+        assert is_todo_sentinel("TODO_TRIMMED")
         assert not is_todo_sentinel("todo_trimmed_paired")
         assert not is_todo_sentinel("TODO-TRIMMED")
 

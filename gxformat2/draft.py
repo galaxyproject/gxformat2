@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 from typing import Final
 
-TODO_SENTINEL_PATTERN: Final[str] = r"^TODO(_[a-z0-9_]+)?$"
+TODO_SENTINEL_PATTERN: Final[str] = r"^TODO(_[a-zA-Z0-9_]+)?$"
 TODO_SENTINEL_RE: Final[re.Pattern[str]] = re.compile(TODO_SENTINEL_PATTERN)
 
 PLAN_FIELDS: Final[tuple[str, ...]] = (
