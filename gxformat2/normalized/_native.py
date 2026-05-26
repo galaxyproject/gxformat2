@@ -40,7 +40,7 @@ from gxformat2.schema.native import (
 )
 from gxformat2.schema.native_strict import NativeGalaxyWorkflow as StrictNativeGalaxyWorkflow
 
-from ._types import ToolReference
+from ._types import INLINE_TOOL_CLASSES, ToolReference
 
 NativeComment: TypeAlias = Annotated[
     Union[
@@ -136,6 +136,24 @@ class NormalizedNativeStep(_DictMixin, BaseModel):
     @property
     def is_pick_value_step(self) -> bool:
         return self.type_ == NativeStepType.pick_value
+
+    @property
+    def is_inline_tool_step(self) -> bool:
+        """The step carries an inline tool source via ``tool_representation``.
+
+        Currently matches ``class: GalaxyUserTool`` (per-user dynamic tools);
+        see ``INLINE_TOOL_CLASSES`` for the full list.
+        """
+        if not self.tool_representation:
+            return False
+        return self.tool_representation.get("class") in INLINE_TOOL_CLASSES
+
+    @property
+    def inline_tool_class(self) -> str | None:
+        """The ``class`` field of an inline tool representation, or ``None``."""
+        if not self.tool_representation:
+            return None
+        return self.tool_representation.get("class")
 
     @property
     def connected_paths(self) -> frozenset[str]:

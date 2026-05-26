@@ -42,7 +42,7 @@ from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWork
 from gxformat2.schema.native import NativePostJobAction
 from gxformat2.yaml import ordered_load_path
 
-from ._types import ToolReference
+from ._types import INLINE_TOOL_CLASSES, ToolReference
 
 
 class GalaxyUserToolStub(BaseModel):
@@ -163,6 +163,29 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
     @property
     def is_pick_value_step(self) -> bool:
         return self.type_ == WorkflowStepType.pick_value
+
+    @property
+    def is_inline_tool_step(self) -> bool:
+        """The step embeds an inline tool source via ``run``.
+
+        True when ``run`` is a ``GalaxyUserToolStub`` or a dict whose ``class``
+        is in ``INLINE_TOOL_CLASSES``. Native-validated stubs always normalize
+        through ``GalaxyUserToolStub``; the dict branch is defensive.
+        """
+        if isinstance(self.run, GalaxyUserToolStub):
+            return True
+        if isinstance(self.run, dict) and self.run.get("class") in INLINE_TOOL_CLASSES:
+            return True
+        return False
+
+    @property
+    def inline_tool_representation(self) -> dict[str, Any] | None:
+        """The embedded tool source as a dict, or ``None`` if not an inline tool step."""
+        if isinstance(self.run, GalaxyUserToolStub):
+            return self.run.model_dump(by_alias=True, exclude_none=True)
+        if isinstance(self.run, dict) and self.run.get("class") in INLINE_TOOL_CLASSES:
+            return self.run
+        return None
 
     @property
     def connected_paths(self) -> frozenset[str]:
