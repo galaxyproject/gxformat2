@@ -6,6 +6,12 @@ History
 .. to_doc
 
 ---------------------
+0.28.0.dev0
+---------------------
+
+    
+
+---------------------
 0.27.0 (2026-05-27)
 ---------------------
 * Update development and release docs (thanks to `@jmchilton`_). `Pull Request 192`_
