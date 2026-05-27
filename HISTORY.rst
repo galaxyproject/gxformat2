@@ -8,6 +8,24 @@ History
 ---------------------
 0.27.0.dev0
 ---------------------
+* Update development and release docs (thanks to `@jmchilton`_). `Pull Request 192`_
+* Bump lxml from 6.0.2 to 6.1.0 (thanks to `@dependabot[bot]`_). `Pull Request 193`_
+* Source venv when resolving VERSION in Makefile (thanks to `@jmchilton`_). `Pull Request 190`_
+* Declarative YAML test coverage for gxformat2.mermaid (thanks to `@jmchilton`_). `Pull Request 194`_
+* Bump uuid from 8.3.2 to 14.0.0 in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 195`_
+* Declarative YAML test coverage for gxformat2.cytoscape (thanks to `@jmchilton`_). `Pull Request 196`_
+* Bump cytoscape.html CDN deps to current versions (thanks to `@jmchilton`_). `Pull Request 197`_
+* cytoscape: --layout flag with shared topological algorithm (thanks to `@jmchilton`_). `Pull Request 198`_
+* Fix integer order_index step keys in native workflow loading (thanks to `@nsoranzo`_). `Pull Request 199`_
+* Clarify input type aliases; move input_parameter_class out of generated file (thanks to `@jmchilton`_). `Pull Request 203`_
+* Accept bare-list multi-source and integer $link in Format2 dicts (thanks to `@jmchilton`_). `Pull Request 211`_
+* Propagate step-level post_job_actions through Format2 (closes #206) (thanks to `@jmchilton`_). `Pull Request 210`_
+* Propagate step input defaults through Format2 (thanks to `@jmchilton`_). `Pull Request 213`_
+* Flush out workflow input fields in schema.  (thanks to `@jmchilton`_). `Pull Request 212`_
+* Clean-ups for #207 (thanks to `@nsoranzo`_). `Pull Request 215`_
+* Model `fields` on workflow record inputs (closes #214) (thanks to `@jmchilton`_). `Pull Request 216`_
+* Bump idna from 3.11 to 3.15 (thanks to `@dependabot[bot]`_). `Pull Request 217`_
+* Less Broken User Defined Tool Support during Normalization (thanks to `@jmchilton`_). `Pull Request 218`_
 
 * Declarative YAML-driven test coverage for ``gxformat2.mermaid``; fix
   ``_input_type_str`` to accept string input types (previous ``.value``
@@ -398,6 +416,24 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 192: https://github.com/galaxyproject/gxformat2/pull/192
+.. _Pull Request 193: https://github.com/galaxyproject/gxformat2/pull/193
+.. _Pull Request 190: https://github.com/galaxyproject/gxformat2/pull/190
+.. _Pull Request 194: https://github.com/galaxyproject/gxformat2/pull/194
+.. _Pull Request 195: https://github.com/galaxyproject/gxformat2/pull/195
+.. _Pull Request 196: https://github.com/galaxyproject/gxformat2/pull/196
+.. _Pull Request 197: https://github.com/galaxyproject/gxformat2/pull/197
+.. _Pull Request 198: https://github.com/galaxyproject/gxformat2/pull/198
+.. _Pull Request 199: https://github.com/galaxyproject/gxformat2/pull/199
+.. _Pull Request 203: https://github.com/galaxyproject/gxformat2/pull/203
+.. _Pull Request 211: https://github.com/galaxyproject/gxformat2/pull/211
+.. _Pull Request 210: https://github.com/galaxyproject/gxformat2/pull/210
+.. _Pull Request 213: https://github.com/galaxyproject/gxformat2/pull/213
+.. _Pull Request 212: https://github.com/galaxyproject/gxformat2/pull/212
+.. _Pull Request 215: https://github.com/galaxyproject/gxformat2/pull/215
+.. _Pull Request 216: https://github.com/galaxyproject/gxformat2/pull/216
+.. _Pull Request 217: https://github.com/galaxyproject/gxformat2/pull/217
+.. _Pull Request 218: https://github.com/galaxyproject/gxformat2/pull/218
 .. _Pull Request 191: https://github.com/galaxyproject/gxformat2/pull/191
 .. _Pull Request 153: https://github.com/galaxyproject/gxformat2/pull/153
 .. _Pull Request 154: https://github.com/galaxyproject/gxformat2/pull/154
