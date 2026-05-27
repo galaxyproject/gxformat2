@@ -18,6 +18,7 @@ from typing import Any, Literal, NamedTuple, Union
 from pydantic import BaseModel, ConfigDict, Field, field_validator, SerializeAsAny
 from typing_extensions import TypeAlias
 
+from gxformat2.schema._input_parameter import input_parameter_class
 from gxformat2.schema.gxformat2 import (
     BaseInputParameter,
     CreatorOrganization,
@@ -37,7 +38,6 @@ from gxformat2.schema.gxformat2 import (
     WorkflowStepOutput,
     WorkflowStepType,
 )
-from gxformat2.schema._input_parameter import input_parameter_class
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWorkflow
 from gxformat2.schema.native import NativePostJobAction
 from gxformat2.yaml import ordered_load_path

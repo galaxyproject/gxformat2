@@ -37,6 +37,7 @@ from ..options import (
     default_url_resolver,
     MAX_EXPANSION_DEPTH,
 )
+from ..schema._input_parameter import input_parameter_class
 from ..schema.gxformat2 import (
     BaseInputParameter,
     CreatorOrganization,
@@ -47,7 +48,6 @@ from ..schema.gxformat2 import (
     MarkdownComment,
     Report,
 )
-from ..schema._input_parameter import input_parameter_class
 from ..schema.gxformat2 import StepPosition as Format2StepPosition
 from ..schema.gxformat2 import (
     TextComment,
