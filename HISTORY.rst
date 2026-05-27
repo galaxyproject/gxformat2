@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.27.0.dev0
+0.27.0 (2026-05-27)
 ---------------------
 * Update development and release docs (thanks to `@jmchilton`_). `Pull Request 192`_
 * Bump lxml from 6.0.2 to 6.1.0 (thanks to `@dependabot[bot]`_). `Pull Request 193`_
