@@ -3,21 +3,27 @@
 # The code itself is released under the Apache 2.0 license and the help text is
 # subject to the license of the original schema.
 
+from __future__ import annotations
+
 import copy
 import logging
 import os
 import pathlib
+import sys
 import tempfile
 import uuid as _uuid__  # pylint: disable=unused-import # noqa: F401
 import xml.sax  # nosec
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
+from collections.abc import Collection  # pylint: disable=unused-import # noqa: F401
 from collections.abc import MutableMapping, MutableSequence, Sequence
 from io import StringIO
 from itertools import chain
-from typing import Any, Final, Optional, Union, cast
+from typing import ClassVar  # pylint: disable=unused-import # noqa: F401
+from typing import Any, Final, Generic, TypeAlias, TypeVar, cast
 from urllib.parse import quote, urldefrag, urlparse, urlsplit, urlunsplit
 from urllib.request import pathname2url
 
+from mypy_extensions import trait
 from rdflib import Graph
 from rdflib.plugins.parsers.notation3 import BadSyntax
 from ruamel.yaml.comments import CommentedMap
@@ -27,22 +33,28 @@ from schema_salad.fetcher import DefaultFetcher, Fetcher, MemoryCachingFetcher
 from schema_salad.sourceline import SourceLine, add_lc_filename
 from schema_salad.utils import CacheType, yaml_no_ts  # requires schema-salad v8.2+
 
+if sys.version_info >= (3, 11):
+    from typing import Self
+else:
+    from typing_extensions import Self
+
 _vocab: dict[str, str] = {}
 _rvocab: dict[str, str] = {}
 
 _logger: Final = logging.getLogger("salad")
 
 
-IdxType = MutableMapping[str, tuple[Any, "LoadingOptions"]]
+IdxType: TypeAlias = MutableMapping[str, tuple[Any, "LoadingOptions"]]
+S = TypeVar("S", bound="Saveable")
 
 
 class LoadingOptions:
     idx: Final[IdxType]
-    fileuri: Final[Optional[str]]
+    fileuri: Final[str | None]
     baseuri: Final[str]
     namespaces: Final[MutableMapping[str, str]]
     schemas: Final[MutableSequence[str]]
-    original_doc: Final[Optional[Any]]
+    original_doc: Final[Any | None]
     addl_metadata: Final[MutableMapping[str, Any]]
     fetcher: Final[Fetcher]
     vocab: Final[dict[str, str]]
@@ -50,24 +62,24 @@ class LoadingOptions:
     cache: Final[CacheType]
     imports: Final[list[str]]
     includes: Final[list[str]]
-    no_link_check: Final[Optional[bool]]
-    container: Final[Optional[str]]
+    no_link_check: Final[bool | None]
+    container: Final[str | None]
 
     def __init__(
         self,
-        fetcher: Optional[Fetcher] = None,
-        namespaces: Optional[dict[str, str]] = None,
-        schemas: Optional[list[str]] = None,
-        fileuri: Optional[str] = None,
-        copyfrom: Optional["LoadingOptions"] = None,
-        original_doc: Optional[Any] = None,
-        addl_metadata: Optional[dict[str, str]] = None,
-        baseuri: Optional[str] = None,
-        idx: Optional[IdxType] = None,
-        imports: Optional[list[str]] = None,
-        includes: Optional[list[str]] = None,
-        no_link_check: Optional[bool] = None,
-        container: Optional[str] = None,
+        fetcher: Fetcher | None = None,
+        namespaces: dict[str, str] | None = None,
+        schemas: list[str] | None = None,
+        fileuri: str | None = None,
+        copyfrom: LoadingOptions | None = None,
+        original_doc: Any | None = None,
+        addl_metadata: dict[str, str] | None = None,
+        baseuri: str | None = None,
+        idx: IdxType | None = None,
+        imports: list[str] | None = None,
+        includes: list[str] | None = None,
+        no_link_check: bool | None = None,
+        container: str | None = None,
     ) -> None:
         """Create a LoadingOptions object."""
         self.original_doc = original_doc
@@ -79,7 +91,7 @@ class LoadingOptions:
         self.idx = temp_idx
 
         if fileuri is not None:
-            temp_fileuri: Optional[str] = fileuri
+            temp_fileuri: str | None = fileuri
         else:
             temp_fileuri = copyfrom.fileuri if copyfrom is not None else None
         self.fileuri = temp_fileuri
@@ -121,13 +133,13 @@ class LoadingOptions:
         self.includes = temp_includes
 
         if no_link_check is not None:
-            temp_no_link_check: Optional[bool] = no_link_check
+            temp_no_link_check: bool | None = no_link_check
         else:
             temp_no_link_check = copyfrom.no_link_check if copyfrom is not None else False
         self.no_link_check = temp_no_link_check
 
         if container is not None:
-            temp_container: Optional[str] = container
+            temp_container: str | None = container
         else:
             temp_container = copyfrom.container if copyfrom is not None else None
         self.container = temp_container
@@ -201,7 +213,8 @@ class LoadingOptions:
         return graph
 
 
-class Saveable(ABC):
+@trait
+class Saveable(metaclass=ABCMeta):
     """Mark classes than have a save() and fromDoc() function."""
 
     @classmethod
@@ -211,8 +224,8 @@ class Saveable(ABC):
         _doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-    ) -> "Saveable":
+        docRoot: str | None = None,
+    ) -> Self:
         """Construct this object from the result of yaml.load()."""
 
     @abstractmethod
@@ -223,11 +236,11 @@ class Saveable(ABC):
 
 
 def load_field(
-    val: Union[str, dict[str, str]],
+    val: Any | None,
     fieldtype: "_Loader",
     baseuri: str,
     loadingOptions: LoadingOptions,
-    lc: Optional[list[Any]] = None,
+    lc: Any | None = None,
 ) -> Any:
     """Load field."""
     if isinstance(val, MutableMapping):
@@ -251,7 +264,9 @@ def load_field(
     return fieldtype.load(val, baseuri, loadingOptions, lc=lc)
 
 
-save_type = Optional[Union[MutableMapping[str, Any], MutableSequence[Any], int, float, bool, str]]
+save_type: TypeAlias = (
+    None | MutableMapping[str, Any] | MutableSequence[Any] | int | float | bool | str
+)
 
 
 def extract_type(val_type: type[Any]) -> str:
@@ -367,7 +382,7 @@ def expand_url(
     loadingOptions: LoadingOptions,
     scoped_id: bool = False,
     vocab_term: bool = False,
-    scoped_ref: Optional[int] = None,
+    scoped_ref: int | None = None,
 ) -> str:
     if url in ("@id", "@type"):
         return url
@@ -434,9 +449,9 @@ class _Loader:
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
-    ) -> Any:
+        docRoot: str | None = None,
+        lc: Any | None = None,
+    ) -> Any | None:
         pass
 
 
@@ -446,8 +461,8 @@ class _AnyLoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        docRoot: str | None = None,
+        lc: Any | None = None,
     ) -> Any:
         if doc is not None:
             return doc
@@ -455,7 +470,7 @@ class _AnyLoader(_Loader):
 
 
 class _PrimitiveLoader(_Loader):
-    def __init__(self, tp: Union[type, tuple[type[str], type[str]]]) -> None:
+    def __init__(self, tp: type | tuple[type[str], type[str]]) -> None:
         self.tp: Final = tp
 
     def load(
@@ -463,8 +478,8 @@ class _PrimitiveLoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        docRoot: str | None = None,
+        lc: Any | None = None,
     ) -> Any:
         if not isinstance(doc, self.tp):
             raise ValidationException(f"Expected a {self.tp} but got {doc.__class__.__name__}")
@@ -483,9 +498,9 @@ class _ArrayLoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
-    ) -> Any:
+        docRoot: str | None = None,
+        lc: Any | None = None,
+    ) -> list[Any]:
         if not isinstance(doc, MutableSequence):
             raise ValidationException(
                 f"Value is a {convert_typing(extract_type(type(doc)))}, "
@@ -535,9 +550,9 @@ class _MapLoader(_Loader):
     def __init__(
         self,
         values: _Loader,
-        name: Optional[str] = None,
-        container: Optional[str] = None,
-        no_link_check: Optional[bool] = None,
+        name: str | None = None,
+        container: str | None = None,
+        no_link_check: bool | None = None,
     ) -> None:
         self.values: Final = values
         self.name: Final = name
@@ -549,9 +564,9 @@ class _MapLoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
-    ) -> Any:
+        docRoot: str | None = None,
+        lc: Any | None = None,
+    ) -> dict[str, Any]:
         if not isinstance(doc, MutableMapping):
             raise ValidationException(f"Expected a map, was {type(doc)}")
         if self.container is not None or self.no_link_check is not None:
@@ -584,11 +599,11 @@ class _EnumLoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
-    ) -> Any:
+        docRoot: str | None = None,
+        lc: Any | None = None,
+    ) -> str:
         if doc in self.symbols:
-            return doc
+            return cast(str, doc)
         raise ValidationException(f"Expected one of {self.symbols}")
 
     def __repr__(self) -> str:
@@ -604,75 +619,76 @@ class _SecondaryDSLLoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        docRoot: str | None = None,
+        lc: Any | None = None,
     ) -> Any:
         r: Final[list[dict[str, Any]]] = []
-        if isinstance(doc, MutableSequence):
-            for d in doc:
-                if isinstance(d, str):
-                    if d.endswith("?"):
-                        r.append({"pattern": d[:-1], "required": False})
-                    else:
-                        r.append({"pattern": d})
-                elif isinstance(d, dict):
-                    new_dict1: dict[str, Any] = {}
-                    dict_copy = copy.deepcopy(d)
-                    if "pattern" in dict_copy:
-                        new_dict1["pattern"] = dict_copy.pop("pattern")
-                    else:
-                        raise ValidationException(
-                            f"Missing pattern in secondaryFiles specification entry: {d}"
-                        )
-                    new_dict1["required"] = (
-                        dict_copy.pop("required") if "required" in dict_copy else None
-                    )
-
-                    if len(dict_copy):
-                        raise ValidationException(
-                            "Unallowed values in secondaryFiles specification entry: {}".format(
-                                dict_copy
+        match doc:
+            case MutableSequence() as dlist:
+                for d in dlist:
+                    if isinstance(d, str):
+                        if d.endswith("?"):
+                            r.append({"pattern": d[:-1], "required": False})
+                        else:
+                            r.append({"pattern": d})
+                    elif isinstance(d, dict):
+                        new_dict1: dict[str, Any] = {}
+                        dict_copy = copy.deepcopy(d)
+                        if "pattern" in dict_copy:
+                            new_dict1["pattern"] = dict_copy.pop("pattern")
+                        else:
+                            raise ValidationException(
+                                f"Missing pattern in secondaryFiles specification entry: {d}"
                             )
+                        new_dict1["required"] = (
+                            dict_copy.pop("required") if "required" in dict_copy else None
                         )
-                    r.append(new_dict1)
 
+                        if len(dict_copy):
+                            raise ValidationException(
+                                "Unallowed values in secondaryFiles specification entry: {}".format(
+                                    dict_copy
+                                )
+                            )
+                        r.append(new_dict1)
+
+                    else:
+                        raise ValidationException(
+                            "Expected a string or sequence of (strings or mappings)."
+                        )
+            case MutableMapping() as decl:
+                new_dict2 = {}
+                doc_copy = copy.deepcopy(decl)
+                if "pattern" in doc_copy:
+                    new_dict2["pattern"] = doc_copy.pop("pattern")
                 else:
                     raise ValidationException(
-                        "Expected a string or sequence of (strings or mappings)."
+                        f"Missing pattern in secondaryFiles specification entry: {decl}"
                     )
-        elif isinstance(doc, MutableMapping):
-            new_dict2: Final = {}
-            doc_copy: Final = copy.deepcopy(doc)
-            if "pattern" in doc_copy:
-                new_dict2["pattern"] = doc_copy.pop("pattern")
-            else:
-                raise ValidationException(
-                    f"Missing pattern in secondaryFiles specification entry: {doc}"
-                )
-            new_dict2["required"] = doc_copy.pop("required") if "required" in doc_copy else None
+                new_dict2["required"] = doc_copy.pop("required") if "required" in doc_copy else None
 
-            if len(doc_copy):
-                raise ValidationException(
-                    f"Unallowed values in secondaryFiles specification entry: {doc_copy}"
-                )
-            r.append(new_dict2)
+                if len(doc_copy):
+                    raise ValidationException(
+                        f"Unallowed values in secondaryFiles specification entry: {doc_copy}"
+                    )
+                r.append(new_dict2)
 
-        elif isinstance(doc, str):
-            if doc.endswith("?"):
-                r.append({"pattern": doc[:-1], "required": False})
-            else:
-                r.append({"pattern": doc})
-        else:
-            raise ValidationException("Expected str or sequence of str")
+            case str(decl):
+                if decl.endswith("?"):
+                    r.append({"pattern": decl[:-1], "required": False})
+                else:
+                    r.append({"pattern": decl})
+            case _:
+                raise ValidationException("Expected str or sequence of str")
         return self.inner.load(r, baseuri, loadingOptions, docRoot, lc=lc)
 
 
-class _RecordLoader(_Loader):
+class _RecordLoader(_Loader, Generic[S]):
     def __init__(
         self,
-        classtype: type[Saveable],
-        container: Optional[str] = None,
-        no_link_check: Optional[bool] = None,
+        classtype: type[S],
+        container: str | None = None,
+        no_link_check: bool | None = None,
     ) -> None:
         self.classtype: Final = classtype
         self.container: Final = container
@@ -683,9 +699,9 @@ class _RecordLoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
-    ) -> Any:
+        docRoot: str | None = None,
+        lc: Any | None = None,
+    ) -> S:
         if not isinstance(doc, MutableMapping):
             raise ValidationException(
                 f"Value is a {convert_typing(extract_type(type(doc)))}, "
@@ -710,19 +726,20 @@ class _ExpressionLoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
-    ) -> Any:
+        docRoot: str | None = None,
+        lc: Any | None = None,
+    ) -> str:
         if not isinstance(doc, str):
             raise ValidationException(
                 f"Value is a {convert_typing(extract_type(type(doc)))}, "
                 f"but valid type for this field is a str."
             )
-        return doc
+        else:
+            return doc
 
 
 class _UnionLoader(_Loader):
-    def __init__(self, alternates: Sequence[_Loader], name: Optional[str] = None) -> None:
+    def __init__(self, alternates: Sequence[_Loader], name: str | None = None) -> None:
         self.alternates = alternates
         self.name: Final = name
 
@@ -734,8 +751,8 @@ class _UnionLoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        docRoot: str | None = None,
+        lc: Any | None = None,
     ) -> Any:
         errors: Final = []
 
@@ -817,8 +834,8 @@ class _URILoader(_Loader):
         inner: _Loader,
         scoped_id: bool,
         vocab_term: bool,
-        scoped_ref: Optional[int],
-        no_link_check: Optional[bool],
+        scoped_ref: int | None,
+        no_link_check: bool | None,
     ) -> None:
         self.inner: Final = inner
         self.scoped_id: Final = scoped_id
@@ -831,39 +848,40 @@ class _URILoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        docRoot: str | None = None,
+        lc: Any | None = None,
     ) -> Any:
         if self.no_link_check is not None:
             loadingOptions = LoadingOptions(
                 copyfrom=loadingOptions, no_link_check=self.no_link_check
             )
-        if isinstance(doc, MutableSequence):
-            newdoc: Final = []
-            for i in doc:
-                if isinstance(i, str):
-                    newdoc.append(
-                        expand_url(
-                            i,
-                            baseuri,
-                            loadingOptions,
-                            self.scoped_id,
-                            self.vocab_term,
-                            self.scoped_ref,
+        match doc:
+            case MutableSequence() as decl:
+                newdoc: Final = []
+                for i in decl:
+                    if isinstance(i, str):
+                        newdoc.append(
+                            expand_url(
+                                i,
+                                baseuri,
+                                loadingOptions,
+                                self.scoped_id,
+                                self.vocab_term,
+                                self.scoped_ref,
+                            )
                         )
-                    )
-                else:
-                    newdoc.append(i)
-            doc = newdoc
-        elif isinstance(doc, str):
-            doc = expand_url(
-                doc,
-                baseuri,
-                loadingOptions,
-                self.scoped_id,
-                self.vocab_term,
-                self.scoped_ref,
-            )
+                    else:
+                        newdoc.append(i)
+                doc = newdoc
+            case str(decl):
+                doc = expand_url(
+                    decl,
+                    baseuri,
+                    loadingOptions,
+                    self.scoped_id,
+                    self.vocab_term,
+                    self.scoped_ref,
+                )
         if isinstance(doc, str):
             if not loadingOptions.no_link_check:
                 errors: Final = []
@@ -880,7 +898,7 @@ class _URILoader(_Loader):
 
 
 class _TypeDSLLoader(_Loader):
-    def __init__(self, inner: _Loader, refScope: Optional[int], salad_version: str) -> None:
+    def __init__(self, inner: _Loader, refScope: int | None, salad_version: str) -> None:
         self.inner: Final = inner
         self.refScope: Final = refScope
         self.salad_version: Final = salad_version
@@ -890,7 +908,7 @@ class _TypeDSLLoader(_Loader):
         doc: str,
         baseuri: str,
         loadingOptions: LoadingOptions,
-    ) -> Union[list[Union[dict[str, Any], str]], dict[str, Any], str]:
+    ) -> list[dict[str, Any] | str] | dict[str, Any] | str:
         doc_ = doc
         optional = False
         if doc_.endswith("?"):
@@ -899,7 +917,7 @@ class _TypeDSLLoader(_Loader):
 
         if doc_.endswith("[]"):
             salad_versions: Final = [int(v) for v in self.salad_version[1:].split(".")]
-            items: Union[list[Union[dict[str, Any], str]], dict[str, Any], str] = ""
+            items: list[dict[str, Any] | str] | dict[str, Any] | str = ""
             rest: Final = doc_[0:-2]
             if salad_versions < [1, 3]:
                 if rest.endswith("[]"):
@@ -911,7 +929,7 @@ class _TypeDSLLoader(_Loader):
                 items = self.resolve(rest, baseuri, loadingOptions)
                 if isinstance(items, str):
                     items = expand_url(items, baseuri, loadingOptions, False, True, self.refScope)
-            expanded: Union[dict[str, Any], str] = {"type": "array", "items": items}
+            expanded: dict[str, Any] | str = {"type": "array", "items": items}
         else:
             expanded = expand_url(doc_, baseuri, loadingOptions, False, True, self.refScope)
 
@@ -925,8 +943,8 @@ class _TypeDSLLoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        docRoot: str | None = None,
+        lc: Any | None = None,
     ) -> Any:
         if isinstance(doc, MutableSequence):
             r: Final[list[Any]] = []
@@ -950,7 +968,7 @@ class _TypeDSLLoader(_Loader):
 
 
 class _IdMapLoader(_Loader):
-    def __init__(self, inner: _Loader, mapSubject: str, mapPredicate: Optional[str]) -> None:
+    def __init__(self, inner: _Loader, mapSubject: str, mapPredicate: str | None) -> None:
         self.inner: Final = inner
         self.mapSubject: Final = mapSubject
         self.mapPredicate: Final = mapPredicate
@@ -960,8 +978,8 @@ class _IdMapLoader(_Loader):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None,
-        lc: Optional[list[Any]] = None,
+        docRoot: str | None = None,
+        lc: Any | None = None,
     ) -> Any:
         if isinstance(doc, MutableMapping):
             r: Final[list[Any]] = []
@@ -990,10 +1008,10 @@ class _IdMapLoader(_Loader):
 
 def _document_load(
     loader: _Loader,
-    doc: Union[str, MutableMapping[str, Any], MutableSequence[Any]],
+    doc: str | MutableMapping[str, Any] | MutableSequence[Any],
     baseuri: str,
     loadingOptions: LoadingOptions,
-    addl_metadata_fields: Optional[MutableSequence[str]] = None,
+    addl_metadata_fields: MutableSequence[str] | None = None,
 ) -> tuple[Any, LoadingOptions]:
     if isinstance(doc, str):
         return _document_load_by_url(
@@ -1062,7 +1080,7 @@ def _document_load_by_url(
     loader: _Loader,
     url: str,
     loadingOptions: LoadingOptions,
-    addl_metadata_fields: Optional[MutableSequence[str]] = None,
+    addl_metadata_fields: MutableSequence[str] | None = None,
 ) -> tuple[Any, LoadingOptions]:
     if url in loadingOptions.idx:
         return loadingOptions.idx[url]
@@ -1117,7 +1135,7 @@ def save_relative_uri(
     uri: Any,
     base_url: str,
     scoped_id: bool,
-    ref_scope: Optional[int],
+    ref_scope: int | None,
     relative_uris: bool,
 ) -> Any:
     """Convert any URI to a relative one, obeying the scoping rules."""
@@ -1168,6 +1186,7 @@ def parser_info() -> str:
     return "org.galaxyproject.gxformat2.v19_09"
 
 
+@trait
 class Documented(Saveable):
     pass
 
@@ -1175,6 +1194,7 @@ class Documented(Saveable):
 class RecordField(Documented):
     """
     A field of a record.
+
     """
 
     name: str
@@ -1183,9 +1203,9 @@ class RecordField(Documented):
         self,
         name: Any,
         type_: Any,
-        doc: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        doc: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -1217,8 +1237,8 @@ class RecordField(Documented):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "RecordField":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -1376,7 +1396,7 @@ class RecordField(Documented):
                             "is not valid because:",
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -1441,16 +1461,16 @@ class RecordField(Documented):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["doc", "name", "type"])
+    attrs: ClassVar[Collection[str]] = frozenset(["doc", "name", "type"])
 
 
 class RecordSchema(Saveable):
     def __init__(
         self,
         type_: Any,
-        fields: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        fields: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -1477,8 +1497,8 @@ class RecordSchema(Saveable):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "RecordSchema":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -1580,7 +1600,7 @@ class RecordSchema(Saveable):
                             "is not valid because:",
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -1640,7 +1660,7 @@ class RecordSchema(Saveable):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["fields", "type"])
+    attrs: ClassVar[Collection[str]] = frozenset(["fields", "type"])
 
 
 class EnumSchema(Saveable):
@@ -1653,8 +1673,8 @@ class EnumSchema(Saveable):
         self,
         symbols: Any,
         type_: Any,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -1681,8 +1701,8 @@ class EnumSchema(Saveable):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "EnumSchema":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -1785,7 +1805,7 @@ class EnumSchema(Saveable):
                             "is not valid because:",
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -1844,7 +1864,7 @@ class EnumSchema(Saveable):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["symbols", "type"])
+    attrs: ClassVar[Collection[str]] = frozenset(["symbols", "type"])
 
 
 class ArraySchema(Saveable):
@@ -1852,8 +1872,8 @@ class ArraySchema(Saveable):
         self,
         items: Any,
         type_: Any,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -1880,8 +1900,8 @@ class ArraySchema(Saveable):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "ArraySchema":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -1984,7 +2004,7 @@ class ArraySchema(Saveable):
                             "is not valid because:",
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -2043,17 +2063,20 @@ class ArraySchema(Saveable):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["items", "type"])
+    attrs: ClassVar[Collection[str]] = frozenset(["items", "type"])
 
 
+@trait
 class Labeled(Saveable):
     pass
 
 
+@trait
 class Identified(Saveable):
     pass
 
 
+@trait
 class Parameter(Labeled, Documented, Identified):
     """
     Define an input or output parameter to a process.
@@ -2063,34 +2086,37 @@ class Parameter(Labeled, Documented, Identified):
     pass
 
 
+@trait
 class InputParameter(Parameter):
     pass
 
 
+@trait
 class OutputParameter(Parameter):
     pass
 
 
+@trait
 class Process(Identified, Labeled, Documented):
     """
-
-    The base executable type in CWL is the `Process` object defined by the
-    document.  Note that the `Process` object is abstract and cannot be
-    directly executed.
+    The base executable type in CWL is the ``Process`` object defined by the document.  Note that the ``Process`` object is abstract and cannot be directly executed.
 
     """
 
     pass
 
 
+@trait
 class HasUUID(Saveable):
     pass
 
 
+@trait
 class HasStepErrors(Saveable):
     pass
 
 
+@trait
 class HasStepPosition(Saveable):
     pass
 
@@ -2098,14 +2124,15 @@ class HasStepPosition(Saveable):
 class StepPosition(Saveable):
     """
     This field specifies the location of the step's node when rendered in the workflow editor.
+
     """
 
     def __init__(
         self,
         top: Any,
         left: Any,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -2132,8 +2159,8 @@ class StepPosition(Saveable):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "StepPosition":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -2236,7 +2263,7 @@ class StepPosition(Saveable):
                             "is not valid because:",
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -2296,18 +2323,17 @@ class StepPosition(Saveable):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["top", "left"])
+    attrs: ClassVar[Collection[str]] = frozenset(["top", "left"])
 
 
+@trait
 class ReferencesTool(Saveable):
     pass
 
 
 class SampleSheetColumnDefinition(Saveable):
     """
-    Describes one column of a sample-sheet collection input.
-    Used in `column_definitions` on a `collection_type: sample_sheet[:<type>]`
-    workflow input.
+    Describes one column of a sample-sheet collection input. Used in ``column_definitions`` on a ``collection_type: sample_sheet[:<type>]`` workflow input.
 
     """
 
@@ -2318,13 +2344,13 @@ class SampleSheetColumnDefinition(Saveable):
         name: Any,
         type_: Any,
         optional: Any,
-        description: Optional[Any] = None,
-        default_value: Optional[Any] = None,
-        validators: Optional[Any] = None,
-        restrictions: Optional[Any] = None,
-        suggestions: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        description: Any | None = None,
+        default_value: Any | None = None,
+        validators: Any | None = None,
+        restrictions: Any | None = None,
+        suggestions: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -2377,8 +2403,8 @@ class SampleSheetColumnDefinition(Saveable):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "SampleSheetColumnDefinition":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -2772,7 +2798,7 @@ class SampleSheetColumnDefinition(Saveable):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -2880,7 +2906,7 @@ class SampleSheetColumnDefinition(Saveable):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         [
             "name",
             "description",
@@ -2896,11 +2922,7 @@ class SampleSheetColumnDefinition(Saveable):
 
 class RecordFieldDefinition(Saveable):
     """
-    Describes one field of a `record` collection input.
-    Used in `fields` on a `collection_type` containing `record` (e.g.
-    `record`, `list:record`, `sample_sheet:record`). Mirrors a subset of
-    the CWL `InputRecordSchema` shape that Galaxy persists on
-    `DatasetCollection.fields`.
+    Describes one field of a ``record`` collection input. Used in ``fields`` on a ``collection_type`` containing ``record`` (e.g. ``record``, ``list:record``, ``sample_sheet:record``). Mirrors a subset of the CWL ``InputRecordSchema`` shape that Galaxy persists on ``DatasetCollection.fields``.
 
     """
 
@@ -2910,9 +2932,9 @@ class RecordFieldDefinition(Saveable):
         self,
         name: Any,
         type_: Any,
-        format: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        format: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -2944,8 +2966,8 @@ class RecordFieldDefinition(Saveable):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "RecordFieldDefinition":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -3103,7 +3125,7 @@ class RecordFieldDefinition(Saveable):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -3168,23 +3190,21 @@ class RecordFieldDefinition(Saveable):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["name", "type", "format"])
+    attrs: ClassVar[Collection[str]] = frozenset(["name", "type", "format"])
 
 
 class WorkflowTextOption(Saveable):
     """
-    A `{value, label}` option used in `restrictions` or `suggestions` on a
-    text workflow parameter. Plain strings are also accepted in those
-    arrays as shorthand for `{value: <str>, label: <str>}`.
+    A ``{value, label}`` option used in ``restrictions`` or ``suggestions`` on a text workflow parameter. Plain strings are also accepted in those arrays as shorthand for ``{value: <str>, label: <str>}``.
 
     """
 
     def __init__(
         self,
         value: Any,
-        label: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        label: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -3211,8 +3231,8 @@ class WorkflowTextOption(Saveable):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowTextOption":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -3314,7 +3334,7 @@ class WorkflowTextOption(Saveable):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -3374,7 +3394,7 @@ class WorkflowTextOption(Saveable):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["value", "label"])
+    attrs: ClassVar[Collection[str]] = frozenset(["value", "label"])
 
 
 class ToolShedRepository(Saveable):
@@ -3386,8 +3406,8 @@ class ToolShedRepository(Saveable):
         name: Any,
         owner: Any,
         tool_shed: Any,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -3421,8 +3441,8 @@ class ToolShedRepository(Saveable):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "ToolShedRepository":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -3629,7 +3649,7 @@ class ToolShedRepository(Saveable):
                             "is not valid because:",
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -3705,7 +3725,9 @@ class ToolShedRepository(Saveable):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["changeset_revision", "name", "owner", "tool_shed"])
+    attrs: ClassVar[Collection[str]] = frozenset(
+        ["changeset_revision", "name", "owner", "tool_shed"]
+    )
 
 
 class BaseInputParameter(InputParameter, HasStepPosition):
@@ -3714,13 +3736,13 @@ class BaseInputParameter(InputParameter, HasStepPosition):
     def __init__(
         self,
         optional: Any,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        id: Optional[Any] = None,
-        default: Optional[Any] = None,
-        position: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        id: Any | None = None,
+        default: Any | None = None,
+        position: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -3760,8 +3782,8 @@ class BaseInputParameter(InputParameter, HasStepPosition):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "BaseInputParameter":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -4059,7 +4081,7 @@ class BaseInputParameter(InputParameter, HasStepPosition):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -4139,7 +4161,9 @@ class BaseInputParameter(InputParameter, HasStepPosition):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["label", "doc", "id", "default", "position", "optional"])
+    attrs: ClassVar[Collection[str]] = frozenset(
+        ["label", "doc", "id", "default", "position", "optional"]
+    )
 
 
 class BaseDataParameter(BaseInputParameter):
@@ -4148,14 +4172,14 @@ class BaseDataParameter(BaseInputParameter):
     def __init__(
         self,
         optional: Any,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        id: Optional[Any] = None,
-        default: Optional[Any] = None,
-        position: Optional[Any] = None,
-        format: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        id: Any | None = None,
+        default: Any | None = None,
+        position: Any | None = None,
+        format: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -4205,8 +4229,8 @@ class BaseDataParameter(BaseInputParameter):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "BaseDataParameter":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -4551,7 +4575,7 @@ class BaseDataParameter(BaseInputParameter):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -4636,17 +4660,14 @@ class BaseDataParameter(BaseInputParameter):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         ["label", "doc", "id", "default", "position", "optional", "format"]
     )
 
 
 class WorkflowDataParameter(BaseDataParameter):
     """
-    A data input parameter for a Galaxy workflow. Represents one Galaxy dataset.
-    Normalized gxformat2 output uses ``type: data``. ``type: File`` is accepted as
-    an alias, but should not be confused with workflow test job syntax where
-    ``type: File`` means stage a file as test input data.
+    A data input parameter for a Galaxy workflow. Represents one Galaxy dataset. Normalized gxformat2 output uses ``type: data``. ``type: File`` is accepted as an alias, but should not be confused with workflow test job syntax where ``type: File`` means stage a file as test input data.
 
     """
 
@@ -4656,14 +4677,14 @@ class WorkflowDataParameter(BaseDataParameter):
         self,
         optional: Any,
         type_: Any,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        id: Optional[Any] = None,
-        default: Optional[Any] = None,
-        position: Optional[Any] = None,
-        format: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        id: Any | None = None,
+        default: Any | None = None,
+        position: Any | None = None,
+        format: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -4716,8 +4737,8 @@ class WorkflowDataParameter(BaseDataParameter):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowDataParameter":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -5109,7 +5130,7 @@ class WorkflowDataParameter(BaseDataParameter):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -5199,7 +5220,7 @@ class WorkflowDataParameter(BaseDataParameter):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         ["label", "doc", "id", "default", "position", "optional", "format", "type"]
     )
 
@@ -5216,17 +5237,17 @@ class WorkflowCollectionParameter(BaseDataParameter):
         self,
         optional: Any,
         type_: Any,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        id: Optional[Any] = None,
-        default: Optional[Any] = None,
-        position: Optional[Any] = None,
-        format: Optional[Any] = None,
-        collection_type: Optional[Any] = None,
-        column_definitions: Optional[Any] = None,
-        fields: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        id: Any | None = None,
+        default: Any | None = None,
+        position: Any | None = None,
+        format: Any | None = None,
+        collection_type: Any | None = None,
+        column_definitions: Any | None = None,
+        fields: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -5288,8 +5309,8 @@ class WorkflowCollectionParameter(BaseDataParameter):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowCollectionParameter":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -5823,7 +5844,7 @@ class WorkflowCollectionParameter(BaseDataParameter):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -5934,7 +5955,7 @@ class WorkflowCollectionParameter(BaseDataParameter):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         [
             "label",
             "doc",
@@ -5956,8 +5977,8 @@ class MinMax(Saveable):
         self,
         min: Any,
         max: Any,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -5984,8 +6005,8 @@ class MinMax(Saveable):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "MinMax":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -6086,7 +6107,7 @@ class MinMax(Saveable):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -6146,14 +6167,12 @@ class MinMax(Saveable):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["min", "max"])
+    attrs: ClassVar[Collection[str]] = frozenset(["min", "max"])
 
 
 class WorkflowIntegerParameter(BaseInputParameter, MinMax):
     """
-    A scalar integer workflow parameter. Normalized gxformat2 output uses
-    ``type: int``. ``type: integer`` is accepted for compatibility with native
-    Galaxy parameter state and Galaxy tool XML terminology.
+    A scalar integer workflow parameter. Normalized gxformat2 output uses ``type: int``. ``type: integer`` is accepted for compatibility with native Galaxy parameter state and Galaxy tool XML terminology.
 
     """
 
@@ -6165,13 +6184,13 @@ class WorkflowIntegerParameter(BaseInputParameter, MinMax):
         min: Any,
         max: Any,
         type_: Any,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        id: Optional[Any] = None,
-        default: Optional[Any] = None,
-        position: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        id: Any | None = None,
+        default: Any | None = None,
+        position: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -6227,8 +6246,8 @@ class WorkflowIntegerParameter(BaseInputParameter, MinMax):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowIntegerParameter":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -6668,7 +6687,7 @@ class WorkflowIntegerParameter(BaseInputParameter, MinMax):
                             "is not valid because:",
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -6763,7 +6782,7 @@ class WorkflowIntegerParameter(BaseInputParameter, MinMax):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         ["label", "doc", "id", "default", "position", "optional", "min", "max", "type"]
     )
 
@@ -6782,13 +6801,13 @@ class WorkflowFloatParameter(BaseInputParameter, MinMax):
         min: Any,
         max: Any,
         type_: Any,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        id: Optional[Any] = None,
-        default: Optional[Any] = None,
-        position: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        id: Any | None = None,
+        default: Any | None = None,
+        position: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -6844,8 +6863,8 @@ class WorkflowFloatParameter(BaseInputParameter, MinMax):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowFloatParameter":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -7285,7 +7304,7 @@ class WorkflowFloatParameter(BaseInputParameter, MinMax):
                             "is not valid because:",
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -7380,16 +7399,14 @@ class WorkflowFloatParameter(BaseInputParameter, MinMax):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         ["label", "doc", "id", "default", "position", "optional", "min", "max", "type"]
     )
 
 
 class WorkflowTextParameter(BaseInputParameter):
     """
-    A scalar text workflow parameter. Normalized gxformat2 output uses
-    ``type: string``. ``type: text`` is accepted for compatibility with native
-    Galaxy parameter state and Galaxy tool XML terminology.
+    A scalar text workflow parameter. Normalized gxformat2 output uses ``type: string``. ``type: text`` is accepted for compatibility with native Galaxy parameter state and Galaxy tool XML terminology.
 
     """
 
@@ -7399,16 +7416,16 @@ class WorkflowTextParameter(BaseInputParameter):
         self,
         optional: Any,
         type_: Any,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        id: Optional[Any] = None,
-        default: Optional[Any] = None,
-        position: Optional[Any] = None,
-        restrictions: Optional[Any] = None,
-        suggestions: Optional[Any] = None,
-        restrictOnConnections: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        id: Any | None = None,
+        default: Any | None = None,
+        position: Any | None = None,
+        restrictions: Any | None = None,
+        suggestions: Any | None = None,
+        restrictOnConnections: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -7467,8 +7484,8 @@ class WorkflowTextParameter(BaseInputParameter):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowTextParameter":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -7955,7 +7972,7 @@ class WorkflowTextParameter(BaseInputParameter):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -8064,7 +8081,7 @@ class WorkflowTextParameter(BaseInputParameter):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         [
             "label",
             "doc",
@@ -8092,13 +8109,13 @@ class WorkflowBooleanParameter(BaseInputParameter):
         self,
         optional: Any,
         type_: Any,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        id: Optional[Any] = None,
-        default: Optional[Any] = None,
-        position: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        id: Any | None = None,
+        default: Any | None = None,
+        position: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -8148,8 +8165,8 @@ class WorkflowBooleanParameter(BaseInputParameter):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowBooleanParameter":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -8495,7 +8512,7 @@ class WorkflowBooleanParameter(BaseInputParameter):
                             "is not valid because:",
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -8580,14 +8597,14 @@ class WorkflowBooleanParameter(BaseInputParameter):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["label", "doc", "id", "default", "position", "optional", "type"])
+    attrs: ClassVar[Collection[str]] = frozenset(
+        ["label", "doc", "id", "default", "position", "optional", "type"]
+    )
 
 
 class WorkflowInputParameter(BaseDataParameter, MinMax):
     """
-    An input parameter to a Galaxy workflow. This is the catch-all type used
-    by the Schema Salad codegen. The pydantic layer uses a discriminated union
-    of the specific parameter types instead.
+    An input parameter to a Galaxy workflow. This is the catch-all type used by the Schema Salad codegen. The pydantic layer uses a discriminated union of the specific parameter types instead.
 
     """
 
@@ -8599,20 +8616,20 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
         min: Any,
         max: Any,
         type_: Any,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        id: Optional[Any] = None,
-        default: Optional[Any] = None,
-        position: Optional[Any] = None,
-        format: Optional[Any] = None,
-        collection_type: Optional[Any] = None,
-        column_definitions: Optional[Any] = None,
-        fields: Optional[Any] = None,
-        restrictions: Optional[Any] = None,
-        suggestions: Optional[Any] = None,
-        restrictOnConnections: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        id: Any | None = None,
+        default: Any | None = None,
+        position: Any | None = None,
+        format: Any | None = None,
+        collection_type: Any | None = None,
+        column_definitions: Any | None = None,
+        fields: Any | None = None,
+        restrictions: Any | None = None,
+        suggestions: Any | None = None,
+        restrictOnConnections: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -8689,8 +8706,8 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowInputParameter":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -9458,7 +9475,7 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -9603,7 +9620,7 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         [
             "label",
             "doc",
@@ -9627,10 +9644,7 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
 
 class WorkflowOutputParameter(OutputParameter):
     """
-    Describe an output parameter of a workflow.  The parameter must be
-    connected to one parameter defined in the workflow that
-    will provide the value of the output parameter. It is legal to
-    connect a WorkflowInputParameter to a WorkflowOutputParameter.
+    Describe an output parameter of a workflow.  The parameter must be connected to one parameter defined in the workflow that will provide the value of the output parameter. It is legal to connect a WorkflowInputParameter to a WorkflowOutputParameter.
 
     """
 
@@ -9638,13 +9652,13 @@ class WorkflowOutputParameter(OutputParameter):
 
     def __init__(
         self,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        id: Optional[Any] = None,
-        outputSource: Optional[Any] = None,
-        type_: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        id: Any | None = None,
+        outputSource: Any | None = None,
+        type_: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -9680,8 +9694,8 @@ class WorkflowOutputParameter(OutputParameter):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowOutputParameter":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -9932,7 +9946,7 @@ class WorkflowOutputParameter(OutputParameter):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -10010,7 +10024,9 @@ class WorkflowOutputParameter(OutputParameter):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["label", "doc", "id", "outputSource", "type"])
+    attrs: ClassVar[Collection[str]] = frozenset(
+        ["label", "doc", "id", "outputSource", "type"]
+    )
 
 
 class WorkflowStep(
@@ -10025,19 +10041,14 @@ class WorkflowStep(
     """
     This represents a non-input step a Galaxy Workflow.
 
-    # A note about `state` and `tool_state` fields.
+    A note about ``state`` and ``tool_state`` fields.
+    =================================================
 
-    Only one or the other should be specified. These are two ways to represent the "state"
-    of a tool at this workflow step. Both are essentially maps from parameter names to
-    parameter values.
+    Only one or the other should be specified. These are two ways to represent the "state" of a tool at this workflow step. Both are essentially maps from parameter names to parameter values.
 
-    `tool_state` is much more low-level and expects a flat dictionary with each value a JSON
-    dump. Nested tool structures such as conditionals and repeats should have all their values
-    in the JSON dumped string. In general `tool_state` may be present in workflows exported from
-    Galaxy but shouldn't be written by humans.
+    ``tool_state`` is much more low-level and expects a flat dictionary with each value a JSON dump. Nested tool structures such as conditionals and repeats should have all their values in the JSON dumped string. In general ``tool_state`` may be present in workflows exported from Galaxy but shouldn't be written by humans.
 
-    `state` can contained a typed map. Repeat values can be represented as YAML arrays. An alternative
-    to representing `state` this way is defining inputs with default values.
+    ``state`` can contained a typed map. Repeat values can be represented as YAML arrays. An alternative to representing ``state`` this way is defining inputs with default values.
 
     """
 
@@ -10046,25 +10057,25 @@ class WorkflowStep(
     def __init__(
         self,
         out: Any,
-        id: Optional[Any] = None,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        position: Optional[Any] = None,
-        tool_id: Optional[Any] = None,
-        tool_shed_repository: Optional[Any] = None,
-        tool_version: Optional[Any] = None,
-        errors: Optional[Any] = None,
-        uuid: Optional[Any] = None,
-        in_: Optional[Any] = None,
-        state: Optional[Any] = None,
-        tool_state: Optional[Any] = None,
-        post_job_actions: Optional[Any] = None,
-        type_: Optional[Any] = None,
-        run: Optional[Any] = None,
-        runtime_inputs: Optional[Any] = None,
-        when: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        id: Any | None = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        position: Any | None = None,
+        tool_id: Any | None = None,
+        tool_shed_repository: Any | None = None,
+        tool_version: Any | None = None,
+        errors: Any | None = None,
+        uuid: Any | None = None,
+        in_: Any | None = None,
+        state: Any | None = None,
+        tool_state: Any | None = None,
+        post_job_actions: Any | None = None,
+        type_: Any | None = None,
+        run: Any | None = None,
+        runtime_inputs: Any | None = None,
+        when: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -10147,8 +10158,8 @@ class WorkflowStep(
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowStep":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -11012,7 +11023,7 @@ class WorkflowStep(
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -11166,7 +11177,7 @@ class WorkflowStep(
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         [
             "id",
             "label",
@@ -11190,6 +11201,7 @@ class WorkflowStep(
     )
 
 
+@trait
 class Sink(Saveable):
     pass
 
@@ -11204,12 +11216,12 @@ class WorkflowStepInput(Identified, Sink, Labeled):
 
     def __init__(
         self,
-        id: Optional[Any] = None,
-        source: Optional[Any] = None,
-        label: Optional[Any] = None,
-        default: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        id: Any | None = None,
+        source: Any | None = None,
+        label: Any | None = None,
+        default: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -11243,8 +11255,8 @@ class WorkflowStepInput(Identified, Sink, Labeled):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowStepInput":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -11448,7 +11460,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -11517,21 +11529,20 @@ class WorkflowStepInput(Identified, Sink, Labeled):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["id", "source", "label", "default"])
+    attrs: ClassVar[Collection[str]] = frozenset(["id", "source", "label", "default"])
 
 
 class Report(Saveable):
     """
-    Definition of an invocation report for this workflow. Currently the only
-    field is 'markdown'.
+    Definition of an invocation report for this workflow. Currently the only field is 'markdown'.
 
     """
 
     def __init__(
         self,
         markdown: Any,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -11557,8 +11568,8 @@ class Report(Saveable):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "Report":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -11613,7 +11624,7 @@ class Report(Saveable):
                             "is not valid because:",
                         )
                     )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -11666,19 +11677,14 @@ class Report(Saveable):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["markdown"])
+    attrs: ClassVar[Collection[str]] = frozenset(["markdown"])
 
 
 class WorkflowStepOutput(Identified):
     """
-    Associate an output parameter of the underlying process with a workflow
-    parameter.  The workflow parameter (given in the `id` field) be may be used
-    as a `source` to connect with input parameters of other workflow steps, or
-    with an output parameter of the process.
+    Associate an output parameter of the underlying process with a workflow parameter.  The workflow parameter (given in the ``id`` field) be may be used as a ``source`` to connect with input parameters of other workflow steps, or with an output parameter of the process.
 
-    A unique identifier for this workflow output parameter.  This is
-    the identifier to use in the `source` field of `WorkflowStepInput`
-    to connect the output value to downstream parameters.
+    A unique identifier for this workflow output parameter.  This is the identifier to use in the ``source`` field of ``WorkflowStepInput`` to connect the output value to downstream parameters.
 
     """
 
@@ -11686,16 +11692,16 @@ class WorkflowStepOutput(Identified):
 
     def __init__(
         self,
-        id: Optional[Any] = None,
-        add_tags: Optional[Any] = None,
-        change_datatype: Optional[Any] = None,
-        delete_intermediate_datasets: Optional[Any] = None,
-        hide: Optional[Any] = None,
-        remove_tags: Optional[Any] = None,
-        rename: Optional[Any] = None,
-        set_columns: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        id: Any | None = None,
+        add_tags: Any | None = None,
+        change_datatype: Any | None = None,
+        delete_intermediate_datasets: Any | None = None,
+        hide: Any | None = None,
+        remove_tags: Any | None = None,
+        rename: Any | None = None,
+        set_columns: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -11749,8 +11755,8 @@ class WorkflowStepOutput(Identified):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "WorkflowStepOutput":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -12142,7 +12148,7 @@ class WorkflowStepOutput(Identified):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -12244,7 +12250,7 @@ class WorkflowStepOutput(Identified):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         [
             "id",
             "add_tags",
@@ -12258,6 +12264,7 @@ class WorkflowStepOutput(Identified):
     )
 
 
+@trait
 class BaseComment(Saveable):
     """
     Base fields shared by all comment types.
@@ -12276,16 +12283,16 @@ class TextComment(BaseComment):
     def __init__(
         self,
         type_: Any,
-        position: Optional[Any] = None,
-        size: Optional[Any] = None,
-        color: Optional[Any] = None,
-        label: Optional[Any] = None,
-        text: Optional[Any] = None,
-        bold: Optional[Any] = None,
-        italic: Optional[Any] = None,
-        text_size: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        position: Any | None = None,
+        size: Any | None = None,
+        color: Any | None = None,
+        label: Any | None = None,
+        text: Any | None = None,
+        bold: Any | None = None,
+        italic: Any | None = None,
+        text_size: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -12341,8 +12348,8 @@ class TextComment(BaseComment):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "TextComment":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -12773,7 +12780,7 @@ class TextComment(BaseComment):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -12871,7 +12878,7 @@ class TextComment(BaseComment):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         [
             "position",
             "size",
@@ -12895,13 +12902,13 @@ class MarkdownComment(BaseComment):
     def __init__(
         self,
         type_: Any,
-        position: Optional[Any] = None,
-        size: Optional[Any] = None,
-        color: Optional[Any] = None,
-        label: Optional[Any] = None,
-        text: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        position: Any | None = None,
+        size: Any | None = None,
+        color: Any | None = None,
+        label: Any | None = None,
+        text: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -12941,8 +12948,8 @@ class MarkdownComment(BaseComment):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "MarkdownComment":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -13232,7 +13239,7 @@ class MarkdownComment(BaseComment):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -13312,7 +13319,9 @@ class MarkdownComment(BaseComment):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(["position", "size", "color", "label", "type", "text"])
+    attrs: ClassVar[Collection[str]] = frozenset(
+        ["position", "size", "color", "label", "type", "text"]
+    )
 
 
 class FrameComment(BaseComment):
@@ -13324,15 +13333,15 @@ class FrameComment(BaseComment):
     def __init__(
         self,
         type_: Any,
-        position: Optional[Any] = None,
-        size: Optional[Any] = None,
-        color: Optional[Any] = None,
-        label: Optional[Any] = None,
-        title: Optional[Any] = None,
-        contains_steps: Optional[Any] = None,
-        contains_comments: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        position: Any | None = None,
+        size: Any | None = None,
+        color: Any | None = None,
+        label: Any | None = None,
+        title: Any | None = None,
+        contains_steps: Any | None = None,
+        contains_comments: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -13385,8 +13394,8 @@ class FrameComment(BaseComment):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "FrameComment":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -13770,7 +13779,7 @@ class FrameComment(BaseComment):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -13866,7 +13875,7 @@ class FrameComment(BaseComment):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         [
             "position",
             "size",
@@ -13889,14 +13898,14 @@ class FreehandComment(BaseComment):
     def __init__(
         self,
         type_: Any,
-        position: Optional[Any] = None,
-        size: Optional[Any] = None,
-        color: Optional[Any] = None,
-        label: Optional[Any] = None,
-        thickness: Optional[Any] = None,
-        line: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        position: Any | None = None,
+        size: Any | None = None,
+        color: Any | None = None,
+        label: Any | None = None,
+        thickness: Any | None = None,
+        line: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -13946,8 +13955,8 @@ class FreehandComment(BaseComment):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "FreehandComment":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -14284,7 +14293,7 @@ class FreehandComment(BaseComment):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -14372,15 +14381,15 @@ class FreehandComment(BaseComment):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         ["position", "size", "color", "label", "type", "thickness", "line"]
     )
 
 
+@trait
 class BaseCreator(Saveable):
     """
-    Base fields shared by all creator types, corresponding to schema.org
-    Thing properties common to both Person and Organization.
+    Base fields shared by all creator types, corresponding to schema.org Thing properties common to both Person and Organization.
 
     """
 
@@ -14389,8 +14398,7 @@ class BaseCreator(Saveable):
 
 class CreatorPerson(BaseCreator):
     """
-    A person who created or contributed to the workflow.
-    Corresponds to a `schema.org Person <https://schema.org/Person>`_.
+    A person who created or contributed to the workflow. Corresponds to a ``schema.org Person <https://schema.org/Person>``_.
 
     """
 
@@ -14398,22 +14406,22 @@ class CreatorPerson(BaseCreator):
 
     def __init__(
         self,
-        name: Optional[Any] = None,
-        identifier: Optional[Any] = None,
-        url: Optional[Any] = None,
-        email: Optional[Any] = None,
-        image: Optional[Any] = None,
-        address: Optional[Any] = None,
-        alternateName: Optional[Any] = None,
-        telephone: Optional[Any] = None,
-        faxNumber: Optional[Any] = None,
-        givenName: Optional[Any] = None,
-        familyName: Optional[Any] = None,
-        honorificPrefix: Optional[Any] = None,
-        honorificSuffix: Optional[Any] = None,
-        jobTitle: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        name: Any | None = None,
+        identifier: Any | None = None,
+        url: Any | None = None,
+        email: Any | None = None,
+        image: Any | None = None,
+        address: Any | None = None,
+        alternateName: Any | None = None,
+        telephone: Any | None = None,
+        faxNumber: Any | None = None,
+        givenName: Any | None = None,
+        familyName: Any | None = None,
+        honorificPrefix: Any | None = None,
+        honorificSuffix: Any | None = None,
+        jobTitle: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -14432,7 +14440,7 @@ class CreatorPerson(BaseCreator):
         self.alternateName = alternateName
         self.telephone = telephone
         self.faxNumber = faxNumber
-        self.class_ = "CreatorPerson"
+        self.class_: Final[str] = "CreatorPerson"
         self.givenName = givenName
         self.familyName = familyName
         self.honorificPrefix = honorificPrefix
@@ -14487,8 +14495,8 @@ class CreatorPerson(BaseCreator):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "CreatorPerson":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -15178,7 +15186,7 @@ class CreatorPerson(BaseCreator):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -15333,7 +15341,7 @@ class CreatorPerson(BaseCreator):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         [
             "name",
             "identifier",
@@ -15356,8 +15364,7 @@ class CreatorPerson(BaseCreator):
 
 class CreatorOrganization(BaseCreator):
     """
-    An organization that created or contributed to the workflow.
-    Corresponds to a `schema.org Organization <https://schema.org/Organization>`_.
+    An organization that created or contributed to the workflow. Corresponds to a ``schema.org Organization <https://schema.org/Organization>``_.
 
     """
 
@@ -15365,17 +15372,17 @@ class CreatorOrganization(BaseCreator):
 
     def __init__(
         self,
-        name: Optional[Any] = None,
-        identifier: Optional[Any] = None,
-        url: Optional[Any] = None,
-        email: Optional[Any] = None,
-        image: Optional[Any] = None,
-        address: Optional[Any] = None,
-        alternateName: Optional[Any] = None,
-        telephone: Optional[Any] = None,
-        faxNumber: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        name: Any | None = None,
+        identifier: Any | None = None,
+        url: Any | None = None,
+        email: Any | None = None,
+        image: Any | None = None,
+        address: Any | None = None,
+        alternateName: Any | None = None,
+        telephone: Any | None = None,
+        faxNumber: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -15394,7 +15401,7 @@ class CreatorOrganization(BaseCreator):
         self.alternateName = alternateName
         self.telephone = telephone
         self.faxNumber = faxNumber
-        self.class_ = "CreatorOrganization"
+        self.class_: Final[str] = "CreatorOrganization"
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, CreatorOrganization):
@@ -15434,8 +15441,8 @@ class CreatorOrganization(BaseCreator):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "CreatorOrganization":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -15890,7 +15897,7 @@ class CreatorOrganization(BaseCreator):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -16005,7 +16012,7 @@ class CreatorOrganization(BaseCreator):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         [
             "name",
             "identifier",
@@ -16023,18 +16030,14 @@ class CreatorOrganization(BaseCreator):
 
 class GalaxyWorkflow(Process, HasUUID):
     """
-    A Galaxy workflow description. This record corresponds to the description of a workflow that should be executable
-    on a Galaxy server that includes the contained tool definitions.
+    A Galaxy workflow description. This record corresponds to the description of a workflow that should be executable on a Galaxy server that includes the contained tool definitions.
 
-    The workflows API or the user interface of Galaxy instances that are of version 19.09 or newer should be able to
-    import a document defining this record.
+    The workflows API or the user interface of Galaxy instances that are of version 19.09 or newer should be able to import a document defining this record.
 
-    ## A note about `label` field.
+    A note about ``label`` field.
+    -----------------------------
 
-    This is the name of the workflow in the Galaxy user interface. This is the mechanism that
-    users will primarily identify the workflow using. Legacy support - this may also be called 'name' and Galaxy will
-    consume the workflow document fine and treat this attribute correctly - however in order to validate against this
-    workflow definition schema the attribute should be called `label`.
+    This is the name of the workflow in the Galaxy user interface. This is the mechanism that users will primarily identify the workflow using. Legacy support - this may also be called 'name' and Galaxy will consume the workflow document fine and treat this attribute correctly - however in order to validate against this workflow definition schema the attribute should be called ``label``.
 
     """
 
@@ -16046,17 +16049,17 @@ class GalaxyWorkflow(Process, HasUUID):
         outputs: Any,
         steps: Any,
         tags: Any,
-        id: Optional[Any] = None,
-        label: Optional[Any] = None,
-        doc: Optional[Any] = None,
-        uuid: Optional[Any] = None,
-        report: Optional[Any] = None,
-        comments: Optional[Any] = None,
-        creator: Optional[Any] = None,
-        license: Optional[Any] = None,
-        release: Optional[Any] = None,
-        extension_fields: Optional[dict[str, Any]] = None,
-        loadingOptions: Optional[LoadingOptions] = None,
+        id: Any | None = None,
+        label: Any | None = None,
+        doc: Any | None = None,
+        uuid: Any | None = None,
+        report: Any | None = None,
+        comments: Any | None = None,
+        creator: Any | None = None,
+        license: Any | None = None,
+        release: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
     ) -> None:
         if extension_fields:
             self.extension_fields = extension_fields
@@ -16072,7 +16075,7 @@ class GalaxyWorkflow(Process, HasUUID):
         self.inputs = inputs
         self.outputs = outputs
         self.uuid = uuid
-        self.class_ = "GalaxyWorkflow"
+        self.class_: Final[str] = "GalaxyWorkflow"
         self.steps = steps
         self.report = report
         self.tags = tags
@@ -16127,8 +16130,8 @@ class GalaxyWorkflow(Process, HasUUID):
         doc: Any,
         baseuri: str,
         loadingOptions: LoadingOptions,
-        docRoot: Optional[str] = None
-    ) -> "GalaxyWorkflow":
+        docRoot: str | None = None
+    ) -> Self:
         _doc = copy.copy(doc)
 
         if hasattr(doc, "lc"):
@@ -16774,7 +16777,7 @@ class GalaxyWorkflow(Process, HasUUID):
                                 "is not valid because:",
                             )
                         )
-        extension_fields: dict[str, Any] = {}
+        extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
                 if not k:
@@ -16897,7 +16900,7 @@ class GalaxyWorkflow(Process, HasUUID):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs = frozenset(
+    attrs: ClassVar[Collection[str]] = frozenset(
         [
             "id",
             "label",
@@ -17068,13 +17071,13 @@ _rvocab = {
     "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/tool": "tool",
 }
 
-strtype = _PrimitiveLoader(str)
-inttype = _PrimitiveLoader(int)
-floattype = _PrimitiveLoader(float)
-booltype = _PrimitiveLoader(bool)
-None_type = _PrimitiveLoader(type(None))
-Any_type = _AnyLoader()
-PrimitiveTypeLoader = _EnumLoader(
+strtype: Final = _PrimitiveLoader(str)
+inttype: Final = _PrimitiveLoader(int)
+floattype: Final = _PrimitiveLoader(float)
+booltype: Final = _PrimitiveLoader(bool)
+None_type: Final = _PrimitiveLoader(type(None))
+Any_type: Final = _AnyLoader()
+PrimitiveTypeLoader: Final = _EnumLoader(
     (
         "null",
         "boolean",
@@ -17087,34 +17090,38 @@ PrimitiveTypeLoader = _EnumLoader(
     "PrimitiveType",
 )
 """
-Salad data types are based on Avro schema declarations.  Refer to the
-[Avro schema declaration documentation](https://avro.apache.org/docs/current/spec.html#schemas) for
-detailed information.
+Salad data types are based on Avro schema declarations.  Refer to the `Avro schema declaration documentation <https://avro.apache.org/docs/current/spec.html#schemas>`__ for detailed information.
 
 null: no value
+
 boolean: a binary value
+
 int: 32-bit signed integer
+
 long: 64-bit signed integer
+
 float: single precision (32-bit) IEEE 754 floating-point number
+
 double: double precision (64-bit) IEEE 754 floating-point number
+
 string: Unicode character sequence
 """
-AnyLoader = _EnumLoader(("Any",), "Any")
+AnyLoader: Final = _EnumLoader(("Any",), "Any")
 """
 The **Any** type validates for any non-null value.
 """
-RecordFieldLoader = _RecordLoader(RecordField, None, None)
-RecordSchemaLoader = _RecordLoader(RecordSchema, None, None)
-EnumSchemaLoader = _RecordLoader(EnumSchema, None, None)
-ArraySchemaLoader = _RecordLoader(ArraySchema, None, None)
-StepPositionLoader = _RecordLoader(StepPosition, None, None)
-SampleSheetColumnDefinitionLoader = _RecordLoader(
+RecordFieldLoader: Final = _RecordLoader(RecordField, None, None)
+RecordSchemaLoader: Final = _RecordLoader(RecordSchema, None, None)
+EnumSchemaLoader: Final = _RecordLoader(EnumSchema, None, None)
+ArraySchemaLoader: Final = _RecordLoader(ArraySchema, None, None)
+StepPositionLoader: Final = _RecordLoader(StepPosition, None, None)
+SampleSheetColumnDefinitionLoader: Final = _RecordLoader(
     SampleSheetColumnDefinition, None, None
 )
-RecordFieldDefinitionLoader = _RecordLoader(RecordFieldDefinition, None, None)
-WorkflowTextOptionLoader = _RecordLoader(WorkflowTextOption, None, None)
-ToolShedRepositoryLoader = _RecordLoader(ToolShedRepository, None, None)
-GalaxyTypeLoader = _EnumLoader(
+RecordFieldDefinitionLoader: Final = _RecordLoader(RecordFieldDefinition, None, None)
+WorkflowTextOptionLoader: Final = _RecordLoader(WorkflowTextOption, None, None)
+ToolShedRepositoryLoader: Final = _RecordLoader(ToolShedRepository, None, None)
+GalaxyTypeLoader: Final = _EnumLoader(
     (
         "null",
         "boolean",
@@ -17133,16 +17140,24 @@ GalaxyTypeLoader = _EnumLoader(
 )
 """
 Extends primitive types with the native Galaxy concepts such as datasets and collections.
+
 Normalized gxformat2 workflow input declaration spellings are ``data``, ``collection``, ``string``, ``int``, ``float``, and ``boolean``. Other spellings are accepted as compatibility aliases on import but normalized gxformat2 output emits the normalized spellings.
+
 data: one Galaxy dataset input. Native Galaxy ``data_input`` converts to this spelling.
+
 File: accepted alias for ``data``, but normalized gxformat2 output emits ``data``. Note: workflow **test job** YAML uses ``type: File`` to mean 'stage this file as test input data', which is a separate concept from workflow input declaration.
+
 collection: one Galaxy dataset collection input. Native Galaxy ``data_collection_input`` converts to this spelling.
+
 string: normalized gxformat2 spelling for native Galaxy text workflow parameters.
+
 text: accepted alias for ``string`` because native Galaxy parameter state and Galaxy tool XML terminology use ``text``.
+
 int: normalized gxformat2 spelling for native Galaxy integer workflow parameters.
+
 integer: accepted alias for ``int`` because native Galaxy parameter state and Galaxy tool XML terminology use ``integer``.
 """
-WorkflowStepTypeLoader = _EnumLoader(
+WorkflowStepTypeLoader: Final = _EnumLoader(
     (
         "tool",
         "subworkflow",
@@ -17152,59 +17167,69 @@ WorkflowStepTypeLoader = _EnumLoader(
     "WorkflowStepType",
 )
 """
-Module types used by Galaxy steps. Galaxy's native format allows additional types such as data_input, data_input_collection, and parameter_type
-but these should be represented as ``inputs`` in Format2.
+Module types used by Galaxy steps. Galaxy's native format allows additional types such as data_input, data_input_collection, and parameter_type but these should be represented as ``inputs`` in Format2.
 
 tool: Run a tool.
+
 subworkflow: Run a subworkflow.
+
 pause: Pause computation on this branch of workflow until user allows it to continue.
+
 pick_value: Select the first non-null value from multiple inputs. Used to merge branches of conditional or optional workflow paths.
 """
-BaseInputParameterLoader = _RecordLoader(BaseInputParameter, None, None)
-BaseDataParameterLoader = _RecordLoader(BaseDataParameter, None, None)
-WorkflowDataParameterLoader = _RecordLoader(WorkflowDataParameter, None, None)
-WorkflowCollectionParameterLoader = _RecordLoader(
+BaseInputParameterLoader: Final = _RecordLoader(BaseInputParameter, None, None)
+BaseDataParameterLoader: Final = _RecordLoader(BaseDataParameter, None, None)
+WorkflowDataParameterLoader: Final = _RecordLoader(WorkflowDataParameter, None, None)
+WorkflowCollectionParameterLoader: Final = _RecordLoader(
     WorkflowCollectionParameter, None, None
 )
-MinMaxLoader = _RecordLoader(MinMax, None, None)
-WorkflowIntegerParameterLoader = _RecordLoader(WorkflowIntegerParameter, None, None)
-WorkflowFloatParameterLoader = _RecordLoader(WorkflowFloatParameter, None, None)
-WorkflowTextParameterLoader = _RecordLoader(WorkflowTextParameter, None, None)
-WorkflowBooleanParameterLoader = _RecordLoader(WorkflowBooleanParameter, None, None)
-WorkflowInputParameterLoader = _RecordLoader(WorkflowInputParameter, None, None)
-WorkflowOutputParameterLoader = _RecordLoader(WorkflowOutputParameter, None, None)
-WorkflowStepLoader = _RecordLoader(WorkflowStep, None, None)
-WorkflowStepInputLoader = _RecordLoader(WorkflowStepInput, None, None)
-ReportLoader = _RecordLoader(Report, None, None)
-WorkflowStepOutputLoader = _RecordLoader(WorkflowStepOutput, None, None)
-TextCommentLoader = _RecordLoader(TextComment, None, None)
-MarkdownCommentLoader = _RecordLoader(MarkdownComment, None, None)
-FrameCommentLoader = _RecordLoader(FrameComment, None, None)
-FreehandCommentLoader = _RecordLoader(FreehandComment, None, None)
-WorkflowCommentLoader = _UnionLoader((), "WorkflowCommentLoader")
-CreatorPersonTypeLoader = _EnumLoader(("Person",), "CreatorPersonType")
+MinMaxLoader: Final = _RecordLoader(MinMax, None, None)
+WorkflowIntegerParameterLoader: Final = _RecordLoader(
+    WorkflowIntegerParameter, None, None
+)
+WorkflowFloatParameterLoader: Final = _RecordLoader(WorkflowFloatParameter, None, None)
+WorkflowTextParameterLoader: Final = _RecordLoader(WorkflowTextParameter, None, None)
+WorkflowBooleanParameterLoader: Final = _RecordLoader(
+    WorkflowBooleanParameter, None, None
+)
+WorkflowInputParameterLoader: Final = _RecordLoader(WorkflowInputParameter, None, None)
+WorkflowOutputParameterLoader: Final = _RecordLoader(
+    WorkflowOutputParameter, None, None
+)
+WorkflowStepLoader: Final = _RecordLoader(WorkflowStep, None, None)
+WorkflowStepInputLoader: Final = _RecordLoader(WorkflowStepInput, None, None)
+ReportLoader: Final = _RecordLoader(Report, None, None)
+WorkflowStepOutputLoader: Final = _RecordLoader(WorkflowStepOutput, None, None)
+TextCommentLoader: Final = _RecordLoader(TextComment, None, None)
+MarkdownCommentLoader: Final = _RecordLoader(MarkdownComment, None, None)
+FrameCommentLoader: Final = _RecordLoader(FrameComment, None, None)
+FreehandCommentLoader: Final = _RecordLoader(FreehandComment, None, None)
+WorkflowCommentLoader: Final = _UnionLoader((), "WorkflowCommentLoader")
+CreatorPersonTypeLoader: Final = _EnumLoader(("Person",), "CreatorPersonType")
 """
 Discriminator for schema.org Person creators.
 """
-CreatorOrganizationTypeLoader = _EnumLoader(
+CreatorOrganizationTypeLoader: Final = _EnumLoader(
     ("Organization",), "CreatorOrganizationType"
 )
 """
 Discriminator for schema.org Organization creators.
 """
-CreatorPersonLoader = _RecordLoader(CreatorPerson, None, None)
-CreatorOrganizationLoader = _RecordLoader(CreatorOrganization, None, None)
-GalaxyWorkflowLoader = _RecordLoader(GalaxyWorkflow, None, None)
-array_of_strtype = _ArrayLoader(strtype)
-union_of_None_type_or_strtype_or_array_of_strtype = _UnionLoader(
+CreatorPersonLoader: Final = _RecordLoader(CreatorPerson, None, None)
+CreatorOrganizationLoader: Final = _RecordLoader(CreatorOrganization, None, None)
+GalaxyWorkflowLoader: Final = _RecordLoader(GalaxyWorkflow, None, None)
+array_of_strtype: Final = _ArrayLoader(strtype)
+union_of_None_type_or_strtype_or_array_of_strtype: Final = _UnionLoader(
     (
         None_type,
         strtype,
         array_of_strtype,
     )
 )
-uri_strtype_True_False_None_None = _URILoader(strtype, True, False, None, None)
-union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype = _UnionLoader(
+uri_strtype_True_False_None_None: Final = _URILoader(strtype, True, False, None, None)
+union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype: (
+    Final
+) = _UnionLoader(
     (
         PrimitiveTypeLoader,
         RecordSchemaLoader,
@@ -17213,10 +17238,14 @@ union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArrayS
         strtype,
     )
 )
-array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype = _ArrayLoader(
+array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype: (
+    Final
+) = _ArrayLoader(
     union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype
 )
-union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype = _UnionLoader(
+union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype: (
+    Final
+) = _UnionLoader(
     (
         PrimitiveTypeLoader,
         RecordSchemaLoader,
@@ -17226,98 +17255,104 @@ union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArrayS
         array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype,
     )
 )
-typedsl_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_2 = _TypeDSLLoader(
+typedsl_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_2: (
+    Final
+) = _TypeDSLLoader(
     union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype,
     2,
     "v1.1",
 )
-array_of_RecordFieldLoader = _ArrayLoader(RecordFieldLoader)
-union_of_None_type_or_array_of_RecordFieldLoader = _UnionLoader(
+array_of_RecordFieldLoader: Final = _ArrayLoader(RecordFieldLoader)
+union_of_None_type_or_array_of_RecordFieldLoader: Final = _UnionLoader(
     (
         None_type,
         array_of_RecordFieldLoader,
     )
 )
-idmap_fields_union_of_None_type_or_array_of_RecordFieldLoader = _IdMapLoader(
+idmap_fields_union_of_None_type_or_array_of_RecordFieldLoader: Final = _IdMapLoader(
     union_of_None_type_or_array_of_RecordFieldLoader, "name", "type"
 )
-enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader = _EnumLoader(
+enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader: Final = _EnumLoader(
     ("record",), "enum_d9cba076fca539106791a4f46d198c7fcfbdb779"
 )
-typedsl_enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader_2 = _TypeDSLLoader(
+typedsl_enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader_2: Final = _TypeDSLLoader(
     enum_d9cba076fca539106791a4f46d198c7fcfbdb779Loader, 2, "v1.1"
 )
-uri_array_of_strtype_True_False_None_None = _URILoader(
+uri_array_of_strtype_True_False_None_None: Final = _URILoader(
     array_of_strtype, True, False, None, None
 )
-enum_d961d79c225752b9fadb617367615ab176b47d77Loader = _EnumLoader(
+enum_d961d79c225752b9fadb617367615ab176b47d77Loader: Final = _EnumLoader(
     ("enum",), "enum_d961d79c225752b9fadb617367615ab176b47d77"
 )
-typedsl_enum_d961d79c225752b9fadb617367615ab176b47d77Loader_2 = _TypeDSLLoader(
+typedsl_enum_d961d79c225752b9fadb617367615ab176b47d77Loader_2: Final = _TypeDSLLoader(
     enum_d961d79c225752b9fadb617367615ab176b47d77Loader, 2, "v1.1"
 )
-uri_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_False_True_2_None = _URILoader(
+uri_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_False_True_2_None: (
+    Final
+) = _URILoader(
     union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype_or_array_of_union_of_PrimitiveTypeLoader_or_RecordSchemaLoader_or_EnumSchemaLoader_or_ArraySchemaLoader_or_strtype,
     False,
     True,
     2,
     None,
 )
-enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader = _EnumLoader(
+enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader: Final = _EnumLoader(
     ("array",), "enum_d062602be0b4b8fd33e69e29a841317b6ab665bc"
 )
-typedsl_enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader_2 = _TypeDSLLoader(
+typedsl_enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader_2: Final = _TypeDSLLoader(
     enum_d062602be0b4b8fd33e69e29a841317b6ab665bcLoader, 2, "v1.1"
 )
-union_of_None_type_or_strtype = _UnionLoader(
+union_of_None_type_or_strtype: Final = _UnionLoader(
     (
         None_type,
         strtype,
     )
 )
-uri_union_of_None_type_or_strtype_True_False_None_None = _URILoader(
+uri_union_of_None_type_or_strtype_True_False_None_None: Final = _URILoader(
     union_of_None_type_or_strtype, True, False, None, None
 )
-union_of_None_type_or_Any_type = _UnionLoader(
+union_of_None_type_or_Any_type: Final = _UnionLoader(
     (
         None_type,
         Any_type,
     )
 )
-union_of_BaseInputParameterLoader = _UnionLoader((BaseInputParameterLoader,))
-array_of_union_of_BaseInputParameterLoader = _ArrayLoader(
+union_of_BaseInputParameterLoader: Final = _UnionLoader((BaseInputParameterLoader,))
+array_of_union_of_BaseInputParameterLoader: Final = _ArrayLoader(
     union_of_BaseInputParameterLoader
 )
-idmap_inputs_array_of_union_of_BaseInputParameterLoader = _IdMapLoader(
+idmap_inputs_array_of_union_of_BaseInputParameterLoader: Final = _IdMapLoader(
     array_of_union_of_BaseInputParameterLoader, "id", "type"
 )
-union_of_WorkflowOutputParameterLoader = _UnionLoader((WorkflowOutputParameterLoader,))
-array_of_union_of_WorkflowOutputParameterLoader = _ArrayLoader(
+union_of_WorkflowOutputParameterLoader: Final = _UnionLoader(
+    (WorkflowOutputParameterLoader,)
+)
+array_of_union_of_WorkflowOutputParameterLoader: Final = _ArrayLoader(
     union_of_WorkflowOutputParameterLoader
 )
-idmap_outputs_array_of_union_of_WorkflowOutputParameterLoader = _IdMapLoader(
+idmap_outputs_array_of_union_of_WorkflowOutputParameterLoader: Final = _IdMapLoader(
     array_of_union_of_WorkflowOutputParameterLoader, "id", "type"
 )
-union_of_None_type_or_StepPositionLoader = _UnionLoader(
+union_of_None_type_or_StepPositionLoader: Final = _UnionLoader(
     (
         None_type,
         StepPositionLoader,
     )
 )
-union_of_floattype_or_inttype = _UnionLoader(
+union_of_floattype_or_inttype: Final = _UnionLoader(
     (
         floattype,
         inttype,
     )
 )
-union_of_None_type_or_ToolShedRepositoryLoader = _UnionLoader(
+union_of_None_type_or_ToolShedRepositoryLoader: Final = _UnionLoader(
     (
         None_type,
         ToolShedRepositoryLoader,
     )
 )
-typedsl_strtype_2 = _TypeDSLLoader(strtype, 2, "v1.1")
-union_of_None_type_or_strtype_or_inttype_or_floattype_or_booltype = _UnionLoader(
+typedsl_strtype_2: Final = _TypeDSLLoader(strtype, 2, "v1.1")
+union_of_None_type_or_strtype_or_inttype_or_floattype_or_booltype: Final = _UnionLoader(
     (
         None_type,
         strtype,
@@ -17326,14 +17361,14 @@ union_of_None_type_or_strtype_or_inttype_or_floattype_or_booltype = _UnionLoader
         booltype,
     )
 )
-array_of_Any_type = _ArrayLoader(Any_type)
-union_of_None_type_or_array_of_Any_type = _UnionLoader(
+array_of_Any_type: Final = _ArrayLoader(Any_type)
+union_of_None_type_or_array_of_Any_type: Final = _UnionLoader(
     (
         None_type,
         array_of_Any_type,
     )
 )
-union_of_strtype_or_inttype_or_floattype_or_booltype = _UnionLoader(
+union_of_strtype_or_inttype_or_floattype_or_booltype: Final = _UnionLoader(
     (
         strtype,
         inttype,
@@ -17341,83 +17376,85 @@ union_of_strtype_or_inttype_or_floattype_or_booltype = _UnionLoader(
         booltype,
     )
 )
-array_of_union_of_strtype_or_inttype_or_floattype_or_booltype = _ArrayLoader(
+array_of_union_of_strtype_or_inttype_or_floattype_or_booltype: Final = _ArrayLoader(
     union_of_strtype_or_inttype_or_floattype_or_booltype
 )
-union_of_None_type_or_array_of_union_of_strtype_or_inttype_or_floattype_or_booltype = (
-    _UnionLoader(
-        (
-            None_type,
-            array_of_union_of_strtype_or_inttype_or_floattype_or_booltype,
-        )
+union_of_None_type_or_array_of_union_of_strtype_or_inttype_or_floattype_or_booltype: (
+    Final
+) = _UnionLoader(
+    (
+        None_type,
+        array_of_union_of_strtype_or_inttype_or_floattype_or_booltype,
     )
 )
-union_of_strtype_or_array_of_strtype = _UnionLoader(
+union_of_strtype_or_array_of_strtype: Final = _UnionLoader(
     (
         strtype,
         array_of_strtype,
     )
 )
-typedsl_union_of_strtype_or_array_of_strtype_2 = _TypeDSLLoader(
+typedsl_union_of_strtype_or_array_of_strtype_2: Final = _TypeDSLLoader(
     union_of_strtype_or_array_of_strtype, 2, "v1.1"
 )
-union_of_booltype_or_None_type = _UnionLoader(
+union_of_booltype_or_None_type: Final = _UnionLoader(
     (
         booltype,
         None_type,
     )
 )
-union_of_None_type_or_array_of_strtype = _UnionLoader(
+union_of_None_type_or_array_of_strtype: Final = _UnionLoader(
     (
         None_type,
         array_of_strtype,
     )
 )
-union_of_strtype_or_None_type = _UnionLoader(
+union_of_strtype_or_None_type: Final = _UnionLoader(
     (
         strtype,
         None_type,
     )
 )
-typedsl_union_of_strtype_or_None_type_2 = _TypeDSLLoader(
+typedsl_union_of_strtype_or_None_type_2: Final = _TypeDSLLoader(
     union_of_strtype_or_None_type, 2, "v1.1"
 )
-array_of_SampleSheetColumnDefinitionLoader = _ArrayLoader(
+array_of_SampleSheetColumnDefinitionLoader: Final = _ArrayLoader(
     SampleSheetColumnDefinitionLoader
 )
-union_of_None_type_or_array_of_SampleSheetColumnDefinitionLoader = _UnionLoader(
+union_of_None_type_or_array_of_SampleSheetColumnDefinitionLoader: Final = _UnionLoader(
     (
         None_type,
         array_of_SampleSheetColumnDefinitionLoader,
     )
 )
-array_of_RecordFieldDefinitionLoader = _ArrayLoader(RecordFieldDefinitionLoader)
-union_of_None_type_or_array_of_RecordFieldDefinitionLoader = _UnionLoader(
+array_of_RecordFieldDefinitionLoader: Final = _ArrayLoader(RecordFieldDefinitionLoader)
+union_of_None_type_or_array_of_RecordFieldDefinitionLoader: Final = _UnionLoader(
     (
         None_type,
         array_of_RecordFieldDefinitionLoader,
     )
 )
-idmap_fields_union_of_None_type_or_array_of_RecordFieldDefinitionLoader = _IdMapLoader(
-    union_of_None_type_or_array_of_RecordFieldDefinitionLoader, "name", "type"
+idmap_fields_union_of_None_type_or_array_of_RecordFieldDefinitionLoader: Final = (
+    _IdMapLoader(
+        union_of_None_type_or_array_of_RecordFieldDefinitionLoader, "name", "type"
+    )
 )
-union_of_inttype_or_floattype_or_None_type = _UnionLoader(
+union_of_inttype_or_floattype_or_None_type: Final = _UnionLoader(
     (
         inttype,
         floattype,
         None_type,
     )
 )
-union_of_strtype_or_WorkflowTextOptionLoader = _UnionLoader(
+union_of_strtype_or_WorkflowTextOptionLoader: Final = _UnionLoader(
     (
         strtype,
         WorkflowTextOptionLoader,
     )
 )
-array_of_union_of_strtype_or_WorkflowTextOptionLoader = _ArrayLoader(
+array_of_union_of_strtype_or_WorkflowTextOptionLoader: Final = _ArrayLoader(
     union_of_strtype_or_WorkflowTextOptionLoader
 )
-union_of_None_type_or_array_of_union_of_strtype_or_WorkflowTextOptionLoader = (
+union_of_None_type_or_array_of_union_of_strtype_or_WorkflowTextOptionLoader: Final = (
     _UnionLoader(
         (
             None_type,
@@ -17425,15 +17462,15 @@ union_of_None_type_or_array_of_union_of_strtype_or_WorkflowTextOptionLoader = (
         )
     )
 )
-union_of_None_type_or_booltype = _UnionLoader(
+union_of_None_type_or_booltype: Final = _UnionLoader(
     (
         None_type,
         booltype,
     )
 )
-union_of_GalaxyTypeLoader = _UnionLoader((GalaxyTypeLoader,))
-array_of_union_of_GalaxyTypeLoader = _ArrayLoader(union_of_GalaxyTypeLoader)
-union_of_GalaxyTypeLoader_or_None_type_or_array_of_union_of_GalaxyTypeLoader = (
+union_of_GalaxyTypeLoader: Final = _UnionLoader((GalaxyTypeLoader,))
+array_of_union_of_GalaxyTypeLoader: Final = _ArrayLoader(union_of_GalaxyTypeLoader)
+union_of_GalaxyTypeLoader_or_None_type_or_array_of_union_of_GalaxyTypeLoader: Final = (
     _UnionLoader(
         (
             GalaxyTypeLoader,
@@ -17442,40 +17479,42 @@ union_of_GalaxyTypeLoader_or_None_type_or_array_of_union_of_GalaxyTypeLoader = (
         )
     )
 )
-typedsl_union_of_GalaxyTypeLoader_or_None_type_or_array_of_union_of_GalaxyTypeLoader_2 = _TypeDSLLoader(
+typedsl_union_of_GalaxyTypeLoader_or_None_type_or_array_of_union_of_GalaxyTypeLoader_2: (
+    Final
+) = _TypeDSLLoader(
     union_of_GalaxyTypeLoader_or_None_type_or_array_of_union_of_GalaxyTypeLoader,
     2,
     "v1.1",
 )
-union_of_None_type_or_GalaxyTypeLoader = _UnionLoader(
+union_of_None_type_or_GalaxyTypeLoader: Final = _UnionLoader(
     (
         None_type,
         GalaxyTypeLoader,
     )
 )
-typedsl_union_of_None_type_or_GalaxyTypeLoader_2 = _TypeDSLLoader(
+typedsl_union_of_None_type_or_GalaxyTypeLoader_2: Final = _TypeDSLLoader(
     union_of_None_type_or_GalaxyTypeLoader, 2, "v1.1"
 )
-array_of_WorkflowStepInputLoader = _ArrayLoader(WorkflowStepInputLoader)
-union_of_None_type_or_array_of_WorkflowStepInputLoader = _UnionLoader(
+array_of_WorkflowStepInputLoader: Final = _ArrayLoader(WorkflowStepInputLoader)
+union_of_None_type_or_array_of_WorkflowStepInputLoader: Final = _UnionLoader(
     (
         None_type,
         array_of_WorkflowStepInputLoader,
     )
 )
-idmap_in__union_of_None_type_or_array_of_WorkflowStepInputLoader = _IdMapLoader(
+idmap_in__union_of_None_type_or_array_of_WorkflowStepInputLoader: Final = _IdMapLoader(
     union_of_None_type_or_array_of_WorkflowStepInputLoader, "id", "source"
 )
-union_of_strtype_or_WorkflowStepOutputLoader = _UnionLoader(
+union_of_strtype_or_WorkflowStepOutputLoader: Final = _UnionLoader(
     (
         strtype,
         WorkflowStepOutputLoader,
     )
 )
-array_of_union_of_strtype_or_WorkflowStepOutputLoader = _ArrayLoader(
+array_of_union_of_strtype_or_WorkflowStepOutputLoader: Final = _ArrayLoader(
     union_of_strtype_or_WorkflowStepOutputLoader
 )
-union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type = (
+union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type: Final = (
     _UnionLoader(
         (
             array_of_union_of_strtype_or_WorkflowStepOutputLoader,
@@ -17483,90 +17522,104 @@ union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type = (
         )
     )
 )
-idmap_out_union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type = _IdMapLoader(
+idmap_out_union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type: (
+    Final
+) = _IdMapLoader(
     union_of_array_of_union_of_strtype_or_WorkflowStepOutputLoader_or_None_type,
     "id",
     "source",
 )
-union_of_None_type_or_WorkflowStepTypeLoader = _UnionLoader(
+union_of_None_type_or_WorkflowStepTypeLoader: Final = _UnionLoader(
     (
         None_type,
         WorkflowStepTypeLoader,
     )
 )
-typedsl_union_of_None_type_or_WorkflowStepTypeLoader_2 = _TypeDSLLoader(
+typedsl_union_of_None_type_or_WorkflowStepTypeLoader_2: Final = _TypeDSLLoader(
     union_of_None_type_or_WorkflowStepTypeLoader, 2, "v1.1"
 )
-uri_union_of_None_type_or_Any_type_False_False_None_None = _URILoader(
+uri_union_of_None_type_or_Any_type_False_False_None_None: Final = _URILoader(
     union_of_None_type_or_Any_type, False, False, None, None
 )
-uri_union_of_None_type_or_strtype_or_array_of_strtype_False_False_2_None = _URILoader(
-    union_of_None_type_or_strtype_or_array_of_strtype, False, False, 2, None
+uri_union_of_None_type_or_strtype_or_array_of_strtype_False_False_2_None: Final = (
+    _URILoader(union_of_None_type_or_strtype_or_array_of_strtype, False, False, 2, None)
 )
-union_of_None_type_or_floattype_or_inttype = _UnionLoader(
+union_of_None_type_or_floattype_or_inttype: Final = _UnionLoader(
     (
         None_type,
         floattype,
         inttype,
     )
 )
-union_of_strtype_or_inttype = _UnionLoader(
+union_of_strtype_or_inttype: Final = _UnionLoader(
     (
         strtype,
         inttype,
     )
 )
-array_of_union_of_strtype_or_inttype = _ArrayLoader(union_of_strtype_or_inttype)
-union_of_None_type_or_array_of_union_of_strtype_or_inttype = _UnionLoader(
+array_of_union_of_strtype_or_inttype: Final = _ArrayLoader(union_of_strtype_or_inttype)
+union_of_None_type_or_array_of_union_of_strtype_or_inttype: Final = _UnionLoader(
     (
         None_type,
         array_of_union_of_strtype_or_inttype,
     )
 )
-uri_CreatorPersonTypeLoader_False_True_None_None = _URILoader(
+uri_CreatorPersonTypeLoader_False_True_None_None: Final = _URILoader(
     CreatorPersonTypeLoader, False, True, None, None
 )
-uri_CreatorOrganizationTypeLoader_False_True_None_None = _URILoader(
+uri_CreatorOrganizationTypeLoader_False_True_None_None: Final = _URILoader(
     CreatorOrganizationTypeLoader, False, True, None, None
 )
-GalaxyWorkflow_classLoader = _EnumLoader(("GalaxyWorkflow",), "GalaxyWorkflow_class")
-uri_GalaxyWorkflow_classLoader_False_True_None_None = _URILoader(
+GalaxyWorkflow_classLoader: Final = _EnumLoader(
+    ("GalaxyWorkflow",), "GalaxyWorkflow_class"
+)
+uri_GalaxyWorkflow_classLoader_False_True_None_None: Final = _URILoader(
     GalaxyWorkflow_classLoader, False, True, None, None
 )
-array_of_WorkflowInputParameterLoader = _ArrayLoader(WorkflowInputParameterLoader)
-idmap_inputs_array_of_WorkflowInputParameterLoader = _IdMapLoader(
+array_of_WorkflowInputParameterLoader: Final = _ArrayLoader(
+    WorkflowInputParameterLoader
+)
+idmap_inputs_array_of_WorkflowInputParameterLoader: Final = _IdMapLoader(
     array_of_WorkflowInputParameterLoader, "id", "type"
 )
-array_of_WorkflowOutputParameterLoader = _ArrayLoader(WorkflowOutputParameterLoader)
-idmap_outputs_array_of_WorkflowOutputParameterLoader = _IdMapLoader(
+array_of_WorkflowOutputParameterLoader: Final = _ArrayLoader(
+    WorkflowOutputParameterLoader
+)
+idmap_outputs_array_of_WorkflowOutputParameterLoader: Final = _IdMapLoader(
     array_of_WorkflowOutputParameterLoader, "id", "type"
 )
-array_of_WorkflowStepLoader = _ArrayLoader(WorkflowStepLoader)
-union_of_array_of_WorkflowStepLoader = _UnionLoader((array_of_WorkflowStepLoader,))
-idmap_steps_union_of_array_of_WorkflowStepLoader = _IdMapLoader(
+array_of_WorkflowStepLoader: Final = _ArrayLoader(WorkflowStepLoader)
+union_of_array_of_WorkflowStepLoader: Final = _UnionLoader(
+    (array_of_WorkflowStepLoader,)
+)
+idmap_steps_union_of_array_of_WorkflowStepLoader: Final = _IdMapLoader(
     union_of_array_of_WorkflowStepLoader, "id", "None"
 )
-union_of_None_type_or_ReportLoader = _UnionLoader(
+union_of_None_type_or_ReportLoader: Final = _UnionLoader(
     (
         None_type,
         ReportLoader,
     )
 )
-union_of_array_of_strtype_or_None_type = _UnionLoader(
+union_of_array_of_strtype_or_None_type: Final = _UnionLoader(
     (
         array_of_strtype,
         None_type,
     )
 )
-idmap_comments_union_of_None_type_or_Any_type = _IdMapLoader(
+idmap_comments_union_of_None_type_or_Any_type: Final = _IdMapLoader(
     union_of_None_type_or_Any_type, "label", "None"
 )
-union_of_GalaxyWorkflowLoader = _UnionLoader((GalaxyWorkflowLoader,))
-array_of_union_of_GalaxyWorkflowLoader = _ArrayLoader(union_of_GalaxyWorkflowLoader)
-union_of_GalaxyWorkflowLoader_or_array_of_union_of_GalaxyWorkflowLoader = _UnionLoader(
-    (
-        GalaxyWorkflowLoader,
-        array_of_union_of_GalaxyWorkflowLoader,
+union_of_GalaxyWorkflowLoader: Final = _UnionLoader((GalaxyWorkflowLoader,))
+array_of_union_of_GalaxyWorkflowLoader: Final = _ArrayLoader(
+    union_of_GalaxyWorkflowLoader
+)
+union_of_GalaxyWorkflowLoader_or_array_of_union_of_GalaxyWorkflowLoader: Final = (
+    _UnionLoader(
+        (
+            GalaxyWorkflowLoader,
+            array_of_union_of_GalaxyWorkflowLoader,
+        )
     )
 )
 
@@ -17582,8 +17635,8 @@ WorkflowCommentLoader.add_loaders(
 
 def load_document(
     doc: Any,
-    baseuri: Optional[str] = None,
-    loadingOptions: Optional[LoadingOptions] = None,
+    baseuri: str | None = None,
+    loadingOptions: LoadingOptions | None = None,
 ) -> Any:
     if baseuri is None:
         baseuri = file_uri(os.getcwd()) + "/"
@@ -17600,9 +17653,9 @@ def load_document(
 
 def load_document_with_metadata(
     doc: Any,
-    baseuri: Optional[str] = None,
-    loadingOptions: Optional[LoadingOptions] = None,
-    addl_metadata_fields: Optional[MutableSequence[str]] = None,
+    baseuri: str | None = None,
+    loadingOptions: LoadingOptions | None = None,
+    addl_metadata_fields: MutableSequence[str] | None = None,
 ) -> Any:
     if baseuri is None:
         baseuri = file_uri(os.getcwd()) + "/"
@@ -17620,7 +17673,7 @@ def load_document_with_metadata(
 def load_document_by_string(
     string: Any,
     uri: str,
-    loadingOptions: Optional[LoadingOptions] = None,
+    loadingOptions: LoadingOptions | None = None,
 ) -> Any:
     yaml = yaml_no_ts()
     result = yaml.load(string)
@@ -17641,7 +17694,7 @@ def load_document_by_string(
 def load_document_by_yaml(
     yaml: Any,
     uri: str,
-    loadingOptions: Optional[LoadingOptions] = None,
+    loadingOptions: LoadingOptions | None = None,
 ) -> Any:
     """
     Shortcut to load via a YAML object.
