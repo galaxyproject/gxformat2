@@ -26,7 +26,8 @@ import logging
 import os
 import uuid as uuid_mod
 from pathlib import Path
-from typing import Any, Callable, Literal, overload, TypedDict
+from typing import Any, Literal, overload, TypedDict
+from collections.abc import Callable
 
 from pydantic import Field
 

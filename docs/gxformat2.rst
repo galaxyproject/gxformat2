@@ -7,6 +7,9 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   gxformat2.cytoscape
+   gxformat2.examples
+   gxformat2.mermaid
    gxformat2.normalized
    gxformat2.schema
 
@@ -25,14 +28,6 @@ gxformat2.converter module
 --------------------------
 
 .. automodule:: gxformat2.converter
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-gxformat2.cytoscape module
---------------------------
-
-.. automodule:: gxformat2.cytoscape
    :members:
    :undoc-members:
    :show-inheritance:
@@ -61,18 +56,26 @@ gxformat2.lint module
    :undoc-members:
    :show-inheritance:
 
-gxformat2.linting module
-------------------------
+gxformat2.lint\_profiles module
+-------------------------------
 
-.. automodule:: gxformat2.linting
+.. automodule:: gxformat2.lint_profiles
    :members:
    :undoc-members:
    :show-inheritance:
 
-gxformat2.main module
----------------------
+gxformat2.lint\_rules module
+----------------------------
 
-.. automodule:: gxformat2.main
+.. automodule:: gxformat2.lint_rules
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+gxformat2.linting module
+------------------------
+
+.. automodule:: gxformat2.linting
    :members:
    :undoc-members:
    :show-inheritance:
@@ -109,18 +112,26 @@ gxformat2.options module
    :undoc-members:
    :show-inheritance:
 
-gxformat2.to\_format2 module
------------------------------
+gxformat2.schema\_rules module
+------------------------------
 
-.. automodule:: gxformat2.to_format2
+.. automodule:: gxformat2.schema_rules
    :members:
    :undoc-members:
    :show-inheritance:
 
-gxformat2.to\_native module
-----------------------------
+gxformat2.testing module
+------------------------
 
-.. automodule:: gxformat2.to_native
+.. automodule:: gxformat2.testing
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+gxformat2.validators module
+---------------------------
+
+.. automodule:: gxformat2.validators
    :members:
    :undoc-members:
    :show-inheritance:
@@ -140,4 +151,3 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
-   :no-index:

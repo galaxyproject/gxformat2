@@ -7,7 +7,6 @@ the fixture filename extension.
 """
 
 import os
-from typing import List, Tuple
 
 import pytest
 from pydantic import ValidationError
@@ -17,18 +16,18 @@ from gxformat2.schema_rules import AppliesTo, load_schema_rules, SchemaRule, Sco
 from gxformat2.validators import validator_for_fixture
 
 RUNNER = "tests/test_schema_rules_catalog.py"
-RULES: List[SchemaRule] = load_schema_rules()
+RULES: list[SchemaRule] = load_schema_rules()
 
 
 def _fixture_applies_to(fixture: str) -> AppliesTo:
     return AppliesTo.native if fixture.endswith(".ga") else AppliesTo.format2
 
 
-def _positive_cases() -> List[Tuple[str, str]]:
+def _positive_cases() -> list[tuple[str, str]]:
     return [(rule.id, fx) for rule in RULES for fx in rule.tests.positive]
 
 
-def _negative_cases() -> List[Tuple[str, str, Scope]]:
+def _negative_cases() -> list[tuple[str, str, Scope]]:
     return [(rule.id, fx, rule.scope) for rule in RULES for fx in rule.tests.negative]
 
 

@@ -8,13 +8,11 @@ by external validators (Python jsonschema, TypeScript ajv, VSCode YAML extension
 import json
 from typing import (
     Any,
-    Dict,
-    Type,
 )
 
 from pydantic import BaseModel
 from pydantic.json_schema import GenerateJsonSchema
-from typing_extensions import Literal
+from typing import Literal
 
 MODE = Literal["validation", "serialization"]
 
@@ -29,14 +27,14 @@ class GxFormat2GenerateJsonSchema(GenerateJsonSchema):
         return json_schema
 
 
-def workflow_json_schema(*, strict: bool = False, mode: MODE = "validation") -> Dict[str, Any]:
+def workflow_json_schema(*, strict: bool = False, mode: MODE = "validation") -> dict[str, Any]:
     """Export GalaxyWorkflow JSON Schema.
 
     Args:
         strict: If True, use strict model (extra="forbid" — rejects unknown keys).
         mode: Pydantic schema mode ("validation" or "serialization").
     """
-    model_class: Type[BaseModel]
+    model_class: type[BaseModel]
     if strict:
         from .gxformat2_strict import GalaxyWorkflow as model_class
     else:
@@ -48,14 +46,14 @@ def workflow_json_schema(*, strict: bool = False, mode: MODE = "validation") -> 
     )
 
 
-def native_workflow_json_schema(*, strict: bool = False, mode: MODE = "validation") -> Dict[str, Any]:
+def native_workflow_json_schema(*, strict: bool = False, mode: MODE = "validation") -> dict[str, Any]:
     """Export NativeGalaxyWorkflow JSON Schema.
 
     Args:
         strict: If True, use strict model (extra="forbid" — rejects unknown keys).
         mode: Pydantic schema mode ("validation" or "serialization").
     """
-    model_class: Type[BaseModel]
+    model_class: type[BaseModel]
     if strict:
         from .native_strict import NativeGalaxyWorkflow as model_class
     else:

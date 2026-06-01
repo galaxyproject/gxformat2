@@ -9,7 +9,7 @@ as lists of strings keeps working; new metadata (``level``, ``linter``,
 from __future__ import annotations
 
 import enum
-from typing import ClassVar, List, Optional, Tuple, Union
+from typing import ClassVar
 
 
 class LintLevel(str, enum.Enum):
@@ -35,7 +35,7 @@ class LintMessage(str):
     """
 
     level: str
-    linter: Optional[str]
+    linter: str | None
     json_pointer: str
 
     def __new__(
@@ -43,9 +43,9 @@ class LintMessage(str):
         message: str,
         *,
         level: str = LEVEL_WARN,
-        linter: Optional[str] = None,
+        linter: str | None = None,
         json_pointer: str = "",
-    ) -> "LintMessage":
+    ) -> LintMessage:
         """Construct a ``LintMessage`` with prose and structured metadata."""
         self = super().__new__(cls, message)
         self.level = level
@@ -62,7 +62,7 @@ class Linter:
     """
 
     severity: ClassVar[str] = "warning"
-    applies_to: ClassVar[Tuple[str, ...]] = ()
+    applies_to: ClassVar[tuple[str, ...]] = ()
     profile: ClassVar[str] = "structural"
 
 
@@ -82,10 +82,10 @@ class LintContext:
         self.found_warns = False
         self._pointer = _pointer
 
-        self.warn_messages: List[LintMessage] = []
-        self.error_messages: List[LintMessage] = []
+        self.warn_messages: list[LintMessage] = []
+        self.error_messages: list[LintMessage] = []
 
-    def child(self, pointer_segment) -> "LintContext":
+    def child(self, pointer_segment) -> LintContext:
         """Create child context whose default json_pointer is prefixed."""
         new_pointer = f"{self._pointer}/{_escape_pointer_segment(pointer_segment)}"
         child_ctx = LintContext(
@@ -101,8 +101,8 @@ class LintContext:
         self,
         message: str,
         *args,
-        linter: Union[type, str, None] = None,
-        json_pointer: Optional[str] = None,
+        linter: type | str | None = None,
+        json_pointer: str | None = None,
         **kwds,
     ) -> None:
         """Track a linting error - a serious problem with the artifact preventing execution."""
@@ -112,8 +112,8 @@ class LintContext:
         self,
         message: str,
         *args,
-        linter: Union[type, str, None] = None,
-        json_pointer: Optional[str] = None,
+        linter: type | str | None = None,
+        json_pointer: str | None = None,
         **kwds,
     ) -> None:
         """Track a linting warning - a deviation from best practices."""

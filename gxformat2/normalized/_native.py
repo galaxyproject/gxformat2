@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Annotated, Any, Union
 
 from pydantic import BaseModel, ConfigDict, Discriminator, Field, field_validator, Tag
-from typing_extensions import TypeAlias
+from typing import TypeAlias
 
 from gxformat2.schema.native import (
     _discriminate_comments,

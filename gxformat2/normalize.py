@@ -10,7 +10,7 @@ from __future__ import annotations
 from os import PathLike
 from typing import Any, Union
 
-from typing_extensions import TypeAlias
+from typing import TypeAlias
 
 from gxformat2.normalized import ensure_format2, NormalizedFormat2, NormalizedNativeWorkflow, NormalizedWorkflowStep
 from gxformat2.options import ConversionOptions
