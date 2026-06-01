@@ -9,7 +9,6 @@ projects (e.g. gxformat2).
 import re
 from typing import (
     cast,
-    Union,
 )
 
 BLOCK_FENCE_START = re.compile(r"```.*")
@@ -24,7 +23,7 @@ class DynamicArguments:
 
 DYNAMIC_ARGUMENTS = DynamicArguments()
 SHARED_ARGUMENTS: list[str] = ["collapse"]
-VALID_ARGUMENTS: dict[str, Union[list[str], DynamicArguments]] = {
+VALID_ARGUMENTS: dict[str, list[str] | DynamicArguments] = {
     "history_link": ["history_id"],
     "history_dataset_display": ["input", "output", "history_dataset_id"],
     "history_dataset_embedded": ["input", "output", "history_dataset_id"],

@@ -7,7 +7,6 @@ entries as INFO.
 """
 
 import os
-from typing import Dict, List, Set
 
 import yaml
 from pydantic import BaseModel
@@ -20,33 +19,33 @@ class LintProfile(BaseModel):
 
     id: str
     description: str = ""
-    rules: List[str]
+    rules: list[str]
 
 
-def load_lint_profiles() -> List[LintProfile]:
+def load_lint_profiles() -> list[LintProfile]:
     """Parse lint_profiles.yml into validated ``LintProfile`` models."""
     with open(LINT_PROFILES_PATH) as f:
         raw = yaml.safe_load(f) or {}
-    profiles: List[LintProfile] = []
+    profiles: list[LintProfile] = []
     for profile_id, body in raw.items():
         profiles.append(LintProfile(id=profile_id, **body))
     return profiles
 
 
-def lint_profiles_by_id() -> Dict[str, LintProfile]:
+def lint_profiles_by_id() -> dict[str, LintProfile]:
     """Return profiles keyed by id."""
     return {p.id: p for p in load_lint_profiles()}
 
 
-def rules_for_profile(profile_id: str) -> List[str]:
+def rules_for_profile(profile_id: str) -> list[str]:
     """Return the ordered rule ID list for a named profile."""
     return lint_profiles_by_id()[profile_id].rules
 
 
-def iwc_rule_ids() -> Set[str]:
+def iwc_rule_ids() -> set[str]:
     """Union of structural, best-practices, and release rule IDs."""
     profiles = lint_profiles_by_id()
-    rule_ids: Set[str] = set()
+    rule_ids: set[str] = set()
     for name in ("structural", "best-practices", "release"):
         if name in profiles:
             rule_ids.update(profiles[name].rules)

@@ -9,7 +9,8 @@ import io
 import json
 import sys
 from collections import OrderedDict
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Optional
+from collections.abc import Callable
 
 from .normalized import to_format2
 from .options import ConversionOptions
@@ -18,7 +19,7 @@ from .yaml import ordered_dump
 
 log = __import__("logging").getLogger(__name__)
 
-ConvertToolStateFn = Optional[Callable[[dict], Optional[Dict[str, Any]]]]
+ConvertToolStateFn = Optional[Callable[[dict], Optional[dict[str, Any]]]]
 """Callback to convert a native tool step's tool_state to format2 state.
 
 Accepts a native step dict (with tool_id, tool_version, tool_state).
@@ -31,7 +32,7 @@ Convert a native Galaxy workflow description into a Format 2 description.
 
 
 def from_galaxy_native(
-    native_workflow_dict: Union[dict[str, Any], NativeGalaxyWorkflow],
+    native_workflow_dict: dict[str, Any] | NativeGalaxyWorkflow,
     tool_interface=None,
     json_wrapper: bool = False,
     compact: bool = False,

@@ -25,19 +25,14 @@ import os
 import re
 from typing import (
     Any,
-    Callable,
-    Dict,
-    Iterator,
-    List,
-    Optional,
-    Tuple,
     Union,
 )
+from collections.abc import Callable, Iterator
 
 import yaml
 from pydantic import BaseModel, model_validator
 
-PathElement = Union[str, int, Dict[str, Any]]
+PathElement = Union[str, int, dict[str, Any]]
 
 _UNSET = object()
 
@@ -56,16 +51,16 @@ class Assertion(BaseModel):
 
     model_config = {"arbitrary_types_allowed": True}
 
-    path: List[PathElement]
+    path: list[PathElement]
     value: Any = _UNSET
-    value_contains: Optional[str] = None
-    value_any_contains: Optional[str] = None
-    value_set: Optional[List[Any]] = None
-    value_matches: Optional[str] = None
-    value_truthy: Optional[bool] = None
-    value_falsy: Optional[bool] = None
-    value_type: Optional[str] = None
-    value_absent: Optional[bool] = None
+    value_contains: str | None = None
+    value_any_contains: str | None = None
+    value_set: list[Any] | None = None
+    value_matches: str | None = None
+    value_truthy: bool | None = None
+    value_falsy: bool | None = None
+    value_type: str | None = None
+    value_absent: bool | None = None
 
     @model_validator(mode="after")
     def _check_exactly_one_mode(self) -> "Assertion":
@@ -94,13 +89,13 @@ class TestCase(BaseModel):
     fixture: str
     operation: str
     expect_error: bool = False
-    assertions: List[Assertion] = []
+    assertions: list[Assertion] = []
 
 
 class ExpectationSuite(BaseModel):
     """Top-level model: maps test IDs to test cases."""
 
-    root: Dict[str, TestCase]
+    root: dict[str, TestCase]
 
     @classmethod
     def from_yaml(cls, path: str) -> "ExpectationSuite":
@@ -112,7 +107,7 @@ class ExpectationSuite(BaseModel):
         return cls(root=raw)
 
 
-def navigate(obj: Any, path: List[PathElement]) -> Any:
+def navigate(obj: Any, path: list[PathElement]) -> Any:
     """Walk an object by a list of path elements."""
     for element in path:
         if element == "$length":
@@ -196,14 +191,13 @@ def assert_value_type(obj: Any, expected_type: str):
     assert isinstance(obj, typ), f"expected type {expected_type}, got {type(obj).__name__}"
 
 
-def load_expectation_cases(expectations_dir: str) -> Iterator[Tuple[str, TestCase]]:
+def load_expectation_cases(expectations_dir: str) -> Iterator[tuple[str, TestCase]]:
     """Yield (test_id, TestCase) for every expectation YAML in a directory."""
     for fname in sorted(os.listdir(expectations_dir)):
         if not fname.endswith(".yml"):
             continue
         suite = ExpectationSuite.from_yaml(os.path.join(expectations_dir, fname))
-        for test_id, case in suite.root.items():
-            yield test_id, case
+        yield from suite.root.items()
 
 
 def run_assertion(obj: Any, assertion: Assertion):
@@ -237,7 +231,7 @@ def run_assertion(obj: Any, assertion: Assertion):
 
 def run_declarative_case(
     case: TestCase,
-    operations: Dict[str, Callable[..., Any]],
+    operations: dict[str, Callable[..., Any]],
     load_fixture: Callable[[str], Any],
 ):
     """Execute one declarative test case.
@@ -279,10 +273,10 @@ class DeclarativeTestSuite:
 
     def __init__(
         self,
-        operations: Dict[str, Callable[..., Any]],
+        operations: dict[str, Callable[..., Any]],
         load_fixture: Callable[[str], Any],
-        expectations_dir: Optional[str] = None,
-        cases: Optional[List[Tuple[str, TestCase]]] = None,
+        expectations_dir: str | None = None,
+        cases: list[tuple[str, TestCase]] | None = None,
     ):
         """Initialize with operations map and fixture loader."""
         self.operations = operations
@@ -295,7 +289,7 @@ class DeclarativeTestSuite:
             raise ValueError("Either expectations_dir or cases must be provided")
 
     @property
-    def cases(self) -> List[Tuple[str, TestCase]]:
+    def cases(self) -> list[tuple[str, TestCase]]:
         """Return loaded test cases."""
         return self._cases
 

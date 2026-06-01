@@ -6,7 +6,8 @@ the operations dict and fixture loader.
 """
 
 import os
-from typing import Any, Callable, Dict
+from typing import Any
+from collections.abc import Callable
 
 from gxformat2.cytoscape import cytoscape_elements as _cytoscape_impl
 from gxformat2.examples import EXAMPLES_DIR, load
@@ -128,7 +129,7 @@ def _cytoscape_edge_ids(wf_dict):
 
 
 EXPECTATIONS_DIR = os.path.join(EXAMPLES_DIR, "expectations")
-OPERATIONS: Dict[str, Callable[..., Any]] = {
+OPERATIONS: dict[str, Callable[..., Any]] = {
     "normalized_format2": normalized_format2,
     "normalized_native": normalized_native,
     "expanded_format2": expanded_format2,

@@ -3,11 +3,10 @@
 from typing import (
     Any,
     cast,
-    Optional,
     Union,
 )
 
-from typing_extensions import Literal
+from typing import Literal
 
 from gxformat2.normalized._format2 import resolve_source_reference as _resolve_source_impl
 
@@ -59,7 +58,7 @@ def get_native_step_type(gxformat2_step_dict: dict) -> _NativeGalaxyStepType:
     return step_type
 
 
-def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, list]] = None) -> Any:
+def setup_connected_values(value, key: str = "", append_to: dict[str, list] | None = None) -> Any:
     """Replace links with connected value."""
 
     def append_link(key: str, value: dict):
@@ -105,7 +104,7 @@ def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, l
         return value
 
 
-def resolve_source_reference(value: str, known_labels: Union[set, dict]) -> tuple:
+def resolve_source_reference(value: str, known_labels: set | dict) -> tuple:
     """Parse a source reference into (step_label_or_id, output_name).
 
     Deprecated: use ``gxformat2.normalized.resolve_source_reference`` directly.
@@ -121,14 +120,14 @@ def _is_link(value: Any) -> bool:
     return isinstance(value, dict) and "$link" in value
 
 
-def _join_prefix(prefix: Optional[str], key: str):
+def _join_prefix(prefix: str | None, key: str):
     if prefix:
         return f"{prefix}|{key}"
     return key
 
 
 def _convert_dict_to_id_list_if_needed(
-    dict_or_list: Union[dict, list],
+    dict_or_list: dict | list,
     add_label: bool = False,
     mutate: bool = False,
 ) -> list:

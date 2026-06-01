@@ -8,7 +8,6 @@ ValidationError shapes.
 
 import os
 from enum import Enum
-from typing import List
 
 import yaml
 from pydantic import BaseModel
@@ -46,8 +45,8 @@ class Scope(str, Enum):
 class SchemaRuleTests(BaseModel):
     """Positive/negative fixture references for a schema rule."""
 
-    positive: List[str]
-    negative: List[str]
+    positive: list[str]
+    negative: list[str]
 
 
 class SchemaRule(BaseModel):
@@ -55,17 +54,17 @@ class SchemaRule(BaseModel):
 
     id: str
     severity: Severity
-    applies_to: List[AppliesTo]
+    applies_to: list[AppliesTo]
     scope: Scope
     description: str = ""
     tests: SchemaRuleTests
 
 
-def load_schema_rules() -> List[SchemaRule]:
+def load_schema_rules() -> list[SchemaRule]:
     """Parse schema_rules.yml into validated SchemaRule models."""
     with open(SCHEMA_RULES_PATH) as f:
         raw = yaml.safe_load(f)
-    rules: List[SchemaRule] = []
+    rules: list[SchemaRule] = []
     for rule_id, body in raw.items():
         rules.append(SchemaRule(id=rule_id, **body))
     return rules

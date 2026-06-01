@@ -5,7 +5,7 @@ ValidationError). Used by the declarative-operation runner and the
 schema-rule catalog runner.
 """
 
-from typing import Callable
+from collections.abc import Callable
 
 from gxformat2._semantic_validators import validate_workflow as _validate_semantics
 from gxformat2.schema.gxformat2 import GalaxyWorkflow as Format2Lax

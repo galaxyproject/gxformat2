@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 UNLABELED_INPUT_PREFIX = "_unlabeled_input_"
 UNLABELED_STEP_PREFIX = "_unlabeled_step_"
 
@@ -16,7 +14,7 @@ class Labels:
         self.seen_labels = set()
         self.anonymous_labels = 0
 
-    def ensure_new_output_label(self, label: Optional[str]):
+    def ensure_new_output_label(self, label: str | None):
         """Ensure supplied label has value or generate an anonymous one."""
         if label is None:
             self.anonymous_labels += 1

@@ -5,12 +5,13 @@ from __future__ import annotations
 import base64
 import re
 from pathlib import Path
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Optional
+from collections.abc import Callable
 
 import requests
 import yaml
 
-StateEncodeToNativeFn = Optional[Callable[[dict, Dict[str, Any]], Optional[Dict[str, Any]]]]
+StateEncodeToNativeFn = Optional[Callable[[dict, dict[str, Any]], Optional[dict[str, Any]]]]
 """Callback to encode format2 state back to native tool_state.
 
 Accepts (step, state) where step is the partially-built native step dict
@@ -19,7 +20,7 @@ Returns {param_name: encoded_value} as clean dicts for native tool_state,
 or None to fall back to default dict passthrough (no JSON encoding).
 """
 
-StateEncodeToFormat2Fn = Optional[Callable[[dict], Optional[Dict[str, Any]]]]
+StateEncodeToFormat2Fn = Optional[Callable[[dict], Optional[dict[str, Any]]]]
 """Callback to convert a native tool step's tool_state to format2 state.
 
 Accepts a native step dict (with tool_id, tool_version, tool_state).

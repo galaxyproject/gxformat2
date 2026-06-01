@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any, Literal, NamedTuple, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, SerializeAsAny
-from typing_extensions import TypeAlias
+from typing import TypeAlias
 
 from gxformat2.schema._input_parameter import input_parameter_class
 from gxformat2.schema.gxformat2 import (
