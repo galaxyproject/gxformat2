@@ -126,6 +126,35 @@ def validate_input_parameter(input_param: Any) -> None:
             raise ValueError(f"{field} is only valid on text/string inputs, got type={type_value!r}")
 
 
+def _state_is_specified(value: Any) -> bool:
+    """True when a step's ``state``/``tool_state`` field actually carries content.
+
+    Uses non-empty semantics: ``None``, an empty dict, and a blank or ``{}``
+    JSON string all count as unspecified. This matches the downstream notion of
+    an "empty" state, so an empty ``state: {}`` left by conversion does not
+    falsely conflict with a populated ``tool_state``.
+    """
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip() not in ("", "{}")
+    if isinstance(value, Mapping):
+        return len(value) > 0
+    return bool(value)
+
+
+def validate_step(step: Mapping[str, Any]) -> None:
+    """Validate cross-field rules on a single workflow step.
+
+    Enforces:
+    - ``state`` and ``tool_state`` are mutually exclusive (the schema doc says
+      "Only one or the other should be specified"); they are two encodings of
+      the same tool state, so carrying both is ambiguous.
+    """
+    if _state_is_specified(step.get("state")) and _state_is_specified(step.get("tool_state")):
+        raise ValueError("Workflow step specifies both 'state' and 'tool_state'; only one may be set")
+
+
 def validate_workflow(workflow: Any) -> None:
     """Walk a (lax or strict) GalaxyWorkflow model and validate cross-field rules.
 
@@ -153,6 +182,7 @@ def validate_workflow(workflow: Any) -> None:
     for step in iter_steps:
         if not isinstance(step, Mapping):
             continue
+        validate_step(step)
         run = step.get("run")
         if isinstance(run, Mapping) and run.get("class") == "GalaxyWorkflow":
             validate_workflow(run)
