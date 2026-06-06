@@ -156,7 +156,7 @@ def validate_step(step: Mapping[str, Any]) -> None:
 
 
 def validate_workflow(workflow: Any) -> None:
-    """Walk a (lax or strict) GalaxyWorkflow model and validate cross-field rules.
+    """Validate cross-field rules on a (lax or strict) GalaxyWorkflow model.
 
     Handles both list and dict input forms.
     """
