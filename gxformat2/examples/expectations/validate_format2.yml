@@ -402,3 +402,15 @@ test_report_bad_type_rejected_format2_strict:
   fixture: synthetic-lint-report-bad-type.gxwf.yml
   operation: validate_format2_strict
   expect_error: true
+
+# --- state / tool_state are mutually exclusive ---
+
+test_state_tool_state_conflict_rejected_format2:
+  fixture: synthetic-state-tool-state-conflict.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_state_tool_state_conflict_rejected_format2_strict:
+  fixture: synthetic-state-tool-state-conflict.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true

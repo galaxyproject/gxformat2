@@ -303,6 +303,12 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-state-tool-state-conflict.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-tags.gxwf.yml
   origin: synthetic
   format: format2
