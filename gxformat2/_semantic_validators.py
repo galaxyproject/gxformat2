@@ -127,7 +127,7 @@ def validate_input_parameter(input_param: Any) -> None:
 
 
 def _state_is_specified(value: Any) -> bool:
-    """True when a step's ``state``/``tool_state`` field actually carries content.
+    """Report whether a step's ``state``/``tool_state`` field actually carries content.
 
     Uses non-empty semantics: ``None``, an empty dict, and a blank or ``{}``
     JSON string all count as unspecified. This matches the downstream notion of
