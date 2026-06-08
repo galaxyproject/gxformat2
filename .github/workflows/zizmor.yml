@@ -1,9 +1,13 @@
 name: GitHub Actions Security Analysis (zizmor)
 on:
   push:
-    branches: ["main"]
+    paths:
+      - '.github/workflows/*'
+      - zizmor.yml
   pull_request:
-    branches: ["**"]
+    paths:
+      - '.github/workflows/*'
+      - zizmor.yml
 permissions: {}
 jobs:
   zizmor:
@@ -12,7 +16,7 @@ jobs:
       contents: read
       security-events: write
     steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
-      - uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d # v0.5.6
+      - uses: zizmorcore/zizmor-action@v0.5.6
