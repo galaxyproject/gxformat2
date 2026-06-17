@@ -30,7 +30,7 @@
     "rimraf": "^3.0.2"
   },
   "dependencies": {
-    "js-yaml": "^4.1.1",
+    "js-yaml": "^4.2.0",
     "node-fetch": "^2.6.6",
     "uri-js": "^4.4.1",
     "uuid": "^14.0.0"
