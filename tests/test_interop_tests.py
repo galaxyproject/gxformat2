@@ -9,6 +9,8 @@ import os
 from typing import Any
 from collections.abc import Callable
 
+import pytest
+
 from gxformat2.cytoscape import cytoscape_elements as _cytoscape_impl
 from gxformat2.examples import EXAMPLES_DIR, load
 from gxformat2.lint import lint_best_practices_format2 as _lint_bp_format2_impl
@@ -32,6 +34,8 @@ from gxformat2.normalized._native import NormalizedNativeWorkflow
 from gxformat2.testing import DeclarativeTestSuite
 from gxformat2.validators import (
     validate_format2,
+    validate_format2_draft,
+    validate_format2_draft_strict,
     validate_format2_strict,
     validate_native,
     validate_native_strict,
@@ -139,6 +143,8 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "ensure_format2": ensure_format2,
     "ensure_native": ensure_native,
     "validate_format2": validate_format2,
+    "validate_format2_draft": validate_format2_draft,
+    "validate_format2_draft_strict": validate_format2_draft_strict,
     "validate_format2_strict": validate_format2_strict,
     "validate_native": validate_native,
     "validate_native_strict": validate_native_strict,
@@ -153,6 +159,24 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "cytoscape_node_ids": _cytoscape_node_ids,
     "cytoscape_edge_ids": _cytoscape_edge_ids,
 }
+
+
+def _skip_unported_op(name: str) -> Callable[..., Any]:
+    """Stub that skips at test time — the expectation YAMLs are canonical
+    upstream from day one but the Python helpers have not been ported yet.
+
+    Keeps detect_draft.yml / validate_draft.yml visible in the test suite
+    (as `skipped`) instead of silently dropping the cases.
+    """
+
+    def _stub(_wf_dict: Any) -> Any:
+        pytest.skip(f"operation {name!r} not yet ported to Python (TS-only in v1)")
+
+    return _stub
+
+
+for _unported in ("detect_draft", "validate_draft", "extract_draft_subset"):
+    OPERATIONS[_unported] = _skip_unported_op(_unported)
 
 suite = DeclarativeTestSuite(
     operations=OPERATIONS,

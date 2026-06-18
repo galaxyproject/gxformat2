@@ -1,0 +1,33 @@
+class: GalaxyWorkflowDraft
+label: draft tool inside a subworkflow step
+inputs:
+  reads:
+    type: data
+outputs:
+  out:
+    outputSource: outer_subwf/output
+steps:
+  outer_subwf:
+    type: subworkflow
+    label: outer subworkflow step
+    in:
+      reads: reads
+    out:
+      - id: output
+    run:
+      class: GalaxyWorkflowDraft
+      inputs:
+        reads:
+          type: data
+      outputs:
+        output:
+          outputSource: inner_tool/TODO_out
+      steps:
+        inner_tool:
+          tool_id: TODO
+          tool_version: TODO
+          label: draft tool step inside subworkflow
+          in:
+            TODO_input: reads
+          out:
+            - id: TODO_out

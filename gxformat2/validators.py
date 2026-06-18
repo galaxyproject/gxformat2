@@ -9,6 +9,8 @@ from collections.abc import Callable
 
 from gxformat2._semantic_validators import validate_workflow as _validate_semantics
 from gxformat2.schema.gxformat2 import GalaxyWorkflow as Format2Lax
+from gxformat2.schema.gxformat2_draft import GalaxyWorkflowDraft as Format2DraftLax
+from gxformat2.schema.gxformat2_draft_strict import GalaxyWorkflowDraft as Format2DraftStrict
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as Format2Strict
 from gxformat2.schema.native import NativeGalaxyWorkflow as NativeLax
 from gxformat2.schema.native_strict import NativeGalaxyWorkflow as NativeStrict
@@ -24,6 +26,20 @@ def validate_format2(wf_dict):
 def validate_format2_strict(wf_dict):
     """Validate a Format2 workflow dict with the strict (closed) schema."""
     model = Format2Strict.model_validate(wf_dict)
+    _validate_semantics(wf_dict)
+    return model
+
+
+def validate_format2_draft(wf_dict):
+    """Validate a draft Format2 workflow dict with the lax (open) draft schema."""
+    model = Format2DraftLax.model_validate(wf_dict)
+    _validate_semantics(wf_dict)
+    return model
+
+
+def validate_format2_draft_strict(wf_dict):
+    """Validate a draft Format2 workflow dict with the strict (closed) draft schema."""
+    model = Format2DraftStrict.model_validate(wf_dict)
     _validate_semantics(wf_dict)
     return model
 

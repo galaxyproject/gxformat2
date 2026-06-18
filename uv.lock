@@ -806,7 +806,7 @@ provides-extras = ["bioblend"]
 dev = [
     { name = "cwltool", specifier = ">=3.0.20200807132242" },
     { name = "schema-salad", extras = ["pycodegen"] },
-    { name = "schema-salad-plus-pydantic", specifier = ">=0.1.8" },
+    { name = "schema-salad-plus-pydantic", specifier = ">=0.1.10" },
 ]
 docs = [
     { name = "myst-parser" },
@@ -832,7 +832,7 @@ test = [
     { name = "pydantic", specifier = ">=2.0" },
     { name = "pytest" },
     { name = "schema-salad", extras = ["pycodegen"] },
-    { name = "schema-salad-plus-pydantic", specifier = ">=0.1.8" },
+    { name = "schema-salad-plus-pydantic", specifier = ">=0.1.10" },
 ]
 
 [[package]]
