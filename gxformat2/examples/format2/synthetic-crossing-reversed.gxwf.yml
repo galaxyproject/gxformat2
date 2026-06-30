@@ -1,0 +1,24 @@
+class: GalaxyWorkflow
+doc: |
+  Crossing-heavy fixture: three independent input->step chains whose steps are
+  declared in the reverse order of their inputs. Under ``topological`` (rows =
+  declaration order) the edges cross; ``layered`` barycenter reordering should
+  uncross them. Used to show layered improves on topological while both still
+  satisfy the structural layout properties.
+inputs:
+  a: data
+  b: data
+  c: data
+steps:
+  step_c:
+    tool_id: cat1
+    in:
+      input1: c
+  step_b:
+    tool_id: cat1
+    in:
+      input1: b
+  step_a:
+    tool_id: cat1
+    in:
+      input1: a

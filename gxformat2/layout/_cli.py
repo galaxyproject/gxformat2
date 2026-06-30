@@ -94,8 +94,12 @@ def _parser():
         "--strategy",
         type=str,
         default="topological",
-        choices=["topological"],
-        help="layout strategy (default: topological)",
+        choices=["topological", "layered"],
+        help=(
+            "layout strategy (default: topological). 'topological' is the "
+            "dependency-free, cross-language layering; 'layered' adds barycenter "
+            "crossing reduction for fewer edge crossings on wide workflows."
+        ),
     )
     parser.add_argument(
         "--overwrite",

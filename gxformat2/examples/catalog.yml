@@ -11,6 +11,20 @@
     - tests/test_schema_rules_catalog.py
     - tests/test_layout.py
 
+- file: format2/synthetic-cycle.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_layout.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-crossing-reversed.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_layout.py
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-nested-subworkflow.gxwf.yml
   origin: synthetic
   format: format2

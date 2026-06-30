@@ -10,9 +10,11 @@ import json
 
 import pytest
 
+from gxformat2.cytoscape import cytoscape_elements, COL_STRIDE, topological_positions
 from gxformat2.examples import get_path, load
-from gxformat2.layout import apply_layout, AUTO, layout_positions
+from gxformat2.layout import apply_layout, AUTO, layout_positions, LayoutCycleError
 from gxformat2.layout._cli import main, to_layout
+from gxformat2.layout._sugiyama import _count_all_crossings, extract_graph, layer_assignment
 
 
 def test_layout_positions_topological():
@@ -97,6 +99,88 @@ def test_apply_layout_disconnected_components_share_column_zero():
 def test_layout_positions_unknown_strategy():
     with pytest.raises(ValueError):
         layout_positions(load("synthetic-basic.gxwf.yml"), strategy="dagre")
+
+
+def test_layout_cycle_raises():
+    with pytest.raises(LayoutCycleError):
+        layout_positions(load("synthetic-cycle.gxwf.yml"))
+
+
+def test_layered_cycle_raises():
+    with pytest.raises(LayoutCycleError):
+        layout_positions(load("synthetic-cycle.gxwf.yml"), strategy="layered")
+
+
+def test_layered_positions_basic():
+    positions = layout_positions(load("synthetic-basic.gxwf.yml"), strategy="layered")
+    assert positions == {
+        "the_input": {"left": 0, "top": 0},
+        "cat": {"left": 220, "top": 0},
+    }
+
+
+def test_layered_positions_uncrosses_reversed_chains():
+    # Python-local exact-coordinate golden: barycenter reordering aligns each
+    # step's row with its input's row, eliminating the crossings topological
+    # would produce from the reversed declaration order.
+    positions = layout_positions(load("synthetic-crossing-reversed.gxwf.yml"), strategy="layered")
+    assert positions == {
+        "a": {"left": 0, "top": 0},
+        "b": {"left": 0, "top": 100},
+        "c": {"left": 0, "top": 200},
+        "step_a": {"left": 220, "top": 0},
+        "step_b": {"left": 220, "top": 100},
+        "step_c": {"left": 220, "top": 200},
+    }
+
+
+def test_layered_is_deterministic():
+    fixture = "synthetic-crossing-reversed.gxwf.yml"
+    first = layout_positions(load(fixture), strategy="layered")
+    second = layout_positions(load(fixture), strategy="layered")
+    assert first == second
+
+
+def test_layer_assignment_agrees_with_cytoscape_columns():
+    # The in-house longest-path layering (layer_assignment) and cytoscape's
+    # byte-locked topological_positions are deliberately separate Kahn
+    # implementations; they must agree on column assignment for acyclic graphs.
+    # Pin that mirror on a multi-level, branching DAG so a future edit to either
+    # file can't silently drift them apart.
+    wf = {
+        "class": "GalaxyWorkflow",
+        "inputs": {"in1": "data"},
+        "steps": {
+            "s1": {"tool_id": "cat1", "in": {"input1": "in1"}},
+            "s2": {"tool_id": "cat1", "in": {"input1": "s1/out_file1"}},
+            "s3": {"tool_id": "cat1", "in": {"input1": "s2/out_file1"}},
+            "branch": {"tool_id": "cat1", "in": {"input1": "in1"}},
+        },
+    }
+    elements = cytoscape_elements(wf, layout="preset")
+    node_ids, edges = extract_graph(elements)
+    columns = layer_assignment(node_ids, edges)
+    cyto_columns = {nid: pos.x // COL_STRIDE for nid, pos in topological_positions(elements).items()}
+    assert columns == cyto_columns
+
+
+def test_layered_reduces_crossings_vs_topological():
+    fixture = "synthetic-crossing-reversed.gxwf.yml"
+
+    def crossings(strategy):
+        node_ids, edges = extract_graph(cytoscape_elements(load(fixture), layout="preset"))
+        successors: dict = {n: [] for n in node_ids}
+        for source, target in edges:
+            successors[source].append(target)
+        positions = layout_positions(load(fixture), strategy=strategy)
+        by_col: dict = {}
+        for node_id, pos in positions.items():
+            by_col.setdefault(pos["left"], []).append((pos["top"], node_id))
+        layers = [[nid for _, nid in sorted(by_col[left])] for left in sorted(by_col)]
+        return _count_all_crossings(layers, successors)
+
+    assert crossings("topological") > 0
+    assert crossings("layered") == 0
 
 
 def test_cli_preserves_comments(tmp_path):

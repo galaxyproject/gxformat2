@@ -16,6 +16,7 @@ from gxformat2.lint import lint_best_practices_ga as _lint_bp_ga_impl
 from gxformat2.lint import lint_format2 as _lint_format2_impl
 from gxformat2.lint import lint_ga as _lint_ga_impl
 from gxformat2.layout import apply_layout as _apply_layout_impl
+from gxformat2.layout import GRAPH_PROPERTY_CHECKERS
 from gxformat2.linting import LintContext
 from gxformat2.mermaid import workflow_to_mermaid as _mermaid_impl
 from gxformat2.normalized import (
@@ -120,6 +121,10 @@ def _layout(wf_dict):
     return _apply_layout_impl(wf_dict, overwrite=True)
 
 
+def _layout_layered(wf_dict):
+    return _apply_layout_impl(wf_dict, strategy="layered", overwrite=True)
+
+
 def _cytoscape_elements_to_list(wf_dict):
     return _cytoscape_impl(wf_dict).to_list()
 
@@ -157,6 +162,8 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "workflow_to_mermaid_with_comments_lines": _workflow_to_mermaid_with_comments_lines,
     "layout_format2": _layout,
     "layout_native": _layout,
+    "layout_layered_format2": _layout_layered,
+    "layout_layered_native": _layout_layered,
     "cytoscape_elements_to_list": _cytoscape_elements_to_list,
     "cytoscape_node_ids": _cytoscape_node_ids,
     "cytoscape_edge_ids": _cytoscape_edge_ids,
@@ -166,6 +173,7 @@ suite = DeclarativeTestSuite(
     operations=OPERATIONS,
     load_fixture=load,
     expectations_dir=EXPECTATIONS_DIR,
+    graph_property_checkers=GRAPH_PROPERTY_CHECKERS,
 )
 
 

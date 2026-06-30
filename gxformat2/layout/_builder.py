@@ -18,6 +18,7 @@ from typing import Any, Optional, Union
 
 from gxformat2._labels import unlabeled_node_id
 from gxformat2.cytoscape import cytoscape_elements, topological_positions
+from gxformat2.layout._sugiyama import check_acyclic, layered_positions
 from gxformat2.normalized import ensure_format2, NormalizedFormat2
 from gxformat2.normalized._conversion import INPUT_STEP_TYPES
 from gxformat2.schema.gxformat2 import GalaxyWorkflow
@@ -37,20 +38,28 @@ def layout_positions(workflow: WorkflowInput, *, strategy: str = "topological") 
     Accepts anything ``ensure_format2()`` supports, plus an already normalized
     ``NormalizedFormat2`` instance.
     """
-    if strategy != "topological":
-        raise ValueError(f'Unknown layout strategy "{strategy}". Valid values: topological.')
+    if strategy not in ("topological", "layered"):
+        raise ValueError(f'Unknown layout strategy "{strategy}". Valid values: topological, layered.')
 
     if isinstance(workflow, NormalizedFormat2):
         nf2 = workflow
     else:
-        # Strip positions first: topological layout ignores them, and an
+        # Strip positions first: the layout strategies ignore them, and an
         # ``auto`` sentinel would fail schema validation in ensure_format2.
         if isinstance(workflow, dict):
             workflow = _strip_positions(workflow)
         nf2 = ensure_format2(workflow)
 
     elements = cytoscape_elements(nf2, layout="preset")
-    positions = topological_positions(elements)
+    if strategy == "topological":
+        # Cycles are invalid in Galaxy; refuse rather than bake garbage
+        # positions. cytoscape.topological_positions has a silent diagonal
+        # fallback for cyclic graphs (it must stay resilient for the viz path),
+        # so we detect up front here. ``layered`` raises during layering.
+        check_acyclic(elements)
+        positions = topological_positions(elements)
+    else:  # layered
+        positions = layered_positions(elements)
     return {node_id: {"left": p.x, "top": p.y} for node_id, p in positions.items()}
 
 

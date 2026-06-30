@@ -1,43 +1,105 @@
 # Declarative tests for gxformat2.layout.apply_layout (overwrite=True), which
-# replaces the degenerate diagonal layout with topological positions.
-# Coordinates follow the cross-language topological spec (COL_STRIDE=220,
-# ROW_STRIDE=100); see docs/architecture/cytoscape-layout.md in the TS port.
+# replaces the degenerate diagonal layout with computed positions.
+#
+# These are the CROSS-LANGUAGE contract: instead of exact coordinates (which
+# differ between the ``topological`` and ``layered`` strategies, and need not
+# match across language ports), each case asserts named structural
+# ``graph_properties``. A conforming reimplementation reimplements the
+# checkers, not the coordinates. Exact-coordinate goldens are kept Python-local
+# in tests/test_layout.py. Checkers live in gxformat2/layout/_properties.py.
+#
+# Properties:
+#   downstream_right_of_upstream  every edge points strictly rightward
+#   all_nodes_positioned          every node has a position
+#   no_position_collisions        no two nodes share a coordinate
+#   roots_leftmost                input/root nodes sit at the minimum left
+
+# --- topological strategy ---------------------------------------------------
 
 layout_basic_format2:
   fixture: synthetic-basic.gxwf.yml
   operation: layout_format2
-  assertions:
-    - path: [inputs, the_input, position, left]
-      value: 0
-    - path: [inputs, the_input, position, top]
-      value: 0
-    - path: [steps, cat, position, left]
-      value: 220
-    - path: [steps, cat, position, top]
-      value: 0
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
 
 layout_chain_format2:
   fixture: synthetic-slash-in-label-chained.gxwf.yml
   operation: layout_format2
-  assertions:
-    - path: [inputs, "Host/Contaminant Genome", position, left]
-      value: 0
-    - path: [steps, "Host/Contaminant Filter", position, left]
-      value: 220
-    - path: [steps, second_cat, position, left]
-      value: 440
-    - path: [steps, second_cat, position, top]
-      value: 0
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
+
+layout_crossing_format2:
+  fixture: synthetic-crossing-reversed.gxwf.yml
+  operation: layout_format2
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
 
 layout_basic_native:
   fixture: real-basic-without-step-input-label.ga
   operation: layout_native
-  assertions:
-    - path: [steps, "0", position, left]
-      value: 0
-    - path: [steps, "0", position, top]
-      value: 0
-    - path: [steps, "1", position, left]
-      value: 220
-    - path: [steps, "1", position, top]
-      value: 0
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
+
+# --- layered strategy (barycenter Sugiyama) ---------------------------------
+
+layout_layered_basic_format2:
+  fixture: synthetic-basic.gxwf.yml
+  operation: layout_layered_format2
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
+
+layout_layered_chain_format2:
+  fixture: synthetic-slash-in-label-chained.gxwf.yml
+  operation: layout_layered_format2
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
+
+layout_layered_crossing_format2:
+  fixture: synthetic-crossing-reversed.gxwf.yml
+  operation: layout_layered_format2
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
+
+layout_layered_basic_native:
+  fixture: real-basic-without-step-input-label.ga
+  operation: layout_layered_native
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
+
+# --- cycle policy -----------------------------------------------------------
+
+# Cyclic workflows are invalid in Galaxy; the bake path must raise rather than
+# emit meaningless positions.
+layout_cycle_raises:
+  fixture: synthetic-cycle.gxwf.yml
+  operation: layout_format2
+  expect_error: true
+
+layout_layered_cycle_raises:
+  fixture: synthetic-cycle.gxwf.yml
+  operation: layout_layered_format2
+  expect_error: true
