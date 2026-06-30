@@ -9,6 +9,7 @@
     - tests/test_export_abstract.py
     - tests/test_interop_tests.py
     - tests/test_schema_rules_catalog.py
+    - tests/test_layout.py
 
 - file: format2/synthetic-nested-subworkflow.gxwf.yml
   origin: synthetic
@@ -110,6 +111,7 @@
     - tests/test_to_format2.py
     - tests/test_export_abstract.py
     - tests/test_interop_tests.py
+    - tests/test_layout.py
 
 - file: native/synthetic-unlinted-best-practices.ga
   origin: synthetic
@@ -479,6 +481,7 @@
   tests:
     - tests/test_comments.py
     - tests/test_interop_tests.py
+    - tests/test_layout.py
 
 - file: format2/synthetic-user-defined-tool.gxwf.yml
   origin: synthetic

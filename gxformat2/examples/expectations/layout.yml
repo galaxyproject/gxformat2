@@ -1,0 +1,43 @@
+# Declarative tests for gxformat2.layout.apply_layout (overwrite=True), which
+# replaces the degenerate diagonal layout with topological positions.
+# Coordinates follow the cross-language topological spec (COL_STRIDE=220,
+# ROW_STRIDE=100); see docs/architecture/cytoscape-layout.md in the TS port.
+
+layout_basic_format2:
+  fixture: synthetic-basic.gxwf.yml
+  operation: layout_format2
+  assertions:
+    - path: [inputs, the_input, position, left]
+      value: 0
+    - path: [inputs, the_input, position, top]
+      value: 0
+    - path: [steps, cat, position, left]
+      value: 220
+    - path: [steps, cat, position, top]
+      value: 0
+
+layout_chain_format2:
+  fixture: synthetic-slash-in-label-chained.gxwf.yml
+  operation: layout_format2
+  assertions:
+    - path: [inputs, "Host/Contaminant Genome", position, left]
+      value: 0
+    - path: [steps, "Host/Contaminant Filter", position, left]
+      value: 220
+    - path: [steps, second_cat, position, left]
+      value: 440
+    - path: [steps, second_cat, position, top]
+      value: 0
+
+layout_basic_native:
+  fixture: real-basic-without-step-input-label.ga
+  operation: layout_native
+  assertions:
+    - path: [steps, "0", position, left]
+      value: 0
+    - path: [steps, "0", position, top]
+      value: 0
+    - path: [steps, "1", position, left]
+      value: 220
+    - path: [steps, "1", position, top]
+      value: 0

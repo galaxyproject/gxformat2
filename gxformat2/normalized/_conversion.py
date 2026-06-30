@@ -32,7 +32,7 @@ from collections.abc import Callable
 from pydantic import Field
 
 from .._comment_helpers import flatten_comment_data, unflatten_comment_data
-from .._labels import Labels, UNLABELED_INPUT_PREFIX, UNLABELED_STEP_PREFIX
+from .._labels import Labels, unlabeled_node_id
 from ..options import (
     ConversionOptions,
     default_url_resolver,
@@ -466,12 +466,7 @@ def _build_format2_workflow(
     # Build label map for source references
     label_map: dict[str, str] = {}
     for key, step in wf.steps.items():
-        if step.label is not None:
-            label_map[str(key)] = step.label
-        elif step.type_ in INPUT_STEP_TYPES:
-            label_map[str(key)] = f"{UNLABELED_INPUT_PREFIX}{step.id}"
-        else:
-            label_map[str(key)] = f"{UNLABELED_STEP_PREFIX}{step.id}"
+        label_map[str(key)] = unlabeled_node_id(step.label, step.id, step.type_ in INPUT_STEP_TYPES)
 
     # Separate inputs from non-input steps
     input_params: list[BaseInputParameter] = []
@@ -523,7 +518,7 @@ def _build_format2_workflow(
 
 
 def _build_input_param(step: NormalizedNativeStep) -> BaseInputParameter:
-    step_id = step.label if step.label is not None else f"{UNLABELED_INPUT_PREFIX}{step.id}"
+    step_id = unlabeled_node_id(step.label, step.id, is_input=True)
     tool_state = step.tool_state
     input_type = native_input_to_format2_type({"type": step.type_}, tool_state)
 
