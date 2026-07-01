@@ -14,8 +14,6 @@ with the TypeScript port and a cross-language contract), the coordinates
 produced here are NOT a cross-language contract. They are validated only by the
 structural graph properties in ``gxformat2/examples/expectations/layout.yml``,
 so any conforming reimplementation is free to differ on exact coordinates.
-
-See galaxyproject/galaxy#22954.
 """
 
 from __future__ import annotations

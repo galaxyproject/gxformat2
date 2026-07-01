@@ -4,7 +4,7 @@ Computes node positions and merges them into workflow documents, replacing the
 degenerate diagonal fallback. Two strategies: ``topological`` (the dependency-
 free, cross-language layering from ``gxformat2.cytoscape``) and ``layered`` (an
 in-house barycenter Sugiyama pass that reduces edge crossings). Cyclic
-workflows are rejected with ``LayoutCycleError``. See galaxyproject/galaxy#22954.
+workflows are rejected with ``LayoutCycleError``.
 """
 
 from ._builder import apply_layout, AUTO, layout_positions

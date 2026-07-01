@@ -52,6 +52,15 @@ layout_basic_native:
     - no_position_collisions
     - roots_leftmost
 
+layout_real_amr_native:
+  fixture: real-amr-gene-detection.ga
+  operation: layout_native
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
+
 # --- layered strategy (barycenter Sugiyama) ---------------------------------
 
 layout_layered_basic_format2:
@@ -89,6 +98,65 @@ layout_layered_basic_native:
     - all_nodes_positioned
     - no_position_collisions
     - roots_leftmost
+
+layout_layered_real_amr_native:
+  fixture: real-amr-gene-detection.ga
+  operation: layout_layered_native
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
+
+# --- recursion into in-file subworkflows ------------------------------------
+#
+# apply_layout(recursive=True) lays out embedded subworkflows in their own
+# coordinate space; the graph_property checkers recurse to match, so listing
+# them here validates every nested unit too. The extra assertions pin that
+# nested nodes actually received positions.
+
+layout_format2_recurses_embedded_run:
+  fixture: synthetic-tool-with-inline-subworkflow.gxwf.yml
+  operation: layout_format2
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
+  assertions:
+    - path: [steps, nested, run, inputs, y, position, left]
+      value: 0
+    - path: [steps, nested, run, steps, inner_tool, position, left]
+      value: 220
+
+layout_native_recurses_subworkflow:
+  fixture: synthetic-outer-inline-subworkflow.ga
+  operation: layout_native
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
+  assertions:
+    - path: [steps, "1", subworkflow, steps, "0", position, left]
+      value: 0
+    - path: [steps, "1", subworkflow, steps, "1", position, left]
+      value: 220
+
+layout_format2_graph_document:
+  fixture: synthetic-graph-with-subworkflow.gxwf.yml
+  operation: layout_format2
+  graph_properties:
+    - downstream_right_of_upstream
+    - all_nodes_positioned
+    - no_position_collisions
+    - roots_leftmost
+  assertions:
+    # $graph[0] is subworkflow1, [1] is main (declaration order in the file).
+    - path: ["$graph", 0, steps, inner_tool, position, left]
+      value: 220
+    - path: ["$graph", 1, steps, nested_workflow, position, left]
+      value: 440
 
 # --- cycle policy -----------------------------------------------------------
 

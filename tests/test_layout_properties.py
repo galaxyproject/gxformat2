@@ -13,6 +13,7 @@ import pytest
 from gxformat2.examples import load
 from gxformat2.layout import apply_layout
 from gxformat2.layout._properties import (
+    _BASE_CHECKERS,
     all_nodes_positioned,
     downstream_right_of_upstream,
     GRAPH_PROPERTY_CHECKERS,
@@ -97,3 +98,15 @@ def test_roots_leftmost_fires_when_root_not_leftmost():
     wf["steps"]["cat"]["position"]["left"] = 0
     with pytest.raises(AssertionError):
         roots_leftmost(wf)
+
+
+def test_registry_checkers_recurse_into_subworkflows():
+    # A broken position inside an embedded subworkflow escapes the base checker
+    # (it only sees the top level) but must be caught by the registered checker.
+    wf = load("synthetic-tool-with-inline-subworkflow.gxwf.yml")
+    apply_layout(wf, overwrite=True)
+    wf["steps"]["nested"]["run"]["steps"]["inner_tool"]["position"]["left"] = 0  # collides with input
+    base = _BASE_CHECKERS["no_position_collisions"]
+    base(wf)  # top level is still fine
+    with pytest.raises(AssertionError):
+        GRAPH_PROPERTY_CHECKERS["no_position_collisions"](wf)

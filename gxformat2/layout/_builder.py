@@ -6,15 +6,13 @@ the TypeScript port. This module turns those coordinates into ``position``
 records (``{left, top}``) merged back into a workflow document, replacing the
 degenerate ``(10*i, 10*i)`` diagonal fallback from
 ``gxformat2.model.ensure_step_position``.
-
-See galaxyproject/galaxy#22954.
 """
 
 from __future__ import annotations
 
 import copy
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Iterator, Optional, Union
 
 from gxformat2._labels import unlabeled_node_id
 from gxformat2.cytoscape import cytoscape_elements, topological_positions
@@ -65,6 +63,44 @@ def layout_positions(workflow: WorkflowInput, *, strategy: str = "topological") 
 
 def _is_native(workflow: dict) -> bool:
     return workflow.get("a_galaxy_workflow") == "true"
+
+
+def _is_graph_document(workflow: Any) -> bool:
+    """True for a ``$graph`` multi-workflow document (many workflows, one file)."""
+    return isinstance(workflow, dict) and "$graph" in workflow and "class" not in workflow
+
+
+def _is_embedded_workflow(value: Any) -> bool:
+    """True for an in-file subworkflow document embedded in a step.
+
+    Covers both a Format2 ``run:`` mapping (``class: GalaxyWorkflow``) and a
+    native ``subworkflow:`` mapping (``a_galaxy_workflow: "true"``). String
+    ``run`` values (external URLs/paths, ``#graph`` id references) are not
+    embedded and return False.
+    """
+    if not isinstance(value, dict):
+        return False
+    return value.get("class") == "GalaxyWorkflow" or value.get("a_galaxy_workflow") == "true"
+
+
+def _iter_subworkflows(workflow: dict) -> Iterator[dict]:
+    """Yield subworkflow documents embedded in ``workflow``'s steps.
+
+    Only in-file subworkflows are followed: native steps carrying an inline
+    ``subworkflow`` mapping and Format2 steps whose ``run`` is an embedded
+    ``GalaxyWorkflow`` mapping. References to other files or ``$graph`` entries
+    (string ``run`` values) are left alone -- laying those out is the job of
+    whichever document owns them.
+    """
+    steps = workflow.get("steps")
+    step_items = steps.values() if isinstance(steps, dict) else steps
+    is_native = _is_native(workflow)
+    for step in step_items or []:
+        if not isinstance(step, dict):
+            continue
+        candidate = step.get("subworkflow") if is_native else step.get("run")
+        if isinstance(candidate, dict) and _is_embedded_workflow(candidate):
+            yield candidate
 
 
 def _strip_positions(workflow: dict) -> dict:
@@ -188,7 +224,9 @@ def _apply_native(workflow: dict, positions: dict[str, dict[str, int]], overwrit
     return workflow
 
 
-def apply_layout(workflow: dict, *, strategy: str = "topological", overwrite: bool = False) -> dict:
+def apply_layout(
+    workflow: dict, *, strategy: str = "topological", overwrite: bool = False, recursive: bool = True
+) -> dict:
     """Merge computed positions into a workflow document, mutating it in place.
 
     Works on both Format2 and native (``a_galaxy_workflow``) dicts. Existing
@@ -196,11 +234,31 @@ def apply_layout(workflow: dict, *, strategy: str = "topological", overwrite: bo
     ``position: auto`` sentinel is always replaced. Returns ``workflow``.
 
     ``workflow`` must be a dict (the CLI loads files to dicts before calling
-    this, so the ``auto`` sentinel is handled). Only top-level nodes are laid
-    out; nested subworkflow steps are treated as single nodes, matching the
-    Cytoscape builder.
+    this, so the ``auto`` sentinel is handled).
+
+    At each level a subworkflow *step* is a single node in its parent's layout,
+    matching the Cytoscape builder. When ``recursive`` (the default), embedded
+    in-file subworkflows are then laid out in their own coordinate space too:
+    Format2 ``run:`` blocks, native inline ``subworkflow:`` blocks, and every
+    entry of a ``$graph`` multi-workflow document. Subworkflows referenced by
+    file/URL or ``#graph`` id are not followed.
     """
+    # $graph documents hold several sibling workflows in one file; lay out each.
+    if _is_graph_document(workflow):
+        graph = workflow["$graph"]
+        entries = graph.values() if isinstance(graph, dict) else graph
+        for entry in entries or []:
+            if isinstance(entry, dict):
+                apply_layout(entry, strategy=strategy, overwrite=overwrite, recursive=recursive)
+        return workflow
+
     positions = layout_positions(workflow, strategy=strategy)
     if _is_native(workflow):
-        return _apply_native(workflow, positions, overwrite)
-    return _apply_format2(workflow, positions, overwrite)
+        _apply_native(workflow, positions, overwrite)
+    else:
+        _apply_format2(workflow, positions, overwrite)
+
+    if recursive:
+        for subworkflow in _iter_subworkflows(workflow):
+            apply_layout(subworkflow, strategy=strategy, overwrite=overwrite, recursive=recursive)
+    return workflow

@@ -15,10 +15,16 @@ synthesize defaults), and raises ``AssertionError`` on violation.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Callable, Dict, Iterator, Tuple
 
 from gxformat2.cytoscape import cytoscape_elements
-from gxformat2.layout._builder import _format2_node_id, _is_native, _native_node_id
+from gxformat2.layout._builder import (
+    _format2_node_id,
+    _is_graph_document,
+    _is_native,
+    _iter_subworkflows,
+    _native_node_id,
+)
 from gxformat2.layout._sugiyama import extract_graph
 
 
@@ -116,9 +122,46 @@ def roots_leftmost(workflow: dict) -> None:
         assert pos["left"] == min_left, f"root {node_id!r} at left {pos['left']} is not at the minimum left {min_left}"
 
 
-GRAPH_PROPERTY_CHECKERS: Dict[str, Callable[[Any], None]] = {
+#: Base checkers, each validating a single workflow's own node set. Exported for
+#: direct unit testing; the registry below wraps them to recurse into
+#: subworkflows.
+_BASE_CHECKERS: Dict[str, Callable[[dict], None]] = {
     "downstream_right_of_upstream": downstream_right_of_upstream,
     "all_nodes_positioned": all_nodes_positioned,
     "no_position_collisions": no_position_collisions,
     "roots_leftmost": roots_leftmost,
+}
+
+
+def _iter_layout_units(workflow: dict) -> Iterator[dict]:
+    """Yield every workflow whose nodes get their own coordinate space.
+
+    The document itself plus, recursively, each in-file subworkflow -- and each
+    entry of a ``$graph`` document. Mirrors what ``apply_layout(recursive=True)``
+    lays out, so the property contract covers exactly what was positioned.
+    """
+    if _is_graph_document(workflow):
+        graph = workflow["$graph"]
+        entries = graph.values() if isinstance(graph, dict) else graph
+        for entry in entries or []:
+            if isinstance(entry, dict):
+                yield from _iter_layout_units(entry)
+        return
+    yield workflow
+    for subworkflow in _iter_subworkflows(workflow):
+        yield from _iter_layout_units(subworkflow)
+
+
+def _recursive_checker(checker: Callable[[dict], None]) -> Callable[[Any], None]:
+    """Wrap a single-workflow checker to run against every laid-out unit."""
+
+    def wrapped(workflow: dict) -> None:
+        for unit in _iter_layout_units(workflow):
+            checker(unit)
+
+    return wrapped
+
+
+GRAPH_PROPERTY_CHECKERS: Dict[str, Callable[[Any], None]] = {
+    name: _recursive_checker(checker) for name, checker in _BASE_CHECKERS.items()
 }

@@ -90,6 +90,18 @@
     - tests/test_export_abstract.py
     - tests/test_interop_tests.py
 
+- file: native/real-amr-gene-detection.ga
+  origin: real
+  format: native
+  description: >
+    Real IWC workflow (bacterial_genomics/amr_gene_detection): 13 nodes, 28
+    edges over 4 layers. A dense, real-world graph where the ``layered`` layout
+    strategy visibly reduces edge crossings versus ``topological`` (13 -> 2).
+    Used by the layout crossing-reduction test and the gxwf-layout docs.
+  tests:
+    - tests/test_layout.py
+    - tests/test_interop_tests.py
+
 - file: native/real-ecoli-comparison.ga
   origin: real
   format: native

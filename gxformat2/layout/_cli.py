@@ -5,8 +5,6 @@ document. For Format2 ``.gxwf.yml`` files it uses a round-trip YAML loader so
 comments, key order, and quoting in hand-authored sources are preserved -- only
 ``position`` records are added/updated. Native ``.ga`` files are JSON and are
 rewritten with ``json``.
-
-See galaxyproject/galaxy#22954.
 """
 
 from __future__ import annotations
@@ -42,10 +40,12 @@ def to_layout(
     *,
     strategy: str = "topological",
     overwrite: bool = False,
+    recursive: bool = True,
 ) -> None:
     """Apply layout to the workflow at ``input_path``, writing to ``output_path``.
 
-    When ``output_path`` is None the input file is updated in place.
+    When ``output_path`` is None the input file is updated in place. When
+    ``recursive`` (the default) in-file subworkflows are laid out too.
     """
     if output_path is None:
         output_path = input_path
@@ -53,7 +53,7 @@ def to_layout(
     if _is_native_path(input_path):
         with open(input_path) as f:
             workflow = json.load(f)
-        apply_layout(workflow, strategy=strategy, overwrite=overwrite)
+        apply_layout(workflow, strategy=strategy, overwrite=overwrite, recursive=recursive)
         with open(output_path, "w") as f:
             f.write(json.dumps(workflow, indent=4) + "\n")
     else:
@@ -61,7 +61,7 @@ def to_layout(
         yaml.preserve_quotes = True
         with open(input_path) as f:
             workflow = yaml.load(f)
-        apply_layout(workflow, strategy=strategy, overwrite=overwrite)
+        apply_layout(workflow, strategy=strategy, overwrite=overwrite, recursive=recursive)
         with open(output_path, "w") as f:
             yaml.dump(workflow, f)
 
@@ -77,6 +77,7 @@ def main(argv: Optional[Sequence[str]] = None) -> None:
         args.output_path,
         strategy=args.strategy,
         overwrite=args.overwrite,
+        recursive=args.recursive,
     )
 
 
@@ -105,5 +106,14 @@ def _parser():
         "--overwrite",
         action="store_true",
         help="overwrite existing explicit positions (default: only fill missing / 'auto')",
+    )
+    parser.add_argument(
+        "--no-recursive",
+        dest="recursive",
+        action="store_false",
+        help=(
+            "do not lay out embedded in-file subworkflows (default: recurse into "
+            "Format2 'run:' blocks, native 'subworkflow:' blocks, and $graph entries)"
+        ),
     )
     return parser

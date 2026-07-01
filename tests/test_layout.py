@@ -183,6 +183,83 @@ def test_layered_reduces_crossings_vs_topological():
     assert crossings("layered") == 0
 
 
+def test_layered_reduces_crossings_on_real_workflow():
+    # Real IWC workflow (bacterial_genomics/amr_gene_detection): a dense,
+    # 4-layer graph where barycenter reordering materially untangles the edges.
+    # topological is the byte-locked cross-language layout so its count is
+    # stable (13); layered coordinates are not a contract, so assert only that
+    # it stays well below topological rather than pinning an exact value.
+    fixture = "real-amr-gene-detection.ga"
+
+    def crossings(strategy):
+        node_ids, edges = extract_graph(cytoscape_elements(load(fixture), layout="preset"))
+        successors: dict = {n: [] for n in node_ids}
+        for source, target in edges:
+            successors[source].append(target)
+        positions = layout_positions(load(fixture), strategy=strategy)
+        by_col: dict = {}
+        for node_id, pos in positions.items():
+            by_col.setdefault(pos["left"], []).append((pos["top"], node_id))
+        layers = [[nid for _, nid in sorted(by_col[left])] for left in sorted(by_col)]
+        return _count_all_crossings(layers, successors)
+
+    assert crossings("topological") == 13
+    assert crossings("layered") <= 3
+    assert crossings("layered") < crossings("topological")
+
+
+def test_apply_layout_recurses_into_format2_embedded_run():
+    wf = load("synthetic-tool-with-inline-subworkflow.gxwf.yml")
+    apply_layout(wf, overwrite=True)
+    sub = wf["steps"]["nested"]["run"]
+    # Inner nodes laid out in the subworkflow's own coordinate space.
+    assert sub["inputs"]["y"]["position"] == {"left": 0, "top": 0}
+    assert sub["steps"]["inner_tool"]["position"] == {"left": 220, "top": 0}
+
+
+def test_apply_layout_recurses_into_native_subworkflow():
+    wf = load("synthetic-outer-inline-subworkflow.ga")
+    apply_layout(wf, overwrite=True)
+    inner = wf["steps"]["1"]["subworkflow"]["steps"]
+    assert inner["0"]["position"] == {"left": 0, "top": 0}
+    assert inner["1"]["position"] == {"left": 220, "top": 0}
+
+
+def test_apply_layout_lays_out_every_graph_entry():
+    wf = load("synthetic-graph-with-subworkflow.gxwf.yml")
+    apply_layout(wf, overwrite=True)
+    by_id = {entry["id"]: entry for entry in wf["$graph"]}
+    assert by_id["subworkflow1"]["steps"]["inner_tool"]["position"] == {"left": 220, "top": 0}
+    assert by_id["main"]["steps"]["nested_workflow"]["position"] == {"left": 440, "top": 0}
+
+
+def test_apply_layout_recursive_false_skips_subworkflows():
+    wf = load("synthetic-tool-with-inline-subworkflow.gxwf.yml")
+    apply_layout(wf, overwrite=True, recursive=False)
+    # Outer subworkflow step still positioned...
+    assert wf["steps"]["nested"]["position"] == {"left": 220, "top": 100}
+    # ...but the embedded workflow's nodes are left untouched.
+    assert "position" not in wf["steps"]["nested"]["run"]["steps"]["inner_tool"]
+
+
+def test_apply_layout_does_not_follow_external_run_reference():
+    # A string run: (external URL/file) is a single node here and is not
+    # descended into -- only the outer step gets a position.
+    wf = load("synthetic-url-run-yml.gxwf.yml")
+    apply_layout(wf, overwrite=True)
+    assert wf["steps"]["nested"]["position"] == {"left": 220, "top": 0}
+    assert isinstance(wf["steps"]["nested"]["run"], str)
+
+
+def test_cli_no_recursive_flag_skips_subworkflows(tmp_path):
+    src = get_path("synthetic-tool-with-inline-subworkflow.gxwf.yml")
+    dest = tmp_path / "wf.gxwf.yml"
+    dest.write_text(open(src).read())
+    main([str(dest), "--overwrite", "--no-recursive"])
+    laid = load(str(dest))
+    assert "position" not in laid["steps"]["nested"]["run"]["steps"]["inner_tool"]
+
+
 def test_cli_preserves_comments(tmp_path):
     src = get_path("synthetic-comments-dict.gxwf.yml")
     dest = tmp_path / "out.gxwf.yml"
