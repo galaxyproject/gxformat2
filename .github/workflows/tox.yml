@@ -3,6 +3,7 @@ on: [push, pull_request]
 concurrency:
   group: tox-${{ github.ref }}
   cancel-in-progress: true
+permissions: {}
 jobs:
   build:
     runs-on: ubuntu-latest

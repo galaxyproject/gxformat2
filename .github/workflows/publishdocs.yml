@@ -3,8 +3,9 @@ on: [push, pull_request]
 concurrency:
   group: docs-${{ github.ref }}
   cancel-in-progress: true
+permissions: {}
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
@@ -22,9 +23,23 @@ jobs:
     - name: Build docs
       run: |
         USE_VENV=0 SKIP_JAVA=1 SKIP_TYPESCRIPT=1 bash build_schema.sh
+    - uses: actions/upload-artifact@v7
+      with:
+        name: schema
+        path: dist/schema
+  deploy:
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'galaxyproject'
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v6 # zizmor: ignore[artipacked] deploy needs the persisted token to push to gh-pages
+    - uses: actions/download-artifact@v8
+      with:
+        name: schema
+        path: dist/schema
     - name: Deploy Docs
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository_owner == 'galaxyproject'
       uses: JamesIves/github-pages-deploy-action@releases/v4
       with:
         folder: dist/schema
-
