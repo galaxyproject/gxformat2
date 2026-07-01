@@ -66,12 +66,12 @@ def _is_native(workflow: dict) -> bool:
 
 
 def _is_graph_document(workflow: Any) -> bool:
-    """True for a ``$graph`` multi-workflow document (many workflows, one file)."""
+    """Report whether ``workflow`` is a ``$graph`` multi-workflow document (many workflows, one file)."""
     return isinstance(workflow, dict) and "$graph" in workflow and "class" not in workflow
 
 
 def _is_embedded_workflow(value: Any) -> bool:
-    """True for an in-file subworkflow document embedded in a step.
+    """Report whether ``value`` is an in-file subworkflow document embedded in a step.
 
     Covers both a Format2 ``run:`` mapping (``class: GalaxyWorkflow``) and a
     native ``subworkflow:`` mapping (``a_galaxy_workflow: "true"``). String
