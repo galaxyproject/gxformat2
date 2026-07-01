@@ -139,9 +139,7 @@ def _count_all_crossings(layers: List[List[str]], successors: Dict[str, List[str
     return sum(_count_crossings_between(layers[col], layers[col + 1], successors) for col in range(len(layers) - 1))
 
 
-def _order_by_barycenter(
-    layer: List[str], neighbors: Dict[str, List[str]], pos_in_fixed: Dict[str, int]
-) -> List[str]:
+def _order_by_barycenter(layer: List[str], neighbors: Dict[str, List[str]], pos_in_fixed: Dict[str, int]) -> List[str]:
     """Reorder ``layer`` by the mean position of each node's fixed neighbors.
 
     Nodes with no neighbor in the fixed layer keep their current relative
