@@ -6,7 +6,7 @@ UNLABELED_INPUT_PREFIX = "_unlabeled_input_"
 UNLABELED_STEP_PREFIX = "_unlabeled_step_"
 
 
-def unlabeled_node_id(label: Optional[str], step_id, is_input: bool) -> str:
+def unlabeled_node_id(label: str | None, step_id, is_input: bool) -> str:
     """Node id for a workflow step: its label, else a synthetic unlabeled sentinel.
 
     Single source of truth for the native-step → Format2-label mapping, shared by
