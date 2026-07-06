@@ -6,6 +6,19 @@ UNLABELED_INPUT_PREFIX = "_unlabeled_input_"
 UNLABELED_STEP_PREFIX = "_unlabeled_step_"
 
 
+def unlabeled_node_id(label: str | None, step_id, is_input: bool) -> str:
+    """Node id for a workflow step: its label, else a synthetic unlabeled sentinel.
+
+    Single source of truth for the native-step → Format2-label mapping, shared by
+    native→Format2 conversion and by layout position matching, so the two cannot
+    drift.
+    """
+    if label is not None:
+        return label
+    prefix = UNLABELED_INPUT_PREFIX if is_input else UNLABELED_STEP_PREFIX
+    return f"{prefix}{step_id}"
+
+
 class Labels:
     """Track labels assigned and generate anonymous ones."""
 

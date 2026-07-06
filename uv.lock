@@ -745,6 +745,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pyyaml" },
     { name = "requests" },
+    { name = "ruamel-yaml" },
     { name = "schema-salad" },
     { name = "typing-extensions" },
 ]
@@ -797,6 +798,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.0" },
     { name = "pyyaml" },
     { name = "requests" },
+    { name = "ruamel-yaml", specifier = ">=0.17.6" },
     { name = "schema-salad", specifier = ">8.7.20241010092723" },
     { name = "typing-extensions" },
 ]

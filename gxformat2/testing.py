@@ -90,6 +90,12 @@ class TestCase(BaseModel):
     operation: str
     expect_error: bool = False
     assertions: list[Assertion] = []
+    # Named whole-result structural checks (e.g. layout graph properties).
+    # Each name is resolved against a checker registry injected by the caller;
+    # the checker takes the operation result and raises on violation. The names
+    # are a language-agnostic contract — other languages reimplement the
+    # checkers, not the coordinates.
+    graph_properties: list[str] = []
 
 
 class ExpectationSuite(BaseModel):
@@ -233,13 +239,18 @@ def run_declarative_case(
     case: TestCase,
     operations: dict[str, Callable[..., Any]],
     load_fixture: Callable[[str], Any],
+    graph_property_checkers: dict[str, Callable[[Any], None]] | None = None,
 ):
     """Execute one declarative test case.
 
     Args:
-        case: TestCase with fixture, operation, and optionally assertions / expect_error
+        case: TestCase with fixture, operation, and optionally assertions /
+            graph_properties / expect_error
         operations: mapping of operation name to callable
         load_fixture: callable that takes a fixture name and returns the loaded workflow dict
+        graph_property_checkers: optional mapping of property name to a checker
+            ``(result) -> None`` (raises on violation). Required only when a
+            case lists ``graph_properties``.
     """
     operation = operations[case.operation]
 
@@ -253,6 +264,13 @@ def run_declarative_case(
     result = operation(load_fixture(case.fixture))
     for assertion in case.assertions:
         run_assertion(result, assertion)
+    checkers = graph_property_checkers or {}
+    for property_name in case.graph_properties:
+        if property_name not in checkers:
+            raise KeyError(
+                f"Unknown graph property {property_name!r}; no checker registered. Known: {sorted(checkers)}"
+            )
+        checkers[property_name](result)
 
 
 class DeclarativeTestSuite:
@@ -277,10 +295,12 @@ class DeclarativeTestSuite:
         load_fixture: Callable[[str], Any],
         expectations_dir: str | None = None,
         cases: list[tuple[str, TestCase]] | None = None,
+        graph_property_checkers: dict[str, Callable[[Any], None]] | None = None,
     ):
         """Initialize with operations map and fixture loader."""
         self.operations = operations
         self.load_fixture = load_fixture
+        self.graph_property_checkers = graph_property_checkers
         if cases is not None:
             self._cases = list(cases)
         elif expectations_dir is not None:
@@ -307,4 +327,9 @@ class DeclarativeTestSuite:
 
     def run(self, test_id: str, case: TestCase):
         """Execute a single declarative test case."""
-        run_declarative_case(case, self.operations, self.load_fixture)
+        run_declarative_case(
+            case,
+            self.operations,
+            self.load_fixture,
+            graph_property_checkers=self.graph_property_checkers,
+        )

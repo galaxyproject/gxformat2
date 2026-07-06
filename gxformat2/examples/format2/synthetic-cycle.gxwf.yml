@@ -1,0 +1,15 @@
+class: GalaxyWorkflow
+doc: |
+  Invalid cyclic workflow: step ``a`` consumes ``b``'s output and ``b`` consumes
+  ``a``'s output. Galaxy rejects cycles at load time; gxwf-layout must raise
+  rather than bake meaningless positions.
+inputs: {}
+steps:
+  a:
+    tool_id: cat1
+    in:
+      input1: b/out_file1
+  b:
+    tool_id: cat1
+    in:
+      input1: a/out_file1
