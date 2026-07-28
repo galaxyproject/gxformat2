@@ -513,11 +513,11 @@ if __name__ == "__main__":
 
 
 __all__ = (
-    "main",
-    "lint_format2",
-    "lint_ga",
     "lint_best_practices",
     "lint_best_practices_format2",
     "lint_best_practices_ga",
+    "lint_format2",
+    "lint_ga",
     "lint_pydantic_validation",
+    "main",
 )

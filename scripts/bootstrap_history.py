@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Little script to make HISTORY.rst more easy to format properly, lots TODO
 # pull message down and embed, use arg parse, handle multiple, etc...
 import os
@@ -15,7 +14,7 @@ new_path = [PROJECT_DIRECTORY]
 new_path.extend(sys.path[1:])  # remove scripts/ from the path
 sys.path = new_path
 
-import gxformat2 as project  # noqa: E402
+import gxformat2 as project
 
 PROJECT_AUTHOR = project.PROJECT_OWNER
 PROJECT_NAME = project.PROJECT_NAME
@@ -140,15 +139,15 @@ def main(argv):
     message = ""
     if len(argv) > 2:
         message = argv[2]
-    elif not (ident.startswith("pr") or ident.startswith("issue")):
-        api_url = urljoin(PROJECT_API, "commits/%s" % ident)
+    elif not (ident.startswith(("pr", "issue"))):
+        api_url = urljoin(PROJECT_API, f"commits/{ident}")
         req = requests.get(api_url).json()
         commit = req["commit"]
         message = commit["message"]
         message = get_first_sentence(message)
     elif requests is not None and ident.startswith("pr"):
         pull_request = ident[len("pr") :]
-        api_url = urljoin(PROJECT_API, "pulls/%s" % pull_request)
+        api_url = urljoin(PROJECT_API, f"pulls/{pull_request}")
         req_response = requests.get(api_url)
         req_response.raise_for_status()
         req = req_response.json()
@@ -158,7 +157,7 @@ def main(argv):
         message += f" (thanks to `@{login}`_)."
     elif requests is not None and ident.startswith("issue"):
         issue = ident[len("issue") :]
-        api_url = urljoin(PROJECT_API, "issues/%s" % issue)
+        api_url = urljoin(PROJECT_API, f"issues/{issue}")
         req = requests.get(api_url).json()
         message = req["title"]
     else:
@@ -168,17 +167,17 @@ def main(argv):
 
     if ident.startswith("pr"):
         pull_request = ident[len("pr") :]
-        text = ".. _Pull Request {0}: {1}/pull/{0}".format(pull_request, PROJECT_URL)
+        text = f".. _Pull Request {pull_request}: {PROJECT_URL}/pull/{pull_request}"
         history = extend(".. github_links", text)
         to_doc += f"`Pull Request {pull_request}`_"
     elif ident.startswith("issue"):
         issue = ident[len("issue") :]
-        text = ".. _Issue {0}: {1}/issues/{0}".format(issue, PROJECT_URL)
+        text = f".. _Issue {issue}: {PROJECT_URL}/issues/{issue}"
         history = extend(".. github_links", text)
         to_doc += f"`Issue {issue}`_"
     else:
         short_rev = ident[:7]
-        text = ".. _{0}: {1}/commit/{0}".format(short_rev, PROJECT_URL)
+        text = f".. _{short_rev}: {PROJECT_URL}/commit/{short_rev}"
         history = extend(".. github_links", text)
         to_doc += f"{short_rev}_"
 

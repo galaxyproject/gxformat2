@@ -11,6 +11,8 @@ from __future__ import annotations
 import enum
 from typing import ClassVar
 
+from typing_extensions import Self
+
 
 class LintLevel(str, enum.Enum):
     """Lint severity levels."""
@@ -45,7 +47,7 @@ class LintMessage(str):
         level: str = LEVEL_WARN,
         linter: str | None = None,
         json_pointer: str = "",
-    ) -> LintMessage:
+    ) -> Self:
         """Construct a ``LintMessage`` with prose and structured metadata."""
         self = super().__new__(cls, message)
         self.level = level

@@ -3,10 +3,8 @@
 from typing import (
     Any,
     cast,
-    Union,
+    Literal,
 )
-
-from typing import Literal
 
 from gxformat2.normalized._format2 import resolve_source_reference as _resolve_source_impl
 
@@ -24,7 +22,7 @@ _GxFormat2StepTypeAlias = Literal[
     "input_collection",
     "parameter",
 ]
-_StepTypes = Union[_NativeGalaxyStepType, _GxFormat2StepTypeAlias]
+_StepTypes = _NativeGalaxyStepType | _GxFormat2StepTypeAlias
 
 
 _STEP_TYPES = [
@@ -97,7 +95,7 @@ def setup_connected_values(value, key: str = "", append_to: dict[str, list] | No
                 append_link(key, list_v)
                 new_list_values.append(None)
             else:
-                new_key = "%s_%d" % (key, i)
+                new_key = f"{key}_{i}"
                 new_list_values.append(recurse(list_v, new_key))
         return new_list_values
     else:

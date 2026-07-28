@@ -25,9 +25,9 @@ import json
 import logging
 import os
 import uuid as uuid_mod
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Literal, overload, TypedDict
-from collections.abc import Callable
 
 from pydantic import Field
 
@@ -281,9 +281,9 @@ def ensure_format2(
         result = workflow
     elif isinstance(workflow, GalaxyWorkflow):
         result = normalized_format2(workflow, strict_structure=options.strict_structure)
-    elif isinstance(workflow, (NativeGalaxyWorkflow, NormalizedNativeWorkflow)):
-        result = to_format2(workflow, options=options, expand=False)
-    elif isinstance(workflow, dict) and workflow.get("a_galaxy_workflow") == "true":
+    elif isinstance(workflow, (NativeGalaxyWorkflow, NormalizedNativeWorkflow)) or (
+        isinstance(workflow, dict) and workflow.get("a_galaxy_workflow") == "true"
+    ):
         result = to_format2(workflow, options=options, expand=False)
     else:
         result = normalized_format2(workflow, strict_structure=options.strict_structure)
@@ -891,7 +891,7 @@ def _replace_anonymous_output_references(
                     break
 
 
-_CREATOR_CLASS_MAP: dict[str, type[CreatorPerson] | type[CreatorOrganization]] = {
+_CREATOR_CLASS_MAP: dict[str, type[CreatorPerson | CreatorOrganization]] = {
     "Person": CreatorPerson,
     "Organization": CreatorOrganization,
 }
@@ -910,7 +910,7 @@ def _convert_creators(
     return result
 
 
-_COMMENT_TYPE_MAP: dict[str, type[TextComment] | type[MarkdownComment] | type[FrameComment] | type[FreehandComment]] = {
+_COMMENT_TYPE_MAP: dict[str, type[TextComment | MarkdownComment | FrameComment | FreehandComment]] = {
     "text": TextComment,
     "markdown": MarkdownComment,
     "frame": FrameComment,
@@ -1036,23 +1036,27 @@ def to_native(
 
     # Handle $graph + deduplicate_subworkflows before normalization
     deduplicated_subworkflows: dict[str, NormalizedNativeWorkflow] | None = None
-    if isinstance(workflow, dict) and "$graph" in workflow and "class" not in workflow:
-        if options.deduplicate_subworkflows:
-            deduplicated_subworkflows = {}
-            graph = workflow["$graph"]
-            main_dict = None
-            for entry in graph:
-                graph_id = entry.get("id")
-                if graph_id == "main":
-                    main_dict = entry
-                elif graph_id:
-                    sub_wf = normalized_format2(entry, strict_structure=options.strict_structure)
-                    sub_ctx = _ConversionContext(options)
-                    _register_labels(sub_wf, sub_ctx)
-                    deduplicated_subworkflows[graph_id] = _build_native_workflow(sub_wf, sub_ctx)
-            if main_dict is None:
-                raise Exception("$graph has no 'main' workflow")
-            workflow = main_dict
+    if (
+        isinstance(workflow, dict)
+        and "$graph" in workflow
+        and "class" not in workflow
+        and options.deduplicate_subworkflows
+    ):
+        deduplicated_subworkflows = {}
+        graph = workflow["$graph"]
+        main_dict = None
+        for entry in graph:
+            graph_id = entry.get("id")
+            if graph_id == "main":
+                main_dict = entry
+            elif graph_id:
+                sub_wf = normalized_format2(entry, strict_structure=options.strict_structure)
+                sub_ctx = _ConversionContext(options)
+                _register_labels(sub_wf, sub_ctx)
+                deduplicated_subworkflows[graph_id] = _build_native_workflow(sub_wf, sub_ctx)
+        if main_dict is None:
+            raise Exception("$graph has no 'main' workflow")
+        workflow = main_dict
 
     if not isinstance(workflow, NormalizedFormat2):
         workflow = normalized_format2(workflow, strict_structure=options.strict_structure)
@@ -1683,7 +1687,7 @@ def _default_position(position: Any, order_index: int) -> NativeStepPosition:
     return NativeStepPosition(left=10 * order_index, top=10 * order_index)
 
 
-_NATIVE_CREATOR_MAP: dict[str, type[NativeCreatorPerson] | type[NativeCreatorOrganization]] = {
+_NATIVE_CREATOR_MAP: dict[str, type[NativeCreatorPerson | NativeCreatorOrganization]] = {
     "Person": NativeCreatorPerson,
     "Organization": NativeCreatorOrganization,
 }

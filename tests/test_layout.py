@@ -10,7 +10,7 @@ import json
 
 import pytest
 
-from gxformat2.cytoscape import cytoscape_elements, COL_STRIDE, topological_positions
+from gxformat2.cytoscape import COL_STRIDE, cytoscape_elements, topological_positions
 from gxformat2.examples import get_path, load
 from gxformat2.layout import apply_layout, AUTO, layout_positions, LayoutCycleError
 from gxformat2.layout._cli import main, to_layout
@@ -254,7 +254,8 @@ def test_apply_layout_does_not_follow_external_run_reference():
 def test_cli_no_recursive_flag_skips_subworkflows(tmp_path):
     src = get_path("synthetic-tool-with-inline-subworkflow.gxwf.yml")
     dest = tmp_path / "wf.gxwf.yml"
-    dest.write_text(open(src).read())
+    with open(src) as f:
+        dest.write_text(f.read())
     main([str(dest), "--overwrite", "--no-recursive"])
     laid = load(str(dest))
     assert "position" not in laid["steps"]["nested"]["run"]["steps"]["inner_tool"]
@@ -277,7 +278,8 @@ def test_cli_preserves_comments(tmp_path):
 def test_cli_format2_in_place_adds_positions(tmp_path):
     src = get_path("synthetic-basic.gxwf.yml")
     dest = tmp_path / "wf.gxwf.yml"
-    dest.write_text(open(src).read())
+    with open(src) as f:
+        dest.write_text(f.read())
     main([str(dest)])
     laid = load(str(dest))
     assert laid["steps"]["cat"]["position"] == {"left": 220, "top": 0}
@@ -287,7 +289,8 @@ def test_cli_format2_in_place_adds_positions(tmp_path):
 def test_cli_native_overwrite(tmp_path):
     src = get_path("real-basic-without-step-input-label.ga")
     dest = tmp_path / "wf.ga"
-    dest.write_text(open(src).read())
+    with open(src) as f:
+        dest.write_text(f.read())
     main([str(dest), "--overwrite"])
     with open(dest) as f:
         wf = json.load(f)

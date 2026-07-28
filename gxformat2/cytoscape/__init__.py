@@ -24,6 +24,8 @@ from .models import (
 __all__ = (
     "COL_STRIDE",
     "CYTOSCAPE_JS_TEMPLATE",
+    "LAYOUT_NAMES",
+    "ROW_STRIDE",
     "CytoscapeEdge",
     "CytoscapeEdgeData",
     "CytoscapeElements",
@@ -31,8 +33,6 @@ __all__ = (
     "CytoscapeNode",
     "CytoscapeNodeData",
     "CytoscapePosition",
-    "LAYOUT_NAMES",
-    "ROW_STRIDE",
     "bakes_coordinates",
     "cytoscape_elements",
     "is_layout_name",

@@ -23,16 +23,15 @@ Assertion modes:
 
 import os
 import re
+from collections.abc import Callable, Iterator
 from typing import (
     Any,
-    Union,
 )
-from collections.abc import Callable, Iterator
 
 import yaml
 from pydantic import BaseModel, model_validator
 
-PathElement = Union[str, int, dict[str, Any]]
+PathElement = str | int | dict[str, Any]
 
 _UNSET = object()
 

@@ -92,6 +92,9 @@ exclude = [
     "gxformat2/schema/native_strict.py",
 ]
 
+[tool.ruff.lint]
+ignore = ["BLE001", "I001", "PLR1711", "RET501", "SIM102", "TRY002"]
+
 [tool.isort]
 profile = "black"
 line_length = 120

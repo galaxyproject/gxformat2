@@ -273,7 +273,7 @@ steps:
     assert subworkflow_step is not None
     inner_steps = subworkflow_step["run"].get("steps", {})
     if isinstance(inner_steps, dict):
-        inner_tool = list(inner_steps.values())[0]
+        inner_tool = next(iter(inner_steps.values()))
     else:
         inner_tool = inner_steps[0]
     assert inner_tool.get("state") == {"from_callback": True}

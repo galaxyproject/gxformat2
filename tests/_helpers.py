@@ -47,10 +47,8 @@ def assert_valid_native(as_dict_native):
     assert as_dict_native["a_galaxy_workflow"] == "true"
     assert as_dict_native["format-version"] == "0.1"
     assert "steps" in as_dict_native
-    step_count = 0
-    for key, value in as_dict_native["steps"].items():
+    for step_count, (key, value) in enumerate(as_dict_native["steps"].items()):
         assert key == str(step_count)
-        step_count += 1
         assert "type" in value
         assert value["type"] in NativeStepType.__members__
 
@@ -84,8 +82,8 @@ def to_example_path(input_path: str, examples_dir: str, extension: str):
     if not os.path.exists(examples_dir):
         os.makedirs(examples_dir)
     rel_path = os.path.join(examples_dir, os.path.basename(input_path))
-    root, ext = os.path.splitext(rel_path)
+    root, _ = os.path.splitext(rel_path)
     # split again for something like .gxwf.yml
     if root.endswith(".gxwf"):
-        root, ext = os.path.splitext(root)
+        root, _ = os.path.splitext(root)
     return root + "." + extension

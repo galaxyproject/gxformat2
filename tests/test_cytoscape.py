@@ -25,18 +25,20 @@ TEST_CYTOSCAPE_EXAMPLES = os.path.join(TEST_INTEROP_EXAMPLES, "cytoscape")
 
 
 def test_main_output_json():
-    out_file = tempfile.NamedTemporaryFile(prefix="cytoscape_elements", suffix=".json")
-    main([EXAMPLE_PATH, out_file.name])
-    with open(out_file.name) as f:
-        elements = json.load(f)
-    assert isinstance(elements, list)
-    assert "</body>" not in open(out_file.name).read()
+    with tempfile.NamedTemporaryFile(prefix="cytoscape_elements", suffix=".json") as out_file:
+        main([EXAMPLE_PATH, out_file.name])
+        with open(out_file.name) as f:
+            elements = json.load(f)
+        assert isinstance(elements, list)
+        with open(out_file.name) as f:
+            assert "</body>" not in f.read()
 
 
 def test_main_output_html():
-    out_file = tempfile.NamedTemporaryFile(prefix="cytoscape_elements", suffix=".html")
-    main([EXAMPLE_PATH, out_file.name])
-    assert "</body>" in open(out_file.name).read()
+    with tempfile.NamedTemporaryFile(prefix="cytoscape_elements", suffix=".html") as out_file:
+        main([EXAMPLE_PATH, out_file.name])
+        with open(out_file.name) as f:
+            assert "</body>" in f.read()
 
 
 def test_render_html():

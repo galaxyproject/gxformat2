@@ -9,8 +9,8 @@ import io
 import json
 import sys
 from collections import OrderedDict
-from typing import Any, Optional
 from collections.abc import Callable
+from typing import Any
 
 from .normalized import to_format2
 from .options import ConversionOptions
@@ -19,7 +19,7 @@ from .yaml import ordered_dump
 
 log = __import__("logging").getLogger(__name__)
 
-ConvertToolStateFn = Optional[Callable[[dict], Optional[dict[str, Any]]]]
+ConvertToolStateFn = Callable[[dict], dict[str, Any] | None] | None
 """Callback to convert a native tool step's tool_state to format2 state.
 
 Accepts a native step dict (with tool_id, tool_version, tool_state).

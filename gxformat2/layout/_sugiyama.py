@@ -18,8 +18,6 @@ so any conforming reimplementation is free to differ on exact coordinates.
 
 from __future__ import annotations
 
-from typing import Dict, List, Tuple
-
 from gxformat2.cytoscape.models import CytoscapeElements, CytoscapePosition
 
 COL_STRIDE = 220
@@ -36,10 +34,10 @@ class LayoutCycleError(ValueError):
     """
 
 
-Edge = Tuple[str, str]
+Edge = tuple[str, str]
 
 
-def extract_graph(elements: CytoscapeElements) -> Tuple[List[str], List[Edge]]:
+def extract_graph(elements: CytoscapeElements) -> tuple[list[str], list[Edge]]:
     """Pull ``(node_ids, edges)`` out of cytoscape elements.
 
     Edges referencing a node that is not in the element set (e.g. an output of
@@ -48,7 +46,7 @@ def extract_graph(elements: CytoscapeElements) -> Tuple[List[str], List[Edge]]:
     """
     node_ids = [n.data.id for n in elements.nodes]
     id_set = set(node_ids)
-    edges: List[Edge] = []
+    edges: list[Edge] = []
     for edge in elements.edges:
         source = edge.data.source
         target = edge.data.target
@@ -57,7 +55,7 @@ def extract_graph(elements: CytoscapeElements) -> Tuple[List[str], List[Edge]]:
     return node_ids, edges
 
 
-def layer_assignment(node_ids: List[str], edges: List[Edge]) -> Dict[str, int]:
+def layer_assignment(node_ids: list[str], edges: list[Edge]) -> dict[str, int]:
     """Longest-path layering via Kahn topological sort.
 
     Returns ``column`` mapping each node id to its 0-based layer (column =
@@ -69,14 +67,14 @@ def layer_assignment(node_ids: List[str], edges: List[Edge]) -> Dict[str, int]:
     assignment is identical to what the topological layout would compute.
     """
     index_by_id = {node_id: i for i, node_id in enumerate(node_ids)}
-    incoming: Dict[str, List[str]] = {node_id: [] for node_id in node_ids}
-    dependents: Dict[str, List[str]] = {node_id: [] for node_id in node_ids}
+    incoming: dict[str, list[str]] = {node_id: [] for node_id in node_ids}
+    dependents: dict[str, list[str]] = {node_id: [] for node_id in node_ids}
     for source, target in edges:
         incoming[target].append(source)
         dependents[source].append(target)
 
     in_degree = {node_id: len(incoming[node_id]) for node_id in node_ids}
-    column: Dict[str, int] = {}
+    column: dict[str, int] = {}
     visited = 0
 
     queue = [node_id for node_id in node_ids if in_degree[node_id] == 0]
@@ -120,7 +118,7 @@ def check_acyclic(elements: CytoscapeElements) -> None:
 MAX_SWEEPS = 8
 
 
-def _count_crossings_between(upper: List[str], lower: List[str], successors: Dict[str, List[str]]) -> int:
+def _count_crossings_between(upper: list[str], lower: list[str], successors: dict[str, list[str]]) -> int:
     """Count edge crossings between two adjacent, ordered layers."""
     pos_lower = {node_id: i for i, node_id in enumerate(lower)}
     # Edges as (upper_index, lower_index), in upper order.
@@ -135,11 +133,11 @@ def _count_crossings_between(upper: List[str], lower: List[str], successors: Dic
     return crossings
 
 
-def _count_all_crossings(layers: List[List[str]], successors: Dict[str, List[str]]) -> int:
+def _count_all_crossings(layers: list[list[str]], successors: dict[str, list[str]]) -> int:
     return sum(_count_crossings_between(layers[col], layers[col + 1], successors) for col in range(len(layers) - 1))
 
 
-def _order_by_barycenter(layer: List[str], neighbors: Dict[str, List[str]], pos_in_fixed: Dict[str, int]) -> List[str]:
+def _order_by_barycenter(layer: list[str], neighbors: dict[str, list[str]], pos_in_fixed: dict[str, int]) -> list[str]:
     """Reorder ``layer`` by the mean position of each node's fixed neighbors.
 
     Nodes with no neighbor in the fixed layer keep their current relative
@@ -147,7 +145,7 @@ def _order_by_barycenter(layer: List[str], neighbors: Dict[str, List[str]], pos_
     and isolated nodes -- preserve input order, making the result deterministic.
     """
 
-    def key(indexed: Tuple[int, str]) -> float:
+    def key(indexed: tuple[int, str]) -> float:
         idx, node_id = indexed
         fixed = [pos_in_fixed[m] for m in neighbors[node_id] if m in pos_in_fixed]
         return sum(fixed) / len(fixed) if fixed else float(idx)
@@ -155,7 +153,7 @@ def _order_by_barycenter(layer: List[str], neighbors: Dict[str, List[str]], pos_
     return [node_id for _, node_id in sorted(enumerate(layer), key=key)]
 
 
-def _sweep(layers: List[List[str]], neighbors: Dict[str, List[str]], down: bool) -> None:
+def _sweep(layers: list[list[str]], neighbors: dict[str, list[str]], down: bool) -> None:
     """One barycenter sweep, reordering free layers in place.
 
     ``down`` sweeps left-to-right ordering each layer by its predecessors in the
@@ -169,7 +167,7 @@ def _sweep(layers: List[List[str]], neighbors: Dict[str, List[str]], down: bool)
         layers[col] = _order_by_barycenter(layers[col], neighbors, pos_in_fixed)
 
 
-def layered_positions(elements: CytoscapeElements) -> Dict[str, CytoscapePosition]:
+def layered_positions(elements: CytoscapeElements) -> dict[str, CytoscapePosition]:
     """Sugiyama-style layered layout with barycenter crossing reduction.
 
     Phases: layer assignment (longest path, shared with ``topological``),
@@ -195,12 +193,12 @@ def layered_positions(elements: CytoscapeElements) -> Dict[str, CytoscapePositio
     column = layer_assignment(node_ids, edges)  # raises LayoutCycleError on a cycle
 
     max_col = max(column.values(), default=-1)
-    layers: List[List[str]] = [[] for _ in range(max_col + 1)]
+    layers: list[list[str]] = [[] for _ in range(max_col + 1)]
     for node_id in node_ids:  # declaration order seeds a stable initial ordering
         layers[column[node_id]].append(node_id)
 
-    predecessors: Dict[str, List[str]] = {node_id: [] for node_id in node_ids}
-    successors: Dict[str, List[str]] = {node_id: [] for node_id in node_ids}
+    predecessors: dict[str, list[str]] = {node_id: [] for node_id in node_ids}
+    successors: dict[str, list[str]] = {node_id: [] for node_id in node_ids}
     for source, target in edges:
         successors[source].append(target)
         predecessors[target].append(source)
@@ -217,7 +215,7 @@ def layered_positions(elements: CytoscapeElements) -> Dict[str, CytoscapePositio
         if best_crossings == 0:
             break
 
-    positions: Dict[str, CytoscapePosition] = {}
+    positions: dict[str, CytoscapePosition] = {}
     for col, layer in enumerate(best_layers):
         for row, node_id in enumerate(layer):
             positions[node_id] = CytoscapePosition(x=col * COL_STRIDE, y=row * ROW_STRIDE)

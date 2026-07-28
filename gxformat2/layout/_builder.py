@@ -11,8 +11,9 @@ degenerate ``(10*i, 10*i)`` diagonal fallback from
 from __future__ import annotations
 
 import copy
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Iterator, Optional, Union
+from typing import Any
 
 from gxformat2._labels import unlabeled_node_id
 from gxformat2.cytoscape import cytoscape_elements, topological_positions
@@ -24,7 +25,7 @@ from gxformat2.schema.gxformat2 import GalaxyWorkflow
 #: Sentinel value for ``position:`` that requests automatic layout.
 AUTO = "auto"
 
-WorkflowInput = Union[dict, str, Path, GalaxyWorkflow, NormalizedFormat2]
+WorkflowInput = dict | str | Path | GalaxyWorkflow | NormalizedFormat2
 
 
 def layout_positions(workflow: WorkflowInput, *, strategy: str = "topological") -> dict[str, dict[str, int]]:
@@ -141,7 +142,7 @@ def _ensure_mapping(value: Any) -> dict:
     return {"type": value}
 
 
-def _format2_node_id(item: Any, key: Optional[str], *, is_input: bool) -> Optional[str]:
+def _format2_node_id(item: Any, key: str | None, *, is_input: bool) -> str | None:
     """Id cytoscape assigns to a Format2 node, used to match computed positions.
 
     Mirrors ``cytoscape._builder``: inputs are identified by id, steps by
