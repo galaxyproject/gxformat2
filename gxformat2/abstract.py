@@ -249,4 +249,4 @@ if __name__ == "__main__":
     sys.exit(main())
 
 
-__all__ = ("main", "from_dict")
+__all__ = ("from_dict", "main")

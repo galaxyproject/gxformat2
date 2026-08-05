@@ -8,11 +8,11 @@ by external validators (Python jsonschema, TypeScript ajv, VSCode YAML extension
 import json
 from typing import (
     Any,
+    Literal,
 )
 
 from pydantic import BaseModel
 from pydantic.json_schema import GenerateJsonSchema
-from typing import Literal
 
 MODE = Literal["validation", "serialization"]
 

@@ -15,7 +15,8 @@ synthesize defaults), and raises ``AssertionError`` on violation.
 
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, Iterator, Tuple
+from collections.abc import Callable, Iterator
+from typing import Any
 
 from gxformat2.cytoscape import cytoscape_elements
 from gxformat2.layout._builder import (
@@ -28,14 +29,14 @@ from gxformat2.layout._builder import (
 from gxformat2.layout._sugiyama import extract_graph
 
 
-def _read_node_positions(workflow: dict) -> Dict[str, dict]:
+def _read_node_positions(workflow: dict) -> dict[str, dict]:
     """Read ``{node_id: position}`` straight from the laid-out document.
 
     Mirrors the id derivation in ``_builder`` (``_format2_node_id`` /
     ``_native_node_id``) so the keys line up with the cytoscape node ids used
     for edges. Nodes without a ``position`` are simply absent from the result.
     """
-    positions: Dict[str, dict] = {}
+    positions: dict[str, dict] = {}
     if _is_native(workflow):
         steps = workflow.get("steps")
         if isinstance(steps, dict):
@@ -62,7 +63,7 @@ def _read_node_positions(workflow: dict) -> Dict[str, dict]:
     return positions
 
 
-def _graph(workflow: dict) -> Tuple[list, list, Dict[str, dict]]:
+def _graph(workflow: dict) -> tuple[list, list, dict[str, dict]]:
     """Return ``(node_ids, edges, positions)`` for ``workflow``."""
     node_ids, edges = extract_graph(cytoscape_elements(workflow, layout="preset"))
     return node_ids, edges, _read_node_positions(workflow)
@@ -101,7 +102,7 @@ def all_nodes_positioned(workflow: dict) -> None:
 def no_position_collisions(workflow: dict) -> None:
     """No two nodes occupy the same ``{left, top}`` coordinate."""
     _node_ids, _edges, positions = _graph(workflow)
-    seen: Dict[Tuple[int, int], str] = {}
+    seen: dict[tuple[int, int], str] = {}
     for node_id, pos in positions.items():
         key = (pos["left"], pos["top"])
         assert key not in seen, f"nodes {seen[key]!r} and {node_id!r} share position {key}"
@@ -125,7 +126,7 @@ def roots_leftmost(workflow: dict) -> None:
 #: Base checkers, each validating a single workflow's own node set. Exported for
 #: direct unit testing; the registry below wraps them to recurse into
 #: subworkflows.
-_BASE_CHECKERS: Dict[str, Callable[[dict], None]] = {
+_BASE_CHECKERS: dict[str, Callable[[dict], None]] = {
     "downstream_right_of_upstream": downstream_right_of_upstream,
     "all_nodes_positioned": all_nodes_positioned,
     "no_position_collisions": no_position_collisions,
@@ -162,6 +163,6 @@ def _recursive_checker(checker: Callable[[dict], None]) -> Callable[[Any], None]
     return wrapped
 
 
-GRAPH_PROPERTY_CHECKERS: Dict[str, Callable[[Any], None]] = {
+GRAPH_PROPERTY_CHECKERS: dict[str, Callable[[Any], None]] = {
     name: _recursive_checker(checker) for name, checker in _BASE_CHECKERS.items()
 }

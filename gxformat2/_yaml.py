@@ -11,6 +11,6 @@ from gxformat2.yaml import (
     ordered_load,
 )
 
-__all__ = ("ordered_load", "ordered_dump")
+__all__ = ("ordered_dump", "ordered_load")
 
 warnings.warn("Importing gxformat2._yaml is deprecated, use gxformat2.yaml instead", DeprecationWarning, stacklevel=2)

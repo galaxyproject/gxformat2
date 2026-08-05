@@ -87,4 +87,4 @@ class BioBlendImporterGalaxyInterface(ImporterGalaxyInterface):
         return self._user_gi.workflows.import_workflow_json(workflow, **kwds)
 
 
-__all__ = ("ImporterGalaxyInterface", "BioBlendImporterGalaxyInterface")
+__all__ = ("BioBlendImporterGalaxyInterface", "ImporterGalaxyInterface")

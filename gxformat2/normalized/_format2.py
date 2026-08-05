@@ -13,10 +13,9 @@ import json
 import os
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Literal, NamedTuple, Union
+from typing import Any, Literal, NamedTuple, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, SerializeAsAny
-from typing import TypeAlias
 
 from gxformat2.schema._input_parameter import input_parameter_class
 from gxformat2.schema.gxformat2 import (
@@ -174,9 +173,7 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
         """
         if isinstance(self.run, GalaxyUserToolStub):
             return True
-        if isinstance(self.run, dict) and self.run.get("class") in INLINE_TOOL_CLASSES:
-            return True
-        return False
+        return isinstance(self.run, dict) and self.run.get("class") in INLINE_TOOL_CLASSES
 
     @property
     def inline_tool_representation(self) -> dict[str, Any] | None:
@@ -732,7 +729,7 @@ _COMMENT_TYPE_MAP = {
 }
 
 
-Format2Comment: TypeAlias = Union[TextComment, MarkdownComment, FrameComment, FreehandComment]
+Format2Comment: TypeAlias = TextComment | MarkdownComment | FrameComment | FreehandComment
 
 
 def _normalize_comments(
@@ -773,7 +770,7 @@ def _resolve_graph(raw: dict[str, Any]) -> dict[str, Any]:
     main: dict[str, Any] | None = None
     for entry in graph:
         if not isinstance(entry, dict):
-            raise Exception("Malformed workflow content in $graph")
+            raise TypeError("Malformed workflow content in $graph")
         if "id" not in entry:
             raise Exception("No subworkflow ID found for entry in $graph.")
         graph_id = entry["id"]

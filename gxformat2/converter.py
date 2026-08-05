@@ -8,8 +8,8 @@ import argparse
 import json
 import os
 import sys
-from typing import Any, Optional
 from collections.abc import Callable
+from typing import Any
 
 from .model import steps_as_list  # noqa: F401 (re-exported for abstract.py, normalize.py)
 from .normalized import to_native
@@ -18,7 +18,7 @@ from .yaml import ordered_load
 
 log = __import__("logging").getLogger(__name__)
 
-NativeStateEncoderFn = Optional[Callable[[dict, dict[str, Any]], Optional[dict[str, Any]]]]
+NativeStateEncoderFn = Callable[[dict, dict[str, Any]], dict[str, Any] | None] | None
 """Callback to encode format2 state back to native tool_state.
 
 Accepts (step, state) where step is the partially-built native step dict

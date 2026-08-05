@@ -348,7 +348,7 @@ def test_format2_to_native_comments_dict():
     comments = native["comments"]
     assert len(comments) == 3
     # Find frame comment
-    frame = [c for c in comments if c["type"] == "frame"][0]
+    frame = next(c for c in comments if c["type"] == "frame")
     assert frame["data"]["title"] == "Preprocessing"
 
 
@@ -356,7 +356,7 @@ def test_format2_to_native_frame_references():
     """contains_steps label strings resolve to step integer indices."""
     native = to_native(WORKFLOW_WITH_COMMENTS_DICT)
     comments = native["comments"]
-    frame = [c for c in comments if c["type"] == "frame"][0]
+    frame = next(c for c in comments if c["type"] == "frame")
     # "cat" step is step index 1 (index 0 is the_input)
     assert 1 in frame["child_steps"]
     # adapter_warning and preprocessing_docs are comment indices 0 and 1
@@ -368,7 +368,7 @@ def test_format2_to_native_mixed_frame_refs():
     """Frame contains_comments with mix of label strings and integer indices."""
     native = to_native(WORKFLOW_WITH_FRAME_MIXED_REFS)
     comments = native["comments"]
-    frame = [c for c in comments if c["type"] == "frame"][0]
+    frame = next(c for c in comments if c["type"] == "frame")
     # "my_note" is comment 0, integer 1 stays as 1
     assert 0 in frame["child_comments"]
     assert 1 in frame["child_comments"]
@@ -408,7 +408,7 @@ def test_comments_round_trip_mixed_refs():
     fmt2 = round_trip(WORKFLOW_WITH_FRAME_MIXED_REFS)
     comments = fmt2["comments"]
     assert isinstance(comments, list)
-    frame = [c for c in comments if c["type"] == "frame"][0]
+    frame = next(c for c in comments if c["type"] == "frame")
     assert "cat" in frame["contains_steps"]
     # my_note should resolve to label, index 1 stays as index (unlabeled)
     assert "my_note" in frame["contains_comments"]

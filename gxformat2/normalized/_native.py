@@ -11,10 +11,9 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Annotated, Any, Union
+from typing import Annotated, Any, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Discriminator, Field, field_validator, Tag
-from typing import TypeAlias
 
 from gxformat2.schema.native import (
     _discriminate_comments,
@@ -43,20 +42,16 @@ from gxformat2.schema.native_strict import NativeGalaxyWorkflow as StrictNativeG
 from ._types import INLINE_TOOL_CLASSES, ToolReference
 
 NativeComment: TypeAlias = Annotated[
-    Union[
-        Annotated[NativeTextComment, Tag("NativeTextComment")],
-        Annotated[NativeMarkdownComment, Tag("NativeMarkdownComment")],
-        Annotated[NativeFrameComment, Tag("NativeFrameComment")],
-        Annotated[NativeFreehandComment, Tag("NativeFreehandComment")],
-    ],
+    Annotated[NativeTextComment, Tag("NativeTextComment")]
+    | Annotated[NativeMarkdownComment, Tag("NativeMarkdownComment")]
+    | Annotated[NativeFrameComment, Tag("NativeFrameComment")]
+    | Annotated[NativeFreehandComment, Tag("NativeFreehandComment")],
     Discriminator(_discriminate_comments),
 ]
 
 NativeCreator: TypeAlias = Annotated[
-    Union[
-        Annotated[NativeCreatorPerson, Tag("NativeCreatorPerson")],
-        Annotated[NativeCreatorOrganization, Tag("NativeCreatorOrganization")],
-    ],
+    Annotated[NativeCreatorPerson, Tag("NativeCreatorPerson")]
+    | Annotated[NativeCreatorOrganization, Tag("NativeCreatorOrganization")],
     Discriminator(_discriminate_creator),
 ]
 

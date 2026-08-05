@@ -12,7 +12,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from ruamel.yaml import YAML
 
@@ -36,7 +36,7 @@ def _is_native_path(path: str) -> bool:
 
 def to_layout(
     input_path: str,
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     *,
     strategy: str = "topological",
     overwrite: bool = False,
@@ -66,7 +66,7 @@ def to_layout(
             yaml.dump(workflow, f)
 
 
-def main(argv: Optional[Sequence[str]] = None) -> None:
+def main(argv: Sequence[str] | None = None) -> None:
     """Entry point for laying out Galaxy workflows."""
     if argv is None:
         argv = sys.argv[1:]

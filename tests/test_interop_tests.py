@@ -6,17 +6,17 @@ the operations dict and fixture loader.
 """
 
 import os
-from typing import Any
 from collections.abc import Callable
+from typing import Any
 
 from gxformat2.cytoscape import cytoscape_elements as _cytoscape_impl
 from gxformat2.examples import EXAMPLES_DIR, load
+from gxformat2.layout import apply_layout as _apply_layout_impl
+from gxformat2.layout import GRAPH_PROPERTY_CHECKERS
 from gxformat2.lint import lint_best_practices_format2 as _lint_bp_format2_impl
 from gxformat2.lint import lint_best_practices_ga as _lint_bp_ga_impl
 from gxformat2.lint import lint_format2 as _lint_format2_impl
 from gxformat2.lint import lint_ga as _lint_ga_impl
-from gxformat2.layout import apply_layout as _apply_layout_impl
-from gxformat2.layout import GRAPH_PROPERTY_CHECKERS
 from gxformat2.linting import LintContext
 from gxformat2.mermaid import workflow_to_mermaid as _mermaid_impl
 from gxformat2.normalized import (

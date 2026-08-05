@@ -260,7 +260,8 @@ def setup_module(module):
     # ensure that round tripping all green format2 workflows still lint green.
     for file_name in os.listdir(TEST_LINT_EXAMPLES):
         if file_name.startswith("0_format2") and "roundtrip" not in file_name:
-            roundtrip_contents = round_trip(open(os.path.join(TEST_LINT_EXAMPLES, file_name)).read())
+            with open(os.path.join(TEST_LINT_EXAMPLES, file_name)) as f:
+                roundtrip_contents = round_trip(f.read())
             base = os.path.splitext(file_name)[0][len("0_") :]
             _dump_with_exit_code(roundtrip_contents, 0, base + "_roundtrip")
 
@@ -327,7 +328,8 @@ def test_lint_examples():
         expected_exit_code = int(file_name[0])
         actual_exit_code = main(["lint", SKIP_BP, file_path])
         if actual_exit_code != expected_exit_code:
-            contents = open(file_path).read()
+            with open(file_path) as f:
+                contents = f.read()
             template = "File [%s] didn't lint properly - expected exit code [%d], got [%d]. Contents:\n%s"
             raise AssertionError(template % (file_name, expected_exit_code, actual_exit_code, contents))
 
@@ -335,7 +337,7 @@ def test_lint_examples():
 def _dump_with_exit_code(as_dict, exit_code, description):
     if not os.path.exists(TEST_LINT_EXAMPLES):
         os.makedirs(TEST_LINT_EXAMPLES)
-    with open(os.path.join(TEST_LINT_EXAMPLES, "%d_%s.yml" % (exit_code, description)), "w") as fd:
+    with open(os.path.join(TEST_LINT_EXAMPLES, f"{exit_code}_{description}.yml"), "w") as fd:
         ordered_dump(as_dict, fd)
         fd.flush()
 

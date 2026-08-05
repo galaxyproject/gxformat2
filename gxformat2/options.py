@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import base64
 import re
-from pathlib import Path
-from typing import Any, Optional
 from collections.abc import Callable
+from pathlib import Path
+from typing import Any
 
 import requests
 import yaml
 
-StateEncodeToNativeFn = Optional[Callable[[dict, dict[str, Any]], Optional[dict[str, Any]]]]
+StateEncodeToNativeFn = Callable[[dict, dict[str, Any]], dict[str, Any] | None] | None
 """Callback to encode format2 state back to native tool_state.
 
 Accepts (step, state) where step is the partially-built native step dict
@@ -20,14 +20,14 @@ Returns {param_name: encoded_value} as clean dicts for native tool_state,
 or None to fall back to default dict passthrough (no JSON encoding).
 """
 
-StateEncodeToFormat2Fn = Optional[Callable[[dict], Optional[dict[str, Any]]]]
+StateEncodeToFormat2Fn = Callable[[dict], dict[str, Any] | None] | None
 """Callback to convert a native tool step's tool_state to format2 state.
 
 Accepts a native step dict (with tool_id, tool_version, tool_state).
 Returns a format2 state dict, or None to fall back to default tool_state passthrough.
 """
 
-UrlResolverFn = Optional[Callable[[str], dict[str, Any]]]
+UrlResolverFn = Callable[[str], dict[str, Any]] | None
 """Callback to fetch a URL and return a parsed workflow dict.
 
 Accepts a URL string, returns a parsed dict (native or format2).
@@ -48,7 +48,7 @@ class ConversionOptions:
     and URL resolution.
     """
 
-    def __init__(  # noqa: D107
+    def __init__(
         self,
         workflow_directory: str | Path | None = None,
         encode_tool_state_json: bool = True,
@@ -59,6 +59,7 @@ class ConversionOptions:
         url_resolver: UrlResolverFn = None,
         strict_structure: bool = False,
     ):
+        """Initialize conversion options."""
         self.workflow_directory = str(workflow_directory) if workflow_directory else None
         self.encode_tool_state_json = encode_tool_state_json
         self.deduplicate_subworkflows = deduplicate_subworkflows
