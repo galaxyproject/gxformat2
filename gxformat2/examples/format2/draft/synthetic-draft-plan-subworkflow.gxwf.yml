@@ -1,0 +1,41 @@
+class: GalaxyWorkflowDraft
+label: draft subworkflow plan
+inputs:
+  reads:
+    type: data
+    format: fastqsanger
+outputs:
+  checked_reads:
+    outputSource: qc/output
+steps:
+  qc:
+    type: subworkflow
+    label: quality control subworkflow
+    in:
+      reads: reads
+    out:
+      - id: output
+    _plan_context: |
+      The nested workflow is settled topologically, but the outer step still
+      carries planning context for the downstream agent.
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        reads:
+          type: data
+          format: fastqsanger
+      outputs:
+        output:
+          outputSource: cat/out_file1
+      steps:
+        cat:
+          tool_id: cat1
+          tool_version: "1.0.0"
+          label: pass through reads
+          in:
+            input1: reads
+          out:
+            - id: out_file1
+          state:
+            input1:
+              $link: reads

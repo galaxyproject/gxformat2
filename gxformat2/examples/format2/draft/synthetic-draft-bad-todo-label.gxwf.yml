@@ -1,0 +1,14 @@
+class: GalaxyWorkflowDraft
+label: invalid — step label is a TODO sentinel
+inputs:
+  reads:
+    type: data
+outputs: {}
+steps:
+  TODO:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: reads
+    out:
+      - id: out

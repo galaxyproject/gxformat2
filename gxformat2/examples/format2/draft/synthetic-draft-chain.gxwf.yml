@@ -1,0 +1,33 @@
+class: GalaxyWorkflowDraft
+label: draft chain — head concretized, tail still draft
+inputs:
+  reads:
+    type: data
+outputs:
+  final:
+    outputSource: c/TODO_out
+steps:
+  a:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    label: concrete head step
+    in:
+      input1: reads
+    out:
+      - id: out
+  b:
+    tool_id: TODO
+    tool_version: TODO
+    label: draft middle step
+    in:
+      TODO_input: a/out
+    out:
+      - id: TODO_out
+  c:
+    tool_id: TODO
+    tool_version: TODO
+    label: draft tail step
+    in:
+      TODO_input: b/TODO_out
+    out:
+      - id: TODO_out
