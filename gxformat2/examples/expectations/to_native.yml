@@ -177,3 +177,57 @@ test_to_native_step_input_default_file:
       value: File
     - path: [steps, "0", in_, input1, default, basename]
       value: a file
+
+test_to_native_list_form_steps:
+  fixture: synthetic-list-form-steps.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [a_galaxy_workflow]
+      value: "true"
+    - path: [name]
+      value: "List form workflow"
+    - path: [steps, "0", type_]
+      value: data_input
+    - path: [steps, "0", label]
+      value: the_input
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", tool_id]
+      value: cat1
+    - path: [steps, "1", label]
+      value: cat
+
+test_to_native_list_form_step_dict_in_connections:
+  fixture: synthetic-list-form-steps.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", input_connections, input1, $length]
+      value: 1
+    - path: [steps, "1", input_connections, input1, 0, id]
+      value: 0
+    - path: [steps, "1", input_connections, input1, 0, output_name]
+      value: output
+
+test_to_native_list_form_step_dict_out_pja:
+  fixture: synthetic-list-form-steps.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", workflow_outputs, $length]
+      value: 1
+    - path: [steps, "1", workflow_outputs, 0, label]
+      value: the_output
+    - path: [steps, "1", post_job_actions, HideDatasetActionout_file1, action_type]
+      value: HideDatasetAction
+
+test_to_native_unlabelled_list_step_numeric_output_source:
+  fixture: synthetic-bp-step-no-label.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", workflow_outputs, $length]
+      value: 1
+    - path: [steps, "1", workflow_outputs, 0, label]
+      value: the_output
+    - path: [steps, "0", workflow_outputs, $length]
+      value: 0
