@@ -19,3 +19,14 @@ test_ensure_native_normalizes_native:
       value: "true"
     - path: [steps, "0", tool_id]
       value: cat1
+
+test_ensure_native_list_form_steps:
+  fixture: synthetic-list-form-steps.gxwf.yml
+  operation: ensure_native
+  assertions:
+    - path: [a_galaxy_workflow]
+      value: "true"
+    - path: [steps, "1", tool_id]
+      value: cat1
+    - path: [steps, "1", input_connections, input1, 0, output_name]
+      value: output

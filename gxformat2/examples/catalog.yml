@@ -325,6 +325,13 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-list-form-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: List-form inputs/outputs/steps with dict-form step in/out.
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-tool-state-json.gxwf.yml
   origin: synthetic
   format: format2
