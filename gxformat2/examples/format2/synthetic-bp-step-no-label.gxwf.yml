@@ -6,7 +6,7 @@ inputs:
     type: File
 outputs:
   the_output:
-    outputSource: 0/out_file1
+    outputSource: 1/out_file1
 steps:
   - tool_id: cat1
     doc: cat doc

@@ -218,3 +218,16 @@ test_to_native_list_form_step_dict_out_pja:
       value: the_output
     - path: [steps, "1", post_job_actions, HideDatasetActionout_file1, action_type]
       value: HideDatasetAction
+
+test_to_native_unlabelled_list_step_numeric_output_source:
+  fixture: synthetic-bp-step-no-label.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", workflow_outputs, $length]
+      value: 1
+    - path: [steps, "1", workflow_outputs, 0, label]
+      value: the_output
+    - path: [steps, "0", workflow_outputs, $length]
+      value: 0
