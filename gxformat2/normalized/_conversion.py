@@ -542,6 +542,14 @@ def _build_input_param(step: NormalizedNativeStep) -> BaseInputParameter:
             else:
                 kwargs[key] = tool_state[key]
 
+    if input_type in ("int", "float"):
+        for validator in tool_state.get("validators") or []:
+            if validator.get("type") == "in_range" and not validator.get("negate", False):
+                for bound in ("min", "max"):
+                    if validator.get(bound) is not None:
+                        kwargs[bound] = validator[bound]
+                break
+
     if step.annotation:
         kwargs["doc"] = step.annotation
     if step.position:
@@ -1210,6 +1218,12 @@ def _build_input_step(
         tool_state["collection_type"] = collection_type
     if inp.default is not None:
         tool_state["default"] = inp.default
+
+    if step_type == NativeStepType.parameter_input and type_str in ("integer", "int", "float"):
+        minimum = getattr(inp, "min", None)
+        maximum = getattr(inp, "max", None)
+        if minimum is not None or maximum is not None:
+            tool_state["validators"] = [{"type": "in_range", "min": minimum, "max": maximum, "negate": False}]
 
     # Copy text-parameter / sample-sheet / record fields from the typed model.
     for key in ("restrictions", "suggestions", "restrictOnConnections", "column_definitions", "fields"):
