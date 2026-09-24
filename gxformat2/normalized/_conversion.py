@@ -602,10 +602,7 @@ def _build_tool_format2_step(
     if converted_state is not None:
         state = converted_state
     else:
-        ts = dict(step.tool_state)
-        ts.pop("__page__", None)
-        ts.pop("__rerun_remap_job_id__", None)
-        tool_state = ts
+        tool_state = _passthrough_tool_state(step)
 
     raw_label = step.label or label_map.get(str(step.id))
     step_id = raw_label or str(step.id)
@@ -630,6 +627,15 @@ def _build_tool_format2_step(
     )
 
 
+def _passthrough_tool_state(step: NormalizedNativeStep) -> dict[str, Any]:
+    ts = dict(step.tool_state)
+    ts.pop("__page__", None)
+    ts.pop("__rerun_remap_job_id__", None)
+    return ts
+
+
+# state_encode_to_format2 resolves tools by tool_id, which a user-defined tool
+# step doesn't have, so its tool_state always passes through verbatim.
 def _build_user_tool_format2_step(
     step: NormalizedNativeStep,
     label_map: dict[str, str],
@@ -645,10 +651,14 @@ def _build_user_tool_format2_step(
         label=raw_label,
         doc=step.annotation or None,
         run=GalaxyUserToolStub.model_validate(step.tool_representation) if step.tool_representation else None,
+        tool_state=_passthrough_tool_state(step) or None,
         in_=in_list,
         out=out_list,
         post_job_actions=remaining_pjas,
         position=_convert_position(step.position) if not compact else None,
+        when=step.when,
+        uuid=step.uuid,
+        errors=step.errors,
     )
 
 
