@@ -8,6 +8,38 @@ test_basic_valid_format2_strict:
   fixture: synthetic-basic.gxwf.yml
   operation: validate_format2_strict
 
+test_draft_tool_step_valid_format2_draft:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: validate_format2_draft
+
+test_draft_tool_step_valid_format2_draft_strict:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: validate_format2_draft_strict
+
+test_draft_tool_step_rejected_format2_strict:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+
+test_draft_plan_subworkflow_valid_format2_draft:
+  fixture: synthetic-draft-plan-subworkflow.gxwf.yml
+  operation: validate_format2_draft
+
+test_draft_plan_subworkflow_valid_format2_draft_strict:
+  fixture: synthetic-draft-plan-subworkflow.gxwf.yml
+  operation: validate_format2_draft_strict
+
+# Top-level `_plan_*` is rejected by the closed (strict) structural schema
+# because no GalaxyWorkflowDraft top-level field is named `_plan_*`. The
+# higher-level `validate_draft` operation passes-with-warning on the same
+# fixture (see validate_draft.yml::test_validate_draft_plan_top_level_passes_with_warning)
+# — strict structural validation and lenient draft semantics intentionally
+# disagree here.
+test_draft_plan_top_level_rejected_format2_draft_strict:
+  fixture: synthetic-draft-plan-top-level.gxwf.yml
+  operation: validate_format2_draft_strict
+  expect_error: true
+
 test_extra_field_valid_format2_lax:
   fixture: synthetic-extra-field.gxwf.yml
   operation: validate_format2

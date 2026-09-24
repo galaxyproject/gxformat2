@@ -1,0 +1,94 @@
+# detect_draft surveys a draft workflow for every TODO sentinel and
+# `_plan_*` field. Result shape (snake-cased):
+#   { is_draft, todos[{path, location, sentinel}], plan_fields[{path, field, value}] }
+# The survey is per-step only — top-level `_plan_*` is not collected here;
+# validateDraft owns that diagnostic.
+
+test_detect_draft_tool_step_collects_six_todos_four_plans:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: detect_draft
+  assertions:
+    - path: [is_draft]
+      value: true
+    - path: [todos, $length]
+      value: 6
+    - path: [plan_fields, $length]
+      value: 4
+    - path: [todos, 0, path, 0]
+      value: fastp
+    - path: [todos, 0, location, kind]
+      value: tool_id
+    - path: [plan_fields, 0, field]
+      value: _plan_state
+
+test_detect_draft_chain_collects_nine_todos:
+  fixture: synthetic-draft-chain.gxwf.yml
+  operation: detect_draft
+  assertions:
+    - path: [is_draft]
+      value: true
+    - path: [todos, $length]
+      value: 9
+    - path: [plan_fields, $length]
+      value: 0
+
+test_detect_draft_subworkflow_inner_uses_outer_prefix:
+  fixture: synthetic-draft-subworkflow-inner-draft.gxwf.yml
+  operation: detect_draft
+  assertions:
+    - path: [is_draft]
+      value: true
+    - path: [todos, $length]
+      value: 5
+    - path: [todos, 0, path, 0]
+      value: outer_subwf
+    - path: [todos, 0, path, 1]
+      value: inner_tool
+
+test_detect_draft_fully_concrete_empty_survey:
+  fixture: synthetic-draft-fully-concrete.gxwf.yml
+  operation: detect_draft
+  assertions:
+    - path: [is_draft]
+      value: true
+    - path: [todos, $length]
+      value: 0
+    - path: [plan_fields, $length]
+      value: 0
+
+test_detect_draft_plan_top_level_ignored_by_step_survey:
+  fixture: synthetic-draft-plan-top-level.gxwf.yml
+  operation: detect_draft
+  assertions:
+    - path: [is_draft]
+      value: true
+    - path: [todos, $length]
+      value: 0
+    - path: [plan_fields, $length]
+      value: 0
+
+test_detect_draft_plan_subworkflow_collects_step_plan_field:
+  fixture: synthetic-draft-plan-subworkflow.gxwf.yml
+  operation: detect_draft
+  assertions:
+    - path: [is_draft]
+      value: true
+    - path: [todos, $length]
+      value: 0
+    - path: [plan_fields, $length]
+      value: 1
+    - path: [plan_fields, 0, path, 0]
+      value: qc
+    - path: [plan_fields, 0, field]
+      value: _plan_context
+
+test_detect_draft_non_draft_returns_false:
+  fixture: synthetic-basic.gxwf.yml
+  operation: detect_draft
+  assertions:
+    - path: [is_draft]
+      value: false
+    - path: [todos, $length]
+      value: 0
+    - path: [plan_fields, $length]
+      value: 0

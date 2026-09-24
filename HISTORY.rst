@@ -9,7 +9,14 @@ History
 0.28.0.dev0
 ---------------------
 
-    
+* Add draft workflow schema (``class: GalaxyWorkflowDraft``): explicit
+  ``_plan_*`` step fields, ``TODO`` sentinel pattern constants, and 8
+  synthetic fixtures covering tool/subworkflow planning, concrete-subset
+  extraction, topological tiebreaks, and 3 negative cases (TODO step label,
+  dangling edge, ``_plan_*`` on a fully-concrete step). Declarative
+  expectation YAMLs for ``detect_draft`` and ``validate_draft`` are mirrored
+  from the TypeScript implementation; the Python ports of those operations
+  are deferred.
 
 ---------------------
 0.27.0 (2026-05-27)

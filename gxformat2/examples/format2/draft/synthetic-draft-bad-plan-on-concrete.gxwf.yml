@@ -1,0 +1,20 @@
+class: GalaxyWorkflowDraft
+label: invalid — _plan_state on a fully-concrete step
+inputs:
+  reads:
+    type: data
+outputs:
+  out:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    label: cat
+    in:
+      input1: reads
+    out:
+      - id: out_file1
+    _plan_state: |
+      Stray planning context on a step that has no TODO sentinels.
+      Should be cleaned up before the step is treated as ready.

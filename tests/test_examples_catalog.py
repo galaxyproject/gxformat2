@@ -9,8 +9,8 @@ from gxformat2.examples import EXAMPLES_DIR, FORMAT2_DIR, load_catalog, NATIVE_D
 def _all_example_files():
     """Return set of relative paths for all .ga and .yml workflow files."""
     files = set()
-    for pattern, subdir in [("*.gxwf.yml", FORMAT2_DIR), ("*.ga", NATIVE_DIR)]:
-        for path in glob.glob(os.path.join(subdir, pattern)):
+    for pattern, subdir in [("**/*.gxwf.yml", FORMAT2_DIR), ("**/*.ga", NATIVE_DIR)]:
+        for path in glob.glob(os.path.join(subdir, pattern), recursive=True):
             files.add(os.path.relpath(path, EXAMPLES_DIR))
     return files
 
