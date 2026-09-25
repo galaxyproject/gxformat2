@@ -1,0 +1,15 @@
+class: GalaxyWorkflow
+doc: Numeric parameter inputs with min/max bounds.
+inputs:
+  int_min_max:
+    type: int
+    min: 1
+    max: 5
+  int_min_only:
+    type: int
+    min: 0
+  float_max_only:
+    type: float
+    max: 0.5
+outputs: {}
+steps: {}

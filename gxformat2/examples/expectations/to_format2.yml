@@ -81,3 +81,53 @@ test_to_format2_rename_pja:
       value: out_file1
     - path: [steps, 0, out, 0, rename]
       value: renamed_output
+
+test_to_format2_range_validator_min_max:
+  fixture: synthetic-numeric-range-validators.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, 0, id]
+      value: int_min_max
+    - path: [inputs, 0, min]
+      value: 1
+    - path: [inputs, 0, max]
+      value: 5
+
+test_to_format2_range_validator_max_only:
+  fixture: synthetic-numeric-range-validators.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, 1, id]
+      value: float_max_only
+    - path: [inputs, 1, min]
+      value: null
+    - path: [inputs, 1, max]
+      value: 0.5
+
+test_to_format2_non_range_validator_no_bounds:
+  fixture: synthetic-numeric-range-validators.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, 2, id]
+      value: int_regex
+    - path: [inputs, 2, min]
+      value: null
+    - path: [inputs, 2, max]
+      value: null
+
+test_to_format2_via_native_input_bounds:
+  fixture: synthetic-numeric-input-bounds.gxwf.yml
+  operation: to_format2_via_native
+  assertions:
+    - path: [inputs, 0, min]
+      value: 1
+    - path: [inputs, 0, max]
+      value: 5
+    - path: [inputs, 1, min]
+      value: 0
+    - path: [inputs, 1, max]
+      value: null
+    - path: [inputs, 2, min]
+      value: null
+    - path: [inputs, 2, max]
+      value: 0.5
