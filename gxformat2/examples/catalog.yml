@@ -281,6 +281,20 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-numeric-input-bounds.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Int/float parameter inputs with min/max bounds.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-numeric-range-validators.ga
+  origin: synthetic
+  format: native
+  description: Integer/float parameter inputs with in_range and regex validators.
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-int-input.gxwf.yml
   origin: synthetic
   format: format2

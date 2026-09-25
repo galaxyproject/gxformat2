@@ -139,6 +139,10 @@ def _cytoscape_edge_ids(wf_dict):
     return [el["data"]["id"] for el in flat if el["group"] == "edges"]
 
 
+def _to_format2_via_native(wf_dict):
+    return to_format2(to_native(wf_dict).to_dict())
+
+
 EXPECTATIONS_DIR = os.path.join(EXAMPLES_DIR, "expectations")
 OPERATIONS: dict[str, Callable[..., Any]] = {
     "normalized_format2": normalized_format2,
@@ -147,6 +151,7 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "expanded_native": expanded_native,
     "to_format2": to_format2,
     "to_native": to_native,
+    "to_format2_via_native": _to_format2_via_native,
     "ensure_format2": ensure_format2,
     "ensure_native": ensure_native,
     "validate_format2": validate_format2,

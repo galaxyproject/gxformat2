@@ -231,3 +231,31 @@ test_to_native_unlabelled_list_step_numeric_output_source:
       value: the_output
     - path: [steps, "0", workflow_outputs, $length]
       value: 0
+
+test_to_native_input_bounds_min_max:
+  fixture: synthetic-numeric-input-bounds.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", tool_state, parameter_type]
+      value: integer
+    - path: [steps, "0", tool_state, validators]
+      value:
+        - {type: in_range, min: 1, max: 5, negate: false}
+
+test_to_native_input_bounds_min_only:
+  fixture: synthetic-numeric-input-bounds.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", tool_state, validators]
+      value:
+        - {type: in_range, min: 0, max: null, negate: false}
+
+test_to_native_input_bounds_max_only:
+  fixture: synthetic-numeric-input-bounds.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "2", tool_state, parameter_type]
+      value: float
+    - path: [steps, "2", tool_state, validators]
+      value:
+        - {type: in_range, min: null, max: 0.5, negate: false}
