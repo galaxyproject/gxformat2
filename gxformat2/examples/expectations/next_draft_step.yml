@@ -83,3 +83,63 @@ test_next_draft_step_non_draft_returns_false:
   assertions:
     - path: [draft]
       value: false
+
+test_next_draft_step_tool_step_exact_work:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [work, $length]
+      value: 9
+    - path: [work, 0]
+      value: "TODO[tool_id]: pick a Galaxy Tool Shed wrapper for this step"
+    - path: [work, 1]
+      value: "TODO[tool_version]: pick the wrapper version"
+    - path: [work, 2]
+      value: "TODO[in.TODO_input]: assign the real wrapper input port name (semantic hint: 'input')"
+    - path: [work, 3]
+      value: "TODO[out.TODO_trimmed_paired]: assign the real wrapper output port name (semantic hint: 'trimmed_paired'; referenced by workflow output 'trimmed')"
+    - path: [work, 4]
+      value: "TODO[out.TODO_html_report]: assign the real wrapper output port name (semantic hint: 'html_report')"
+    - path: [work, 5]
+      value_matches: "^_plan_state: Adapter trimming on"
+    - path: [work, 6]
+      value_matches: "^_plan_context: Upstream process used fastp"
+    - path: [work, 7]
+      value_matches: "^_plan_in: TODO_input is the paired reads"
+    - path: [work, 8]
+      value_matches: "^_plan_out: TODO_trimmed_paired feeds"
+
+test_next_draft_step_bare_todo_no_semantic_hint:
+  fixture: synthetic-draft-todo-shapes.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [step]
+      value: [a_bare]
+    - path: [work]
+      value:
+        - "TODO[tool_id]: pick a Galaxy Tool Shed wrapper for this step"
+        - "TODO[tool_version]: pick the wrapper version"
+        - "TODO[in.TODO]: assign the real wrapper input port name"
+        - "TODO[out.TODO]: assign the real wrapper output port name"
+
+# alpha depends on zebra via bare ref `zebra` (= zebra/output); topology wins
+# over the alphabetical tie-break.
+test_next_draft_step_bare_step_ref_orders_dependency_first:
+  fixture: synthetic-draft-bare-step-ref.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: true
+    - path: [step]
+      value: [zebra]
+
+test_next_draft_step_outer_before_inner_when_both_need_work:
+  fixture: synthetic-draft-next-outer-first.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: true
+    - path: [step]
+      value: [outer]
+    - path: [work]
+      value: ["_plan_context: settle outer first"]

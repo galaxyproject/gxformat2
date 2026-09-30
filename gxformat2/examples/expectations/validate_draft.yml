@@ -120,3 +120,156 @@ test_validate_draft_bad_plan_on_concrete_semantic_error:
       value: 1
     - path: [semantic_errors, 0, message]
       value_contains: "tool step has no TODO sentinels but still carries planning fields"
+
+test_validate_draft_plan_top_level_exact_warning:
+  fixture: synthetic-draft-plan-top-level.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [warnings, 0, path]
+      value: []
+    - path: [warnings, 0, message]
+      value: "top-level `_plan_context` is not part of the draft contract; planning fields belong on individual steps"
+
+test_validate_draft_non_draft_structure_error:
+  fixture: synthetic-basic.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [structure_errors, $length]
+      value: 1
+    - path: [structure_errors, 0, message]
+      value: 'not a draft workflow (class must be "GalaxyWorkflowDraft")'
+
+# `<step>` alone is shorthand for `<step>/output` in both outputSource and in.
+test_validate_draft_bare_step_ref_accepted:
+  fixture: synthetic-draft-bare-step-ref.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 0
+
+test_validate_draft_list_form_clean:
+  fixture: synthetic-draft-list-form.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 0
+
+test_validate_draft_user_tool_outputs_resolve_as_ports:
+  fixture: synthetic-draft-user-tool.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 0
+
+test_validate_draft_next_outer_first_clean:
+  fixture: synthetic-draft-next-outer-first.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [structure_errors, $length]
+      value: 0
+
+# Bare TODO in port position warns; tool_id/tool_version bare TODO does not.
+# TODONE/TODOLIST merely start with TODO and are not flagged as malformed.
+test_validate_draft_todo_shapes_bare_port_warnings:
+  fixture: synthetic-draft-todo-shapes.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [semantic_errors, $length]
+      value: 0
+    - path: [warnings, $length]
+      value: 2
+    - path: [warnings, {message: "bare `TODO` in port position (location: in.TODO); prefer `TODO_<hint>`"}, path]
+      value: [a_bare]
+    - path: [warnings, {message: "bare `TODO` in port position (location: out.TODO); prefer `TODO_<hint>`"}, path]
+      value: [a_bare]
+
+test_validate_draft_bad_diagnostics_topology_and_semantic_errors:
+  fixture: synthetic-draft-bad-diagnostics.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 5
+    - path: [topology_errors, {message: 'workflow output "bare_no_match" source "nope" does not match any declared workflow input or step'}, path]
+      value: []
+    # Bare `renamed` means `renamed/output`, which that step doesn't declare.
+    - path: [topology_errors, {message: 'workflow output "bare_no_output_port" source "renamed" references unknown port "output" on step "renamed"'}, path]
+      value: []
+    # Embedded GalaxyUserTool outputs are ports, but only the ones it defines.
+    - path: [topology_errors, {message: 'workflow output "bad_user_port" source "my_tool/not_an_output" references unknown port "not_an_output" on step "my_tool"'}, path]
+      value: []
+    - path: [topology_errors, {message: 'step input "input1" source "a/wrong_port" references unknown port "wrong_port" on step "a"'}, path]
+      value: [wrong_port]
+    - path: [topology_errors, {message: 'step input "input1" source "missing/out1" references unknown step "missing"'}, path]
+      value: [list_in]
+    # TODO_Mixed (mixed-case suffix) and TODO_input are canonical, not malformed.
+    - path: [semantic_errors, $length]
+      value: 2
+    - path: [semantic_errors, {message: 'tool_id "TODO-foo" is TODO-shaped but malformed (must match ^TODO(_[a-zA-Z0-9_]+)?$)'}, path]
+      value: [malformed]
+    - path: [semantic_errors, {message: 'tool_version "TODO_" is TODO-shaped but malformed (must match ^TODO(_[a-zA-Z0-9_]+)?$)'}, path]
+      value: [malformed]
+
+# Only concrete tool steps (implicit or `type: tool`) are flagged; the drafty
+# step and the non-tool subworkflow step (v1 carve-out) are not.
+test_validate_draft_bad_plan_fields_only_concrete_tool_steps:
+  fixture: synthetic-draft-bad-plan-fields.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 0
+    - path: [semantic_errors, $length]
+      value: 2
+    - path: [semantic_errors, {message: "tool step has no TODO sentinels but still carries planning fields (_plan_state, _plan_context); strip planning state before treating the step as resolved"}, path]
+      value: [cat]
+    - path: [semantic_errors, {message: "tool step has no TODO sentinels but still carries planning fields (_plan_state); strip planning state before treating the step as resolved"}, path]
+      value: [typed]
+
+# Inner draft diagnostics surface with the outer step's path.
+test_validate_draft_bad_inner_subworkflow_outer_prefixed:
+  fixture: synthetic-draft-bad-inner-subworkflow.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 1
+    - path: [topology_errors, 0, path]
+      value: [outer]
+    - path: [topology_errors, 0, message]
+      value: 'step label cannot be a TODO sentinel: "TODO"'
+    - path: [warnings, $length]
+      value: 1
+    - path: [warnings, 0, path]
+      value: [outer]
+    - path: [warnings, 0, message]
+      value: "top-level `_plan_context` is not part of the draft contract; planning fields belong on individual steps"

@@ -92,3 +92,68 @@ test_detect_draft_non_draft_returns_false:
       value: 0
     - path: [plan_fields, $length]
       value: 0
+
+test_detect_draft_tool_step_exact_locations:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: detect_draft
+  assertions:
+    - path: [todos, 1, location, kind]
+      value: tool_version
+    - path: [todos, 2, location, kind]
+      value: in_key
+    - path: [todos, 2, location, key]
+      value: TODO_input
+    - path: [todos, 3, location, id]
+      value: TODO_trimmed_paired
+    - path: [todos, 4, location, id]
+      value: TODO_html_report
+    # Workflow-output TODO refs are reported at the workflow level (path []).
+    - path: [todos, 5, path]
+      value: []
+    - path: [todos, 5, location, kind]
+      value: output_source
+    - path: [todos, 5, location, output_label]
+      value: trimmed
+    - path: [todos, 5, location, port]
+      value: TODO_trimmed_paired
+    - path: [plan_fields, 1, field]
+      value: _plan_context
+    - path: [plan_fields, 2, field]
+      value: _plan_in
+    - path: [plan_fields, 3, field]
+      value: _plan_out
+
+test_detect_draft_list_form_in_and_out:
+  fixture: synthetic-draft-list-form.gxwf.yml
+  operation: detect_draft
+  assertions:
+    - path: [todos, $length]
+      value: 5
+    - path: [todos, 2, location, kind]
+      value: in_key
+    - path: [todos, 2, sentinel]
+      value: TODO_input
+    - path: [todos, 3, location, id]
+      value: TODO_x
+    - path: [todos, 4, location, id]
+      value: TODO_y
+
+# Inner-draft workflow-output TODO refs carry the outer step's path.
+test_detect_draft_inner_output_source_uses_outer_step_path:
+  fixture: synthetic-draft-extract-subworkflow.gxwf.yml
+  operation: detect_draft
+  assertions:
+    - path: [todos, $length]
+      value: 6
+    - path: [todos, 0, path]
+      value: [keep_sub, bad]
+    - path: [todos, 3, path]
+      value: [keep_sub]
+    - path: [todos, 3, location, kind]
+      value: output_source
+    - path: [todos, 3, location, output_label]
+      value: pending
+    - path: [todos, 3, location, port]
+      value: TODO_port
+    - path: [todos, 4, path]
+      value: [lost_sub, inner_bad]

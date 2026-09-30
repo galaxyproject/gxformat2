@@ -1,0 +1,16 @@
+class: GalaxyWorkflowDraft
+label: list-form step `in:` and `out:` entries
+inputs:
+  reads:
+    type: data
+outputs: {}
+steps:
+  fastp:
+    tool_id: TODO
+    tool_version: TODO
+    in:
+      - id: TODO_input
+        source: reads
+    out:
+      - id: TODO_x
+      - id: TODO_y
