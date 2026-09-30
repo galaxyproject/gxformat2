@@ -9,9 +9,8 @@ import os
 from collections.abc import Callable
 from typing import Any
 
-import pytest
-
 from gxformat2.cytoscape import cytoscape_elements as _cytoscape_impl
+from gxformat2.draft import detect_draft, extract_draft_subset, next_draft_step, validate_draft
 from gxformat2.examples import EXAMPLES_DIR, load
 from gxformat2.layout import apply_layout as _apply_layout_impl
 from gxformat2.layout import GRAPH_PROPERTY_CHECKERS
@@ -178,25 +177,11 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "cytoscape_elements_to_list": _cytoscape_elements_to_list,
     "cytoscape_node_ids": _cytoscape_node_ids,
     "cytoscape_edge_ids": _cytoscape_edge_ids,
+    "detect_draft": detect_draft,
+    "validate_draft": validate_draft,
+    "next_draft_step": next_draft_step,
+    "extract_draft_subset": extract_draft_subset,
 }
-
-
-def _skip_unported_op(name: str) -> Callable[..., Any]:
-    """Stub that skips at test time — the expectation YAMLs are canonical
-    upstream from day one but the Python helpers have not been ported yet.
-
-    Keeps detect_draft.yml / validate_draft.yml visible in the test suite
-    (as `skipped`) instead of silently dropping the cases.
-    """
-
-    def _stub(_wf_dict: Any) -> Any:
-        pytest.skip(f"operation {name!r} not yet ported to Python (TS-only in v1)")
-
-    return _stub
-
-
-for _unported in ("detect_draft", "validate_draft", "extract_draft_subset"):
-    OPERATIONS[_unported] = _skip_unported_op(_unported)
 
 suite = DeclarativeTestSuite(
     operations=OPERATIONS,

@@ -1,0 +1,85 @@
+# nextDraftStep picks the topologically-first step with remaining work.
+# Tie-break is alphabetical by step label. Result is either
+#   { draft: false }
+# or
+#   { draft: true, step: [path...], work: [prompt-shaped strings] }
+# work[] order: tool_id → tool_version → in ports → out ports → _plan_state →
+# _plan_context → _plan_in → _plan_out. (Locked in subplan D / draft-checks.)
+
+test_next_draft_step_tool_step_returns_fastp_with_locked_work_order:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: true
+    - path: [step, 0]
+      value: fastp
+    - path: [work, 0]
+      value_contains: "TODO[tool_id]"
+    - path: [work, 1]
+      value_contains: "TODO[tool_version]"
+
+test_next_draft_step_chain_returns_topologically_first_drafty:
+  fixture: synthetic-draft-chain.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: true
+    - path: [step, $length]
+      value: 1
+    - path: [step, 0]
+      value: b
+    - path: [work, 0]
+      value_contains: "TODO[tool_id]"
+
+test_next_draft_step_subworkflow_descends_into_inner_draft:
+  fixture: synthetic-draft-subworkflow-inner-draft.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: true
+    - path: [step, 0]
+      value: outer_subwf
+    - path: [step, 1]
+      value: inner_tool
+
+test_next_draft_step_fully_concrete_returns_false:
+  fixture: synthetic-draft-fully-concrete.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: false
+
+test_next_draft_step_tiebreak_alphabetical:
+  fixture: synthetic-draft-next-step-tiebreak.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: true
+    - path: [step, 0]
+      value: apple
+
+test_next_draft_step_plan_subworkflow_picks_qc_with_plan_work:
+  fixture: synthetic-draft-plan-subworkflow.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: true
+    - path: [step, 0]
+      value: qc
+    - path: [work, 0]
+      value_contains: "_plan_context"
+
+test_next_draft_step_plan_top_level_returns_false:
+  fixture: synthetic-draft-plan-top-level.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: false
+
+test_next_draft_step_non_draft_returns_false:
+  fixture: synthetic-basic.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: false

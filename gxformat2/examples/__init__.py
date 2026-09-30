@@ -87,6 +87,9 @@ def get_path(name: str) -> str:
     regardless of subdir nesting (e.g. format2/draft/).
     """
     for root in [FORMAT2_DIR, NATIVE_DIR]:
+        path = os.path.join(root, name)
+        if os.path.exists(path):
+            return path
         for dirpath, _dirnames, filenames in os.walk(root):
             if name in filenames:
                 return os.path.join(dirpath, name)
