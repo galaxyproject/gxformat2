@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
 from gxformat2._labels import Labels
+from gxformat2.draft import PLANNED_CLASS, prepare_draft_for_render
 from gxformat2.normalized import ensure_format2, NormalizedFormat2
 from gxformat2.schema.gxformat2 import BaseInputParameter, FrameComment, GalaxyWorkflow
+from gxformat2.yaml import ordered_load_path
 
 # Standard Mermaid shape wrappers: (open, close) bracket pairs.
 #   >label]   = asymmetric / flag (inputs)
@@ -32,6 +35,9 @@ STEP_TYPE_SHAPES = {
 }
 
 MAIN_TS_PREFIX = "toolshed.g2.bx.psu.edu/repos/"
+
+PLANNED_NODE_STYLE = "fill:#fafafa,stroke:#b0b0b0,stroke-dasharray:5 5,color:#777"
+PLANNED_LINK_STYLE = "stroke:#b0b0b0,stroke-dasharray:5 5"
 
 
 def _sanitize_label(label: str) -> str:
@@ -62,6 +68,7 @@ def workflow_to_mermaid(
     workflow: dict[str, Any] | str | Path | GalaxyWorkflow | NormalizedFormat2,
     *,
     comments: bool = False,
+    draft_overlay: bool = True,
 ) -> str:
     """Convert a Galaxy workflow to a Mermaid flowchart string.
 
@@ -70,7 +77,14 @@ def workflow_to_mermaid(
 
     When *comments* is True, FrameComment objects are rendered as
     Mermaid subgraphs that group their contained steps.
+
+    A draft (``class: GalaxyWorkflowDraft``) renders its planned steps and the
+    edges touching them or a TODO port as dashed and muted, unless
+    *draft_overlay* is false.
     """
+    if isinstance(workflow, (str, Path, os.PathLike)):
+        workflow = ordered_load_path(str(workflow))
+    workflow, overlay = prepare_draft_for_render(workflow, draft_overlay)
     if isinstance(workflow, NormalizedFormat2):
         nf2 = workflow
     else:
@@ -93,10 +107,13 @@ def workflow_to_mermaid(
 
     step_ids: dict[str, str] = {}
     step_lines: dict[str, str] = {}
+    planned_node_ids: list[str] = []
     for i, step in enumerate(nf2.steps):
         node_id = f"step_{i}"
         step_label = step.label or step.id
         step_ids[step_label] = node_id
+        if overlay is not None and step_label in overlay.planned_steps:
+            planned_node_ids.append(node_id)
 
         tool_id = step.tool_id
         if tool_id and tool_id.startswith(MAIN_TS_PREFIX):
@@ -139,8 +156,10 @@ def workflow_to_mermaid(
 
     # Build edges (deduplicate identical connections)
     seen_edges: set[tuple[str, str]] = set()
+    link_styles: list[str] = []
     for i, step in enumerate(nf2.steps):
         node_id = f"step_{i}"
+        target_label = step.label or step.id
         for step_input in step.in_:
             if step_input.source is None:
                 continue
@@ -151,7 +170,18 @@ def workflow_to_mermaid(
                 if source_id:
                     edge_key = (source_id, node_id)
                     if edge_key not in seen_edges:
+                        planned = overlay is not None and overlay.edge_is_planned(
+                            source_ref.step_label, target_label, source_ref.output_name, step_input.id or ""
+                        )
+                        if planned:
+                            link_styles.append(f"    linkStyle {len(seen_edges)} {PLANNED_LINK_STYLE}")
                         seen_edges.add(edge_key)
-                        lines.append(f"    {source_id} --> {node_id}")
+                        arrow = "-.->" if planned else "-->"
+                        lines.append(f"    {source_id} {arrow} {node_id}")
+
+    lines.extend(link_styles)
+    if planned_node_ids:
+        lines.append(f"    classDef {PLANNED_CLASS} {PLANNED_NODE_STYLE};")
+        lines.append(f"    class {','.join(planned_node_ids)} {PLANNED_CLASS};")
 
     return "\n".join(lines)

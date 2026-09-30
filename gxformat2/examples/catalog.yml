@@ -910,3 +910,15 @@
   description: "Tool step with an inline File-class default via in/input1/default."
   tests:
     - tests/test_interop_tests.py
+- file: format2/draft/synthetic-draft-mixed-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-planned-source.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+

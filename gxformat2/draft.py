@@ -1013,3 +1013,110 @@ def _trim_outputs(
         trimmed = {label: value for label, value in outputs.items() if keep(label, value)}
     dropped.sort(key=lambda d: d.label)
     return trimmed, dropped
+
+
+# --- Visualization overlay --------------------------------------------------
+
+PLANNED_CLASS: Final[str] = "planned"
+
+
+class DraftPlannedReason(BaseModel):
+    """Why a rendered step is planned: formatted TODO locations and its ``_plan_*`` fields."""
+
+    todos: list[str] = []
+    plan_fields: dict[str, str] = {}
+
+
+class DraftOverlay(BaseModel):
+    """Which rendered step nodes of a draft are planned, keyed by step render identity."""
+
+    planned_steps: set[str] = set()
+    planned_reason: dict[str, DraftPlannedReason] = {}
+
+    def edge_is_planned(self, source_label: str, target_label: str, output_name: str, input_id: str) -> bool:
+        """An edge is planned if either endpoint step is planned or a port it touches is a TODO."""
+        return (
+            source_label in self.planned_steps
+            or target_label in self.planned_steps
+            or is_todo_sentinel(output_name)
+            or is_todo_sentinel(input_id)
+        )
+
+
+def raw_step_render_identity(step: Any, iter_key: str) -> str:
+    """Render identity of a raw step dict: its non-empty ``label``, else its iteration key.
+
+    Matches ``step.label or step.id`` on the normalized step, so overlays built
+    from the raw draft key the same way visualizers look nodes up.
+    """
+    if isinstance(step, dict) and isinstance(step.get("label"), str) and step["label"]:
+        return step["label"]
+    return iter_key
+
+
+def resolve_draft_overlay(workflow: Any) -> DraftOverlay | None:
+    """Build the planned-node overlay for a raw draft; ``None`` for non-drafts.
+
+    A top-level step is planned if it or any step nested under it carries a
+    TODO sentinel or a non-empty ``_plan_*`` field. Workflow-level hits (such as
+    a TODO ``outputSource`` port) mark no node.
+    """
+    survey = detect_draft(workflow)
+    if not survey.is_draft:
+        return None
+    identity_by_key = {key: raw_step_render_identity(step, key) for key, step in _iterate_steps(workflow.get("steps"))}
+    overlay = DraftOverlay()
+
+    def reason_for(path: StepPath) -> DraftPlannedReason | None:
+        if not path:
+            return None
+        identity = identity_by_key.get(path[0], path[0])
+        overlay.planned_steps.add(identity)
+        return overlay.planned_reason.setdefault(identity, DraftPlannedReason())
+
+    for todo in survey.todos:
+        reason = reason_for(todo.path)
+        if reason is not None:
+            reason.todos.append(format_todo_location(todo.location))
+    for plan in survey.plan_fields:
+        reason = reason_for(plan.path)
+        if reason is not None:
+            reason.plan_fields[plan.field] = plan.value
+    return overlay
+
+
+def draft_as_workflow(workflow: dict[str, Any]) -> dict[str, Any]:
+    """Copy of a draft re-classed ``GalaxyWorkflow`` at every inline draft level.
+
+    Lets tooling that only understands concrete Format2 (normalization, and so
+    rendering) read a draft. TODO sentinels stay as plain strings and
+    ``_plan_*`` fields as extras; nothing is validated or stripped.
+    """
+
+    def reclass(doc: dict[str, Any]) -> dict[str, Any]:
+        copied = {**doc, "class": "GalaxyWorkflow"}
+        steps = doc.get("steps")
+        if isinstance(steps, dict):
+            copied["steps"] = {key: reclass_step(step) for key, step in steps.items()}
+        elif isinstance(steps, list):
+            copied["steps"] = [reclass_step(step) for step in steps]
+        return copied
+
+    def reclass_step(step: Any) -> Any:
+        if isinstance(step, dict) and is_draft_workflow(step.get("run")):
+            return {**step, "run": reclass(step["run"])}
+        return step
+
+    return reclass(workflow)
+
+
+def prepare_draft_for_render(workflow: Any, draft_overlay: bool = True) -> tuple[Any, DraftOverlay | None]:
+    """Return ``(renderable_workflow, overlay)`` for a visualizer's raw input.
+
+    Non-drafts pass through with no overlay. A draft is re-classed via
+    :func:`draft_as_workflow`; its overlay is omitted when *draft_overlay* is false.
+    """
+    if not is_draft_workflow(workflow):
+        return workflow, None
+    overlay = resolve_draft_overlay(workflow) if draft_overlay else None
+    return draft_as_workflow(workflow), overlay
