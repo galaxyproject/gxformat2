@@ -1,0 +1,83 @@
+class: GalaxyWorkflowDraft
+label: extract through subworkflows — inner shrink, port-loss cascade, opaque run
+inputs:
+  reads:
+    type: data
+outputs:
+  result:
+    outputSource: keep_sub/result
+steps:
+  keep_sub:
+    type: subworkflow
+    in:
+      reads: reads
+    out:
+      - id: result
+    run:
+      class: GalaxyWorkflowDraft
+      inputs:
+        reads:
+          type: data
+      outputs:
+        result:
+          outputSource: good/out1
+        pending:
+          outputSource: bad/TODO_port
+      steps:
+        good:
+          tool_id: cat1
+          tool_version: "1.0.0"
+          in:
+            input1: reads
+          out:
+            - id: out1
+        bad:
+          tool_id: TODO
+          tool_version: TODO
+          in:
+            input1: reads
+          out:
+            - id: TODO_port
+  lost_sub:
+    type: subworkflow
+    in:
+      reads: reads
+    out:
+      - id: result
+    run:
+      class: GalaxyWorkflowDraft
+      inputs:
+        reads:
+          type: data
+      outputs:
+        result:
+          outputSource: inner_bad/out1
+      steps:
+        inner_bad:
+          tool_id: TODO
+          tool_version: TODO
+          in:
+            input1: reads
+          out:
+            - id: out1
+  downstream:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: lost_sub/result
+    out:
+      - id: out1
+  opaque_sub:
+    type: subworkflow
+    in:
+      reads: reads
+    out:
+      - id: result
+    run: https://example.org/some/workflow.ga
+  opaque_downstream:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: opaque_sub/result
+    out:
+      - id: out1

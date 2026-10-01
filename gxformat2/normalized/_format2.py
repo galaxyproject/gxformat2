@@ -229,6 +229,25 @@ class NormalizedFormat2(_DictMixin, BaseModel):
         """Parse a source reference string (e.g. ``step/output``) against this workflow's labels."""
         return resolve_source_reference(source, self.known_labels)
 
+    @cached_property
+    def _render_identity_by_key(self) -> dict[str, str]:
+        identities: dict[str, str] = {}
+        for step in self.steps:
+            identity = step.label or step.id
+            identities[step.id] = identity
+            identities[identity] = identity
+        return identities
+
+    def resolve_render_source(self, source: str) -> SourceReference:
+        """Resolve a source to the step render identity (``label or id``) visualizers key nodes by.
+
+        Unlike :meth:`resolve_source`, a step addressed by its ``id`` while carrying a
+        distinct ``label`` resolves to that label. Input refs pass through unchanged.
+        """
+        identities = self._render_identity_by_key
+        ref = resolve_source_reference(source, self.known_labels | identities.keys())
+        return SourceReference(identities.get(ref.step_label, ref.step_label), ref.output_name)
+
     @property
     def unique_tools(self) -> frozenset[ToolReference]:
         """All unique (tool_id, tool_version) pairs in this workflow and its inline subworkflows."""

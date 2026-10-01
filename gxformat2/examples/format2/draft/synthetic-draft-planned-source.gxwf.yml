@@ -1,0 +1,24 @@
+class: GalaxyWorkflowDraft
+label: planned step feeds a concrete step
+inputs:
+  seqs:
+    type: data
+outputs:
+  summary:
+    outputSource: summarize/report
+steps:
+  detect:
+    tool_id: TODO
+    in:
+      TODO_in: seqs
+    out:
+      - id: TODO_hits
+    _plan_state: |
+      Detect features of interest in the input sequences.
+  summarize:
+    tool_id: summary_tool
+    tool_version: "1.0"
+    in:
+      hits: detect/TODO_hits
+    out:
+      - id: report

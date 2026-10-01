@@ -1,0 +1,44 @@
+class: GalaxyWorkflowDraft
+label: extract drop ordering — direct drops alphabetical, then cascade rounds
+_plan_context: root-level planning notes that survive extract
+inputs:
+  reads:
+    type: data
+  orphan_extra:
+    type: data
+outputs:
+  zout:
+    outputSource: zulu/out1
+  aout:
+    outputSource: tail/out1
+  mout:
+    outputSource: zulu/out1
+steps:
+  zulu:
+    tool_id: TODO
+    tool_version: TODO
+    in:
+      input1: reads
+    out:
+      - id: out1
+  alpha:
+    tool_id: TODO
+    tool_version: TODO
+    in:
+      input1: reads
+    out:
+      - id: out1
+  mid:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: zulu/out1
+    out:
+      - id: out1
+  tail:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: mid/out1
+    out:
+      - id: out1

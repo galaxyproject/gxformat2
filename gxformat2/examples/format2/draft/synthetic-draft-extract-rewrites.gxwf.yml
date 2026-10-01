@@ -1,0 +1,83 @@
+class: GalaxyWorkflowDraft
+label: extract rewrites multi-source and defaulted inputs around a dropped step
+inputs:
+  reads:
+    type: data
+outputs:
+  - id: keep
+    outputSource: a/out1
+  - id: drop_me
+    outputSource: bad/out1
+steps:
+  bad:
+    tool_id: TODO
+    tool_version: TODO
+    out:
+      - id: out1
+  a:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    out:
+      - id: out1
+  b:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    out:
+      - id: out1
+  string_carrier:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      joined_string:
+        source: [bad/out1, b/out1]
+    out:
+      - id: out1
+  list_carrier:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      joined_list:
+        source: [a/out1, bad/out1, b/out1]
+    out:
+      - id: out1
+  with_default:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      defaulted:
+        source: bad/out1
+        default: fallback-value
+    out:
+      - id: out1
+  no_default:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      undefaulted:
+        source: bad/out1
+    out:
+      - id: out1
+  list_in:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      - id: joined_entry
+        source: [bad/out1, a/out1]
+    out:
+      - id: out1
+  all_survive:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      joined_alive:
+        source: [a/out1, b/out1]
+    out:
+      - id: out1
+  default_only:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      default_only_input:
+        default: v
+    out:
+      - id: out1

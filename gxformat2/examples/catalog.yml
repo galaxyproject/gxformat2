@@ -33,6 +33,140 @@
     - tests/test_export_abstract.py
     - tests/test_interop_tests.py
 
+- file: format2/draft/synthetic-draft-tool-step.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_pydantic_schema.py
+
+- file: format2/draft/synthetic-draft-plan-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_pydantic_schema.py
+
+- file: format2/draft/synthetic-draft-plan-top-level.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-chain.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-subworkflow-inner-draft.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-extract-cascade.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-fully-concrete.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-next-step-tiebreak.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-todo-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-dangling-edge.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-plan-on-concrete.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bare-step-ref.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-diagnostics.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-todo-shapes.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-list-form.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-plan-fields.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-inner-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-next-outer-first.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-extract-rewrites.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-extract-drop-order.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-extract-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-user-tool.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-unlinted-best-practices.gxwf.yml
   origin: synthetic
   format: format2
@@ -774,5 +908,53 @@
   origin: synthetic
   format: format2
   description: "Tool step with an inline File-class default via in/input1/default."
+  tests:
+    - tests/test_interop_tests.py
+- file: format2/draft/synthetic-draft-mixed-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-planned-source.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+
+- file: format2/draft/synthetic-draft-slash-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-implicit-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-list-form-bad-todo.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-unlabeled-list-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-mixed-case-order.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-labeled-step-id-ref.gxwf.yml
+  origin: synthetic
+  format: format2
   tests:
     - tests/test_interop_tests.py
