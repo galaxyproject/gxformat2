@@ -9,14 +9,16 @@ History
 0.28.0.dev0
 ---------------------
 
-* Add draft workflow schema (``class: GalaxyWorkflowDraft``): explicit
-  ``_plan_*`` step fields, ``TODO`` sentinel pattern constants, and 8
-  synthetic fixtures covering tool/subworkflow planning, concrete-subset
-  extraction, topological tiebreaks, and 3 negative cases (TODO step label,
-  dangling edge, ``_plan_*`` on a fully-concrete step). Declarative
-  expectation YAMLs for ``detect_draft`` and ``validate_draft`` are mirrored
-  from the TypeScript implementation; the Python ports of those operations
-  are deferred.
+* Add draft workflow support (``class: GalaxyWorkflowDraft``): the draft
+  schema with ``_plan_*`` step fields and ``TODO`` sentinel constants,
+  ``validate_format2_draft[_strict]``, and ``gxformat2.draft`` operations
+  ``detect_draft``, ``validate_draft``, ``next_draft_step`` and
+  ``extract_draft_subset``, ported from galaxy-tool-util-ts with shared
+  declarative fixtures.
+* Mermaid and Cytoscape render draft workflows with planned steps and edges
+  marked.
+* Mermaid and Cytoscape resolve a source that names a step by its key when the
+  step carries a different label (previously the edge was dropped or dangled).
 
 ---------------------
 0.27.0 (2026-05-27)

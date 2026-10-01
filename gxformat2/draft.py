@@ -13,12 +13,13 @@ normalization strips ``_plan_*``) and never mutate their input.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Iterator, Mapping
 from typing import Annotated, Any, Final, Literal
 
 from pydantic import BaseModel, Field, ValidationError
 
 from gxformat2.normalized._format2 import resolve_source_reference
+from gxformat2.normalized._types import INLINE_TOOL_CLASSES
 from gxformat2.schema.gxformat2_draft import GalaxyWorkflowDraft
 
 TODO_SENTINEL_PATTERN: Final[str] = r"^TODO(_[a-zA-Z0-9_]+)?$"
@@ -203,19 +204,27 @@ class ExtractResult(BaseModel):
 # --- Shared iteration helpers -----------------------------------------------
 
 
-def _list_step_label(step: dict) -> str:
-    label = step.get("label")
-    if isinstance(label, str):
-        return label
-    step_id = step.get("id")
-    return step_id if isinstance(step_id, str) else ""
+def _list_step_key(step: dict, index: int, inputs_offset: int) -> str:
+    """Key of a list-form step: its label, else its id, else the index id normalization assigns."""
+    for field in ("label", "id"):
+        value = step.get(field)
+        if isinstance(value, str) and value:
+            return value
+    return str(index + inputs_offset)
 
 
-def _iterate_steps(steps: Any) -> Iterator[tuple[str, Any]]:
+def _inputs_offset(workflow: dict) -> int:
+    inputs = workflow.get("inputs")
+    return len(inputs) if isinstance(inputs, (list, dict)) else 0
+
+
+def _iterate_steps(workflow: dict) -> Iterator[tuple[str, Any]]:
+    steps = workflow.get("steps")
     if isinstance(steps, list):
-        for step in steps:
+        offset = _inputs_offset(workflow)
+        for index, step in enumerate(steps):
             if isinstance(step, dict):
-                yield _list_step_label(step), step
+                yield _list_step_key(step, index, offset), step
     elif isinstance(steps, dict):
         yield from steps.items()
 
@@ -272,17 +281,16 @@ def _extract_source_refs(value: Any) -> list[str]:
     return []
 
 
-def _split_source_ref(ref: str, step_labels: Iterable[str] | Mapping[str, Any]) -> tuple[str, str | None]:
-    """Parse a source ref into ``(label, port)``.
+def _split_source_ref(ref: str, step_labels: set[str] | dict[str, Any]) -> tuple[str, str | None]:
+    """Parse a source ref into ``(label, port)`` via :func:`resolve_source_reference`.
 
-    A slash-less ref naming a step is shorthand for ``<step>/output``; any other
-    slash-less ref is a workflow-input ref and is reported port-less.
+    Labels containing ``/`` match longest-first; a slash-less ref naming a step is
+    shorthand for ``<step>/output``. Any other slash-less ref is a workflow-input
+    ref and is reported port-less.
     """
-    if "/" in ref:
-        label, port = ref.split("/", 1)
+    label, port = resolve_source_reference(ref, step_labels)
+    if label in step_labels or "/" in ref:
         return label, port
-    if ref in step_labels:
-        return ref, "output"
     return ref, None
 
 
@@ -290,7 +298,7 @@ def _step_out_ports(step: dict) -> set[str]:
     """Declared ``out:`` ids plus every output an embedded ``GalaxyUserTool`` defines."""
     ports = set(_iterate_step_out_ids(step.get("out")))
     run = step.get("run")
-    if isinstance(run, dict) and run.get("class") == "GalaxyUserTool":
+    if isinstance(run, dict) and run.get("class") in INLINE_TOOL_CLASSES:
         outputs = run.get("outputs")
         if isinstance(outputs, list):
             ports.update(o["name"] for o in outputs if isinstance(o, dict) and isinstance(o.get("name"), str))
@@ -360,7 +368,7 @@ def detect_draft(workflow: Any) -> DraftSurvey:
 
 
 def _walk_draft_steps(workflow: dict, prefix: StepPath, todos: list[TodoHit], plan_fields: list[PlanHit]) -> None:
-    for label, step in _iterate_steps(workflow.get("steps")):
+    for label, step in _iterate_steps(workflow):
         if not isinstance(step, dict):
             continue
         path = [*prefix, label]
@@ -372,7 +380,7 @@ def _walk_draft_steps(workflow: dict, prefix: StepPath, todos: list[TodoHit], pl
             _walk_draft_steps(step["run"], path, todos, plan_fields)
 
     # Inner draft outputs collect at the outer step's path; top-level ones at [].
-    step_labels = {label for label, _ in _iterate_steps(workflow.get("steps"))}
+    step_labels = {label for label, _ in _iterate_steps(workflow)}
     for label, output in _iterate_labeled(workflow.get("outputs")):
         ref = _read_output_source(output)
         if ref is None:
@@ -441,6 +449,16 @@ def validate_draft(workflow: Any) -> DraftValidationResult:
     )
 
 
+def _is_tool_step(step: dict) -> bool:
+    # Not model.get_native_step_type: that raises on unknown (e.g. TODO) types and
+    # treats an embedded user tool run as a subworkflow.
+    step_type = step.get("type")
+    if step_type is not None:
+        return step_type == "tool"
+    run = step.get("run")
+    return not run or (isinstance(run, dict) and run.get("class") in INLINE_TOOL_CLASSES)
+
+
 def _check_todo_like(value: str, path: StepPath, context: str, errors: list[DraftValidationDiagnostic]) -> None:
     if TODO_LIKE_RE.match(value) and not TODO_SENTINEL_RE.fullmatch(value):
         errors.append(
@@ -495,7 +513,7 @@ def _walk_draft_validation(
             )
 
     step_out_ports = {
-        label: _step_out_ports(step) for label, step in _iterate_steps(workflow.get("steps")) if isinstance(step, dict)
+        label: _step_out_ports(step) for label, step in _iterate_steps(workflow) if isinstance(step, dict)
     }
     known_labels = input_labels | step_out_ports.keys()
 
@@ -526,7 +544,7 @@ def _walk_draft_validation(
         if ref is not None:
             check_edge_ref(ref, prefix, f'workflow output "{label}"')
 
-    for label, step in _iterate_steps(workflow.get("steps")):
+    for label, step in _iterate_steps(workflow):
         if not isinstance(step, dict):
             continue
         _check_label(label, prefix, "step", topology_errors, semantic_errors)
@@ -541,9 +559,8 @@ def _walk_draft_validation(
             value = step.get(key)
             if isinstance(value, str):
                 _check_todo_like(value, step_path, f'{key} "{value}"', semantic_errors)
-        if isinstance(step.get("in"), dict):
-            for key in step["in"]:
-                _check_todo_like(key, step_path, f'in: key "{key}"', semantic_errors)
+        for key, _ in _iterate_step_input_entries(step.get("in")):
+            _check_todo_like(key, step_path, f'in: key "{key}"', semantic_errors)
         for out_id in _iterate_step_out_ids(step.get("out")):
             _check_todo_like(out_id, step_path, f'out: id "{out_id}"', semantic_errors)
 
@@ -553,7 +570,7 @@ def _walk_draft_validation(
 
         # Planning context must be stripped once a tool step is resolved. Non-tool
         # steps (subworkflow, pause, pick_value) may keep it for now.
-        if step.get("type") in (None, "tool") and not _step_todo_locations(step):
+        if _is_tool_step(step) and not _step_todo_locations(step):
             present = _present_plan_fields(step)
             if present:
                 semantic_errors.append(
@@ -587,10 +604,9 @@ def next_draft_step(workflow: Any) -> NextStepResult:
 
 
 def _next_draft_step_in(workflow: dict, prefix: StepPath) -> NextStepResult:
-    steps = workflow.get("steps")
-    step_labels = {label for label, _ in _iterate_steps(steps)}
+    step_labels = {label for label, _ in _iterate_steps(workflow)}
     output_refs = _collect_output_refs(workflow.get("outputs"), step_labels)
-    for label, step in _topo_ordered_steps(steps):
+    for label, step in _topo_ordered_steps(workflow):
         if not isinstance(step, dict):
             continue
         step_path = [*prefix, label]
@@ -604,9 +620,9 @@ def _next_draft_step_in(workflow: dict, prefix: StepPath) -> NextStepResult:
     return NextStepResult(draft=False)
 
 
-def _topo_ordered_steps(steps: Any) -> list[tuple[str, Any]]:
+def _topo_ordered_steps(workflow: dict) -> list[tuple[str, Any]]:
     """Topological order of steps; ties and cycles resolved alphabetically by label."""
-    entries = list(_iterate_steps(steps))
+    entries = list(_iterate_steps(workflow))
     by_label = dict(entries)
     deps: dict[str, set[str]] = {}
     for label, step in entries:
@@ -660,13 +676,12 @@ def _step_work_items(step: dict, step_label: str, output_refs: dict[str, dict[st
     if is_todo_sentinel(step.get("tool_version")):
         work.append("TODO[tool_version]: pick the wrapper version")
 
-    if isinstance(step.get("in"), dict):
-        for key in step["in"]:
-            if not is_todo_sentinel(key):
-                continue
-            hint = _sentinel_hint(key)
-            hint_fragment = f" (semantic hint: '{hint}')" if hint is not None else ""
-            work.append(f"TODO[in.{key}]: assign the real wrapper input port name{hint_fragment}")
+    for key, _ in _iterate_step_input_entries(step.get("in")):
+        if not is_todo_sentinel(key):
+            continue
+        hint = _sentinel_hint(key)
+        hint_fragment = f" (semantic hint: '{hint}')" if hint is not None else ""
+        work.append(f"TODO[in.{key}]: assign the real wrapper input port name{hint_fragment}")
 
     step_output_refs = output_refs.get(step_label, {})
     for out_id in _iterate_step_out_ids(step.get("out")):
@@ -732,7 +747,7 @@ def extract_draft_subset(workflow: Any) -> ExtractResult:
 
 
 def _extract_level(workflow: dict, prefix: StepPath) -> _LevelResult:
-    step_entries = [(label, step) for label, step in _iterate_steps(workflow.get("steps")) if isinstance(step, dict)]
+    step_entries = [(label, step) for label, step in _iterate_steps(workflow) if isinstance(step, dict)]
     step_labels = {label for label, _ in step_entries}
 
     drops: dict[str, _Drop] = {}
@@ -773,7 +788,7 @@ def _extract_level(workflow: dict, prefix: StepPath) -> _LevelResult:
     trimmed: dict[str, Any] = {}
     for key, value in workflow.items():
         if key == "steps":
-            trimmed[key] = _trim_steps(value, drops, inner_results, live_ports)
+            trimmed[key] = _trim_steps(workflow, drops, inner_results, live_ports)
         elif key == "outputs":
             trimmed[key] = trimmed_outputs
         else:
@@ -873,33 +888,12 @@ def _ref_is_dead(ref: str, drops: dict[str, _Drop], live_ports: dict[str, set[st
     return ports is not None and ref_port not in ports
 
 
-def _input_refs(value: Any) -> list[str]:
-    """Source refs carried directly by a step-input value (string, list, or dict ``source``)."""
-    if isinstance(value, str):
-        return [value]
-    if isinstance(value, list):
-        refs: list[str] = []
-        for entry in value:
-            if isinstance(entry, str):
-                refs.append(entry)
-            elif isinstance(entry, dict):
-                refs.extend(_input_refs({"source": entry.get("source")}))
-        return refs
-    if isinstance(value, dict):
-        source = value.get("source")
-        if isinstance(source, str):
-            return [source]
-        if isinstance(source, list):
-            return [s for s in source if isinstance(s, str)]
-    return []
-
-
 def _compute_input_rewrites(
     step: dict, step_path: StepPath, drops: dict[str, _Drop], live_ports: dict[str, set[str]]
 ) -> list[RewrittenStepInput]:
     rewrites: list[RewrittenStepInput] = []
     for in_key, value in _iterate_step_input_entries(step.get("in")):
-        refs = _input_refs(value)
+        refs = _extract_source_refs(value)
         removed = [r for r in refs if _ref_is_dead(r, drops, live_ports)]
         if removed:
             surviving = [r for r in refs if not _ref_is_dead(r, drops, live_ports)]
@@ -910,14 +904,13 @@ def _compute_input_rewrites(
 
 
 def _trim_steps(
-    steps: Any, drops: dict[str, _Drop], inner_results: dict[str, _LevelResult], live_ports: dict[str, set[str]]
+    workflow: dict, drops: dict[str, _Drop], inner_results: dict[str, _LevelResult], live_ports: dict[str, set[str]]
 ) -> Any:
+    steps = workflow.get("steps")
     if isinstance(steps, list):
-        return [
-            _trim_step(entry, _list_step_label(entry), inner_results, drops, live_ports)
-            for entry in steps
-            if isinstance(entry, dict) and _list_step_label(entry) not in drops
-        ]
+        offset = _inputs_offset(workflow)
+        keyed = [(_list_step_key(entry, i, offset), entry) for i, entry in enumerate(steps) if isinstance(entry, dict)]
+        return [_trim_step(entry, key, inner_results, drops, live_ports) for key, entry in keyed if key not in drops]
     if isinstance(steps, dict):
         return {
             label: (_trim_step(step, label, inner_results, drops, live_ports) if isinstance(step, dict) else step)
@@ -978,7 +971,7 @@ def _rewrite_source_carrier(entry: dict, drops: dict[str, _Drop], live_ports: di
 
 
 def _rewrite_step_input_value(value: Any, drops: dict[str, _Drop], live_ports: dict[str, set[str]]) -> Any:
-    refs = _input_refs(value)
+    refs = _extract_source_refs(value)
     surviving = [r for r in refs if not _ref_is_dead(r, drops, live_ports)]
     if len(surviving) == len(refs):
         return value
@@ -1064,7 +1057,7 @@ def resolve_draft_overlay(workflow: Any) -> DraftOverlay | None:
     survey = detect_draft(workflow)
     if not survey.is_draft:
         return None
-    identity_by_key = {key: raw_step_render_identity(step, key) for key, step in _iterate_steps(workflow.get("steps"))}
+    identity_by_key = {key: raw_step_render_identity(step, key) for key, step in _iterate_steps(workflow)}
     overlay = DraftOverlay()
 
     def reason_for(path: StepPath) -> DraftPlannedReason | None:

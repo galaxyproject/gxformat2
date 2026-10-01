@@ -157,3 +157,12 @@ test_detect_draft_inner_output_source_uses_outer_step_path:
       value: TODO_port
     - path: [todos, 4, path]
       value: [lost_sub, inner_bad]
+
+test_detect_draft_unlabeled_list_steps_index_paths:
+  fixture: synthetic-draft-unlabeled-list-steps.gxwf.yml
+  operation: detect_draft
+  assertions:
+    - path: [todos, $length]
+      value: 3
+    - path: [todos, 0, path]
+      value: ["2"]

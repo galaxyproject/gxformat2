@@ -1,0 +1,21 @@
+class: GalaxyWorkflowDraft
+label: step label containing a slash
+inputs:
+  reads:
+    type: data
+outputs:
+  final:
+    outputSource: consume/out
+steps:
+  a/b:
+    tool_id: TODO
+    in:
+      TODO_input: reads
+    out:
+      - id: o
+  consume:
+    tool_id: cat1
+    in:
+      input1: a/b/o
+    out:
+      - id: out

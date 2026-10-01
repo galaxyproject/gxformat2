@@ -273,3 +273,33 @@ test_validate_draft_bad_inner_subworkflow_outer_prefixed:
       value: [outer]
     - path: [warnings, 0, message]
       value: "top-level `_plan_context` is not part of the draft contract; planning fields belong on individual steps"
+
+# A step with an inline workflow `run:` is a subworkflow even without
+# `type: subworkflow`, so its `_plan_*` is allowed.
+test_validate_draft_implicit_subworkflow_allows_plan_fields:
+  fixture: synthetic-draft-implicit-subworkflow.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [semantic_errors, $length]
+      value: 0
+
+test_validate_draft_list_form_in_malformed_todo:
+  fixture: synthetic-draft-list-form-bad-todo.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [semantic_errors, $length]
+      value: 1
+    - path: [semantic_errors, 0, message]
+      value: 'in: key "TODO-input" is TODO-shaped but malformed (must match ^TODO(_[a-zA-Z0-9_]+)?$)'
+
+# Unlabeled list-form steps are addressed by their normalized index id.
+test_validate_draft_unlabeled_list_steps_resolve_by_index:
+  fixture: synthetic-draft-unlabeled-list-steps.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [topology_errors, $length]
+      value: 0

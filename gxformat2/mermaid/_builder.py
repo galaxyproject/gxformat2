@@ -165,7 +165,7 @@ def workflow_to_mermaid(
                 continue
             sources = step_input.source if isinstance(step_input.source, list) else [step_input.source]
             for source in sources:
-                source_ref = nf2.resolve_source(source)
+                source_ref = nf2.resolve_render_source(source)
                 source_id = input_ids.get(source_ref.step_label) or step_ids.get(source_ref.step_label)
                 if source_id:
                     edge_key = (source_id, node_id)

@@ -180,7 +180,7 @@ def _step_edges(
         input_id = step_input.id or "unknown"
         sources = step_input.source if isinstance(step_input.source, list) else [step_input.source]
         for source in sources:
-            ref = nf2.resolve_source(source)
+            ref = nf2.resolve_render_source(source)
             output = ref.output_name if ref.output_name != "output" else None
             edge_id = f"{step_id}__{input_id}__from__{ref.step_label}"
             edge = CytoscapeEdge(

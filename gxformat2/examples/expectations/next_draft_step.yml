@@ -143,3 +143,10 @@ test_next_draft_step_outer_before_inner_when_both_need_work:
       value: [outer]
     - path: [work]
       value: ["_plan_context: settle outer first"]
+
+test_next_draft_step_list_form_in_todo_is_work:
+  fixture: synthetic-draft-list-form.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [work, 2]
+      value: "TODO[in.TODO_input]: assign the real wrapper input port name (semantic hint: 'input')"

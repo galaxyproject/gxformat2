@@ -398,3 +398,42 @@ test_extract_draft_bad_plan_fields_drop_reasons:
       value: [typed]
     - path: [dropped_steps, 3, reason, fields]
       value: [_plan_state]
+
+# A step label containing "/" resolves by longest known label, so the consumer
+# of `a/b/o` cascades when `a/b` drops (not misread as step `a`, port `b/o`).
+test_extract_draft_slash_label_cascades:
+  fixture: synthetic-draft-slash-label.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [dropped_steps, $length]
+      value: 2
+    - path: [dropped_steps, 1, path]
+      value: [consume]
+    - path: [dropped_steps, 1, reason, depends_on]
+      value: [["a/b"]]
+    - path: [dropped_outputs, 0, label]
+      value: final
+    - path: [workflow, steps, $length]
+      value: 0
+
+# Drops and dropped outputs order by codepoint (uppercase first), not locale.
+test_extract_draft_mixed_case_codepoint_order:
+  fixture: synthetic-draft-mixed-case-order.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [dropped_steps, 0, path, 0]
+      value: Alpha
+    - path: [dropped_steps, 1, path, 0]
+      value: Zed
+    - path: [dropped_steps, 2, path, 0]
+      value: alpha
+    - path: [dropped_steps, 3, path, 0]
+      value: apple
+    - path: [dropped_outputs, 0, label]
+      value: Alpha_out
+    - path: [dropped_outputs, 1, label]
+      value: Zed_out
+    - path: [dropped_outputs, 2, label]
+      value: alpha_out
+    - path: [dropped_outputs, 3, label]
+      value: apple_out

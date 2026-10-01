@@ -227,3 +227,24 @@ test_draft_subworkflow_ancestor_planned:
       value_set: ["type_subworkflow", "runnable", "planned"]
     - path: [1, "data", "planned"]
       value: true
+
+test_draft_unlabeled_list_step_planned_node:
+  fixture: synthetic-draft-unlabeled-list-steps.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    - path: [1, "data", "planned"]
+      value_absent: true
+    - path: [2, "data", "id"]
+      value: "2"
+    - path: [2, "data", "planned"]
+      value: true
+
+# A source naming a step by key resolves to that step's label-keyed node.
+test_labeled_step_id_ref_edge_source:
+  fixture: synthetic-labeled-step-id-ref.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    - path: [4, "data", "source"]
+      value: MEME
+    - path: [4, "data", "id"]
+      value: summarize__input__from__MEME
