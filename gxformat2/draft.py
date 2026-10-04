@@ -295,7 +295,7 @@ def _split_source_ref(ref: str, step_labels: set[str] | dict[str, Any]) -> tuple
 
 
 def _step_out_ports(step: dict) -> set[str]:
-    """Declared ``out:`` ids plus every output an embedded ``GalaxyUserTool`` defines."""
+    """Return declared ``out:`` ids plus every output an embedded ``GalaxyUserTool`` defines."""
     ports = set(_iterate_step_out_ids(step.get("out")))
     run = step.get("run")
     if isinstance(run, dict) and run.get("class") in INLINE_TOOL_CLASSES:
@@ -1027,7 +1027,7 @@ class DraftOverlay(BaseModel):
     planned_reason: dict[str, DraftPlannedReason] = {}
 
     def edge_is_planned(self, source_label: str, target_label: str, output_name: str, input_id: str) -> bool:
-        """An edge is planned if either endpoint step is planned or a port it touches is a TODO."""
+        """Check whether either endpoint step is planned or a port the edge touches is a TODO."""
         return (
             source_label in self.planned_steps
             or target_label in self.planned_steps
