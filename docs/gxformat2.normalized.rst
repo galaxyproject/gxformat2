@@ -6,5 +6,5 @@ Module contents
 
 .. automodule:: gxformat2.normalized
    :members:
-   :show-inheritance:
    :undoc-members:
+   :show-inheritance:
