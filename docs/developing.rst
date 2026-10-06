@@ -12,7 +12,7 @@ Create a virtualenv with dev dependencies installed::
 
     make setup-venv
 
-This runs ``uv sync``. The ``test``, ``lint``, ``mypy``, and ``docs``
+This runs ``uv sync``. The ``test``, ``lint``, ``mypy``, ``pyrefly``, and ``docs``
 dependency groups are marked as ``default-groups`` in ``pyproject.toml``
 so they install automatically.
 
@@ -32,7 +32,7 @@ Running Tests and Linters
 ::
 
     make test         # pytest
-    make lint         # ruff, flake8, black, mypy, schema build dry-run
+    make lint         # ruff, flake8, black, mypy, pyrefly, schema build dry-run
     make lint-docs    # rebuild Sphinx HTML and check for warnings
 
 Set ``GXFORMAT2_TEST_IWC_DIRECTORY`` to a local clone of the IWC repository

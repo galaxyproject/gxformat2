@@ -11,6 +11,7 @@ from __future__ import annotations
 import copy
 import json
 import os
+from collections.abc import Iterable
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, TypeAlias
@@ -76,7 +77,7 @@ class SourceReference(NamedTuple):
     output_name: str
 
 
-def resolve_source_reference(value: str, known_labels: set | dict) -> SourceReference:
+def resolve_source_reference(value: str, known_labels: Iterable[str]) -> SourceReference:
     """Parse a source reference into (step_label_or_id, output_name).
 
     Tries matching known labels first to handle labels containing '/'.
@@ -612,6 +613,14 @@ def _normalize_post_job_actions(
     return {key: NativePostJobAction.model_validate(value) for key, value in raw.items()}
 
 
+def _link_source(link: dict[str, Any]) -> str:
+    """Return a ``$link`` source reference, stringifying numeric step ids."""
+    source = link["$link"]
+    if type(source) is int:
+        return str(source)
+    return source
+
+
 def _resolve_links(
     value: Any,
     key: str = "",
@@ -626,10 +635,7 @@ def _resolve_links(
         connections = {}
 
     if isinstance(value, dict) and "$link" in value:
-        link_value = value["$link"]
-        if isinstance(link_value, int) and not isinstance(link_value, bool):
-            link_value = str(link_value)
-        connections.setdefault(key, []).append(link_value)
+        connections.setdefault(key, []).append(_link_source(value))
         return dict(_CONNECTED_VALUE), connections
 
     if isinstance(value, dict):
@@ -643,10 +649,7 @@ def _resolve_links(
         new_list: list[Any] = []
         for i, v in enumerate(value):
             if isinstance(v, dict) and "$link" in v:
-                link_value = v["$link"]
-                if isinstance(link_value, int) and not isinstance(link_value, bool):
-                    link_value = str(link_value)
-                connections.setdefault(key, []).append(link_value)
+                connections.setdefault(key, []).append(_link_source(v))
                 new_list.append(None)
             else:
                 child_key = f"{key}_{i}"

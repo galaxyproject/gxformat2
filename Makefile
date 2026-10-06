@@ -61,12 +61,13 @@ setup-pre-commit: ## install pre-commit hook (uses .pre-commit-config.yaml if pr
 		$(IN_VENV) pre-commit install --config .pre-commit-config.yaml.sample; \
 	fi
 
-lint: ## check style with ruff, flake8, black, and mypy
+lint: ## check style with ruff, flake8, black, mypy, and pyrefly
 	uv run --group lint isort --check --diff .
 	uv run --group lint ruff check
 	uv run --group lint flake8
 	uv run --group lint black --check --diff .
 	uv run --group mypy mypy gxformat2
+	uv run --group pyrefly pyrefly check
 	SKIP_JAVA=1 SKIP_TYPESCRIPT=1 GXFORMAT2_SCHEMA_BUILD_DRY_RUN=1 bash build_schema.sh
 
 lint-docs: ready-docs
@@ -153,3 +154,6 @@ format:
 
 mypy:
 	uv run --group mypy mypy gxformat2
+
+pyrefly:
+	uv run --group pyrefly pyrefly check

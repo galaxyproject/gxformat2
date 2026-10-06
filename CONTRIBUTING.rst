@@ -85,6 +85,7 @@ Ready to contribute? Here's how to set up `gxformat` for local development.
 
        $ tox -e lint
        $ tox -e mypy
+       $ tox -e pyrefly
        $ tox -e unit
 
 6. Commit your changes and push your branch to GitHub::
