@@ -61,6 +61,10 @@ mypy = [
     "types-PyYAML",
     "types-requests",
 ]
+# Pinned: new releases add checks; bump deliberately (tox.ini pins it too).
+pyrefly = [
+    "pyrefly==1.3.2",
+]
 test = [
     "pytest",
     "pydantic>=2.0",
@@ -80,7 +84,7 @@ docs = [
 ]
 
 [tool.uv]
-default-groups = ["test", "lint", "mypy", "docs"]
+default-groups = ["test", "lint", "mypy", "pyrefly", "docs"]
 
 [tool.ruff]
 exclude = [
@@ -125,3 +129,10 @@ dependencies = {file = "requirements.txt"}
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["gxformat2*"]
+
+# Pyrefly runs alongside mypy (tox -e pyrefly). ignore-missing-imports mirrors
+# mypy's global ignore_missing_imports in setup.cfg; keep the two in sync.
+[tool.pyrefly]
+project-includes = ["gxformat2", "tests"]
+preset = "legacy"
+ignore-missing-imports = ["*"]

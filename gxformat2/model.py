@@ -1,5 +1,6 @@
 """Abstractions for dealing with Format2 data."""
 
+from collections.abc import Iterable
 from typing import (
     Any,
     cast,
@@ -50,7 +51,7 @@ def get_native_step_type(gxformat2_step_dict: dict) -> _NativeGalaxyStepType:
         raise Exception(f"Unknown step type encountered {raw_step_type}")
     step_type: _NativeGalaxyStepType
     if raw_step_type in _STEP_TYPE_ALIASES:
-        step_type = _STEP_TYPE_ALIASES[cast(_GxFormat2StepTypeAlias, raw_step_type)]
+        step_type = _STEP_TYPE_ALIASES[raw_step_type]
     else:
         step_type = cast(_NativeGalaxyStepType, raw_step_type)
     return step_type
@@ -102,7 +103,7 @@ def setup_connected_values(value, key: str = "", append_to: dict[str, list] | No
         return value
 
 
-def resolve_source_reference(value: str, known_labels: set | dict) -> tuple:
+def resolve_source_reference(value: str, known_labels: Iterable[str]) -> tuple:
     """Parse a source reference into (step_label_or_id, output_name).
 
     Deprecated: use ``gxformat2.normalized.resolve_source_reference`` directly.
@@ -148,7 +149,7 @@ def _convert_dict_to_id_list_if_needed(
                 value["id"] = key
             rval.append(value)
     else:
-        rval = cast(list, dict_or_list)
+        rval = dict_or_list
     return rval
 
 

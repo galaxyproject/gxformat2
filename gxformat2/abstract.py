@@ -144,7 +144,7 @@ def _galaxy_type_to_cwl(galaxy_type: GalaxyType | str | list[GalaxyType | str] |
             if t != GalaxyType.null:
                 return _galaxy_type_to_cwl(t) + "[]"
         return "File"
-    type_str = galaxy_type.value if isinstance(galaxy_type, GalaxyType) else str(galaxy_type)
+    type_str = galaxy_type.value if isinstance(galaxy_type, GalaxyType) else galaxy_type
     if type_str in ("data", "File"):
         return "File"
     if type_str == "collection":

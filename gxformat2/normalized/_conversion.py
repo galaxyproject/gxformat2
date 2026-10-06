@@ -466,7 +466,7 @@ def _build_format2_workflow(
     # Build label map for source references
     label_map: dict[str, str] = {}
     for key, step in wf.steps.items():
-        label_map[str(key)] = unlabeled_node_id(step.label, step.id, step.type_ in INPUT_STEP_TYPES)
+        label_map[key] = unlabeled_node_id(step.label, step.id, step.type_ in INPUT_STEP_TYPES)
 
     # Separate inputs from non-input steps
     input_params: list[BaseInputParameter] = []
@@ -881,7 +881,7 @@ def _replace_anonymous_output_references(
     for step in fmt2_steps:
         label = step.label or step.id
         if isinstance(step.run, NormalizedFormat2):
-            runs_by_label[str(label)] = step.run
+            runs_by_label[label] = step.run
 
     for out in output_params:
         source = out.outputSource
@@ -1120,7 +1120,7 @@ class _ConversionContext:
         return int(label_or_id)
 
     def step_output(self, value: str) -> tuple[int, str]:
-        label_or_id, output_name = resolve_source_reference(str(value), self.labels)
+        label_or_id, output_name = resolve_source_reference(value, self.labels)
         return self.step_id(label_or_id), output_name
 
     def child_context(self) -> _ConversionContext:

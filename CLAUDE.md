@@ -5,7 +5,7 @@ Galaxy Workflow Format 2 - library for converting between Format2 (YAML) and nat
 ## Setup
 
 ```bash
-uv sync --group test --group lint --group mypy
+uv sync --group test --group lint --group mypy --group pyrefly
 ```
 
 ## Running Tests
@@ -23,6 +23,7 @@ uv run --group lint ruff check
 uv run --group lint flake8
 uv run --group lint black --check --diff .
 uv run --group mypy mypy gxformat2
+uv run --group pyrefly pyrefly check
 ```
 
 ## Project Structure
