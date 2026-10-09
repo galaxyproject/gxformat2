@@ -1,0 +1,19 @@
+class: GalaxyWorkflow
+label: source references a step by key when its label differs
+inputs:
+  seqs: data
+outputs:
+  motifs:
+    outputSource: meme/out
+steps:
+  meme:
+    label: MEME
+    tool_id: meme_tool
+    in:
+      input: seqs
+    out:
+      - out
+  summarize:
+    tool_id: summary_tool
+    in:
+      input: meme/out

@@ -1,0 +1,21 @@
+class: GalaxyWorkflowDraft
+label: bare TODO ports warn; TODO-prefixed identifiers are not sentinels
+inputs:
+  reads:
+    type: data
+outputs: {}
+steps:
+  a_bare:
+    tool_id: TODO
+    tool_version: TODO
+    in:
+      TODO: reads
+    out:
+      - id: TODO
+  TODONE_step:
+    tool_id: TODONE
+    tool_version: TODOLIST
+    in:
+      TODONE: reads
+    out:
+      - id: TODOLIST

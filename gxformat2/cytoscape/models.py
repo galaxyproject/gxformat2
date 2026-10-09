@@ -14,6 +14,18 @@ class CytoscapePosition(BaseModel):
     y: int = Field(default=0)
 
 
+class CytoscapePlanReason(BaseModel):
+    """Planning context of a planned (draft) step node."""
+
+    todos: list[str] = Field(default_factory=list)
+    plan_fields: dict[str, str] = Field(default_factory=dict)
+
+
+# Draft-only fields: emitted only when set, so concrete output is unchanged.
+_DRAFT_NODE_DATA_FIELDS = ("planned", "plan_reason")
+_DRAFT_EDGE_DATA_FIELDS = ("planned",)
+
+
 class CytoscapeNodeData(BaseModel):
     """Data payload for a Cytoscape node (input or step)."""
 
@@ -23,6 +35,8 @@ class CytoscapeNodeData(BaseModel):
     tool_id: str | None = Field(default=None)
     step_type: str = Field(default="tool")
     repo_link: str | None = Field(default=None)
+    planned: bool | None = Field(default=None)
+    plan_reason: CytoscapePlanReason | None = Field(default=None)
 
 
 class CytoscapeEdgeData(BaseModel):
@@ -33,6 +47,7 @@ class CytoscapeEdgeData(BaseModel):
     target: str
     input: str
     output: str | None = Field(default=None)
+    planned: bool | None = Field(default=None)
 
 
 class CytoscapeNode(BaseModel):
@@ -52,6 +67,7 @@ class CytoscapeEdge(BaseModel):
 
     group: Literal["edges"] = "edges"
     data: CytoscapeEdgeData
+    classes: list[str] | None = Field(default=None)
 
 
 class CytoscapeLayout(BaseModel):
@@ -77,11 +93,16 @@ class CytoscapeElements(BaseModel):
             # avoid ``exclude_none`` because it would also strip nested nulls
             # like ``tool_id: null``, breaking byte-parity for the default flow.
             if node.position is None:
-                elements.append(node.model_dump(exclude={"position"}))
+                element = node.model_dump(exclude={"position"})
             else:
-                elements.append(node.model_dump())
+                element = node.model_dump()
+            _drop_none(element["data"], _DRAFT_NODE_DATA_FIELDS)
+            elements.append(element)
         for edge in self.edges:
-            elements.append(edge.model_dump())
+            element = edge.model_dump()
+            _drop_none(element, ("classes",))
+            _drop_none(element["data"], _DRAFT_EDGE_DATA_FIELDS)
+            elements.append(element)
         return elements
 
     def to_dict(self) -> dict:
@@ -94,3 +115,9 @@ class CytoscapeElements(BaseModel):
         if self.layout is not None:
             result["layout"] = self.layout.model_dump()
         return result
+
+
+def _drop_none(payload: dict, keys: tuple[str, ...]) -> None:
+    for key in keys:
+        if payload.get(key) is None:
+            payload.pop(key, None)

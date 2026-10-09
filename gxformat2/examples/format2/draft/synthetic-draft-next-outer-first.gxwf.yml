@@ -1,0 +1,20 @@
+class: GalaxyWorkflowDraft
+label: outer subworkflow step with its own work is surfaced before inner work
+inputs:
+  reads:
+    type: data
+outputs: {}
+steps:
+  outer:
+    type: subworkflow
+    _plan_context: settle outer first
+    in:
+      reads: reads
+    out:
+      - id: result
+    run:
+      class: GalaxyWorkflowDraft
+      steps:
+        inner:
+          tool_id: TODO
+          tool_version: TODO

@@ -1,0 +1,41 @@
+class: GalaxyWorkflowDraft
+label: embedded GalaxyUserTool outputs resolve as step ports
+inputs:
+  the_input: data
+outputs:
+  the_output:
+    outputSource: my_tool/output1
+  consumed:
+    outputSource: consume/out_file1
+steps:
+  my_tool:
+    run:
+      class: GalaxyUserTool
+      id: cat_user_defined
+      version: "0.1"
+      name: cat_user_defined
+      description: concatenates a file
+      container: busybox
+      shell_command: cat '$(inputs.input1.path)' > output.txt
+      inputs:
+        - name: input1
+          type: data
+          format: txt
+      outputs:
+        - name: output1
+          type: data
+          format: txt
+          from_work_dir: output.txt
+    in:
+      input1: the_input
+  consume:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: my_tool/output1
+    out:
+      - id: out_file1
+  pending:
+    tool_id: TODO
+    in:
+      input1: the_input

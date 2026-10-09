@@ -1,0 +1,56 @@
+class: GalaxyWorkflowDraft
+label: invalid — _plan_* on concrete tool steps (non-tool and drafty steps allowed)
+inputs:
+  reads:
+    type: data
+outputs: {}
+steps:
+  cat:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: reads
+    out:
+      - id: out_file1
+    _plan_state: stale planning context
+    _plan_context: more stale context
+  typed:
+    type: tool
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: reads
+    out:
+      - id: out_file1
+    _plan_state: stale
+  drafty:
+    tool_id: TODO
+    tool_version: TODO
+    in:
+      TODO_input: reads
+    out:
+      - id: TODO_out
+    _plan_state: planning context, legitimately on a drafty step
+  sub:
+    type: subworkflow
+    in:
+      reads: reads
+    out:
+      - id: output
+    _plan_context: planning context on a concrete subworkflow step
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        reads:
+          type: data
+      outputs:
+        output:
+          outputSource: cat/out_file1
+      steps:
+        cat:
+          tool_id: cat1
+          tool_version: "1.0.0"
+          in:
+            input1: reads
+          out:
+            - id: out_file1

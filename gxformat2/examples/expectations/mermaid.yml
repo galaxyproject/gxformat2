@@ -129,3 +129,112 @@ test_real_sars_cov2_shape:
       value_any_contains: "input_0 --> step_0"
     - path: []
       value_any_contains: "step_6 --> step_8"
+
+# --- Draft workflows (class: GalaxyWorkflowDraft) ---
+# A draft renders its planned steps (any TODO sentinel or _plan_* field) with a
+# dashed, muted `planned` class; edges touching a planned step or a TODO_* port
+# become grey dashed links. Concrete workflows render unchanged.
+test_draft_single_tool_step_exact:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: workflow_to_mermaid
+  assertions:
+    - path: []
+      value: |-
+        graph LR
+            input_0>"reads<br/><i>collection</i>"]
+            step_0["trim and QC paired reads"]
+            input_0 -.-> step_0
+            linkStyle 0 stroke:#b0b0b0,stroke-dasharray:5 5
+            classDef planned fill:#fafafa,stroke:#b0b0b0,stroke-dasharray:5 5,color:#777;
+            class step_0 planned;
+
+test_draft_single_tool_step_planned_class:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: []
+      value_any_contains: "classDef planned fill:#fafafa,stroke:#b0b0b0,stroke-dasharray:5 5,color:#777;"
+    - path: []
+      value_any_contains: "class step_0 planned;"
+    - path: []
+      value_any_contains: "input_0 -.-> step_0"
+    - path: []
+      value_any_contains: "linkStyle 0 stroke:#b0b0b0,stroke-dasharray:5 5"
+
+test_draft_mixed_steps_exact:
+  fixture: synthetic-draft-mixed-steps.gxwf.yml
+  operation: workflow_to_mermaid
+  assertions:
+    - path: []
+      value: |-
+        graph LR
+            input_0>"in_reads<br/><i>data</i>"]
+            step_0["align"]
+            step_1["call variants"]
+            input_0 --> step_0
+            step_0 -.-> step_1
+            linkStyle 1 stroke:#b0b0b0,stroke-dasharray:5 5
+            classDef planned fill:#fafafa,stroke:#b0b0b0,stroke-dasharray:5 5,color:#777;
+            class step_1 planned;
+
+test_draft_mixed_steps_concrete_step_unmarked:
+  fixture: synthetic-draft-mixed-steps.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    # Concrete upstream step + its feeding edge stay solid/unstyled.
+    - path: []
+      value_any_contains: "input_0 --> step_0"
+    # Only the planned step is classed; the concrete one (step_0) is not.
+    - path: []
+      value_any_contains: "class step_1 planned;"
+    # Edge into the planned step is dashed.
+    - path: []
+      value_any_contains: "step_0 -.-> step_1"
+
+test_draft_planned_step_as_source_exact:
+  fixture: synthetic-draft-planned-source.gxwf.yml
+  operation: workflow_to_mermaid
+  assertions:
+    - path: []
+      value: |-
+        graph LR
+            input_0>"seqs<br/><i>data</i>"]
+            step_0["detect"]
+            step_1["summarize"]
+            input_0 -.-> step_0
+            step_0 -.-> step_1
+            linkStyle 0 stroke:#b0b0b0,stroke-dasharray:5 5
+            linkStyle 1 stroke:#b0b0b0,stroke-dasharray:5 5
+            classDef planned fill:#fafafa,stroke:#b0b0b0,stroke-dasharray:5 5,color:#777;
+            class step_0 planned;
+
+test_draft_planned_source_edge_planned_via_source_and_todo_port:
+  fixture: synthetic-draft-planned-source.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    # Planned step is the SOURCE; its outgoing edge to the concrete step is
+    # dashed (planned via source-step membership AND the surviving TODO_* port).
+    - path: []
+      value_any_contains: "step_0 -.-> step_1"
+    - path: []
+      value_any_contains: "linkStyle 1 stroke:#b0b0b0,stroke-dasharray:5 5"
+    # Only the planned upstream step is classed; the concrete consumer is not.
+    - path: []
+      value_any_contains: "class step_0 planned;"
+
+test_draft_unlabeled_list_step_planned_class:
+  fixture: synthetic-draft-unlabeled-list-steps.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: []
+      value_any_contains: "class step_1 planned;"
+    - path: []
+      value_any_contains: "step_0 -.-> step_1"
+
+# A source naming a step by key resolves to that step's label-keyed node.
+test_labeled_step_id_ref_edge:
+  fixture: synthetic-labeled-step-id-ref.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: []
+      value_any_contains: "step_0 --> step_1"
