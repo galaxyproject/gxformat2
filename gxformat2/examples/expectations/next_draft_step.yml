@@ -150,3 +150,11 @@ test_next_draft_step_list_form_in_todo_is_work:
   assertions:
     - path: [work, 2]
       value: "TODO[in.TODO_input]: assign the real wrapper input port name (semantic hint: 'input')"
+
+
+test_next_draft_step_unicode_codepoint_order:
+  fixture: synthetic-draft-unicode-order.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [step]
+      value: [""]

@@ -26,6 +26,8 @@ _COLLECTION_TYPE_VALUES = {"collection", "data_collection", "data_collection_inp
 def _as_dict(model_or_dict: Any) -> Mapping[str, Any]:
     if hasattr(model_or_dict, "model_dump"):
         return model_or_dict.model_dump(by_alias=True)
+    if not isinstance(model_or_dict, Mapping):
+        raise ValueError("Expected a mapping for semantic validation")
     return model_or_dict
 
 
@@ -65,6 +67,8 @@ def validate_column_definition(column: Any) -> None:
         values = column_dict.get(field)
         if not values:
             continue
+        if not isinstance(values, list):
+            raise ValueError(f"Sample sheet column {name!r} {field} must be a list")
         for v in values:
             if not _column_value_matches_type(column_type, v):
                 raise ValueError(
@@ -94,11 +98,17 @@ def validate_input_parameter(input_param: Any) -> None:
     is_text_only = bool(type_values) and all(t in _TEXT_TYPE_VALUES for t in type_values)
     is_collection_only = bool(type_values) and all(t in _COLLECTION_TYPE_VALUES for t in type_values)
 
+    collection_type = data.get("collection_type")
+    if collection_type is None:
+        collection_type = ""
+    if not isinstance(collection_type, str):
+        raise ValueError("collection_type must be a string")
     column_definitions = data.get("column_definitions")
     if column_definitions:
+        if not isinstance(column_definitions, list):
+            raise ValueError("column_definitions must be a list")
         if not is_collection_only and type_values:
             raise ValueError(f"column_definitions is only valid on collection inputs, got type={type_value!r}")
-        collection_type = data.get("collection_type") or ""
         if not collection_type.startswith("sample_sheet"):
             raise ValueError(
                 f"column_definitions requires collection_type starting with 'sample_sheet', got {collection_type!r}"
@@ -110,7 +120,6 @@ def validate_input_parameter(input_param: Any) -> None:
     if fields:
         if not is_collection_only and type_values:
             raise ValueError(f"fields is only valid on collection inputs, got type={type_value!r}")
-        collection_type = data.get("collection_type") or ""
         if not _RECORD_RANK_RE.search(collection_type):
             raise ValueError(f"fields requires collection_type containing 'record', got {collection_type!r}")
 

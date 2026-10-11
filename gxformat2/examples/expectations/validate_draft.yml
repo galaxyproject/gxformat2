@@ -303,3 +303,66 @@ test_validate_draft_unlabeled_list_steps_resolve_by_index:
       value: true
     - path: [topology_errors, $length]
       value: 0
+
+
+test_validate_draft_rejects_shorthand_todo_input_type:
+  fixture: synthetic-draft-bad-shorthand-input-type.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 1
+    - path: [topology_errors, 0, message]
+      value: 'workflow input "reads" type cannot be a TODO sentinel'
+
+test_validate_draft_collects_shared_semantics_across_subworkflows:
+  fixture: synthetic-draft-bad-shared-semantics.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [semantic_errors, $length]
+      value: 4
+    - path: [semantic_errors, 0, path]
+      value: []
+    - path: [semantic_errors, 0, message]
+      value_contains: column_definitions requires collection_type
+    - path: [semantic_errors, 1, path]
+      value: [cat]
+    - path: [semantic_errors, 1, message]
+      value_contains: "both 'state' and 'tool_state'"
+    - path: [semantic_errors, 2, path]
+      value: [draft_sub, inner]
+    - path: [semantic_errors, 3, path]
+      value: [concrete_sub, inner]
+
+
+test_validate_draft_reports_malformed_nested_inputs_without_raising:
+  fixture: synthetic-draft-bad-nested-input-shapes.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [semantic_errors, $length]
+      value: 2
+    - path: [semantic_errors, 0, path]
+      value: [draft_sub]
+    - path: [semantic_errors, 1, path]
+      value: [concrete_sub]
+
+
+test_validate_draft_rejects_record_fields_on_data_input:
+  fixture: synthetic-draft-bad-record-input-type.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [semantic_errors, $length]
+      value: 1
+    - path: [semantic_errors, 0, message]
+      value_contains: fields is only valid on collection inputs

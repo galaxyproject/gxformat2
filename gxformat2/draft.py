@@ -18,6 +18,7 @@ from typing import Annotated, Any, Final, Literal
 
 from pydantic import BaseModel, Field, ValidationError
 
+from gxformat2._semantic_validators import validate_input_parameter, validate_step
 from gxformat2.normalized._format2 import resolve_source_reference
 from gxformat2.normalized._types import INLINE_TOOL_CLASSES
 from gxformat2.schema.gxformat2_draft import GalaxyWorkflowDraft
@@ -402,8 +403,8 @@ def validate_draft(workflow: Any) -> DraftValidationResult:
     - ``topology_errors``: TODO sentinels where topology must be concrete (input,
       output and step labels, input and step types) and edge refs that don't
       resolve to a declared step + port.
-    - ``semantic_errors``: malformed TODO-shaped strings, and ``_plan_*`` left on
-      a tool step with no remaining TODO sentinels.
+    - ``semantic_errors``: shared input/step cross-field violations, malformed
+      TODO-shaped strings, and ``_plan_*`` left on a resolved tool step.
     - ``warnings``: bare ``TODO`` in port position; ``_plan_*`` on a draft root.
     """
     if not is_draft_workflow(workflow):
@@ -425,6 +426,8 @@ def validate_draft(workflow: Any) -> DraftValidationResult:
     topology_errors: list[DraftValidationDiagnostic] = []
     semantic_errors: list[DraftValidationDiagnostic] = []
     warnings: list[DraftValidationDiagnostic] = []
+    if not structure_errors:
+        _walk_workflow_semantics(workflow, [], semantic_errors)
     _walk_draft_validation(workflow, [], topology_errors, semantic_errors, warnings)
 
     for todo in survey.todos:
@@ -447,6 +450,26 @@ def validate_draft(workflow: Any) -> DraftValidationResult:
         warnings=warnings,
         survey=survey,
     )
+
+
+def _walk_workflow_semantics(workflow: dict, prefix: StepPath, errors: list[DraftValidationDiagnostic]) -> None:
+    for _, workflow_input in _iterate_labeled(workflow.get("inputs")):
+        if isinstance(workflow_input, dict):
+            try:
+                validate_input_parameter(workflow_input)
+            except ValueError as exc:
+                errors.append(DraftValidationDiagnostic(path=prefix, message=str(exc)))
+    for label, step in _iterate_steps(workflow):
+        if not isinstance(step, dict):
+            continue
+        path = [*prefix, label]
+        try:
+            validate_step(step)
+        except ValueError as exc:
+            errors.append(DraftValidationDiagnostic(path=path, message=str(exc)))
+        run = step.get("run")
+        if isinstance(run, dict) and run.get("class") in ("GalaxyWorkflow", DRAFT_CLASS):
+            _walk_workflow_semantics(run, path, errors)
 
 
 def _is_tool_step(step: dict) -> bool:
@@ -505,7 +528,8 @@ def _walk_draft_validation(
     for label, workflow_input in _iterate_labeled(workflow.get("inputs")):
         input_labels.add(label)
         _check_label(label, prefix, "workflow input", topology_errors, semantic_errors)
-        if isinstance(workflow_input, dict) and is_todo_sentinel(workflow_input.get("type")):
+        input_type = workflow_input.get("type") if isinstance(workflow_input, dict) else workflow_input
+        if is_todo_sentinel(input_type):
             topology_errors.append(
                 DraftValidationDiagnostic(
                     path=prefix, message=f'workflow input "{label}" type cannot be a TODO sentinel'
@@ -910,7 +934,15 @@ def _trim_steps(
     if isinstance(steps, list):
         offset = _inputs_offset(workflow)
         keyed = [(_list_step_key(entry, i, offset), entry) for i, entry in enumerate(steps) if isinstance(entry, dict)]
-        return [_trim_step(entry, key, inner_results, drops, live_ports) for key, entry in keyed if key not in drops]
+        surviving = [(key, entry) for key, entry in keyed if key not in drops]
+        trimmed = []
+        for index, (key, entry) in enumerate(surviving):
+            step = _trim_step(entry, key, inner_results, drops, live_ports)
+            if _list_step_key(step, index, offset) != key:
+                # Filtering moves anonymous steps; keep the IDs their references use.
+                step["id"] = key
+            trimmed.append(step)
+        return trimmed
     if isinstance(steps, dict):
         return {
             label: (_trim_step(step, label, inner_results, drops, live_ports) if isinstance(step, dict) else step)

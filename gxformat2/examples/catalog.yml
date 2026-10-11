@@ -958,3 +958,47 @@
   format: format2
   tests:
     - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-extract-list-identities.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_normalized.py
+
+- file: format2/draft/synthetic-draft-extract-nested-list-identities.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_normalized.py
+
+- file: format2/draft/synthetic-draft-bad-shorthand-input-type.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-shared-semantics.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-nested-input-shapes.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-unicode-order.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-record-input-type.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py

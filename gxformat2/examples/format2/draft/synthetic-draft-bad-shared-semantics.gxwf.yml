@@ -1,0 +1,37 @@
+class: GalaxyWorkflowDraft
+outputs: {}
+inputs:
+  reads:
+    type: collection
+    collection_type: list
+    column_definitions:
+      - name: sample
+        type: string
+        optional: false
+steps:
+  cat:
+    tool_id: cat1
+    state: {a: 1}
+    tool_state: {a: 2}
+  draft_sub:
+    type: subworkflow
+    run:
+      class: GalaxyWorkflowDraft
+      inputs: {}
+      outputs: {}
+      steps:
+        inner:
+          tool_id: cat1
+          state: {a: 1}
+          tool_state: {a: 2}
+  concrete_sub:
+    type: subworkflow
+    run:
+      class: GalaxyWorkflow
+      inputs: {}
+      outputs: {}
+      steps:
+        inner:
+          tool_id: cat1
+          state: {a: 1}
+          tool_state: {a: 2}

@@ -437,3 +437,52 @@ test_extract_draft_mixed_case_codepoint_order:
       value: alpha_out
     - path: [dropped_outputs, 3, label]
       value: apple_out
+
+
+test_extract_draft_preserves_unlabeled_list_identities:
+  fixture: synthetic-draft-extract-list-identities.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [dropped_steps, 0, path]
+      value: ["1"]
+    - path: [workflow, steps, $length]
+      value: 2
+    - path: [workflow, steps, 0, id]
+      value: "2"
+    - path: [workflow, steps, 1, id]
+      value: "3"
+    - path: [workflow, steps, 1, in, input1]
+      value: 2/output
+    - path: [workflow, outputs, result, outputSource]
+      value: 3/output
+
+test_extract_draft_preserves_nested_unlabeled_list_identities:
+  fixture: synthetic-draft-extract-nested-list-identities.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [dropped_steps, 0, path]
+      value: [outer, "1"]
+    - path: [workflow, steps, outer, run, steps, 0, id]
+      value: "2"
+    - path: [workflow, steps, outer, run, steps, 1, id]
+      value: "3"
+    - path: [workflow, steps, outer, run, steps, 1, in, input1]
+      value: 2/output
+    - path: [workflow, steps, outer, run, outputs, result, outputSource]
+      value: 3/output
+    - path: [dropped_outputs, $length]
+      value: 0
+
+
+test_extract_draft_unicode_codepoint_order:
+  fixture: synthetic-draft-unicode-order.gxwf.yml
+  operation: extract_draft_subset
+  assertions:
+    - path: [dropped_steps, 0, path]
+      value: [""]
+    - path: [dropped_steps, 1, path]
+      value: ["😀"]
+    - path: [dropped_outputs, 0, label]
+      value: ""
+    - path: [dropped_outputs, 1, label]
+      value: "😀"
