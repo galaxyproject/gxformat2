@@ -5,6 +5,8 @@ but cannot express cross-field rules (e.g. "column_definitions only on
 sample_sheet collection inputs"). These checks are run after structural
 validation and raise ``ValueError`` on violation - callers wrap them in
 ``pydantic.ValidationError`` where useful.
+Type mismatches also use ``ValueError`` so those callers collect diagnostics
+instead of propagating ``TypeError``.
 
 Mirrors the constraints enforced by Galaxy's runtime
 ``galaxy.model.dataset_collections.types.sample_sheet_util.SampleSheetColumnDefinitionModel``.
@@ -27,7 +29,7 @@ def _as_dict(model_or_dict: Any) -> Mapping[str, Any]:
     if hasattr(model_or_dict, "model_dump"):
         return model_or_dict.model_dump(by_alias=True)
     if not isinstance(model_or_dict, Mapping):
-        raise ValueError("Expected a mapping for semantic validation")
+        raise ValueError("Expected a mapping for semantic validation")  # noqa: TRY004
     return model_or_dict
 
 
@@ -68,7 +70,7 @@ def validate_column_definition(column: Any) -> None:
         if not values:
             continue
         if not isinstance(values, list):
-            raise ValueError(f"Sample sheet column {name!r} {field} must be a list")
+            raise ValueError(f"Sample sheet column {name!r} {field} must be a list")  # noqa: TRY004
         for v in values:
             if not _column_value_matches_type(column_type, v):
                 raise ValueError(
@@ -102,7 +104,7 @@ def validate_input_parameter(input_param: Any) -> None:
     if collection_type is None:
         collection_type = ""
     if not isinstance(collection_type, str):
-        raise ValueError("collection_type must be a string")
+        raise ValueError("collection_type must be a string")  # noqa: TRY004
     column_definitions = data.get("column_definitions")
     if column_definitions:
         if not isinstance(column_definitions, list):
