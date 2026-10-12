@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import re
+import urllib.parse
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -38,6 +39,7 @@ a default via :func:`default_url_resolver`.
 TRS_URL_REGEX = re.compile(
     r"(?P<trs_base_url>https?://.+)/ga4gh/trs/v2/tools/(?P<tool_id>.+)/versions/(?P<version_id>[^/]+)"
 )
+GA4GH_GALAXY_DESCRIPTOR = "GALAXY"
 MAX_EXPANSION_DEPTH = 10
 
 
@@ -75,17 +77,18 @@ def default_url_resolver(url: str) -> dict[str, Any]:
 
     Handles:
     - ``base64://`` URLs: base64-decode inline content
-    - TRS URLs (GA4GH pattern): fetch descriptor endpoint, extract ``content``
+    - TRS URLs (GA4GH pattern): fetch the ``GALAXY`` descriptor endpoint, extract ``content``
     - Plain URLs: HTTP GET, parse as YAML/JSON
     """
     if url.startswith("base64://"):
         content = base64.b64decode(url[len("base64://") :]).decode("utf-8")
         return yaml.safe_load(content)
 
-    response = requests.get(url, timeout=30)
+    descriptor_url = trs_descriptor_url(url)
+    response = requests.get(descriptor_url or url, timeout=30)
     response.raise_for_status()
 
-    if is_trs_url(url):
+    if descriptor_url:
         descriptor = response.json()
         return yaml.safe_load(descriptor["content"])
 
@@ -98,3 +101,22 @@ def default_url_resolver(url: str) -> dict[str, Any]:
 def is_trs_url(url: str) -> bool:
     """Check if a URL matches the GA4GH TRS v2 tools/versions pattern."""
     return bool(TRS_URL_REGEX.match(url))
+
+
+def trs_descriptor_url(url: str) -> str | None:
+    """Build the GA4GH TRS ``GALAXY`` descriptor URL for a TRS tool version URL.
+
+    The tool id may be percent-encoded or not (Galaxy and planemo emit it unencoded,
+    e.g. ``.../tools/#workflow/github.com/org/repo/main/versions/v1``), so it is
+    unquoted and re-encoded to keep ``#`` and ``/`` from being misread as URL syntax.
+    Any trailing path (such as ``/GALAXY/descriptor``) is ignored. Returns ``None``
+    if ``url`` is not a TRS URL.
+    """
+    match = TRS_URL_REGEX.match(url)
+    if not match:
+        return None
+    tool_id = urllib.parse.quote_plus(urllib.parse.unquote(match["tool_id"]))
+    return (
+        f"{match['trs_base_url']}/ga4gh/trs/v2/tools/{tool_id}"
+        f"/versions/{match['version_id']}/{GA4GH_GALAXY_DESCRIPTOR}/descriptor"
+    )
