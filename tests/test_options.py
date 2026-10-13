@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from gxformat2.options import default_url_resolver, trs_descriptor_url
+from gxformat2.options import default_url_resolver
 
 TRS_BASE = "https://dockstore.org/api/ga4gh/trs/v2/tools"
 ENCODED_DESCRIPTOR_URL = (
@@ -21,13 +21,8 @@ TRS_URLS = [
 ]
 
 
-@pytest.mark.parametrize("url", TRS_URLS)
-def test_trs_descriptor_url(url):
-    assert trs_descriptor_url(url) == ENCODED_DESCRIPTOR_URL
-
-
-def test_trs_descriptor_url_non_trs():
-    assert trs_descriptor_url("https://example.org/workflow.ga") is None
+# trs_descriptor_url() itself is covered by the shared declarative case in
+# gxformat2/examples/expectations/trs_descriptor_urls.yml.
 
 
 @pytest.mark.parametrize("url", TRS_URLS)
