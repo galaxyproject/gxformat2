@@ -142,3 +142,109 @@ test_real_sars_cov2_smoke:
       value_any_contains: "Accessions file"
     - path: []
       value_any_contains: "SnpSift"
+
+# --- Draft workflows (class: GalaxyWorkflowDraft) ---
+# Planned step nodes keep type_*/runnable and gain `planned` last, plus
+# data.planned and data.plan_reason; edges touching a planned step or a TODO_*
+# port get the `planned` class and data.planned. Concrete output is unchanged.
+# Element order is inputs, then steps, then edges.
+test_draft_tool_step_planned_node:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    # The single planned tool step keeps type_tool + runnable and gains planned.
+    - path: [1, "classes"]
+      value_set: ["type_tool", "runnable", "planned"]
+    - path: [1, "data", "planned"]
+      value: true
+    # Plan context is carried structured for the viewer tooltip.
+    - path: [1, "data", "plan_reason", "todos"]
+      value_any_contains: "tool_id"
+    - path: [1, "data", "plan_reason", "plan_fields", "_plan_state"]
+      value_contains: "Adapter trimming"
+    # The input node is concrete — no planned class, no planned flag.
+    - path: [0, "classes"]
+      value_set: ["type_collection", "input"]
+    - path: [0, "data", "planned"]
+      value_absent: true
+
+test_draft_tool_step_planned_edge:
+  fixture: synthetic-draft-tool-step.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    # Edge into the planned step (target planned + TODO_input port) is planned.
+    - path: [2, "data", "planned"]
+      value: true
+    - path: [2, "classes"]
+      value_set: ["planned"]
+
+test_draft_mixed_steps_concrete_node_unmarked:
+  fixture: synthetic-draft-mixed-steps.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    # Concrete upstream step (align) is unmarked.
+    - path: [1, "classes"]
+      value_set: ["type_tool", "runnable"]
+    - path: [1, "data", "planned"]
+      value_absent: true
+    # Only the planned step (call variants) is classed planned.
+    - path: [2, "classes"]
+      value_set: ["type_tool", "runnable", "planned"]
+    # Concrete→concrete edge (in_reads→align) stays plain; no classes emitted.
+    - path: [3, "data", "planned"]
+      value_absent: true
+    - path: [3, "classes"]
+      value_absent: true
+    # Edge into the planned step is planned.
+    - path: [4, "data", "planned"]
+      value: true
+
+test_draft_planned_source_edges_planned:
+  fixture: synthetic-draft-planned-source.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    # Planned step is the SOURCE; the concrete consumer is unmarked.
+    - path: [1, "data", "planned"]
+      value: true
+    - path: [2, "data", "planned"]
+      value_absent: true
+    # Input→planned edge is planned (target step + TODO_in port).
+    - path: [3, "data", "planned"]
+      value: true
+    # Planned→concrete edge is planned (source step membership + TODO_hits port).
+    - path: [4, "data", "planned"]
+      value: true
+
+test_draft_subworkflow_ancestor_planned:
+  fixture: synthetic-draft-subworkflow-inner-draft.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    # The outer subworkflow node is planned because an inner draft step has a
+    # hit; its kind class (type_subworkflow) is preserved.
+    - path: [1, "data", "step_type"]
+      value: "subworkflow"
+    - path: [1, "classes"]
+      value_set: ["type_subworkflow", "runnable", "planned"]
+    - path: [1, "data", "planned"]
+      value: true
+
+test_draft_unlabeled_list_step_planned_node:
+  fixture: synthetic-draft-unlabeled-list-steps.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    - path: [1, "data", "planned"]
+      value_absent: true
+    - path: [2, "data", "id"]
+      value: "2"
+    - path: [2, "data", "planned"]
+      value: true
+
+# A source naming a step by key resolves to that step's label-keyed node.
+test_labeled_step_id_ref_edge_source:
+  fixture: synthetic-labeled-step-id-ref.gxwf.yml
+  operation: cytoscape_elements_to_list
+  assertions:
+    - path: [4, "data", "source"]
+      value: MEME
+    - path: [4, "data", "id"]
+      value: summarize__input__from__MEME

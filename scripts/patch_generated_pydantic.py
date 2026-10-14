@@ -15,7 +15,6 @@ import sys
 from pathlib import Path
 
 _FIELD_DEFAULT_FIXUP = re.compile(r'Field\(default=("[^"]+")((?:,\s*"[^"]+")+)(,\s*\w+=)')
-
 _INPUT_DISPATCHER = '''
 
 _INPUT_TYPE_TO_CLASS: dict[str, type[BaseInputParameter]] = {
@@ -61,7 +60,7 @@ def main(paths: list[str]) -> None:
         path = Path(raw)
         text = path.read_text()
         new_text = patch_default_args(text)
-        if path.name in {"gxformat2.py", "gxformat2_strict.py"}:
+        if path.name in {"gxformat2.py", "gxformat2_strict.py", "gxformat2_draft.py", "gxformat2_draft_strict.py"}:
             new_text = append_dispatcher(new_text)
         if new_text != text:
             path.write_text(new_text)

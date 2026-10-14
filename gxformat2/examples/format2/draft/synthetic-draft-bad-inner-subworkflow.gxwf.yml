@@ -1,0 +1,24 @@
+class: GalaxyWorkflowDraft
+label: invalid — inner draft subworkflow has a TODO step label and root _plan_*
+inputs:
+  reads:
+    type: data
+outputs: {}
+steps:
+  outer:
+    type: subworkflow
+    in:
+      reads: reads
+    out:
+      - id: result
+    run:
+      class: GalaxyWorkflowDraft
+      _plan_context: settle the inner workflow
+      inputs:
+        reads:
+          type: data
+      outputs: {}
+      steps:
+        TODO:
+          tool_id: cat1
+          tool_version: "1.0.0"

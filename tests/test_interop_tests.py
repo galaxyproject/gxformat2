@@ -10,6 +10,7 @@ from collections.abc import Callable
 from typing import Any
 
 from gxformat2.cytoscape import cytoscape_elements as _cytoscape_impl
+from gxformat2.draft import detect_draft, extract_draft_subset, next_draft_step, validate_draft
 from gxformat2.examples import EXAMPLES_DIR, load
 from gxformat2.layout import apply_layout as _apply_layout_impl
 from gxformat2.layout import GRAPH_PROPERTY_CHECKERS
@@ -34,6 +35,8 @@ from gxformat2.normalized._native import NormalizedNativeWorkflow
 from gxformat2.testing import DeclarativeTestSuite
 from gxformat2.validators import (
     validate_format2,
+    validate_format2_draft,
+    validate_format2_draft_strict,
     validate_format2_strict,
     validate_native,
     validate_native_strict,
@@ -155,6 +158,8 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "ensure_format2": ensure_format2,
     "ensure_native": ensure_native,
     "validate_format2": validate_format2,
+    "validate_format2_draft": validate_format2_draft,
+    "validate_format2_draft_strict": validate_format2_draft_strict,
     "validate_format2_strict": validate_format2_strict,
     "validate_native": validate_native,
     "validate_native_strict": validate_native_strict,
@@ -172,6 +177,10 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "cytoscape_elements_to_list": _cytoscape_elements_to_list,
     "cytoscape_node_ids": _cytoscape_node_ids,
     "cytoscape_edge_ids": _cytoscape_edge_ids,
+    "detect_draft": detect_draft,
+    "validate_draft": validate_draft,
+    "next_draft_step": next_draft_step,
+    "extract_draft_subset": extract_draft_subset,
 }
 
 suite = DeclarativeTestSuite(

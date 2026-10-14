@@ -1,0 +1,28 @@
+class: GalaxyWorkflowDraft
+label: mixed concrete and planned steps
+inputs:
+  in_reads:
+    type: data
+outputs:
+  variants:
+    outputSource: call/TODO_vcf
+steps:
+  align:
+    tool_id: bwa_mem
+    tool_version: "0.7.17"
+    in:
+      reads: in_reads
+    out:
+      - id: bam
+  call:
+    tool_id: TODO
+    tool_version: TODO
+    label: call variants
+    in:
+      TODO_input: align/bam
+    out:
+      - id: TODO_vcf
+    _plan_state: |
+      Call SNVs and short indels from the aligned reads.
+    _plan_context: |
+      Prefer a Tool Shed variant caller that consumes a single BAM.
