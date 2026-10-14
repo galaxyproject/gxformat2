@@ -90,7 +90,10 @@ def default_url_resolver(url: str) -> dict[str, Any]:
 
     if descriptor_url:
         descriptor = response.json()
-        return yaml.safe_load(descriptor["content"])
+        descriptor_content = descriptor.get("content") if isinstance(descriptor, dict) else None
+        if not isinstance(descriptor_content, str):
+            raise ValueError(f"TRS descriptor at {url} ({descriptor_url}) has no string 'content' field")
+        return yaml.safe_load(descriptor_content)
 
     content_type = response.headers.get("content-type", "")
     if "json" in content_type:

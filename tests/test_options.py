@@ -43,3 +43,11 @@ def test_default_url_resolver_plain_url():
         result = default_url_resolver("https://example.org/workflow.ga")
     get.assert_called_once_with("https://example.org/workflow.ga", timeout=30)
     assert result == {"name": "Plain"}
+
+
+def test_default_url_resolver_trs_missing_content():
+    response = mock.Mock()
+    response.json.return_value = []
+    with mock.patch("gxformat2.options.requests.get", return_value=response):
+        with pytest.raises(ValueError, match="has no string 'content' field"):
+            default_url_resolver(ENCODED_DESCRIPTOR_URL)

@@ -19,7 +19,6 @@ from gxformat2.lint import lint_format2 as _lint_format2_impl
 from gxformat2.lint import lint_ga as _lint_ga_impl
 from gxformat2.linting import LintContext
 from gxformat2.mermaid import workflow_to_mermaid as _mermaid_impl
-from gxformat2.options import trs_descriptor_url
 from gxformat2.normalized import (
     ensure_format2,
     ensure_native,
@@ -32,6 +31,7 @@ from gxformat2.normalized import (
 )
 from gxformat2.normalized._conversion import ExpandedFormat2
 from gxformat2.normalized._native import NormalizedNativeWorkflow
+from gxformat2.options import trs_descriptor_url
 from gxformat2.testing import DeclarativeTestSuite
 from gxformat2.validators import (
     validate_format2,
