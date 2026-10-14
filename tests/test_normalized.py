@@ -6,6 +6,7 @@ import copy
 import pytest
 from pydantic import ValidationError
 
+from gxformat2.draft import extract_draft_subset, validate_draft
 from gxformat2.examples import load, load_contents
 from gxformat2.normalized import (
     ensure_format2,
@@ -470,3 +471,20 @@ class TestStrictStructure:
         opts = ConversionOptions(strict_structure=True)
         result = ensure_native(nw, options=opts)
         assert result is not None
+
+
+@pytest.mark.parametrize(
+    "fixture",
+    [
+        "synthetic-draft-extract-list-identities.gxwf.yml",
+        "synthetic-draft-extract-nested-list-identities.gxwf.yml",
+    ],
+)
+def test_draft_list_extraction_is_valid_pure_and_idempotent(fixture):
+    workflow = load(fixture)
+    original = copy.deepcopy(workflow)
+    assert validate_draft(workflow).ok
+    extracted = extract_draft_subset(workflow).workflow
+    assert workflow == original
+    assert validate_draft(extracted).ok
+    assert extract_draft_subset(extracted).workflow == extracted

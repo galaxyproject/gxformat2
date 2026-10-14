@@ -1,0 +1,10 @@
+class: GalaxyWorkflowDraft
+inputs:
+  reads:
+    type: data
+    collection_type: record
+    fields:
+      - name: count
+        type: int
+outputs: {}
+steps: {}

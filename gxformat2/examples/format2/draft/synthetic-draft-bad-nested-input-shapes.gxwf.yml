@@ -1,0 +1,27 @@
+class: GalaxyWorkflowDraft
+inputs: {}
+outputs: {}
+steps:
+  draft_sub:
+    type: subworkflow
+    run:
+      class: GalaxyWorkflowDraft
+      inputs:
+        bad:
+          type: collection
+          collection_type: sample_sheet
+          column_definitions: [1]
+      outputs: {}
+      steps: {}
+  concrete_sub:
+    type: subworkflow
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        bad:
+          type: collection
+          collection_type: 1
+          fields:
+            - name: a
+      outputs: {}
+      steps: {}

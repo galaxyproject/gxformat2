@@ -1,0 +1,23 @@
+class: GalaxyWorkflowDraft
+label: topological tiebreak — two unresolved steps at level 0, alphabetical wins
+inputs:
+  reads:
+    type: data
+outputs: {}
+steps:
+  zebra:
+    tool_id: TODO
+    tool_version: TODO
+    label: zebra step
+    in:
+      TODO_input: reads
+    out:
+      - id: TODO_out
+  apple:
+    tool_id: TODO
+    tool_version: TODO
+    label: apple step
+    in:
+      TODO_input: reads
+    out:
+      - id: TODO_out

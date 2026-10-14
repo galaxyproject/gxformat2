@@ -1,0 +1,69 @@
+class: GalaxyWorkflowDraft
+label: invalid — unresolvable edge refs and malformed TODO-shaped strings
+inputs:
+  reads:
+    type: data
+outputs:
+  bare_no_match:
+    outputSource: nope
+  bare_no_output_port:
+    outputSource: renamed
+  bad_user_port:
+    outputSource: my_tool/not_an_output
+steps:
+  a:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: reads
+    out:
+      - id: out1
+  wrong_port:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: a/wrong_port
+    out:
+      - id: out1
+  renamed:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      input1: reads
+    out:
+      - id: renamed
+  list_in:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    in:
+      - id: input1
+        source: missing/out1
+    out:
+      - id: out1
+  malformed:
+    tool_id: TODO-foo
+    tool_version: TODO_
+    in:
+      TODO_input: reads
+    out:
+      - id: TODO_Mixed
+  my_tool:
+    run:
+      class: GalaxyUserTool
+      id: cat_user_defined
+      version: "0.1"
+      name: cat_user_defined
+      description: concatenates a file
+      container: busybox
+      shell_command: cat '$(inputs.input1.path)' > output.txt
+      inputs:
+        - name: input1
+          type: data
+          format: txt
+      outputs:
+        - name: output1
+          type: data
+          format: txt
+          from_work_dir: output.txt
+    in:
+      input1: reads

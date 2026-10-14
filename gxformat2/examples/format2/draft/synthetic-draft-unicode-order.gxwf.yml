@@ -1,0 +1,14 @@
+class: GalaxyWorkflowDraft
+inputs: {}
+outputs:
+  "😀":
+    outputSource: "😀/output"
+  "":
+    outputSource: "/output"
+steps:
+  "😀":
+    tool_id: TODO
+    out: [output]
+  "":
+    tool_id: TODO
+    out: [output]

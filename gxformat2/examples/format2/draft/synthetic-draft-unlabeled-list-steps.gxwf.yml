@@ -1,0 +1,19 @@
+class: GalaxyWorkflowDraft
+label: unlabeled list-form steps addressed by index id
+inputs:
+  - id: reads
+    type: data
+outputs: []
+steps:
+  - tool_id: cat1
+    in:
+      - id: input1
+        source: reads
+    out:
+      - id: out_file1
+  - tool_id: TODO
+    in:
+      - id: TODO_in
+        source: 1/out_file1
+    out:
+      - id: TODO_out

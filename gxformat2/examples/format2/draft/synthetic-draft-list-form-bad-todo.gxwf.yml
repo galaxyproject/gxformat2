@@ -1,0 +1,14 @@
+class: GalaxyWorkflowDraft
+label: malformed TODO sentinel as a list-form in id
+inputs:
+  reads:
+    type: data
+outputs: {}
+steps:
+  fastp:
+    tool_id: TODO
+    in:
+      - id: TODO-input
+        source: reads
+    out:
+      - id: TODO_out

@@ -1,0 +1,39 @@
+class: GalaxyWorkflowDraft
+label: mixed-case labels sort by codepoint
+inputs:
+  reads:
+    type: data
+outputs:
+  apple_out:
+    outputSource: apple/out
+  Zed_out:
+    outputSource: Zed/out
+  alpha_out:
+    outputSource: alpha/out
+  Alpha_out:
+    outputSource: Alpha/out
+steps:
+  apple:
+    tool_id: TODO
+    in:
+      input: reads
+    out:
+      - id: out
+  Zed:
+    tool_id: TODO
+    in:
+      input: reads
+    out:
+      - id: out
+  alpha:
+    tool_id: TODO
+    in:
+      input: reads
+    out:
+      - id: out
+  Alpha:
+    tool_id: TODO
+    in:
+      input: reads
+    out:
+      - id: out

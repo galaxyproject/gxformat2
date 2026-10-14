@@ -1,0 +1,121 @@
+saladVersion: v1.1
+$base: "https://galaxyproject.org/gxformat2/v19_09/draft#"
+
+$namespaces:
+  gxformat2: "https://galaxyproject.org/gxformat2/v19_09#"
+  gxformat2common: "https://galaxyproject.org/gxformat2/gxformat2common#"
+  gxformat2draft: "https://galaxyproject.org/gxformat2/v19_09/draft#"
+  cwl: "https://w3id.org/cwl/cwl#"
+  sld: "https://w3id.org/cwl/salad#"
+  rdfs: "http://www.w3.org/2000/01/rdf-schema#"
+  pydantic: "https://galaxyproject.org/gxformat2/pydantic#"
+
+$graph:
+- $import: "./workflow.yml"
+
+- name: DraftWorkflowStep
+  type: record
+  extends: gxformat2:WorkflowStep
+  docParent: "#GalaxyWorkflowDraft"
+  doc: |
+    A workflow step in a draft Galaxy workflow. This extends the normal
+    gxformat2 workflow step shape with draft-only planning fields used while
+    wrapper selection, parameter binding, and wrapper port names are still
+    unresolved.
+  fields:
+    - name: _plan_state
+      type: string?
+      doc: |
+        Draft-only free-text parameter binding intent for this step. This field
+        must be removed before the workflow is treated as runnable gxformat2.
+    - name: _plan_context
+      type: string?
+      doc: |
+        Draft-only free-text wrapper selection context for this step, such as
+        source command details, conda packages, containers, environment
+        variables, and pre/postconditions. This field must be removed before
+        the workflow is treated as runnable gxformat2.
+    - name: _plan_in
+      type: string?
+      doc: |
+        Draft-only free-text wrapper input-port mapping intent for this step.
+        This field must be removed before the workflow is treated as runnable
+        gxformat2.
+    - name: _plan_out
+      type: string?
+      doc: |
+        Draft-only free-text wrapper output-surface intent for this step. This
+        field must be removed before the workflow is treated as runnable
+        gxformat2.
+
+- name: GalaxyWorkflowDraft
+  type: record
+  extends:
+    - cwl:Process
+    - gxformat2common:HasUUID
+  specialize:
+    - specializeFrom: cwl:InputParameter
+      specializeTo: gxformat2:WorkflowInputParameter
+    - specializeFrom: cwl:OutputParameter
+      specializeTo: gxformat2:WorkflowOutputParameter
+  documentRoot: true
+  doc: |
+    A draft Galaxy workflow description. A draft workflow has concrete workflow
+    topology but may contain draft-only wrapper-tier TODO sentinels and
+    per-step ``_plan_*`` fields. It is not a runnable gxformat2 workflow until
+    all TODO sentinels and planning fields have been resolved and stripped.
+  fields:
+    - name: class
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      type:
+        type: enum
+        name: GalaxyWorkflowDraft_class
+        symbols: [ gxformat2draft:GalaxyWorkflowDraft ]
+    - name: steps
+      doc: {$include: ../common/steps_description.txt}
+      type:
+        - type: array
+          items: "#DraftWorkflowStep"
+      pydantic:type: "list[DraftWorkflowStep] | dict[str, DraftWorkflowStep]"
+      jsonldPredicate:
+          _id: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/steps"
+          mapSubject: id
+    - name: report
+      doc: Workflow invocation report template.
+      type: gxformat2:Report?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/report"
+    - name: tags
+      type:
+      - type: array
+        items: string
+      - "null"
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/tags"
+      doc: |
+        Tags for the workflow.
+    - name: comments
+      type: Any?
+      pydantic:type: "list[TextComment | MarkdownComment | FrameComment | FreehandComment] | dict[str, TextComment | MarkdownComment | FrameComment | FreehandComment] | None"
+      jsonldPredicate:
+          _id: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/comments"
+          mapSubject: label
+      doc: |
+        Visual annotations for the workflow editor canvas. Comments are
+        non-functional and do not affect workflow execution. May be specified
+        as a list or as a mapping keyed by label.
+    - name: creator
+      type: Any?
+      pydantic:type: "list[CreatorPerson | CreatorOrganization] | None"
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/creator"
+      doc: |
+        Workflow creators. Can be schema.org Person
+        (https://schema.org/Person) or Organization entities.
+    - name: license
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/license"
+      doc: Must be a valid license listed at https://spdx.org/licenses/
+    - name: release
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/release"
+      doc: If listed should correspond to the release of the workflow in its source reposiory.
