@@ -517,3 +517,4 @@ History
 .. _@jmchilton: https://github.com/jmchilton
 .. _@loichuder: https://github.com/loichuder
 .. _@simleo: https://github.com/simleo
+.. _`@dependabot[bot]`: https://github.com/apps/dependabot

@@ -9,13 +9,13 @@ gxformat2.cytoscape.models module
 
 .. automodule:: gxformat2.cytoscape.models
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
 
 Module contents
 ---------------
 
 .. automodule:: gxformat2.cytoscape
    :members:
-   :undoc-members:
    :show-inheritance:
+   :undoc-members:
