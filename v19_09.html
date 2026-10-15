@@ -805,6 +805,13 @@ offers these as suggestions.</p>
 subworkflow select inputs at runtime. Falls back to free text when
 derivation fails.</p>
 </div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>validators</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#WorkflowTextValidator">WorkflowTextValidator</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Validators applied to values supplied for this input.</p>
+</div>
 </div></div><h3 id="WorkflowTextOption" class="section">WorkflowTextOption <a href="#WorkflowTextOption">&sect;</a></h3><p>A <code>{value, label}</code> option used in <code>restrictions</code> or <code>suggestions</code> on a
 text workflow parameter. Plain strings are also accepted in those
 arrays as shorthand for <code>{value: &lt;str&gt;, label: &lt;str&gt;}</code>.</p>
@@ -828,6 +835,45 @@ arrays as shorthand for <code>{value: &lt;str&gt;, label: &lt;str&gt;}</code>.</
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Human label shown in Galaxy. Defaults to <code>value</code> when omitted.</p>
+</div>
+</div></div><h3 id="WorkflowTextValidator" class="section">WorkflowTextValidator <a href="#WorkflowTextValidator">&sect;</a></h3><p>A validator restricting values of a text workflow parameter. Persisted
+in native Galaxy as an entry of the input step's <code>tool_state.validators</code>.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>type</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Validator type. Only <code>regex</code> is supported.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>expression</code></div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Regular expression matched from the start of the value. End it with
+<code>$</code> to require a complete-value match.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>message</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Message shown when a value fails validation.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>negate</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Reject matching values instead of values that do not match. Defaults
+to <code>false</code>.</p>
 </div>
 </div></div><h2 id="WorkflowBooleanParameter" class="section">WorkflowBooleanParameter <a href="#WorkflowBooleanParameter">&sect;</a></h2><p>A boolean input parameter for a Galaxy workflow.</p>
 <h3>Fields</h3>
@@ -1028,6 +1074,14 @@ collection types are separated with colons, e.g. <code>list:list:paired</code>.<
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">boolean</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>For text-typed inputs - derive runtime choices from connected
 tool/subworkflow select inputs.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>validators</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3">array&lt;<a href="#WorkflowTextValidator">WorkflowTextValidator</a>&gt;</div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Validators for text-typed inputs. See
+<code>WorkflowTextParameter.validators</code>.</p>
 </div>
 </div></div><h3 id="GalaxyType" class="section">GalaxyType <a href="#GalaxyType">&sect;</a></h3><p>Extends primitive types with the native Galaxy concepts such as datasets and collections.Normalized gxformat2 workflow input declaration spellings are <code>data</code>, <code>collection</code>, <code>string</code>, <code>int</code>, <code>float</code>, and <code>boolean</code>. Other spellings are accepted as compatibility aliases on import but normalized gxformat2 output emits the normalized spellings.</p>
 <h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> normalized gxformat2 spelling for native Galaxy integer workflow parameters.</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> normalized gxformat2 spelling for native Galaxy text workflow parameters.</td></tr><tr><td><code>null</code></td><td> no value</td></tr><tr><td><code>boolean</code></td><td> a binary value</td></tr><tr><td><code>int</code></td><td> normalized gxformat2 spelling for native Galaxy integer workflow parameters.</td></tr><tr><td><code>long</code></td><td> 64-bit signed integer</td></tr><tr><td><code>float</code></td><td> single precision (32-bit) IEEE 754 floating-point number</td></tr><tr><td><code>double</code></td><td> double precision (64-bit) IEEE 754 floating-point number</td></tr><tr><td><code>string</code></td><td> normalized gxformat2 spelling for native Galaxy text workflow parameters.</td></tr><tr><td><code>integer</code></td><td> accepted alias for ``int`` because native Galaxy parameter state and Galaxy tool XML terminology use ``integer``.</td></tr><tr><td><code>text</code></td><td> accepted alias for ``string`` because native Galaxy parameter state and Galaxy tool XML terminology use ``text``.</td></tr><tr><td><code>File</code></td><td> accepted alias for ``data``, but normalized gxformat2 output emits ``data``. Note: workflow **test job** YAML uses ``type: File`` to mean 'stage this file as test input data', which is a separate concept from workflow input declaration.</td></tr><tr><td><code>data</code></td><td> one Galaxy dataset input. Native Galaxy ``data_input`` converts to this spelling.</td></tr><tr><td><code>collection</code></td><td> one Galaxy dataset collection input. Native Galaxy ``data_collection_input`` converts to this spelling.</td></tr></table><h2 id="WorkflowOutputParameter" class="section">WorkflowOutputParameter <a href="#WorkflowOutputParameter">&sect;</a></h2><p>Describe an output parameter of a workflow.  The parameter must be
