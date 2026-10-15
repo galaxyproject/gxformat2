@@ -401,6 +401,12 @@
     - tests/test_normalized.py
     - tests/test_interop_tests.py
 
+- file: native/synthetic-linked-trs-subworkflows.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_interop_tests.py
+
 # --- test_interop_tests.py conversion fixtures ---
 
 - file: native/synthetic-labeled-tool.ga

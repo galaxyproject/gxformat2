@@ -32,6 +32,7 @@ from gxformat2.normalized import (
 )
 from gxformat2.normalized._conversion import ExpandedFormat2
 from gxformat2.normalized._native import NormalizedNativeWorkflow
+from gxformat2.options import trs_descriptor_url
 from gxformat2.testing import DeclarativeTestSuite
 from gxformat2.validators import (
     validate_format2,
@@ -146,6 +147,15 @@ def _to_format2_via_native(wf_dict):
     return to_format2(to_native(wf_dict).to_dict())
 
 
+def _linked_subworkflow_descriptor_urls(wf_dict):
+    # {label: TRS descriptor URL (None for non-TRS URLs)} for linked subworkflow steps.
+    return {
+        step.get("label"): trs_descriptor_url(step["content_id"])
+        for step in wf_dict["steps"].values()
+        if step.get("type") == "subworkflow" and isinstance(step.get("content_id"), str)
+    }
+
+
 EXPECTATIONS_DIR = os.path.join(EXAMPLES_DIR, "expectations")
 OPERATIONS: dict[str, Callable[..., Any]] = {
     "normalized_format2": normalized_format2,
@@ -177,6 +187,7 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "cytoscape_elements_to_list": _cytoscape_elements_to_list,
     "cytoscape_node_ids": _cytoscape_node_ids,
     "cytoscape_edge_ids": _cytoscape_edge_ids,
+    "linked_subworkflow_descriptor_urls": _linked_subworkflow_descriptor_urls,
     "detect_draft": detect_draft,
     "validate_draft": validate_draft,
     "next_draft_step": next_draft_step,

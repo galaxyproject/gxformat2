@@ -141,6 +141,7 @@ test_name:
 - Validation: `validate_format2`, `validate_format2_strict`, `validate_native`, `validate_native_strict`
 - Linting: `lint_format2`, `lint_native` — return `{errors: [...], warnings: [...], error_count: N, warn_count: N}`
 - Best practices: `lint_best_practices_format2`, `lint_best_practices_native` — same return shape
+- URL resolution: `linked_subworkflow_descriptor_urls` — `{step_label: trs_descriptor_url(content_id)}` for linked subworkflow steps (`null` for non-TRS URLs)
 
 ### Special keys
 - `assertions` may be omitted or empty — the operation succeeding is the test

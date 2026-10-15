@@ -1,0 +1,26 @@
+# GA4GH TRS descriptor URLs for linked subworkflow steps.
+#
+# Galaxy and planemo emit the TRS tool id unencoded (``#workflow/...``); the
+# descriptor URL must percent-encode it (Python ``quote_plus`` semantics, as in
+# Galaxy's trs_proxy) and point at ``/versions/<v>/GALAXY/descriptor``.
+# ``trs_special_chars`` pins encoding parity across implementations
+# (``'()!*`` encoded, ``~`` kept, space as ``+``).
+
+test_trs_descriptor_urls_native:
+  fixture: synthetic-linked-trs-subworkflows.ga
+  operation: linked_subworkflow_descriptor_urls
+  assertions:
+    - path: [$length]
+      value: 6
+    - path: [trs_unencoded]
+      value: "https://dockstore.org/api/ga4gh/trs/v2/tools/%23workflow%2Fgithub.com%2Fiwc-workflows%2Frnaseq-pe%2Fmain/versions/v1.5/GALAXY/descriptor"
+    - path: [trs_encoded]
+      value: "https://dockstore.org/api/ga4gh/trs/v2/tools/%23workflow%2Fgithub.com%2Fiwc-workflows%2Frnaseq-pe%2Fmain/versions/v1.5/GALAXY/descriptor"
+    - path: [trs_descriptor]
+      value: "https://dockstore.org/api/ga4gh/trs/v2/tools/%23workflow%2Fgithub.com%2Fiwc-workflows%2Frnaseq-pe%2Fmain/versions/v1.5/GALAXY/descriptor"
+    - path: [trs_encoded_descriptor]
+      value: "https://dockstore.org/api/ga4gh/trs/v2/tools/%23workflow%2Fgithub.com%2Fiwc-workflows%2Frnaseq-pe%2Fmain/versions/v1.5/GALAXY/descriptor"
+    - path: [trs_special_chars]
+      value: "https://trs.example.org/ga4gh/trs/v2/tools/%23workflow%2Fgithub.com%2Fo%27rg%2Frepo+%28beta%29%21%2A~%2Fmain/versions/v1/GALAXY/descriptor"
+    - path: [plain_url]
+      value: null
