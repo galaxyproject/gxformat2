@@ -207,6 +207,41 @@ $graph:
       doc: |
         Human label shown in Galaxy. Defaults to `value` when omitted.
 
+- name: WorkflowTextValidator
+  type: record
+  doc: |
+    A validator restricting values of a text workflow parameter. Persisted
+    in native Galaxy as an entry of the input step's `tool_state.validators`.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["regex"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Validator type. Only `regex` is supported.
+    - name: expression
+      type: string
+      jsonldPredicate:
+        _id: "gxformat2common:WorkflowTextValidator/expression"
+        noLinkCheck: true
+      doc: |
+        Regular expression matched from the start of the value. End it with
+        `$` to require a complete-value match.
+    - name: message
+      type: string?
+      jsonldPredicate: "gxformat2common:WorkflowTextValidator/message"
+      doc: Message shown when a value fails validation.
+    - name: negate
+      type: boolean?
+      jsonldPredicate: "gxformat2common:WorkflowTextValidator/negate"
+      doc: |
+        Reject matching values instead of values that do not match. Defaults
+        to `false`.
+
 - name: ToolShedRepository
   type: record
   fields:

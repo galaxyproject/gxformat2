@@ -3052,6 +3052,329 @@ class WorkflowTextOption(Saveable):
     attrs: ClassVar[Collection[str]] = frozenset(["value", "label"])
 
 
+class WorkflowTextValidator(Saveable):
+    """
+    A validator restricting values of a text workflow parameter. Persisted in native Galaxy as an entry of the input step's ``tool_state.validators``.
+
+    """
+
+    def __init__(
+        self,
+        type_: Any,
+        expression: Any,
+        message: Any | None = None,
+        negate: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
+    ) -> None:
+        if extension_fields:
+            self.extension_fields = extension_fields
+        else:
+            self.extension_fields = CommentedMap()
+        if loadingOptions:
+            self.loadingOptions = loadingOptions
+        else:
+            self.loadingOptions = LoadingOptions()
+        self.type_ = type_
+        self.expression = expression
+        self.message = message
+        self.negate = negate
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, WorkflowTextValidator):
+            return bool(
+                self.type_ == other.type_
+                and self.expression == other.expression
+                and self.message == other.message
+                and self.negate == other.negate
+            )
+        return False
+
+    def __hash__(self) -> int:
+        return hash((self.type_, self.expression, self.message, self.negate))
+
+    @classmethod
+    def fromDoc(
+        cls,
+        doc: Any,
+        baseuri: str,
+        loadingOptions: LoadingOptions,
+        docRoot: str | None = None,
+    ) -> Self:
+        _doc = copy.copy(doc)
+
+        if hasattr(doc, "lc"):
+            _doc.lc.data = doc.lc.data
+            _doc.lc.filename = doc.lc.filename
+        _errors__ = []
+        try:
+            if _doc.get("type") is None:
+                raise ValidationException("missing required field `type`", None, [])
+
+            type_ = _load_field(
+                _doc.get("type"),
+                typedsl_strtype_2,
+                baseuri,
+                loadingOptions,
+                lc=_doc.get("type")
+            )
+
+        except ValidationException as e:
+            error_message, to_print, verb_tensage = parse_errors(str(e))
+
+            if str(e) == "missing required field `type`":
+                _errors__.append(
+                    ValidationException(
+                        str(e),
+                        None
+                    )
+                )
+            else:
+                val = _doc.get("type")
+                if error_message != str(e):
+                    val_type = convert_typing(extract_type(type(val)))
+                    _errors__.append(
+                        ValidationException(
+                            "the `type` field is not valid because:",
+                            SourceLine(_doc, "type", str),
+                            [ValidationException(f"Value is a {val_type}, "
+                                                 f"but valid {to_print} for this field "
+                                                 f"{verb_tensage} {error_message}",
+                                                 detailed_message=f"Value `{val}` is a {val_type}, "
+                                                 f"but valid {to_print} for this field "
+                                                 f"{verb_tensage} {error_message}")],
+                        )
+                    )
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "the `type` field is not valid because:",
+                            SourceLine(_doc, "type", str),
+                            [e],
+                            detailed_message=f"the `type` field with value `{val}` "
+                            "is not valid because:",
+                        )
+                    )
+        try:
+            if _doc.get("expression") is None:
+                raise ValidationException("missing required field `expression`", None, [])
+
+            expression = _load_field(
+                _doc.get("expression"),
+                strtype,
+                baseuri,
+                loadingOptions,
+                lc=_doc.get("expression")
+            )
+
+        except ValidationException as e:
+            error_message, to_print, verb_tensage = parse_errors(str(e))
+
+            if str(e) == "missing required field `expression`":
+                _errors__.append(
+                    ValidationException(
+                        str(e),
+                        None
+                    )
+                )
+            else:
+                val = _doc.get("expression")
+                if error_message != str(e):
+                    val_type = convert_typing(extract_type(type(val)))
+                    _errors__.append(
+                        ValidationException(
+                            "the `expression` field is not valid because:",
+                            SourceLine(_doc, "expression", str),
+                            [ValidationException(f"Value is a {val_type}, "
+                                                 f"but valid {to_print} for this field "
+                                                 f"{verb_tensage} {error_message}",
+                                                 detailed_message=f"Value `{val}` is a {val_type}, "
+                                                 f"but valid {to_print} for this field "
+                                                 f"{verb_tensage} {error_message}")],
+                        )
+                    )
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "the `expression` field is not valid because:",
+                            SourceLine(_doc, "expression", str),
+                            [e],
+                            detailed_message=f"the `expression` field with value `{val}` "
+                            "is not valid because:",
+                        )
+                    )
+        message = None
+        if "message" in _doc:
+            try:
+                message = _load_field(
+                    _doc.get("message"),
+                    union_of_None_type_or_strtype,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("message")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `message`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("message")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `message` field is not valid because:",
+                                SourceLine(_doc, "message", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `message` field is not valid because:",
+                                SourceLine(_doc, "message", str),
+                                [e],
+                                detailed_message=f"the `message` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        negate = None
+        if "negate" in _doc:
+            try:
+                negate = _load_field(
+                    _doc.get("negate"),
+                    union_of_None_type_or_booltype,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("negate")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `negate`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("negate")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `negate` field is not valid because:",
+                                SourceLine(_doc, "negate", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `negate` field is not valid because:",
+                                SourceLine(_doc, "negate", str),
+                                [e],
+                                detailed_message=f"the `negate` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        extension_fields: MutableMapping[str, Any] = {}
+        for k in _doc.keys():
+            if k not in cls.attrs:
+                if not k:
+                    _errors__.append(
+                        ValidationException("mapping with implicit null key")
+                    )
+                elif ":" in k:
+                    ex = _expand_url(
+                        k, "", loadingOptions, scoped_id=False, vocab_term=False
+                    )
+                    extension_fields[ex] = _doc[k]
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "invalid field `{}`, expected one of: `type`, `expression`, `message`, `negate`".format(
+                                k
+                            ),
+                            SourceLine(_doc, k, str),
+                        )
+                    )
+
+        if _errors__:
+            raise ValidationException("", None, _errors__, "*")
+        _constructed = cls(
+            type_=type_,
+            expression=expression,
+            message=message,
+            negate=negate,
+            extension_fields=extension_fields,
+            loadingOptions=loadingOptions,
+        )
+        return _constructed
+
+    def save(
+        self, top: bool = False, base_url: str = "", relative_uris: bool = True
+    ) -> dict[str, Any]:
+        r: dict[str, Any] = {}
+
+        if relative_uris:
+            for ef in self.extension_fields:
+                r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+        else:
+            for ef in self.extension_fields:
+                r[ef] = self.extension_fields[ef]
+        if self.type_ is not None:
+            r["type"] = save(
+                self.type_, top=False, base_url=base_url, relative_uris=relative_uris
+            )
+        if self.expression is not None:
+            r["expression"] = save(
+                self.expression,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris,
+            )
+        if self.message is not None:
+            r["message"] = save(
+                self.message, top=False, base_url=base_url, relative_uris=relative_uris
+            )
+        if self.negate is not None:
+            r["negate"] = save(
+                self.negate, top=False, base_url=base_url, relative_uris=relative_uris
+            )
+
+        # top refers to the directory level
+        if top:
+            if self.loadingOptions.namespaces:
+                r["$namespaces"] = self.loadingOptions.namespaces
+            if self.loadingOptions.schemas:
+                r["$schemas"] = self.loadingOptions.schemas
+        return r
+
+    attrs: ClassVar[Collection[str]] = frozenset(
+        ["type", "expression", "message", "negate"]
+    )
+
+
 class ToolShedRepository(Saveable):
     name: str
 
@@ -7079,6 +7402,7 @@ class WorkflowTextParameter(BaseInputParameter):
         restrictions: Any | None = None,
         suggestions: Any | None = None,
         restrictOnConnections: Any | None = None,
+        validators: Any | None = None,
         extension_fields: MutableMapping[str, Any] | None = None,
         loadingOptions: LoadingOptions | None = None,
     ) -> None:
@@ -7100,6 +7424,7 @@ class WorkflowTextParameter(BaseInputParameter):
         self.restrictions = restrictions
         self.suggestions = suggestions
         self.restrictOnConnections = restrictOnConnections
+        self.validators = validators
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, WorkflowTextParameter):
@@ -7114,6 +7439,7 @@ class WorkflowTextParameter(BaseInputParameter):
                 and self.restrictions == other.restrictions
                 and self.suggestions == other.suggestions
                 and self.restrictOnConnections == other.restrictOnConnections
+                and self.validators == other.validators
             )
         return False
 
@@ -7130,6 +7456,7 @@ class WorkflowTextParameter(BaseInputParameter):
                 self.restrictions,
                 self.suggestions,
                 self.restrictOnConnections,
+                self.validators,
             )
         )
 
@@ -7627,6 +7954,53 @@ class WorkflowTextParameter(BaseInputParameter):
                                 "is not valid because:",
                             )
                         )
+        validators = None
+        if "validators" in _doc:
+            try:
+                validators = _load_field(
+                    _doc.get("validators"),
+                    union_of_None_type_or_array_of_WorkflowTextValidatorLoader,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("validators")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `validators`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("validators")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `validators` field is not valid because:",
+                                SourceLine(_doc, "validators", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `validators` field is not valid because:",
+                                SourceLine(_doc, "validators", str),
+                                [e],
+                                detailed_message=f"the `validators` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
         extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
@@ -7642,7 +8016,7 @@ class WorkflowTextParameter(BaseInputParameter):
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `{}`, expected one of: `label`, `doc`, `id`, `default`, `position`, `optional`, `type`, `restrictions`, `suggestions`, `restrictOnConnections`".format(
+                            "invalid field `{}`, expected one of: `label`, `doc`, `id`, `default`, `position`, `optional`, `type`, `restrictions`, `suggestions`, `restrictOnConnections`, `validators`".format(
                                 k
                             ),
                             SourceLine(_doc, k, str),
@@ -7662,6 +8036,7 @@ class WorkflowTextParameter(BaseInputParameter):
             restrictions=restrictions,
             suggestions=suggestions,
             restrictOnConnections=restrictOnConnections,
+            validators=validators,
             extension_fields=extension_fields,
             loadingOptions=loadingOptions,
         )
@@ -7727,6 +8102,13 @@ class WorkflowTextParameter(BaseInputParameter):
                 base_url=self.id,
                 relative_uris=relative_uris,
             )
+        if self.validators is not None:
+            r["validators"] = save(
+                self.validators,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris,
+            )
 
         # top refers to the directory level
         if top:
@@ -7748,6 +8130,7 @@ class WorkflowTextParameter(BaseInputParameter):
             "restrictions",
             "suggestions",
             "restrictOnConnections",
+            "validators",
         ]
     )
 
@@ -8283,6 +8666,7 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
         restrictions: Any | None = None,
         suggestions: Any | None = None,
         restrictOnConnections: Any | None = None,
+        validators: Any | None = None,
         extension_fields: MutableMapping[str, Any] | None = None,
         loadingOptions: LoadingOptions | None = None,
     ) -> None:
@@ -8310,6 +8694,7 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
         self.restrictions = restrictions
         self.suggestions = suggestions
         self.restrictOnConnections = restrictOnConnections
+        self.validators = validators
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, WorkflowInputParameter):
@@ -8330,6 +8715,7 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
                 and self.restrictions == other.restrictions
                 and self.suggestions == other.suggestions
                 and self.restrictOnConnections == other.restrictOnConnections
+                and self.validators == other.validators
             )
         return False
 
@@ -8352,6 +8738,7 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
                 self.restrictions,
                 self.suggestions,
                 self.restrictOnConnections,
+                self.validators,
             )
         )
 
@@ -9130,6 +9517,53 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
                                 "is not valid because:",
                             )
                         )
+        validators = None
+        if "validators" in _doc:
+            try:
+                validators = _load_field(
+                    _doc.get("validators"),
+                    union_of_None_type_or_array_of_WorkflowTextValidatorLoader,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("validators")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `validators`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("validators")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `validators` field is not valid because:",
+                                SourceLine(_doc, "validators", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `validators` field is not valid because:",
+                                SourceLine(_doc, "validators", str),
+                                [e],
+                                detailed_message=f"the `validators` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
         extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
@@ -9145,7 +9579,7 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `{}`, expected one of: `label`, `doc`, `id`, `default`, `position`, `optional`, `format`, `min`, `max`, `type`, `collection_type`, `column_definitions`, `fields`, `restrictions`, `suggestions`, `restrictOnConnections`".format(
+                            "invalid field `{}`, expected one of: `label`, `doc`, `id`, `default`, `position`, `optional`, `format`, `min`, `max`, `type`, `collection_type`, `column_definitions`, `fields`, `restrictions`, `suggestions`, `restrictOnConnections`, `validators`".format(
                                 k
                             ),
                             SourceLine(_doc, k, str),
@@ -9171,6 +9605,7 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
             restrictions=restrictions,
             suggestions=suggestions,
             restrictOnConnections=restrictOnConnections,
+            validators=validators,
             extension_fields=extension_fields,
             loadingOptions=loadingOptions,
         )
@@ -9266,6 +9701,13 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
                 base_url=self.id,
                 relative_uris=relative_uris,
             )
+        if self.validators is not None:
+            r["validators"] = save(
+                self.validators,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris,
+            )
 
         # top refers to the directory level
         if top:
@@ -9293,6 +9735,7 @@ class WorkflowInputParameter(BaseDataParameter, MinMax):
             "restrictions",
             "suggestions",
             "restrictOnConnections",
+            "validators",
         ]
     )
 
@@ -16637,6 +17080,7 @@ _vocab.update({
     "WorkflowStepType": "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType",
     "WorkflowTextOption": "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextOption",
     "WorkflowTextParameter": "https://galaxyproject.org/gxformat2/v19_09#WorkflowTextParameter",
+    "WorkflowTextValidator": "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextValidator",
     "array": "https://w3id.org/cwl/salad#array",
     "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
     "collection": "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/collection",
@@ -16712,6 +17156,7 @@ _rvocab.update({
     "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType": "WorkflowStepType",
     "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextOption": "WorkflowTextOption",
     "https://galaxyproject.org/gxformat2/v19_09#WorkflowTextParameter": "WorkflowTextParameter",
+    "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextValidator": "WorkflowTextValidator",
     "https://w3id.org/cwl/salad#array": "array",
     "http://www.w3.org/2001/XMLSchema#boolean": "boolean",
     "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/collection": "collection",
@@ -16792,6 +17237,7 @@ SampleSheetColumnDefinitionLoader: Final = _RecordLoader(
 )
 RecordFieldDefinitionLoader: Final = _RecordLoader(RecordFieldDefinition, None, None)
 WorkflowTextOptionLoader: Final = _RecordLoader(WorkflowTextOption, None, None)
+WorkflowTextValidatorLoader: Final = _RecordLoader(WorkflowTextValidator, None, None)
 ToolShedRepositoryLoader: Final = _RecordLoader(ToolShedRepository, None, None)
 GalaxyTypeLoader: Final = _EnumLoader(
     (
@@ -17063,6 +17509,12 @@ union_of_strtype_or_array_of_strtype: Final = _UnionLoader(
 typedsl_union_of_strtype_or_array_of_strtype_2: Final = _TypeDSLLoader(
     union_of_strtype_or_array_of_strtype, 2, "v1.1"
 )
+union_of_None_type_or_booltype: Final = _UnionLoader(
+    (
+        None_type,
+        booltype,
+    )
+)
 union_of_booltype_or_None_type: Final = _UnionLoader(
     (
         booltype,
@@ -17129,10 +17581,11 @@ union_of_None_type_or_array_of_union_of_strtype_or_WorkflowTextOptionLoader: Fin
         )
     )
 )
-union_of_None_type_or_booltype: Final = _UnionLoader(
+array_of_WorkflowTextValidatorLoader: Final = _ArrayLoader(WorkflowTextValidatorLoader)
+union_of_None_type_or_array_of_WorkflowTextValidatorLoader: Final = _UnionLoader(
     (
         None_type,
-        booltype,
+        array_of_WorkflowTextValidatorLoader,
     )
 )
 union_of_GalaxyTypeLoader: Final = _UnionLoader((GalaxyTypeLoader,))

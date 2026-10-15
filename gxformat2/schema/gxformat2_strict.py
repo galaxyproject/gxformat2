@@ -230,6 +230,17 @@ arrays as shorthand for `{value: <str>, label: <str>}`."""
     value: str = Field(description="Machine value submitted to the connected tool input.")
     label: None | str = Field(default=None, description="Human label shown in Galaxy. Defaults to `value` when omitted.")
 
+class WorkflowTextValidator(BaseModel):
+    """A validator restricting values of a text workflow parameter. Persisted
+in native Galaxy as an entry of the input step's `tool_state.validators`."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    type_: Literal["regex"] = Field(default="regex", alias="type", description="Validator type. Only `regex` is supported.")
+    expression: str = Field(description="Regular expression matched from the start of the value. End it with `$` to require a complete-value match.")
+    message: None | str = Field(default=None, description="Message shown when a value fails validation.")
+    negate: None | bool = Field(default=None, description="Reject matching values instead of values that do not match. Defaults to `false`.")
+
 class ToolShedRepository(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
@@ -336,6 +347,7 @@ Galaxy parameter state and Galaxy tool XML terminology."""
     restrictions: None | list[str | WorkflowTextOption] = Field(default=None, description="Closed set of permitted values. When present, Galaxy renders the runtime input as a select. Items may be plain strings or `{value, label}` records.")
     suggestions: None | list[str | WorkflowTextOption] = Field(default=None, description="Open suggestion list. Galaxy still treats the input as text but offers these as suggestions.")
     restrictOnConnections: None | bool = Field(default=None, description="Ask Galaxy to derive valid choices from connected tool or subworkflow select inputs at runtime. Falls back to free text when derivation fails.")
+    validators: None | list[WorkflowTextValidator] = Field(default=None, description="Validators applied to values supplied for this input.")
 
 class WorkflowBooleanParameter(BaseInputParameter):
     """A boolean input parameter for a Galaxy workflow."""
@@ -369,6 +381,7 @@ of the specific parameter types instead."""
     restrictions: None | list[str | WorkflowTextOption] = Field(default=None, description="Closed set of permitted values for text-typed inputs. See `WorkflowTextParameter.restrictions`.")
     suggestions: None | list[str | WorkflowTextOption] = Field(default=None, description="Open suggestion list for text-typed inputs.")
     restrictOnConnections: None | bool = Field(default=None, description="For text-typed inputs - derive runtime choices from connected tool/subworkflow select inputs.")
+    validators: None | list[WorkflowTextValidator] = Field(default=None, description="Validators for text-typed inputs. See `WorkflowTextParameter.validators`.")
 
 class WorkflowOutputParameter(OutputParameter):
     """Describe an output parameter of a workflow.  The parameter must be
@@ -586,6 +599,7 @@ ReferencesTool.model_rebuild()
 SampleSheetColumnDefinition.model_rebuild()
 RecordFieldDefinition.model_rebuild()
 WorkflowTextOption.model_rebuild()
+WorkflowTextValidator.model_rebuild()
 ToolShedRepository.model_rebuild()
 BaseInputParameter.model_rebuild()
 BaseDataParameter.model_rebuild()

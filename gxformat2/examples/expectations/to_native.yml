@@ -259,3 +259,26 @@ test_to_native_input_bounds_max_only:
     - path: [steps, "2", tool_state, validators]
       value:
         - {type: in_range, min: null, max: 0.5, negate: false}
+
+test_to_native_text_input_validators:
+  fixture: synthetic-text-input-validators.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", tool_state, parameter_type]
+      value: text
+    - path: [steps, "0", tool_state, validators]
+      value:
+        - {type: regex, expression: "^moo", message: must start with moo, negate: false}
+    - path: [steps, "1", tool_state, validators]
+      value:
+        - {type: regex, expression: cow, negate: true}
+
+test_to_native_multi_text_input_validators:
+  fixture: synthetic-multi-text-input-validators.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", tool_state, multiple]
+      value: true
+    - path: [steps, "0", tool_state, validators]
+      value:
+        - {type: regex, expression: "^[ACGT]+$", negate: false}

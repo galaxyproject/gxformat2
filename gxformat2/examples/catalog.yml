@@ -619,6 +619,20 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-multi-text-input-validators.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Multiple-value text parameter input with a regex validator.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-text-input-validators.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Text parameter inputs with regex validators.
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-text-suggestions.gxwf.yml
   origin: synthetic
   format: format2
@@ -632,6 +646,12 @@
     - tests/test_interop_tests.py
 
 - file: format2/synthetic-bad-restrictions-on-data.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-validators-on-int.gxwf.yml
   origin: synthetic
   format: format2
   tests:

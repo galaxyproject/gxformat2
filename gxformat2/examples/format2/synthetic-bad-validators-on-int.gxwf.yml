@@ -1,0 +1,9 @@
+class: GalaxyWorkflow
+inputs:
+  bad:
+    type: int
+    validators:
+      - type: regex
+        expression: "^[0-9]+$"
+outputs: {}
+steps: {}

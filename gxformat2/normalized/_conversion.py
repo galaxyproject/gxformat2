@@ -517,6 +517,17 @@ def _build_format2_workflow(
     )
 
 
+def _native_text_validator_to_format2(validator: dict[str, Any]) -> dict[str, Any] | None:
+    if validator.get("type") != "regex":
+        return None
+    format2_validator = {"type": "regex", "expression": validator["expression"]}
+    if validator.get("message") is not None:
+        format2_validator["message"] = validator["message"]
+    if validator.get("negate"):
+        format2_validator["negate"] = True
+    return format2_validator
+
+
 def _build_input_param(step: NormalizedNativeStep) -> BaseInputParameter:
     step_id = unlabeled_node_id(step.label, step.id, is_input=True)
     tool_state = step.tool_state
@@ -549,6 +560,11 @@ def _build_input_param(step: NormalizedNativeStep) -> BaseInputParameter:
                     if validator.get(bound) is not None:
                         kwargs[bound] = validator[bound]
                 break
+    elif input_type in ("string", ["string"]):
+        text_validators = [_native_text_validator_to_format2(v) for v in tool_state.get("validators") or []]
+        text_validators = [v for v in text_validators if v is not None]
+        if text_validators:
+            kwargs["validators"] = text_validators
 
     if step.annotation:
         kwargs["doc"] = step.annotation
@@ -1224,6 +1240,12 @@ def _build_input_step(
         maximum = getattr(inp, "max", None)
         if minimum is not None or maximum is not None:
             tool_state["validators"] = [{"type": "in_range", "min": minimum, "max": maximum, "negate": False}]
+    elif step_type == NativeStepType.parameter_input and type_str in ("text", "string"):
+        text_validators = getattr(inp, "validators", None)
+        if text_validators:
+            tool_state["validators"] = [
+                {"negate": False, **v.model_dump(by_alias=True, exclude_none=True)} for v in text_validators
+            ]
 
     # Copy text-parameter / sample-sheet / record fields from the typed model.
     for key in ("restrictions", "suggestions", "restrictOnConnections", "column_definitions", "fields"):
