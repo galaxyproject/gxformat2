@@ -48,6 +48,8 @@ def test_default_url_resolver_plain_url():
 def test_default_url_resolver_trs_missing_content():
     response = mock.Mock()
     response.json.return_value = []
-    with mock.patch("gxformat2.options.requests.get", return_value=response):
-        with pytest.raises(ValueError, match="has no string 'content' field"):
-            default_url_resolver(ENCODED_DESCRIPTOR_URL)
+    with (
+        mock.patch("gxformat2.options.requests.get", return_value=response),
+        pytest.raises(ValueError, match="has no string 'content' field"),
+    ):
+        default_url_resolver(ENCODED_DESCRIPTOR_URL)
