@@ -289,6 +289,14 @@ $graph:
         Ask Galaxy to derive valid choices from connected tool or
         subworkflow select inputs at runtime. Falls back to free text when
         derivation fails.
+    - name: validators
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:WorkflowTextValidator
+      jsonldPredicate: "gxformat2common:validators"
+      doc: |
+        Validators applied to values supplied for this input.
 
 - name: WorkflowBooleanParameter
   type: record
@@ -393,6 +401,15 @@ $graph:
       doc: |
         For text-typed inputs - derive runtime choices from connected
         tool/subworkflow select inputs.
+    - name: validators
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:WorkflowTextValidator
+      jsonldPredicate: "gxformat2common:validators"
+      doc: |
+        Validators for text-typed inputs. See
+        `WorkflowTextParameter.validators`.
 
 - name: WorkflowOutputParameter
   type: record

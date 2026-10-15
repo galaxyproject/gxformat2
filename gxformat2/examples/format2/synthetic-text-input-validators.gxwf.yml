@@ -1,0 +1,17 @@
+class: GalaxyWorkflow
+doc: Text parameter inputs with regex validators.
+inputs:
+  - id: text_regex
+    type: string
+    validators:
+      - type: regex
+        expression: "^moo"
+        message: must start with moo
+  - id: text_regex_negated
+    type: string
+    validators:
+      - type: regex
+        expression: cow
+        negate: true
+outputs: {}
+steps: {}

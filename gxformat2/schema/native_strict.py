@@ -176,6 +176,17 @@ arrays as shorthand for `{value: <str>, label: <str>}`."""
     value: str = Field(description="Machine value submitted to the connected tool input.")
     label: None | str = Field(default=None, description="Human label shown in Galaxy. Defaults to `value` when omitted.")
 
+class WorkflowTextValidator(BaseModel):
+    """A validator restricting values of a text workflow parameter. Persisted
+in native Galaxy as an entry of the input step's `tool_state.validators`."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    type_: Literal["regex"] = Field(default="regex", alias="type", description="Validator type. Only `regex` is supported.")
+    expression: str = Field(description="Regular expression matched from the start of the value. End it with `$` to require a complete-value match.")
+    message: None | str = Field(default=None, description="Message shown when a value fails validation.")
+    negate: None | bool = Field(default=None, description="Reject matching values instead of values that do not match. Defaults to `false`.")
+
 class ToolShedRepository(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
@@ -464,6 +475,7 @@ ReferencesTool.model_rebuild()
 SampleSheetColumnDefinition.model_rebuild()
 RecordFieldDefinition.model_rebuild()
 WorkflowTextOption.model_rebuild()
+WorkflowTextValidator.model_rebuild()
 ToolShedRepository.model_rebuild()
 NativeStepInput.model_rebuild()
 NativeStepOutput.model_rebuild()

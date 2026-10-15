@@ -84,7 +84,7 @@ def validate_input_parameter(input_param: Any) -> None:
     Enforces:
     - column_definitions only on collection inputs whose collection_type
       starts with 'sample_sheet'.
-    - restrictions/suggestions/restrictOnConnections only on text/string
+    - restrictions/suggestions/restrictOnConnections/validators only on text/string
       inputs (or catch-all WorkflowInputParameter in text mode).
     - Each SampleSheetColumnDefinition is internally consistent.
     """
@@ -125,7 +125,7 @@ def validate_input_parameter(input_param: Any) -> None:
         if not _RECORD_RANK_RE.search(collection_type):
             raise ValueError(f"fields requires collection_type containing 'record', got {collection_type!r}")
 
-    text_only_fields = ("restrictions", "suggestions", "restrictOnConnections")
+    text_only_fields = ("restrictions", "suggestions", "restrictOnConnections", "validators")
     for field in text_only_fields:
         if data.get(field) in (None, [], False):
             # restrictOnConnections=False is the schema default and harmless;

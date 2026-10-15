@@ -1,0 +1,10 @@
+class: GalaxyWorkflow
+doc: Multiple-value text parameter input with a regex validator.
+inputs:
+  multi_text_regex:
+    type: [string]
+    validators:
+      - type: regex
+        expression: "^[ACGT]+$"
+outputs: {}
+steps: {}

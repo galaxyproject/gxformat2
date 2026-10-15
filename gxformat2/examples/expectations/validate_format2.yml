@@ -371,6 +371,16 @@ test_restrictions_on_data_rejected_format2_strict:
   operation: validate_format2_strict
   expect_error: true
 
+test_validators_on_int_rejected_format2:
+  fixture: synthetic-bad-validators-on-int.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_validators_on_int_rejected_format2_strict:
+  fixture: synthetic-bad-validators-on-int.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+
 test_column_defs_on_list_rejected_format2:
   fixture: synthetic-bad-column-defs-on-list.gxwf.yml
   operation: validate_format2
@@ -446,3 +456,11 @@ test_state_tool_state_conflict_rejected_format2_strict:
   fixture: synthetic-state-tool-state-conflict.gxwf.yml
   operation: validate_format2_strict
   expect_error: true
+
+test_text_input_validators_valid_format2:
+  fixture: synthetic-text-input-validators.gxwf.yml
+  operation: validate_format2
+
+test_text_input_validators_valid_format2_strict:
+  fixture: synthetic-text-input-validators.gxwf.yml
+  operation: validate_format2_strict
