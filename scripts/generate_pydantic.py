@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any, cast
 from urllib.parse import urlparse
 
-from schema_salad.ref_resolver import Loader, file_uri
+from schema_salad.ref_resolver import file_uri, Loader
 from schema_salad.schema import get_metaschema, shortname
 from schema_salad_plus_pydantic.orchestrate import generate
 

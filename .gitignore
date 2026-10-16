@@ -46,3 +46,6 @@ tests/examples
 java/target
 java/.idea
 .aider*
+
+# macOS
+.DS_Store
