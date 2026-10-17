@@ -7,11 +7,12 @@ import json
 import re
 import sys
 from collections import OrderedDict
+from collections.abc import Iterable
 from urllib.parse import urlparse
 
 from pydantic import ValidationError
 
-from gxformat2.lint_rules import NativeStepKeyNotInteger
+from gxformat2.lint_rules import NativeStepKeyNotInteger, StepLabelNotUnique
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
 from gxformat2.normalized import (
@@ -20,6 +21,7 @@ from gxformat2.normalized import (
     NormalizedFormat2,
     NormalizedWorkflowStep,
 )
+from gxformat2.normalized._conversion import native_input_label, native_step_label
 from gxformat2.normalized._native import (
     NativeStepType,
     NormalizedNativeStep,
@@ -70,6 +72,11 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
 
     found_outputs = False
     found_output_without_label = False
+
+    _lint_duplicate_step_labels(
+        lint_context,
+        [(step.label, f"step {key}", f"/steps/{key}/label") for key, step in nnw.steps.items()],
+    )
 
     for order_index_str, step in nnw.steps.items():
         if not order_index_str.isdigit():
@@ -138,6 +145,13 @@ def lint_format2(lint_context, nf2, raw_dict: dict | None = None, path=None):
         if "class" not in raw_dict:
             lint_context.error("expected to find key [class] but absent")
 
+    # Check the labels conversion will assign to the native steps.
+    _lint_duplicate_step_labels(
+        lint_context,
+        [(native_input_label(inp, i), f"input {inp.id or i}", None) for i, inp in enumerate(nf2.inputs)]
+        + [(native_step_label(step), f"step {step.id}", None) for step in nf2.steps],
+    )
+
     for step in nf2.steps:
         _lint_step_errors(lint_context, step.errors)
         _lint_tool_if_present(lint_context, step.tool_id)
@@ -168,6 +182,29 @@ def _validate_output_sources(lint_context, nf2: NormalizedFormat2):
                 f"Output '{output_id}' references step '{step_ref}' via outputSource "
                 f"'{output_source}', but no step or input with that label exists"
             )
+
+
+def _lint_duplicate_step_labels(
+    lint_context: LintContext, labeled_steps: Iterable[tuple[str | None, str, str | None]]
+) -> None:
+    """Error on step labels shared by more than one step, as Galaxy rejects these at import.
+
+    ``labeled_steps`` holds ``(label, description, json_pointer)`` for each step
+    of one workflow level (subworkflows have their own label namespace). Empty
+    labels are ignored, matching Galaxy.
+    """
+    steps_by_label: dict[str, list[tuple[str, str | None]]] = {}
+    for label, description, json_pointer in labeled_steps:
+        if label:
+            steps_by_label.setdefault(label, []).append((description, json_pointer))
+    for label, steps in steps_by_label.items():
+        if len(steps) < 2:
+            continue
+        lint_context.error(
+            f"Duplicated step label '{label}' ({', '.join(description for description, _ in steps)})",
+            linter=StepLabelNotUnique,
+            json_pointer=steps[1][1],
+        )
 
 
 def _lint_step_errors(lint_context, step_errors):

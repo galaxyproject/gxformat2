@@ -1,0 +1,12 @@
+class: GalaxyWorkflow
+doc: An input and a step share the label "reads", which Galaxy rejects on import.
+inputs:
+  reads: data
+outputs:
+  out:
+    outputSource: reads/out_file1
+steps:
+  reads:
+    tool_id: cat1
+    in:
+      input1: reads

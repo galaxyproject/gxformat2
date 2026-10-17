@@ -750,6 +750,20 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-lint-duplicate-input-step-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Input and step share a label — triggers duplicate step label lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-duplicate-step-label-list.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: List-form steps repeat a label — triggers duplicate step label lint error.
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-lint-step-errors.gxwf.yml
   origin: synthetic
   format: format2
@@ -834,6 +848,34 @@
   origin: synthetic
   format: native
   description: Non-integer step key — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-duplicate-step-label.ga
+  origin: synthetic
+  format: native
+  description: Parameter input and tool step share a label (as in IWC PR 310) — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-duplicate-step-label-in-subworkflow.ga
+  origin: synthetic
+  format: native
+  description: Two steps of a subworkflow share a label — triggers nested lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-step-label-reused-in-subworkflow.ga
+  origin: synthetic
+  format: native
+  description: Same step label in parent and subworkflow — separate namespaces, lints clean.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-unlabeled-steps.ga
+  origin: synthetic
+  format: native
+  description: Several steps with null, empty or missing labels — not duplicates, lints clean.
   tests:
     - tests/test_interop_tests.py
 
