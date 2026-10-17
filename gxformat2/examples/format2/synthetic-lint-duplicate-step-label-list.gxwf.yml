@@ -1,0 +1,16 @@
+class: GalaxyWorkflow
+doc: Two list-form steps repeat the same label, which Galaxy rejects on import.
+inputs:
+  reads: data
+outputs:
+  out:
+    outputSource: concat/out_file1
+steps:
+  - label: concat
+    tool_id: cat1
+    in:
+      input1: reads
+  - label: concat
+    tool_id: cat1
+    in:
+      input1: reads

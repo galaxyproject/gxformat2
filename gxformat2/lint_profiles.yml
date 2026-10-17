@@ -10,6 +10,7 @@ structural:
   description: "Checks that prevent execution or indicate structural breakage."
   rules:
     - NativeStepKeyNotInteger
+    - StepLabelNotUnique
     - StepExportError
     - StepUsesTestToolshed
     - WorkflowHasNoOutputs
