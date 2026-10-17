@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.28.0.dev0
+0.28.0 (2026-10-17)
 ---------------------
 * Drop support for Python 3.9 (thanks to `@nsoranzo`_). `Pull Request 220`_
 * Bump aiohttp from 3.13.5 to 3.14.0 (thanks to `@dependabot[bot]`_). `Pull Request 221`_
