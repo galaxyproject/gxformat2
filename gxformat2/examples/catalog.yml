@@ -750,6 +750,13 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-lint-duplicate-default-input-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Id-less list-form input defaults to label "Input 0", which a step reuses — triggers duplicate step label lint error.
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-lint-duplicate-input-step-label.gxwf.yml
   origin: synthetic
   format: format2
@@ -764,10 +771,24 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-lint-duplicate-step-label-in-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Two steps of an inline subworkflow share a label — triggers nested lint error.
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-lint-step-errors.gxwf.yml
   origin: synthetic
   format: format2
   description: Step with errors field set — triggers Galaxy export error warning.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-step-label-reused-in-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Same step label in parent and inline subworkflow — separate namespaces, lints clean.
   tests:
     - tests/test_interop_tests.py
 
