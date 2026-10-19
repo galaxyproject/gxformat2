@@ -75,15 +75,18 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
 
     _lint_duplicate_step_labels(
         lint_context,
-        [(step.label, f"step {key}", f"/steps/{key}/label") for key, step in nnw.steps.items()],
+        [
+            (step.label, f"step {key}", _native_step_context(lint_context, key).child("label"))
+            for key, step in nnw.steps.items()
+        ],
     )
 
     for order_index_str, step in nnw.steps.items():
+        step_context = _native_step_context(lint_context, order_index_str)
         if not order_index_str.isdigit():
-            lint_context.error(
+            step_context.error(
                 f"expected step_key to be integer not [{order_index_str}]",
                 linter=NativeStepKeyNotInteger,
-                json_pointer=f"/steps/{order_index_str}",
             )
 
         for workflow_output in step.workflow_outputs:
@@ -95,7 +98,7 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
             if not step.subworkflow.steps:
                 lint_context.error("subworkflow is missing steps or steps are empty")
             else:
-                lint_ga(lint_context, step.subworkflow)
+                lint_ga(step_context.child("subworkflow"), step.subworkflow)
 
         _lint_step_errors(lint_context, step.errors)
         _lint_tool_if_present(lint_context, step.tool_id)
@@ -184,26 +187,30 @@ def _validate_output_sources(lint_context, nf2: NormalizedFormat2):
             )
 
 
+def _native_step_context(lint_context: LintContext, step_key: str) -> LintContext:
+    return lint_context.child("steps").child(step_key)
+
+
 def _lint_duplicate_step_labels(
-    lint_context: LintContext, labeled_steps: Iterable[tuple[str | None, str, str | None]]
+    lint_context: LintContext, labeled_steps: Iterable[tuple[str | None, str, LintContext | None]]
 ) -> None:
     """Error on step labels shared by more than one step, as Galaxy rejects these at import.
 
-    ``labeled_steps`` holds ``(label, description, json_pointer)`` for each step
-    of one workflow level (subworkflows have their own label namespace). Empty
-    labels are ignored, matching Galaxy.
+    ``labeled_steps`` holds ``(label, description, label_context)`` for each step
+    of one workflow level (subworkflows have their own label namespace);
+    ``label_context`` locates the label, or ``None`` to report at ``lint_context``.
+    Empty labels are ignored, matching Galaxy.
     """
-    steps_by_label: dict[str, list[tuple[str, str | None]]] = {}
-    for label, description, json_pointer in labeled_steps:
+    steps_by_label: dict[str, list[tuple[str, LintContext | None]]] = {}
+    for label, description, label_context in labeled_steps:
         if label:
-            steps_by_label.setdefault(label, []).append((description, json_pointer))
+            steps_by_label.setdefault(label, []).append((description, label_context))
     for label, steps in steps_by_label.items():
         if len(steps) < 2:
             continue
-        lint_context.error(
+        (steps[1][1] or lint_context).error(
             f"Duplicated step label '{label}' ({', '.join(description for description, _ in steps)})",
             linter=StepLabelNotUnique,
-            json_pointer=steps[1][1],
         )
 
 
