@@ -14,3 +14,11 @@ class NativeStepKeyNotInteger(Linter):
     severity = "error"
     applies_to = ("native",)
     profile = "structural"
+
+
+class StepLabelNotUnique(Linter):
+    """Step labels (including inputs) must be unique within a workflow; Galaxy refuses duplicates at import."""
+
+    severity = "error"
+    applies_to = ("format2", "native")
+    profile = "structural"

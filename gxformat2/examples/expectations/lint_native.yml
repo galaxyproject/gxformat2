@@ -88,6 +88,46 @@ test_lint_native_non_integer_step_key:
     - path: [errors, 0, json_pointer]
       value_contains: "/steps/"
 
+test_lint_native_duplicate_step_label:
+  fixture: synthetic-lint-duplicate-step-label.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'Strip version from ids' (step 0, step 1)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+    - path: [errors, 0, json_pointer]
+      value: "/steps/1/label"
+
+test_lint_native_duplicate_step_label_in_subworkflow:
+  fixture: synthetic-lint-duplicate-step-label-in-subworkflow.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'concat' (step 0, step 1)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+    - path: [errors, 0, json_pointer]
+      value: "/steps/0/subworkflow/steps/1/label"
+
+test_lint_native_step_label_reused_in_subworkflow:
+  fixture: synthetic-lint-step-label-reused-in-subworkflow.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_native_unlabeled_steps:
+  fixture: synthetic-lint-unlabeled-steps.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+
 test_lint_native_nested_no_steps:
   fixture: synthetic-lint-nested-no-steps.ga
   operation: lint_native

@@ -1,0 +1,38 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Duplicate step label inside subworkflow",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "subworkflow",
+            "label": "inner",
+            "subworkflow": {
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "name": "Inner",
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "type": "tool",
+                        "tool_id": "cat1",
+                        "label": "concat",
+                        "workflow_outputs": [
+                            {"output_name": "out_file1", "label": "inner_out"}
+                        ]
+                    },
+                    "1": {
+                        "id": 1,
+                        "type": "tool",
+                        "tool_id": "cat1",
+                        "label": "concat",
+                        "workflow_outputs": []
+                    }
+                }
+            },
+            "workflow_outputs": [
+                {"output_name": "inner_out", "label": "out"}
+            ]
+        }
+    }
+}

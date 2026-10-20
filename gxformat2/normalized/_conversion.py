@@ -1186,7 +1186,7 @@ def _build_input_step(
     ctx: _ConversionContext,
 ) -> NormalizedNativeStep:
     raw_label = inp.id or f"Input {order_index}"
-    label = None if Labels.is_unlabeled(raw_label) else raw_label
+    label = native_input_label(inp, order_index)
     # type_ lives on concrete subclasses, not BaseInputParameter
     input_type = getattr(inp, "type_", None)
     if isinstance(input_type, list):
@@ -1382,7 +1382,7 @@ def _build_tool_step(
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.tool,
-        label=_step_label(step),
+        label=native_step_label(step),
         name=tool_id or (tool_representation or {}).get("name", "User Defined Tool"),
         annotation=step.doc or "",
         tool_id=tool_id,
@@ -1435,7 +1435,7 @@ def _build_subworkflow_step(
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.subworkflow,
-        label=_step_label(step),
+        label=native_step_label(step),
         annotation=step.doc or "",
         tool_state={},
         subworkflow=subworkflow,
@@ -1462,7 +1462,7 @@ def _build_pause_step(
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.pause,
-        label=_step_label(step),
+        label=native_step_label(step),
         name=name,
         annotation=step.doc or "",
         tool_state={"name": name},
@@ -1495,7 +1495,7 @@ def _build_pick_value_step(
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.pick_value,
-        label=_step_label(step),
+        label=native_step_label(step),
         name=name,
         annotation=step.doc or "",
         tool_state=tool_state,
@@ -1694,12 +1694,22 @@ def _register_subworkflow_labels(sub_wf: NormalizedFormat2, child_ctx: _Conversi
             child_ctx.labels[sub_label] = len(sub_wf.inputs) + j
 
 
-def _step_label(step: NormalizedWorkflowStep) -> str | None:
-    """Extract the user label from a Format2 step.
+def native_input_label(inp: BaseInputParameter, order_index: int) -> str | None:
+    """Native step label for a Format2 input at ``order_index``.
 
-    For dict-keyed steps, the key is stored in ``id`` and ``label`` is None.
-    Non-numeric ids are user labels; numeric ids are auto-assigned indices.
+    Inputs are labeled by ``id``, falling back to ``Input <order_index>``.
     Sentinel labels (``_unlabeled_*``) are cleared to None.
+    """
+    raw_label = inp.id or f"Input {order_index}"
+    return None if Labels.is_unlabeled(raw_label) else raw_label
+
+
+def native_step_label(step: NormalizedWorkflowStep) -> str | None:
+    """Native step label for a Format2 step.
+
+    An explicit ``label`` wins (normalization also stores dict keys there);
+    otherwise a non-numeric ``id`` is a user label and numeric ids are
+    auto-assigned indices. Sentinel labels (``_unlabeled_*``) are cleared to None.
     """
     if step.label is not None:
         if Labels.is_unlabeled(step.label):

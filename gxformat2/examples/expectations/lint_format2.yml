@@ -172,3 +172,54 @@ test_lint_format2_report_clean:
       value: 0
     - path: [warn_count]
       value: 0
+
+test_lint_duplicate_input_step_label:
+  fixture: synthetic-lint-duplicate-input-step-label.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'reads' (input reads, step reads)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+
+test_lint_duplicate_step_label_list:
+  fixture: synthetic-lint-duplicate-step-label-list.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'concat' (step 1, step 2)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+
+test_lint_duplicate_default_input_label:
+  fixture: synthetic-lint-duplicate-default-input-label.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'Input 0' (input 0, step 1)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+
+test_lint_duplicate_step_label_in_subworkflow:
+  fixture: synthetic-lint-duplicate-step-label-in-subworkflow.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'a' (step 1, step 2)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+
+test_lint_step_label_reused_in_subworkflow:
+  fixture: synthetic-lint-step-label-reused-in-subworkflow.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0

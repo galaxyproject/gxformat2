@@ -7,11 +7,12 @@ import json
 import re
 import sys
 from collections import OrderedDict
+from collections.abc import Iterable
 from urllib.parse import urlparse
 
 from pydantic import ValidationError
 
-from gxformat2.lint_rules import NativeStepKeyNotInteger
+from gxformat2.lint_rules import NativeStepKeyNotInteger, StepLabelNotUnique
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
 from gxformat2.normalized import (
@@ -20,6 +21,7 @@ from gxformat2.normalized import (
     NormalizedFormat2,
     NormalizedWorkflowStep,
 )
+from gxformat2.normalized._conversion import native_input_label, native_step_label
 from gxformat2.normalized._native import (
     NativeStepType,
     NormalizedNativeStep,
@@ -71,12 +73,20 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
     found_outputs = False
     found_output_without_label = False
 
+    _lint_duplicate_step_labels(
+        lint_context,
+        [
+            (step.label, f"step {key}", _native_step_context(lint_context, key).child("label"))
+            for key, step in nnw.steps.items()
+        ],
+    )
+
     for order_index_str, step in nnw.steps.items():
+        step_context = _native_step_context(lint_context, order_index_str)
         if not order_index_str.isdigit():
-            lint_context.error(
+            step_context.error(
                 f"expected step_key to be integer not [{order_index_str}]",
                 linter=NativeStepKeyNotInteger,
-                json_pointer=f"/steps/{order_index_str}",
             )
 
         for workflow_output in step.workflow_outputs:
@@ -88,7 +98,7 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
             if not step.subworkflow.steps:
                 lint_context.error("subworkflow is missing steps or steps are empty")
             else:
-                lint_ga(lint_context, step.subworkflow)
+                lint_ga(step_context.child("subworkflow"), step.subworkflow)
 
         _lint_step_errors(lint_context, step.errors)
         _lint_tool_if_present(lint_context, step.tool_id)
@@ -138,6 +148,13 @@ def lint_format2(lint_context, nf2, raw_dict: dict | None = None, path=None):
         if "class" not in raw_dict:
             lint_context.error("expected to find key [class] but absent")
 
+    # Check the labels conversion will assign to the native steps.
+    _lint_duplicate_step_labels(
+        lint_context,
+        [(native_input_label(inp, i), f"input {inp.id or i}", None) for i, inp in enumerate(nf2.inputs)]
+        + [(native_step_label(step), f"step {step.id}", None) for step in nf2.steps],
+    )
+
     for step in nf2.steps:
         _lint_step_errors(lint_context, step.errors)
         _lint_tool_if_present(lint_context, step.tool_id)
@@ -168,6 +185,33 @@ def _validate_output_sources(lint_context, nf2: NormalizedFormat2):
                 f"Output '{output_id}' references step '{step_ref}' via outputSource "
                 f"'{output_source}', but no step or input with that label exists"
             )
+
+
+def _native_step_context(lint_context: LintContext, step_key: str) -> LintContext:
+    return lint_context.child("steps").child(step_key)
+
+
+def _lint_duplicate_step_labels(
+    lint_context: LintContext, labeled_steps: Iterable[tuple[str | None, str, LintContext | None]]
+) -> None:
+    """Error on step labels shared by more than one step, as Galaxy rejects these at import.
+
+    ``labeled_steps`` holds ``(label, description, label_context)`` for each step
+    of one workflow level (subworkflows have their own label namespace);
+    ``label_context`` locates the label, or ``None`` to report at ``lint_context``.
+    Empty labels are ignored, matching Galaxy.
+    """
+    steps_by_label: dict[str, list[tuple[str, LintContext | None]]] = {}
+    for label, description, label_context in labeled_steps:
+        if label:
+            steps_by_label.setdefault(label, []).append((description, label_context))
+    for label, steps in steps_by_label.items():
+        if len(steps) < 2:
+            continue
+        (steps[1][1] or lint_context).error(
+            f"Duplicated step label '{label}' ({', '.join(description for description, _ in steps)})",
+            linter=StepLabelNotUnique,
+        )
 
 
 def _lint_step_errors(lint_context, step_errors):
