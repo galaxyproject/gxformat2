@@ -57,6 +57,6 @@ test_bp_format2_untyped_params:
     - path: [warnings]
       value_any_contains: "untyped parameter in the post-job actions. ${on_string} in rename of output out_file2"
     - path: [warnings]
-      value_any_contains: "untyped parameter in the post-job actions. ${reads} in rename of output out_file2"
+      value_any_contains: "untyped parameter in the post-job actions. ${reads} in rename of output out_file2 names a data input, but Galaxy fills ${...} only from parameter inputs; use #{input1} "
     - path: [warnings]
       value_any_contains: "untyped parameter in the post-job actions. ${Haplotype} in add_tags of output out_file1"

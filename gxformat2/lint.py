@@ -7,6 +7,7 @@ import json
 import re
 import sys
 from collections.abc import Iterable
+from typing import NamedTuple
 from urllib.parse import urlparse
 
 from pydantic import ValidationError
@@ -19,6 +20,7 @@ from gxformat2.normalized import (
     ensure_native,
     NormalizedFormat2,
     NormalizedWorkflowStep,
+    resolve_source_reference,
 )
 from gxformat2.normalized._conversion import format2_input_step_type, native_input_label, native_step_label
 from gxformat2.normalized._native import (
@@ -43,6 +45,16 @@ LINT_FAILED_OUTPUT_NO_LABEL = "Workflow contained output without a label"
 # Galaxy's informal replacement parameter syntax (``WorkflowModule.get_informal_replacement_parameters``).
 UNTYPED_PARAMETER_PATTERN = re.compile(r"\$\{(.+?)\}")
 RENAME_ACTION = "RenameDatasetAction"
+DATA_INPUT_STEP_TYPES = {NativeStepType.data_input, NativeStepType.data_collection_input}
+
+
+class _ReplacementScope(NamedTuple):
+    """What a step's ``${name}`` references can resolve against."""
+
+    parameter_labels: set[str]
+    data_labels: set[str]
+    # source input label -> ``#{...}`` reference to the step input it connects to
+    connected_inputs: dict[str, str]
 
 
 def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
@@ -334,14 +346,23 @@ def _lint_workflow_top_level(lint_context, nf2: NormalizedFormat2):
 def lint_best_practices(lint_context, nf2: NormalizedFormat2):
     """Lint best practices for a Format2 workflow (top-level + format2 step-level)."""
     _lint_workflow_top_level(lint_context, nf2)
-    parameter_labels = {
-        inp.id for inp in nf2.inputs if inp.id and format2_input_step_type(inp) == NativeStepType.parameter_input
-    }
+    input_types = {inp.id: format2_input_step_type(inp) for inp in nf2.inputs if inp.id}
+    scope = _ReplacementScope(
+        parameter_labels={label for label, t in input_types.items() if t == NativeStepType.parameter_input},
+        data_labels={label for label, t in input_types.items() if t in DATA_INPUT_STEP_TYPES},
+        connected_inputs={},
+    )
     for step in nf2.steps:
-        _lint_step_best_practices(lint_context, step, parameter_labels)
+        connected_inputs = {
+            resolve_source_reference(source, scope.data_labels).step_label: _input_reference(step_input.id)
+            for step_input in step.in_
+            if step_input.id
+            for source in _as_list(step_input.source)
+        }
+        _lint_step_best_practices(lint_context, step, scope._replace(connected_inputs=connected_inputs))
 
 
-def _lint_step_best_practices(lint_context, step: NormalizedWorkflowStep, parameter_labels: set[str]):
+def _lint_step_best_practices(lint_context, step: NormalizedWorkflowStep, scope: _ReplacementScope):
     """Lint best practices for a single workflow step."""
     step_id = step.label or step.id
 
@@ -370,7 +391,7 @@ def _lint_step_best_practices(lint_context, step: NormalizedWorkflowStep, parame
     for out in step.out:
         for field, value in out.model_dump(exclude_none=True).items():
             if field != "id":
-                _lint_untyped_pja(lint_context, step_id, out.id, field, value, field == "rename", parameter_labels)
+                _lint_untyped_pja(lint_context, step_id, out.id, field, value, field == "rename", scope)
 
 
 SKIP_DISCONNECTED_CHECK_TYPES_NATIVE = {
@@ -381,7 +402,7 @@ SKIP_DISCONNECTED_CHECK_TYPES_NATIVE = {
 }
 
 
-def _lint_native_step_best_practices(lint_context, step: NormalizedNativeStep, parameter_labels: set[str]):
+def _lint_native_step_best_practices(lint_context, step: NormalizedNativeStep, scope: _ReplacementScope):
     """Native step best practice checks using native step fields (avoids format2 sentinel ids)."""
     step_id = step.label or step.annotation or step.id
 
@@ -404,7 +425,7 @@ def _lint_native_step_best_practices(lint_context, step: NormalizedNativeStep, p
         for argument, value in (pja.action_arguments or {}).items():
             is_rename = pja.action_type == RENAME_ACTION and argument == "newname"
             action = "rename" if is_rename else pja.action_type
-            _lint_untyped_pja(lint_context, step_id, pja.output_name, action, value, is_rename, parameter_labels)
+            _lint_untyped_pja(lint_context, step_id, pja.output_name, action, value, is_rename, scope)
 
 
 def _try_build_nf2(lint_context, workflow_dict) -> NormalizedFormat2 | None:
@@ -448,11 +469,24 @@ def lint_best_practices_ga(lint_context, workflow_dict):
         _lint_workflow_top_level(lint_context, nf2)
     nnw = _try_build_nnw(lint_context, workflow_dict)
     if nnw is not None:
-        parameter_labels = {
-            step.label for step in nnw.steps.values() if step.type_ == NativeStepType.parameter_input and step.label
-        }
+        labels = {step.id: step.label for step in nnw.steps.values() if step.label}
+        scope = _ReplacementScope(
+            parameter_labels={
+                step.label for step in nnw.steps.values() if step.type_ == NativeStepType.parameter_input and step.label
+            },
+            data_labels={
+                step.label for step in nnw.steps.values() if step.type_ in DATA_INPUT_STEP_TYPES and step.label
+            },
+            connected_inputs={},
+        )
         for step in nnw.steps.values():
-            _lint_native_step_best_practices(lint_context, step, parameter_labels)
+            connected_inputs = {
+                labels[connection.id]: _input_reference(input_name)
+                for input_name, connections in step.input_connections.items()
+                for connection in connections
+                if connection.id in labels
+            }
+            _lint_native_step_best_practices(lint_context, step, scope._replace(connected_inputs=connected_inputs))
 
 
 def lint_best_practices_format2(lint_context, workflow_dict):
@@ -481,14 +515,31 @@ def _lint_untyped_tool_state(lint_context, step_id, tool_state):
         )
 
 
-def _lint_untyped_pja(lint_context, step_id, output_name, action, value, is_rename, parameter_labels):
+def _as_list(value) -> list:
+    if value is None:
+        return []
+    return value if isinstance(value, list) else [value]
+
+
+def _input_reference(input_name: str) -> str:
+    """Rename ``#{...}`` reference for a step input; Galaxy reads nested ``a|b`` as ``a.b``."""
+    return input_name.replace("|", ".")
+
+
+def _lint_untyped_pja(lint_context, step_id, output_name, action, value, is_rename, scope: _ReplacementScope):
     """Warn for ``${name}`` references Galaxy won't fill from a declared parameter input."""
     target = f"output {output_name}" if output_name else "all outputs"
     for name in _untyped_parameter_names(value):
         if not is_rename:
             detail = "stays literal; Galaxy substitutes parameters only in renames."
-        elif name in parameter_labels:
+        elif name in scope.parameter_labels:
             continue
+        elif name in scope.data_labels:
+            input_reference = scope.connected_inputs.get(name, "input_name")
+            detail = (
+                "names a data input, but Galaxy fills ${...} only from parameter inputs; "
+                f"use #{{{input_reference}}} for that dataset's name."
+            )
         else:
             detail = (
                 "is not a parameter input label, so Galaxy prompts for it at run time and leaves it literal via "
