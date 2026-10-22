@@ -839,17 +839,17 @@
   tests:
     - tests/test_interop_tests.py
 
-- file: format2/synthetic-lint-bad-text-list-default.gxwf.yml
+- file: format2/synthetic-lint-bad-list-defaults.gxwf.yml
   origin: synthetic
   format: format2
-  description: Multiple text inputs with non-string default entries and a boolean int default — triggers type mismatch lint errors.
+  description: Multiple text/int/float inputs with mistyped default entries and a boolean int default — triggers type mismatch lint errors.
   tests:
     - tests/test_interop_tests.py
 
 - file: native/synthetic-lint-bad-parameter-defaults.ga
   origin: synthetic
   format: native
-  description: Text and integer parameter inputs with mistyped defaults — triggers type mismatch lint errors.
+  description: Text and integer parameter inputs (single and multiple) with mistyped defaults — triggers type mismatch lint errors.
   tests:
     - tests/test_interop_tests.py
 

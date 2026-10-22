@@ -162,18 +162,22 @@ test_lint_format2_bad_string_default:
     - path: [errors, 0]
       value_contains: "invalid type"
 
-test_lint_format2_bad_text_list_default:
-  fixture: synthetic-lint-bad-text-list-default.gxwf.yml
+test_lint_format2_bad_list_defaults:
+  fixture: synthetic-lint-bad-list-defaults.gxwf.yml
   operation: lint_format2
   assertions:
     - path: [error_count]
-      value: 3
+      value: 5
     - path: [errors, 0]
       value: "Input default is of invalid type. Input mixed_list is [string]; its default must be a string or a list of strings."
     - path: [errors, 1]
       value: "Input default is of invalid type. Input number_default is [string]; its default must be a string or a list of strings."
     - path: [errors, 2]
       value: "Input default is of invalid type. Input bool_as_int is int; its default must be an integer."
+    - path: [errors, 3]
+      value: "Input default is of invalid type. Input int_list is [int]; its default must be an integer or a list of integers."
+    - path: [errors, 4]
+      value: "Input default is of invalid type. Input float_list is [float]; its default must be a number or a list of numbers."
 
 # --- Report validation ---
 

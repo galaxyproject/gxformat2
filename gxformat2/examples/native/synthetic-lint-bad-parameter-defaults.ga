@@ -62,6 +62,16 @@
             "inputs": [],
             "outputs": [],
             "workflow_outputs": []
+        },
+        "6": {
+            "id": 6,
+            "type": "parameter_input",
+            "label": "int_list",
+            "tool_state": "{\"parameter_type\": \"integer\", \"optional\": false, \"multiple\": true, \"default\": [1, \"bad\"]}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
         }
     }
 }

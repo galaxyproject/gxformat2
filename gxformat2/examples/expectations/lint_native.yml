@@ -173,10 +173,12 @@ test_lint_native_bad_parameter_defaults:
   operation: lint_native
   assertions:
     - path: [error_count]
-      value: 3
+      value: 4
     - path: [errors, 0]
       value: "Input default is of invalid type. Input mixed_list is [string]; its default must be a string or a list of strings."
     - path: [errors, 1]
       value: "Input default is of invalid type. Input number_default is string; its default must be a string."
     - path: [errors, 2]
       value: "Input default is of invalid type. Input bool_as_int is int; its default must be an integer."
+    - path: [errors, 3]
+      value: "Input default is of invalid type. Input int_list is [int]; its default must be an integer or a list of integers."

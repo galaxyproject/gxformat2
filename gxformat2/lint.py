@@ -277,12 +277,13 @@ def _is_number(value) -> bool:
 class _DefaultCheck(NamedTuple):
     type_name: str
     expected: str
+    expected_list: str
     is_valid: Callable[[Any], bool]
 
 
-_STRING_DEFAULT = _DefaultCheck("string", "a string", _is_string)
-_INTEGER_DEFAULT = _DefaultCheck("int", "an integer", _is_integer)
-_FLOAT_DEFAULT = _DefaultCheck("float", "a number", _is_number)
+_STRING_DEFAULT = _DefaultCheck("string", "a string", "a string or a list of strings", _is_string)
+_INTEGER_DEFAULT = _DefaultCheck("int", "an integer", "an integer or a list of integers", _is_integer)
+_FLOAT_DEFAULT = _DefaultCheck("float", "a number", "a number or a list of numbers", _is_number)
 _DEFAULT_CHECKS: dict[str, _DefaultCheck] = {
     GalaxyType.string: _STRING_DEFAULT,
     GalaxyType.text: _STRING_DEFAULT,
@@ -297,10 +298,10 @@ def _lint_input_default(lint_context: LintContext, label, input_type, default):
     if default is None:
         return
     if isinstance(input_type, list):
-        # Galaxy wraps a bare string default for multiple text inputs.
-        if len(input_type) == 1 and _DEFAULT_CHECKS.get(input_type[0]) is _STRING_DEFAULT:
-            if not all(_is_string(value) for value in _as_list(default)):
-                _invalid_default(lint_context, label, "[string]", "a string or a list of strings")
+        # Galaxy wraps a bare default for multiple parameter inputs.
+        check = _DEFAULT_CHECKS.get(input_type[0]) if len(input_type) == 1 else None
+        if check and not all(check.is_valid(value) for value in _as_list(default)):
+            _invalid_default(lint_context, label, f"[{check.type_name}]", check.expected_list)
         return
     check = _DEFAULT_CHECKS.get(input_type)
     if check and not check.is_valid(default):
