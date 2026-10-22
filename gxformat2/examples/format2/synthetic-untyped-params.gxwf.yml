@@ -1,0 +1,33 @@
+class: GalaxyWorkflow
+label: untyped params
+doc: Untyped parameter references in tool state and post-job actions.
+creator:
+  - class: Person
+    identifier: https://orcid.org/0000-0000-0000-0000
+    name: Test Person
+license: MIT
+inputs:
+  reads:
+    type: data
+    doc: Data input.
+  Haplotype:
+    type: text
+    doc: Text parameter input.
+outputs:
+  out_file1:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    doc: Tool step.
+    in:
+      input1: reads
+    tool_state:
+      prefix: sample ${sample_name}
+    out:
+      out_file1:
+        rename: "Chromosome File for ${Haplotype} from #{input1}"
+        add_tags:
+          - name:${Haplotype}
+      out_file2:
+        rename: "Coverage track on ${on_string} and ${reads}"

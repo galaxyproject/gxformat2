@@ -1,0 +1,94 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "Untyped parameter references in tool state and post-job actions.",
+    "creator": [
+        {
+            "class": "Person",
+            "identifier": "https://orcid.org/0000-0000-0000-0000",
+            "name": "Test Person"
+        }
+    ],
+    "format-version": "0.1",
+    "license": "MIT",
+    "name": "untyped params",
+    "steps": {
+        "0": {
+            "annotation": "Data input.",
+            "id": 0,
+            "input_connections": {},
+            "inputs": [],
+            "label": "reads",
+            "name": "Input dataset",
+            "outputs": [],
+            "tool_state": "{\"optional\": false}",
+            "type": "data_input",
+            "workflow_outputs": []
+        },
+        "1": {
+            "annotation": "Text parameter input.",
+            "id": 1,
+            "input_connections": {},
+            "inputs": [],
+            "label": "Haplotype",
+            "name": "Input parameter",
+            "outputs": [],
+            "tool_state": "{\"parameter_type\": \"text\", \"optional\": false}",
+            "type": "parameter_input",
+            "workflow_outputs": []
+        },
+        "2": {
+            "annotation": "Tool step.",
+            "id": 2,
+            "input_connections": {
+                "input1": {
+                    "id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [],
+            "label": "cat",
+            "name": "Concatenate",
+            "outputs": [
+                {
+                    "name": "out_file1",
+                    "type": "input"
+                }
+            ],
+            "post_job_actions": {
+                "RenameDatasetActionout_file1": {
+                    "action_arguments": {
+                        "newname": "Chromosome File for ${Haplotype} from #{input1}"
+                    },
+                    "action_type": "RenameDatasetAction",
+                    "output_name": "out_file1"
+                },
+                "RenameDatasetActionout_file2": {
+                    "action_arguments": {
+                        "newname": "Coverage track on ${on_string} and ${reads}"
+                    },
+                    "action_type": "RenameDatasetAction",
+                    "output_name": "out_file2"
+                },
+                "TagDatasetActionout_file1": {
+                    "action_arguments": {
+                        "tags": "name:${Haplotype}"
+                    },
+                    "action_type": "TagDatasetAction",
+                    "output_name": "out_file1"
+                }
+            },
+            "tool_id": "cat1",
+            "tool_state": "{\"input1\": {\"__class__\": \"ConnectedValue\"}, \"prefix\": \"sample ${sample_name}\", \"__page__\": null, \"__rerun_remap_job_id__\": null}",
+            "tool_version": "1.0.0",
+            "type": "tool",
+            "workflow_outputs": [
+                {
+                    "label": "out_file1",
+                    "output_name": "out_file1"
+                }
+            ]
+        }
+    },
+    "tags": [],
+    "version": 1
+}
