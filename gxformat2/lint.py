@@ -6,7 +6,6 @@ import argparse
 import json
 import re
 import sys
-from collections import OrderedDict
 from collections.abc import Iterable
 from urllib.parse import urlparse
 
@@ -21,7 +20,7 @@ from gxformat2.normalized import (
     NormalizedFormat2,
     NormalizedWorkflowStep,
 )
-from gxformat2.normalized._conversion import native_input_label, native_step_label
+from gxformat2.normalized._conversion import format2_input_step_type, native_input_label, native_step_label
 from gxformat2.normalized._native import (
     NativeStepType,
     NormalizedNativeStep,
@@ -41,6 +40,9 @@ EXIT_CODE_FILE_PARSE_FAILED = 3
 
 LINT_FAILED_NO_OUTPUTS = "Workflow contained no outputs"
 LINT_FAILED_OUTPUT_NO_LABEL = "Workflow contained output without a label"
+# Galaxy's informal replacement parameter syntax (``WorkflowModule.get_informal_replacement_parameters``).
+UNTYPED_PARAMETER_PATTERN = re.compile(r"\$\{(.+?)\}")
+RENAME_ACTION = "RenameDatasetAction"
 
 
 def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
@@ -332,11 +334,14 @@ def _lint_workflow_top_level(lint_context, nf2: NormalizedFormat2):
 def lint_best_practices(lint_context, nf2: NormalizedFormat2):
     """Lint best practices for a Format2 workflow (top-level + format2 step-level)."""
     _lint_workflow_top_level(lint_context, nf2)
+    parameter_labels = {
+        inp.id for inp in nf2.inputs if inp.id and format2_input_step_type(inp) == NativeStepType.parameter_input
+    }
     for step in nf2.steps:
-        _lint_step_best_practices(lint_context, step)
+        _lint_step_best_practices(lint_context, step, parameter_labels)
 
 
-def _lint_step_best_practices(lint_context, step: NormalizedWorkflowStep):
+def _lint_step_best_practices(lint_context, step: NormalizedWorkflowStep, parameter_labels: set[str]):
     """Lint best practices for a single workflow step."""
     step_id = step.label or step.id
 
@@ -351,7 +356,6 @@ def _lint_step_best_practices(lint_context, step: NormalizedWorkflowStep):
     if not step.label:
         lint_context.warn(f"Workflow step {step_id} has no label.")
 
-    # untyped parameters
     tool_state = step.state or step.tool_state
     if tool_state:
         if isinstance(tool_state, str):
@@ -359,14 +363,14 @@ def _lint_step_best_practices(lint_context, step: NormalizedWorkflowStep):
                 tool_state = json.loads(tool_state)
             except (json.JSONDecodeError, TypeError):
                 tool_state = {}
-        if isinstance(tool_state, dict) and _check_json_for_untyped_params(tool_state):
-            lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter as an input.")
+        if isinstance(tool_state, dict):
+            _lint_untyped_tool_state(lint_context, step_id, tool_state)
 
-    # untyped parameters in outputs (PJA equivalents in format2)
-    if step.out:
-        out_data = [o.model_dump(by_alias=True) for o in step.out]
-        if _check_json_for_untyped_params(out_data):
-            lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter in the post-job actions.")
+    # format2 step outputs carry the post-job actions as fields
+    for out in step.out:
+        for field, value in out.model_dump(exclude_none=True).items():
+            if field != "id":
+                _lint_untyped_pja(lint_context, step_id, out.id, field, value, field == "rename", parameter_labels)
 
 
 SKIP_DISCONNECTED_CHECK_TYPES_NATIVE = {
@@ -377,7 +381,7 @@ SKIP_DISCONNECTED_CHECK_TYPES_NATIVE = {
 }
 
 
-def _lint_native_step_best_practices(lint_context, step: NormalizedNativeStep):
+def _lint_native_step_best_practices(lint_context, step: NormalizedNativeStep, parameter_labels: set[str]):
     """Native step best practice checks using native step fields (avoids format2 sentinel ids)."""
     step_id = step.label or step.annotation or step.id
 
@@ -394,22 +398,13 @@ def _lint_native_step_best_practices(lint_context, step: NormalizedNativeStep):
     if not step.label:
         lint_context.warn(f"Workflow step {step_id} has no label.")
 
-    # untyped parameters in tool_state
-    tool_state = step.tool_state
-    if tool_state:
-        if isinstance(tool_state, str):
-            try:
-                tool_state = json.loads(tool_state)
-            except (json.JSONDecodeError, TypeError):
-                tool_state = {}
-        if isinstance(tool_state, dict) and _check_json_for_untyped_params(tool_state):
-            lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter as an input.")
+    _lint_untyped_tool_state(lint_context, step_id, step.tool_state)
 
-    # untyped parameters in post_job_actions
-    if step.post_job_actions:
-        pjas = {k: v.model_dump(by_alias=True) for k, v in step.post_job_actions.items()}
-        if _check_json_for_untyped_params(pjas):
-            lint_context.warn(f"Workflow step {step_id} specifies an untyped parameter in the post-job actions.")
+    for pja in step.post_job_actions.values():
+        for argument, value in (pja.action_arguments or {}).items():
+            is_rename = pja.action_type == RENAME_ACTION and argument == "newname"
+            action = "rename" if is_rename else pja.action_type
+            _lint_untyped_pja(lint_context, step_id, pja.output_name, action, value, is_rename, parameter_labels)
 
 
 def _try_build_nf2(lint_context, workflow_dict) -> NormalizedFormat2 | None:
@@ -453,30 +448,56 @@ def lint_best_practices_ga(lint_context, workflow_dict):
         _lint_workflow_top_level(lint_context, nf2)
     nnw = _try_build_nnw(lint_context, workflow_dict)
     if nnw is not None:
+        parameter_labels = {
+            step.label for step in nnw.steps.values() if step.type_ == NativeStepType.parameter_input and step.label
+        }
         for step in nnw.steps.values():
-            _lint_native_step_best_practices(lint_context, step)
+            _lint_native_step_best_practices(lint_context, step, parameter_labels)
 
 
 def lint_best_practices_format2(lint_context, workflow_dict):
     """Lint best practices for a Format2 Galaxy workflow."""
     nf2 = _try_build_nf2(lint_context, workflow_dict)
     if nf2 is not None:
-        _lint_workflow_top_level(lint_context, nf2)
-        for step in nf2.steps:
-            _lint_step_best_practices(lint_context, step)
+        lint_best_practices(lint_context, nf2)
 
 
-def _check_json_for_untyped_params(j):
-    """Check for untyped workflow parameters (``${...}``) in a JSON-like structure."""
-    values = j.values() if isinstance(j, dict) else j
-    for value in values:
-        if type(value) in [list, dict, OrderedDict]:
-            if _check_json_for_untyped_params(value):
-                return True
-        elif isinstance(value, str):
-            if re.match(r"\$\{.+?\}", value):
-                return True
-    return False
+def _untyped_parameter_names(value) -> list[str]:
+    """Distinct ``${name}`` references anywhere in a JSON-like value, in order."""
+    if isinstance(value, dict):
+        value = list(value.values())
+    if isinstance(value, list):
+        return list(dict.fromkeys(name for item in value for name in _untyped_parameter_names(item)))
+    if isinstance(value, str):
+        return UNTYPED_PARAMETER_PATTERN.findall(value)
+    return []
+
+
+def _lint_untyped_tool_state(lint_context, step_id, tool_state):
+    for name in _untyped_parameter_names(tool_state):
+        lint_context.warn(
+            f"Workflow step {step_id} specifies an untyped parameter as an input. ${{{name}}} is filled only by "
+            "the expanded run form, never via the API; connect a workflow parameter input instead."
+        )
+
+
+def _lint_untyped_pja(lint_context, step_id, output_name, action, value, is_rename, parameter_labels):
+    """Warn for ``${name}`` references Galaxy won't fill from a declared parameter input."""
+    target = f"output {output_name}" if output_name else "all outputs"
+    for name in _untyped_parameter_names(value):
+        if not is_rename:
+            detail = "stays literal; Galaxy substitutes parameters only in renames."
+        elif name in parameter_labels:
+            continue
+        else:
+            detail = (
+                "is not a parameter input label, so Galaxy prompts for it at run time and leaves it literal via "
+                f"the API; add a parameter input labelled {name}, or use #{{input_name}} for an input dataset's name."
+            )
+        lint_context.warn(
+            f"Workflow step {step_id} specifies an untyped parameter in the post-job actions. "
+            f"${{{name}}} in {action} of {target} {detail}"
+        )
 
 
 def main(argv=None):

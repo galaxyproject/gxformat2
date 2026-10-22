@@ -58,3 +58,19 @@ test_bp_native_untyped_pja:
   assertions:
     - path: [warnings]
       value_any_contains: "untyped parameter in the post-job actions"
+
+# ${name} is untyped unless it is a rename referencing a declared parameter input.
+test_bp_native_untyped_params:
+  fixture: synthetic-untyped-params.ga
+  operation: lint_best_practices_native
+  assertions:
+    - path: [warn_count]
+      value: 4
+    - path: [warnings]
+      value_any_contains: "untyped parameter as an input. ${sample_name} "
+    - path: [warnings]
+      value_any_contains: "untyped parameter in the post-job actions. ${on_string} in rename of output out_file2"
+    - path: [warnings]
+      value_any_contains: "untyped parameter in the post-job actions. ${reads} in rename of output out_file2"
+    - path: [warnings]
+      value_any_contains: "untyped parameter in the post-job actions. ${Haplotype} in TagDatasetAction of output out_file1"

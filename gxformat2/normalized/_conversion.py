@@ -1180,6 +1180,30 @@ def _build_native_workflow(
     )
 
 
+_INPUT_TYPE_STEP_TYPES: dict[str, NativeStepType] = {
+    **dict.fromkeys(("File", "data", "data_input"), NativeStepType.data_input),
+    **dict.fromkeys(("collection", "data_collection", "data_collection_input"), NativeStepType.data_collection_input),
+    **dict.fromkeys(("text", "string", "integer", "int", "float", "color", "boolean"), NativeStepType.parameter_input),
+}
+
+
+def _input_type_str(input_type: Any) -> str:
+    if input_type is not None and hasattr(input_type, "value"):
+        return input_type.value
+    return str(input_type) if input_type else "data"
+
+
+def format2_input_step_type(inp: BaseInputParameter) -> NativeStepType | None:
+    """Native step type a Format2 input converts to, or None if unsupported."""
+    # type_ lives on concrete subclasses, not BaseInputParameter
+    input_type = getattr(inp, "type_", None)
+    if isinstance(input_type, list):
+        if len(input_type) != 1:
+            return None
+        input_type = input_type[0]
+    return _INPUT_TYPE_STEP_TYPES.get(_input_type_str(input_type))
+
+
 def _build_input_step(
     inp: BaseInputParameter,
     order_index: int,
@@ -1197,18 +1221,9 @@ def _build_input_step(
     else:
         multiple = False
 
-    type_str = (
-        input_type.value
-        if input_type is not None and hasattr(input_type, "value")
-        else str(input_type) if input_type else "data"
-    )
-    if type_str in ("File", "data", "data_input"):
-        step_type = NativeStepType.data_input
-    elif type_str in ("collection", "data_collection", "data_collection_input"):
-        step_type = NativeStepType.data_collection_input
-    elif type_str in ("text", "string", "integer", "int", "float", "color", "boolean"):
-        step_type = NativeStepType.parameter_input
-    else:
+    type_str = _input_type_str(input_type)
+    step_type = format2_input_step_type(inp)
+    if step_type is None:
         raise Exception(f"Unknown input type [{type_str}] encountered.")
 
     tool_state: dict[str, Any] = {"name": raw_label}
