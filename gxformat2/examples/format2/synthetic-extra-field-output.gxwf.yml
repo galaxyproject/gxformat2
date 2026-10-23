@@ -1,0 +1,15 @@
+class: GalaxyWorkflow
+label: Extra field on a workflow output
+inputs:
+  x:
+    type: File
+outputs:
+  out:
+    # misspelled outputSource: strict validation must reject it, or the
+    # workflow imports with no outputs registered
+    output_source: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: x
