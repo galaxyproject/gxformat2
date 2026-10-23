@@ -59,12 +59,12 @@ test_extra_field_output_rejected_format2_strict:
   expect_error: true
 
 test_missing_class_rejected_format2:
-  fixture: synthetic-missing-class.gxwf.yml
+  fixture: synthetic-lint-no-class.gxwf.yml
   operation: validate_format2
   expect_error: true
 
 test_missing_class_rejected_format2_strict:
-  fixture: synthetic-missing-class.gxwf.yml
+  fixture: synthetic-lint-no-class.gxwf.yml
   operation: validate_format2_strict
   expect_error: true
 
@@ -482,4 +482,12 @@ test_text_input_validators_valid_format2:
 
 test_text_input_validators_valid_format2_strict:
   fixture: synthetic-text-input-validators.gxwf.yml
+  operation: validate_format2_strict
+
+test_inline_subworkflow_no_class_valid_format2:
+  fixture: synthetic-inline-subworkflow-no-class.gxwf.yml
+  operation: validate_format2
+
+test_inline_subworkflow_no_class_valid_format2_strict:
+  fixture: synthetic-inline-subworkflow-no-class.gxwf.yml
   operation: validate_format2_strict

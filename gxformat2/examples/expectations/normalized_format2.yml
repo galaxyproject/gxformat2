@@ -217,3 +217,12 @@ test_list_form_step_dict_in_out_normalized:
       value: out_file1
     - path: [steps, 0, out, 0, hide]
       value: true
+
+test_inline_subworkflow_no_class:
+  fixture: synthetic-inline-subworkflow-no-class.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, {id: nested_workflow}, run, steps, 0, tool_id]
+      value: cat1
+    - path: [steps, {id: nested_workflow}, run, steps, 0, in_, {id: input1}, source]
+      value: inner_input

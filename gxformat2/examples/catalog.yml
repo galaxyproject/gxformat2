@@ -725,19 +725,19 @@
     - tests/test_interop_tests.py
     - tests/test_schema_rules_catalog.py
 
-- file: format2/synthetic-missing-class.gxwf.yml
-  origin: synthetic
-  format: format2
-  tests:
-    - tests/test_interop_tests.py
-    - tests/test_schema_rules_catalog.py
-
 - file: format2/synthetic-missing-steps.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_interop_tests.py
     - tests/test_schema_rules_catalog.py
+
+- file: format2/synthetic-inline-subworkflow-no-class.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Inline subworkflow run without class — normalizes as GalaxyWorkflow.
+  tests:
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-extra-field.ga
   origin: synthetic
@@ -765,9 +765,10 @@
 - file: format2/synthetic-lint-no-class.gxwf.yml
   origin: synthetic
   format: format2
-  description: Missing class key — triggers lint error.
+  description: Missing class key — triggers lint and schema validation errors.
   tests:
     - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
 
 - file: format2/synthetic-lint-nested-no-steps.gxwf.yml
   origin: synthetic

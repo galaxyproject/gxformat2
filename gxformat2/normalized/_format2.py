@@ -582,7 +582,8 @@ def _normalize_step(step: WorkflowStep, strict_structure: bool = False) -> Norma
         elif step.run.get("class") == "GalaxyUserTool":
             run = GalaxyUserToolStub.model_validate(step.run)
         else:
-            run = normalized_format2(step.run, strict_structure=strict_structure)
+            # Inline runs may omit class; only the root document must declare it.
+            run = normalized_format2({"class": "GalaxyWorkflow", **step.run}, strict_structure=strict_structure)
     elif isinstance(step.run, str):
         run = step.run
 
