@@ -55,6 +55,10 @@ def patch_default_args(text: str) -> str:
 
 
 def require_workflow_class(text: str) -> str:
+    if _WORKFLOW_CLASS_DEFAULT not in text and _WORKFLOW_CLASS_REQUIRED not in text:
+        raise ValueError(
+            "GalaxyWorkflow.class_ field not found; update require_workflow_class for the new codegen output"
+        )
     return text.replace(_WORKFLOW_CLASS_DEFAULT, _WORKFLOW_CLASS_REQUIRED)
 
 
