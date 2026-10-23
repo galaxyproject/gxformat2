@@ -718,6 +718,13 @@
     - tests/test_interop_tests.py
     - tests/test_schema_rules_catalog.py
 
+- file: format2/synthetic-extra-field-output.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
 - file: format2/synthetic-missing-steps.gxwf.yml
   origin: synthetic
   format: format2
