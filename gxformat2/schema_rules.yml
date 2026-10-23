@@ -21,7 +21,7 @@ Format2MissingClass:
   description: "Format2 workflow missing required `class: GalaxyWorkflow` field."
   tests:
     positive: [synthetic-basic.gxwf.yml]
-    negative: [synthetic-missing-class.gxwf.yml]
+    negative: [synthetic-lint-no-class.gxwf.yml]
 
 NativeMissingMarker:
   severity: error
