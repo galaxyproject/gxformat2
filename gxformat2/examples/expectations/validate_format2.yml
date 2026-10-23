@@ -474,3 +474,11 @@ test_text_input_validators_valid_format2:
 test_text_input_validators_valid_format2_strict:
   fixture: synthetic-text-input-validators.gxwf.yml
   operation: validate_format2_strict
+
+test_inline_subworkflow_no_class_valid_format2:
+  fixture: synthetic-inline-subworkflow-no-class.gxwf.yml
+  operation: validate_format2
+
+test_inline_subworkflow_no_class_valid_format2_strict:
+  fixture: synthetic-inline-subworkflow-no-class.gxwf.yml
+  operation: validate_format2_strict

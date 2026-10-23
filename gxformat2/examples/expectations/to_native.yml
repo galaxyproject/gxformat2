@@ -282,3 +282,12 @@ test_to_native_multi_text_input_validators:
     - path: [steps, "0", tool_state, validators]
       value:
         - {type: regex, expression: "^[ACGT]+$", negate: false}
+
+test_to_native_inline_subworkflow_no_class:
+  fixture: synthetic-inline-subworkflow-no-class.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: subworkflow
+    - path: [steps, "1", subworkflow, steps, "1", tool_id]
+      value: cat1

@@ -732,6 +732,13 @@
     - tests/test_interop_tests.py
     - tests/test_schema_rules_catalog.py
 
+- file: format2/synthetic-inline-subworkflow-no-class.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Inline subworkflow run without class — normalizes as GalaxyWorkflow.
+  tests:
+    - tests/test_interop_tests.py
+
 - file: native/synthetic-extra-field.ga
   origin: synthetic
   format: native
