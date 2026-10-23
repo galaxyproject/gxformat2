@@ -1,0 +1,35 @@
+class: GalaxyWorkflow
+label: Bad list and int defaults
+inputs:
+  mixed_list:
+    type: [string]
+    default: [a, 1]
+  number_default:
+    type: [text]
+    default: 2
+  string_list:
+    type: [string]
+    default: [a, b]
+  bare_string:
+    type: [text]
+    default: a
+  bool_as_int:
+    type: int
+    default: true
+  int_list:
+    type: [int]
+    default: [1, bad]
+  float_list:
+    type: [float]
+    default: [0.5, true]
+  number_list:
+    type: [float]
+    default: [1, 2.5]
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: mixed_list
