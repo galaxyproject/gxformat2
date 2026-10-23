@@ -49,6 +49,16 @@ test_extra_field_rejected_format2_strict:
   operation: validate_format2_strict
   expect_error: true
 
+test_missing_class_rejected_format2:
+  fixture: synthetic-missing-class.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_missing_class_rejected_format2_strict:
+  fixture: synthetic-missing-class.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+
 test_missing_steps_rejected_format2:
   fixture: synthetic-missing-steps.gxwf.yml
   operation: validate_format2

@@ -1,0 +1,12 @@
+label: Missing class
+inputs:
+  x:
+    type: File
+outputs:
+  o:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: x
