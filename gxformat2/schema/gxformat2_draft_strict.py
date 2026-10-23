@@ -568,7 +568,7 @@ workflow definition schema the attribute should be called `label`."""
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     id: None | str = Field(default=None, description="The unique identifier for this object.")
-    class_: Literal["GalaxyWorkflow"] = Field(default="GalaxyWorkflow", alias="class")
+    class_: Literal["GalaxyWorkflow"] = Field(alias="class")
     label: None | str = Field(default=None, description="A short, human-readable label of this object.")
     doc: None | str | list[str] = Field(default=None, description="A documentation string for this object, or an array of strings which should be concatenated.")
     steps: list[WorkflowStep] | dict[str, WorkflowStep] = Field(description="The individual steps that make up the workflow. Each step is executed when all of its input data links are fulfilled.")

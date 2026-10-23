@@ -14,6 +14,15 @@ Format2MissingSteps:
     positive: [synthetic-basic.gxwf.yml]
     negative: [synthetic-missing-steps.gxwf.yml]
 
+Format2MissingClass:
+  severity: error
+  applies_to: [format2]
+  scope: both
+  description: "Format2 workflow missing required `class: GalaxyWorkflow` field."
+  tests:
+    positive: [synthetic-basic.gxwf.yml]
+    negative: [synthetic-missing-class.gxwf.yml]
+
 NativeMissingMarker:
   severity: error
   applies_to: [native]

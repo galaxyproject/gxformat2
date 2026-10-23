@@ -1,6 +1,6 @@
 """Post-codegen patches for schema-salad-plus-pydantic output.
 
-Two patches are applied:
+Three patches are applied:
 
 1. Fix invalid ``Field(default="X", "Y", ...)`` emitted for multi-symbol
    ``Literal`` defaults. The generator passes every symbol as a positional
@@ -8,12 +8,17 @@ Two patches are applied:
 2. Append the legacy ``_INPUT_TYPE_TO_CLASS`` map and ``input_parameter_class``
    helper to the Format2 modules. Older generator versions emitted these and
    ``gxformat2.normalized._format2`` still imports them.
+3. Make ``GalaxyWorkflow.class_`` required in the Format2 modules. The
+   generator defaults every ``Literal`` field to its first symbol, which let
+   documents without ``class: GalaxyWorkflow`` validate (#186).
 """
 
 import re
 import sys
 from pathlib import Path
 
+_WORKFLOW_CLASS_DEFAULT = 'class_: Literal["GalaxyWorkflow"] = Field(default="GalaxyWorkflow", alias="class")'
+_WORKFLOW_CLASS_REQUIRED = 'class_: Literal["GalaxyWorkflow"] = Field(alias="class")'
 _FIELD_DEFAULT_FIXUP = re.compile(r'Field\(default=("[^"]+")((?:,\s*"[^"]+")+)(,\s*\w+=)')
 _INPUT_DISPATCHER = '''
 
@@ -49,6 +54,10 @@ def patch_default_args(text: str) -> str:
     return _FIELD_DEFAULT_FIXUP.sub(r"Field(default=\1\3", text)
 
 
+def require_workflow_class(text: str) -> str:
+    return text.replace(_WORKFLOW_CLASS_DEFAULT, _WORKFLOW_CLASS_REQUIRED)
+
+
 def append_dispatcher(text: str) -> str:
     if "_INPUT_TYPE_TO_CLASS" in text:
         return text
@@ -61,7 +70,7 @@ def main(paths: list[str]) -> None:
         text = path.read_text()
         new_text = patch_default_args(text)
         if path.name in {"gxformat2.py", "gxformat2_strict.py", "gxformat2_draft.py", "gxformat2_draft_strict.py"}:
-            new_text = append_dispatcher(new_text)
+            new_text = require_workflow_class(append_dispatcher(new_text))
         if new_text != text:
             path.write_text(new_text)
             print(f"patched {path}")

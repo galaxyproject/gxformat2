@@ -6,8 +6,8 @@ import argparse
 import json
 import re
 import sys
-from collections.abc import Iterable
-from typing import NamedTuple
+from collections.abc import Callable, Iterable
+from typing import Any, NamedTuple
 from urllib.parse import urlparse
 
 from pydantic import ValidationError
@@ -22,7 +22,12 @@ from gxformat2.normalized import (
     NormalizedWorkflowStep,
     resolve_source_reference,
 )
-from gxformat2.normalized._conversion import format2_input_step_type, native_input_label, native_step_label
+from gxformat2.normalized._conversion import (
+    format2_input_step_type,
+    native_input_label,
+    native_input_to_format2_type,
+    native_step_label,
+)
 from gxformat2.normalized._native import (
     NativeStepType,
     NormalizedNativeStep,
@@ -117,6 +122,7 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
         _lint_step_errors(lint_context, step.errors)
         _lint_tool_if_present(lint_context, step.tool_id)
 
+    _lint_native_input_defaults(lint_context, nnw)
     _validate_report(lint_context, nnw.report)
 
     if not found_outputs:
@@ -242,22 +248,70 @@ def _lint_tool_if_present(lint_context, tool_id):
 
 def _validate_input_types(lint_context: LintContext, nf2: NormalizedFormat2):
     for inp in nf2.inputs:
-        if inp.default is None:
-            continue
         # type_ lives on concrete subclasses, not BaseInputParameter
-        input_type = getattr(inp, "type_", None)
-        if isinstance(input_type, list):
-            # Array type like [string] — skip default validation for now
+        _lint_input_default(lint_context, inp.id, getattr(inp, "type_", None), inp.default)
+
+
+def _lint_native_input_defaults(lint_context: LintContext, nnw: NormalizedNativeWorkflow):
+    for key, step in nnw.steps.items():
+        if step.type_ != NativeStepType.parameter_input:
             continue
-        if input_type == GalaxyType.int or input_type == GalaxyType.integer:
-            if not isinstance(inp.default, int):
-                lint_context.error("Input default is of invalid type")
-        elif input_type == GalaxyType.float or input_type == GalaxyType.double:
-            if not isinstance(inp.default, (int, float)):
-                lint_context.error("Input default is of invalid type")
-        elif input_type == GalaxyType.string or input_type == GalaxyType.text:
-            if not isinstance(inp.default, str):
-                lint_context.error("Input default is of invalid type")
+        input_type = native_input_to_format2_type({"type": step.type_}, step.tool_state)
+        _lint_input_default(
+            _native_step_context(lint_context, key), step.label or key, input_type, step.tool_state.get("default")
+        )
+
+
+def _is_string(value) -> bool:
+    return isinstance(value, str)
+
+
+def _is_integer(value) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _is_number(value) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+class _DefaultCheck(NamedTuple):
+    type_name: str
+    expected: str
+    expected_list: str
+    is_valid: Callable[[Any], bool]
+
+
+_STRING_DEFAULT = _DefaultCheck("string", "a string", "a string or a list of strings", _is_string)
+_INTEGER_DEFAULT = _DefaultCheck("int", "an integer", "an integer or a list of integers", _is_integer)
+_FLOAT_DEFAULT = _DefaultCheck("float", "a number", "a number or a list of numbers", _is_number)
+_DEFAULT_CHECKS: dict[str, _DefaultCheck] = {
+    GalaxyType.string: _STRING_DEFAULT,
+    GalaxyType.text: _STRING_DEFAULT,
+    GalaxyType.int: _INTEGER_DEFAULT,
+    GalaxyType.integer: _INTEGER_DEFAULT,
+    GalaxyType.float: _FLOAT_DEFAULT,
+    GalaxyType.double: _FLOAT_DEFAULT,
+}
+
+
+def _lint_input_default(lint_context: LintContext, label, input_type, default):
+    if default is None:
+        return
+    if isinstance(input_type, list):
+        # Galaxy wraps a bare default for multiple parameter inputs.
+        check = _DEFAULT_CHECKS.get(input_type[0]) if len(input_type) == 1 else None
+        if check and not all(check.is_valid(value) for value in _as_list(default)):
+            _invalid_default(lint_context, label, f"[{check.type_name}]", check.expected_list)
+        return
+    check = _DEFAULT_CHECKS.get(input_type)
+    if check and not check.is_valid(default):
+        _invalid_default(lint_context, label, check.type_name, check.expected)
+
+
+def _invalid_default(lint_context: LintContext, label, input_type: str, expected: str):
+    lint_context.error(
+        f"Input default is of invalid type. Input {label} is {input_type}; its default must be {expected}."
+    )
 
 
 def _validate_report(lint_context, report):
