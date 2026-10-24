@@ -162,3 +162,44 @@ test_to_format2_empty_text_input_validators_dropped:
       value: string
     - path: [inputs, {id: StarAMR database}, validators]
       value: null
+
+test_to_format2_color_directory_uri_inputs:
+  fixture: synthetic-color-directory-uri-inputs.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, 0, type_]
+      value: color
+    - path: [inputs, 0, default]
+      value: "#ff0000"
+    - path: [inputs, 1, type_]
+      value: directory_uri
+    - path: [inputs, 1, optional]
+      value: true
+    - path: [inputs, 1, validators, 0, expression]
+      value: "^s3://"
+    - path: [inputs, 1, validators, 0, message]
+      value: must be an S3 URI
+
+test_to_format2_via_native_color_directory_uri_inputs:
+  fixture: synthetic-color-directory-uri-inputs.gxwf.yml
+  operation: to_format2_via_native
+  assertions:
+    - path: [inputs, 0, type_]
+      value: color
+    - path: [inputs, 0, default]
+      value: "#ff0000"
+    - path: [inputs, 1, type_]
+      value: directory_uri
+    - path: [inputs, 1, validators, $length]
+      value: 1
+    - path: [inputs, 1, validators, 0, expression]
+      value: "^s3://"
+
+test_to_format2_multiple_text_validators:
+  fixture: synthetic-multiple-text-validators.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, 0, type_]
+      value: [string]
+    - path: [inputs, 0, validators, 0, expression]
+      value: "^S[0-9]+$"

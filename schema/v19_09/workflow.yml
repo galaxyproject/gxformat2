@@ -36,9 +36,11 @@ $graph:
     - File
     - data
     - collection
+    - color
+    - directory_uri
   doc:
     - "Extends primitive types with the native Galaxy concepts such as datasets and collections."
-    - "Normalized gxformat2 workflow input declaration spellings are ``data``, ``collection``, ``string``, ``int``, ``float``, and ``boolean``. Other spellings are accepted as compatibility aliases on import but normalized gxformat2 output emits the normalized spellings."
+    - "Normalized gxformat2 workflow input declaration spellings are ``data``, ``collection``, ``string``, ``int``, ``float``, ``boolean``, ``color``, and ``directory_uri``. Other spellings are accepted as compatibility aliases on import but normalized gxformat2 output emits the normalized spellings."
     - "data: one Galaxy dataset input. Native Galaxy ``data_input`` converts to this spelling."
     - "File: accepted alias for ``data``, but normalized gxformat2 output emits ``data``. Note: workflow **test job** YAML uses ``type: File`` to mean 'stage this file as test input data', which is a separate concept from workflow input declaration."
     - "collection: one Galaxy dataset collection input. Native Galaxy ``data_collection_input`` converts to this spelling."
@@ -46,6 +48,8 @@ $graph:
     - "text: accepted alias for ``string`` because native Galaxy parameter state and Galaxy tool XML terminology use ``text``."
     - "int: normalized gxformat2 spelling for native Galaxy integer workflow parameters."
     - "integer: accepted alias for ``int`` because native Galaxy parameter state and Galaxy tool XML terminology use ``integer``."
+    - "color: native Galaxy color workflow parameter; the value is a color string such as ``#ff0000``."
+    - "directory_uri: native Galaxy directory URI workflow parameter; the value is a URI string such as ``s3://bucket/path/``."
 
 
 - name: WorkflowStepType
@@ -317,6 +321,54 @@ $graph:
       doc: |
         Must be ``boolean``.
 
+- name: WorkflowColorParameter
+  type: record
+  extends:
+    - BaseInputParameter
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A color input parameter for a Galaxy workflow. The value is a color
+    string such as ``#ff0000``.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["color"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``color``.
+
+- name: WorkflowDirectoryUriParameter
+  type: record
+  extends:
+    - BaseInputParameter
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A directory URI input parameter for a Galaxy workflow. The value is a
+    URI string such as ``s3://bucket/path/``.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["directory_uri"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``directory_uri``.
+    - name: validators
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:WorkflowTextValidator
+      jsonldPredicate: "gxformat2common:validators"
+      doc: |
+        Validators applied to values supplied for this input.
+
 - name: WorkflowInputParameter
   type: record
   extends:
@@ -408,7 +460,7 @@ $graph:
           items: gxformat2common:WorkflowTextValidator
       jsonldPredicate: "gxformat2common:validators"
       doc: |
-        Validators for text-typed inputs. See
+        Validators for text-typed and ``directory_uri`` inputs. See
         `WorkflowTextParameter.validators`.
 
 - name: WorkflowOutputParameter
@@ -678,6 +730,8 @@ $graph:
         Size of the comment as ``[width, height]``.
     - name: color
       type: string?
+      # Shares the GalaxyType symbol IRI to avoid a JSON-LD predicate collision.
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/color"
       doc: |
         Display color of the comment (e.g. ``"none"``, ``"blue"``).
     - name: label

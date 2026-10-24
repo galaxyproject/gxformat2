@@ -291,6 +291,8 @@ _DEFAULT_CHECKS: dict[str, _DefaultCheck] = {
     GalaxyType.integer: _INTEGER_DEFAULT,
     GalaxyType.float: _FLOAT_DEFAULT,
     GalaxyType.double: _FLOAT_DEFAULT,
+    GalaxyType.color: _STRING_DEFAULT._replace(type_name="color"),
+    GalaxyType.directory_uri: _STRING_DEFAULT._replace(type_name="directory_uri"),
 }
 
 

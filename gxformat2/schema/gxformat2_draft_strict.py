@@ -39,14 +39,16 @@ string: Unicode character sequence"""
 
 class GalaxyType(str, Enum):
     """Extends primitive types with the native Galaxy concepts such as datasets and collections.
-Normalized gxformat2 workflow input declaration spellings are ``data``, ``collection``, ``string``, ``int``, ``float``, and ``boolean``. Other spellings are accepted as compatibility aliases on import but normalized gxformat2 output emits the normalized spellings.
+Normalized gxformat2 workflow input declaration spellings are ``data``, ``collection``, ``string``, ``int``, ``float``, ``boolean``, ``color``, and ``directory_uri``. Other spellings are accepted as compatibility aliases on import but normalized gxformat2 output emits the normalized spellings.
 data: one Galaxy dataset input. Native Galaxy ``data_input`` converts to this spelling.
 File: accepted alias for ``data``, but normalized gxformat2 output emits ``data``. Note: workflow **test job** YAML uses ``type: File`` to mean 'stage this file as test input data', which is a separate concept from workflow input declaration.
 collection: one Galaxy dataset collection input. Native Galaxy ``data_collection_input`` converts to this spelling.
 string: normalized gxformat2 spelling for native Galaxy text workflow parameters.
 text: accepted alias for ``string`` because native Galaxy parameter state and Galaxy tool XML terminology use ``text``.
 int: normalized gxformat2 spelling for native Galaxy integer workflow parameters.
-integer: accepted alias for ``int`` because native Galaxy parameter state and Galaxy tool XML terminology use ``integer``."""
+integer: accepted alias for ``int`` because native Galaxy parameter state and Galaxy tool XML terminology use ``integer``.
+color: native Galaxy color workflow parameter; the value is a color string such as ``#ff0000``.
+directory_uri: native Galaxy directory URI workflow parameter; the value is a URI string such as ``s3://bucket/path/``."""
 
     null = "null"
     boolean = "boolean"
@@ -60,6 +62,8 @@ integer: accepted alias for ``int`` because native Galaxy parameter state and Ga
     File = "File"
     data = "data"
     collection = "collection"
+    color = "color"
+    directory_uri = "directory_uri"
 
 
 class WorkflowStepType(str, Enum):
@@ -78,7 +82,7 @@ pick_value: Select the first non-null value from multiple inputs. Used to merge 
 
 
 def _discriminate_inputs(v: Any) -> str:
-    disc_map: dict[str, str] = {"data": "WorkflowDataParameter", "File": "WorkflowDataParameter", "data_input": "WorkflowDataParameter", "collection": "WorkflowCollectionParameter", "data_collection": "WorkflowCollectionParameter", "data_collection_input": "WorkflowCollectionParameter", "integer": "WorkflowIntegerParameter", "int": "WorkflowIntegerParameter", "text": "WorkflowTextParameter", "string": "WorkflowTextParameter", "float": "WorkflowFloatParameter", "boolean": "WorkflowBooleanParameter", "color": "WorkflowTextParameter"}
+    disc_map: dict[str, str] = {"data": "WorkflowDataParameter", "File": "WorkflowDataParameter", "data_input": "WorkflowDataParameter", "collection": "WorkflowCollectionParameter", "data_collection": "WorkflowCollectionParameter", "data_collection_input": "WorkflowCollectionParameter", "integer": "WorkflowIntegerParameter", "int": "WorkflowIntegerParameter", "text": "WorkflowTextParameter", "string": "WorkflowTextParameter", "float": "WorkflowFloatParameter", "boolean": "WorkflowBooleanParameter", "color": "WorkflowColorParameter", "directory_uri": "WorkflowDirectoryUriParameter"}
     if isinstance(v, dict):
         disc_val: str = str(v.get("type", ""))
     else:
@@ -158,7 +162,7 @@ directly executed."""
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     # Discriminated union on 'type'
-    inputs: list[Annotated[Annotated[WorkflowDataParameter, Tag("WorkflowDataParameter")] | Annotated[WorkflowCollectionParameter, Tag("WorkflowCollectionParameter")] | Annotated[WorkflowIntegerParameter, Tag("WorkflowIntegerParameter")] | Annotated[WorkflowFloatParameter, Tag("WorkflowFloatParameter")] | Annotated[WorkflowTextParameter, Tag("WorkflowTextParameter")] | Annotated[WorkflowBooleanParameter, Tag("WorkflowBooleanParameter")], Discriminator(_discriminate_inputs)]] | dict[str, WorkflowDataParameter | WorkflowCollectionParameter | WorkflowIntegerParameter | WorkflowFloatParameter | WorkflowTextParameter | WorkflowBooleanParameter | str] | dict[str, Any]
+    inputs: list[Annotated[Annotated[WorkflowDataParameter, Tag("WorkflowDataParameter")] | Annotated[WorkflowCollectionParameter, Tag("WorkflowCollectionParameter")] | Annotated[WorkflowIntegerParameter, Tag("WorkflowIntegerParameter")] | Annotated[WorkflowFloatParameter, Tag("WorkflowFloatParameter")] | Annotated[WorkflowTextParameter, Tag("WorkflowTextParameter")] | Annotated[WorkflowBooleanParameter, Tag("WorkflowBooleanParameter")] | Annotated[WorkflowColorParameter, Tag("WorkflowColorParameter")] | Annotated[WorkflowDirectoryUriParameter, Tag("WorkflowDirectoryUriParameter")], Discriminator(_discriminate_inputs)]] | dict[str, WorkflowDataParameter | WorkflowCollectionParameter | WorkflowIntegerParameter | WorkflowFloatParameter | WorkflowTextParameter | WorkflowBooleanParameter | WorkflowColorParameter | WorkflowDirectoryUriParameter | str] | dict[str, Any]
     outputs: list[WorkflowOutputParameter] | dict[str, WorkflowOutputParameter | str] | dict[str, Any] = Field(description="Defines the parameters representing the output of the process.  May be used to generate and/or validate the output object.")
 
 class HasUUID(BaseModel):
@@ -361,6 +365,33 @@ class WorkflowBooleanParameter(BaseInputParameter):
     position: None | StepPosition = Field(default=None)
     type_: Literal["boolean"] = Field(default="boolean", alias="type", description="Must be ``boolean``.")
 
+class WorkflowColorParameter(BaseInputParameter):
+    """A color input parameter for a Galaxy workflow. The value is a color
+string such as ``#ff0000``."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    id: None | str = Field(default=None, description="The unique identifier for this object.")
+    label: None | str = Field(default=None, description="A short, human-readable label of this object.")
+    doc: None | str | list[str] = Field(default=None, description="A documentation string for this object, or an array of strings which should be concatenated.")
+    default: None | Any = Field(default=None, description="The default value to use for this parameter if the parameter is missing from the input object, or if the value of the parameter in the input object is `null`.  Default values are applied before eva...")
+    position: None | StepPosition = Field(default=None)
+    type_: Literal["color"] = Field(default="color", alias="type", description="Must be ``color``.")
+
+class WorkflowDirectoryUriParameter(BaseInputParameter):
+    """A directory URI input parameter for a Galaxy workflow. The value is a
+URI string such as ``s3://bucket/path/``."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="forbid")
+
+    id: None | str = Field(default=None, description="The unique identifier for this object.")
+    label: None | str = Field(default=None, description="A short, human-readable label of this object.")
+    doc: None | str | list[str] = Field(default=None, description="A documentation string for this object, or an array of strings which should be concatenated.")
+    default: None | Any = Field(default=None, description="The default value to use for this parameter if the parameter is missing from the input object, or if the value of the parameter in the input object is `null`.  Default values are applied before eva...")
+    position: None | StepPosition = Field(default=None)
+    type_: Literal["directory_uri"] = Field(default="directory_uri", alias="type", description="Must be ``directory_uri``.")
+    validators: None | list[WorkflowTextValidator] = Field(default=None, description="Validators applied to values supplied for this input.")
+
 class WorkflowInputParameter(BaseDataParameter, MinMax):
     """An input parameter to a Galaxy workflow. This is the catch-all type used
 by the Schema Salad codegen. The pydantic layer uses a discriminated union
@@ -381,7 +412,7 @@ of the specific parameter types instead."""
     restrictions: None | list[str | WorkflowTextOption] = Field(default=None, description="Closed set of permitted values for text-typed inputs. See `WorkflowTextParameter.restrictions`.")
     suggestions: None | list[str | WorkflowTextOption] = Field(default=None, description="Open suggestion list for text-typed inputs.")
     restrictOnConnections: None | bool = Field(default=None, description="For text-typed inputs - derive runtime choices from connected tool/subworkflow select inputs.")
-    validators: None | list[WorkflowTextValidator] = Field(default=None, description="Validators for text-typed inputs. See `WorkflowTextParameter.validators`.")
+    validators: None | list[WorkflowTextValidator] = Field(default=None, description="Validators for text-typed and ``directory_uri`` inputs. See `WorkflowTextParameter.validators`.")
 
 class WorkflowOutputParameter(OutputParameter):
     """Describe an output parameter of a workflow.  The parameter must be
@@ -652,6 +683,8 @@ WorkflowIntegerParameter.model_rebuild()
 WorkflowFloatParameter.model_rebuild()
 WorkflowTextParameter.model_rebuild()
 WorkflowBooleanParameter.model_rebuild()
+WorkflowColorParameter.model_rebuild()
+WorkflowDirectoryUriParameter.model_rebuild()
 WorkflowInputParameter.model_rebuild()
 WorkflowOutputParameter.model_rebuild()
 WorkflowStep.model_rebuild()
@@ -699,7 +732,8 @@ _INPUT_TYPE_TO_CLASS: dict[str, type[BaseInputParameter]] = {
     "string": WorkflowTextParameter,
     "float": WorkflowFloatParameter,
     "boolean": WorkflowBooleanParameter,
-    "color": WorkflowTextParameter,
+    "color": WorkflowColorParameter,
+    "directory_uri": WorkflowDirectoryUriParameter,
 }
 
 

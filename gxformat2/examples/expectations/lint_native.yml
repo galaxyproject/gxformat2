@@ -182,3 +182,14 @@ test_lint_native_bad_parameter_defaults:
       value: "Input default is of invalid type. Input bool_as_int is int; its default must be an integer."
     - path: [errors, 3]
       value: "Input default is of invalid type. Input int_list is [int]; its default must be an integer or a list of integers."
+
+test_lint_native_bad_color_directory_uri_defaults:
+  fixture: synthetic-lint-bad-color-directory-uri-defaults.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 2
+    - path: [errors, 0]
+      value: "Input default is of invalid type. Input highlight is color; its default must be a string."
+    - path: [errors, 1]
+      value: "Input default is of invalid type. Input output_dir is directory_uri; its default must be a string."

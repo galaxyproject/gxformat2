@@ -238,3 +238,12 @@ test_labeled_step_id_ref_edge:
   assertions:
     - path: []
       value_any_contains: "step_0 --> step_1"
+
+test_color_directory_uri_inputs_use_parameter_shape:
+  fixture: synthetic-color-directory-uri-inputs.gxwf.yml
+  operation: workflow_to_mermaid_lines
+  assertions:
+    - path: []
+      value_any_contains: 'input_0{{"highlight<br/><i>color</i>"}}'
+    - path: []
+      value_any_contains: 'input_1{{"output_dir<br/><i>directory_uri</i>"}}'

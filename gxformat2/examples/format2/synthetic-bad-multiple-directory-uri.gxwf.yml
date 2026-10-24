@@ -1,0 +1,6 @@
+class: GalaxyWorkflow
+inputs:
+  bad:
+    type: [directory_uri]
+outputs: {}
+steps: {}

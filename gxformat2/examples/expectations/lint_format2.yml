@@ -240,3 +240,14 @@ test_lint_step_label_reused_in_subworkflow:
   assertions:
     - path: [error_count]
       value: 0
+
+test_lint_format2_bad_color_directory_uri_defaults:
+  fixture: synthetic-lint-bad-color-directory-uri-defaults.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 2
+    - path: [errors, 0]
+      value: "Input default is of invalid type. Input highlight is color; its default must be a string."
+    - path: [errors, 1]
+      value: "Input default is of invalid type. Input output_dir is directory_uri; its default must be a string."

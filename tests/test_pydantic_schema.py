@@ -23,6 +23,7 @@ from gxformat2.schema.gxformat2_draft import (
 from gxformat2.schema.gxformat2_draft_strict import DraftWorkflowStep as StrictDraftWorkflowStep
 from gxformat2.schema.gxformat2_draft_strict import GalaxyWorkflowDraft as StrictGalaxyWorkflowDraft
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWorkflow
+from gxformat2.schema.json_schema import workflow_json_schema
 from gxformat2.schema.native import (
     NativeGalaxyWorkflow,
     NativeInputConnection,
@@ -290,6 +291,19 @@ class TestFormat2Pydantic:
         data["creator"] = [{"class": "Person", "name": "Test"}]
         wf = GalaxyWorkflow.model_validate(data)
         assert len(wf.creator) == 1
+
+    @pytest.mark.parametrize("model", [GalaxyWorkflow, StrictGalaxyWorkflow])
+    def test_color_directory_uri_input_classes(self, model):
+        wf = model.model_validate(load("synthetic-color-directory-uri-inputs.gxwf.yml"))
+        assert [type(i).__name__ for i in wf.inputs] == ["WorkflowColorParameter", "WorkflowDirectoryUriParameter"]
+
+    @pytest.mark.parametrize("strict", [False, True])
+    def test_json_schema_color_directory_uri_inputs(self, strict):
+        defs = workflow_json_schema(strict=strict)["$defs"]
+        assert defs["WorkflowColorParameter"]["properties"]["type"]["const"] == "color"
+        directory_uri = defs["WorkflowDirectoryUriParameter"]["properties"]
+        assert directory_uri["type"]["const"] == "directory_uri"
+        assert "validators" in directory_uri
 
     def test_extra_fields_allowed(self):
         data = ordered_load(BASIC_FORMAT2)
