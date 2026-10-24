@@ -18,19 +18,17 @@ import re
 from collections.abc import Iterable, Mapping
 from typing import Any
 
+from gxformat2.schema._input_parameter import input_types_declaring
+
 _COLUMN_NAME_RE = re.compile(r"^[\w\-_ \?]*$")
 _RECORD_RANK_RE = re.compile(r"(?:^|:)record(?::|$)")
 
-_TEXT_TYPE_VALUES = {"text", "string"}
-# Format2 input types that carry regex ``validators``.
-REGEX_VALIDATOR_TYPE_VALUES = frozenset(_TEXT_TYPE_VALUES | {"directory_uri"})
 # Galaxy offers ``multiple`` on neither.
 _SCALAR_ONLY_TYPE_VALUES = {"color", "directory_uri"}
+# Parameter fields valid only on the input types whose model declares them.
 _PARAMETER_FIELD_TYPE_VALUES = {
-    "restrictions": _TEXT_TYPE_VALUES,
-    "suggestions": _TEXT_TYPE_VALUES,
-    "restrictOnConnections": _TEXT_TYPE_VALUES,
-    "validators": REGEX_VALIDATOR_TYPE_VALUES,
+    field: input_types_declaring(field)
+    for field in ("restrictions", "suggestions", "restrictOnConnections", "validators")
 }
 _COLLECTION_TYPE_VALUES = {"collection", "data_collection", "data_collection_input"}
 
@@ -139,10 +137,7 @@ def validate_input_parameter(input_param: Any) -> None:
 
     for field, allowed_types in _PARAMETER_FIELD_TYPE_VALUES.items():
         if data.get(field) in (None, [], False):
-            # restrictOnConnections=False is the schema default and harmless;
-            # only flag when the field is set on a non-text input.
-            continue
-        if data.get(field) is None:
+            # restrictOnConnections=False is the schema default and harmless.
             continue
         if type_values and not all(t in allowed_types for t in type_values):
             allowed = "/".join(sorted(allowed_types))

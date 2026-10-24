@@ -194,3 +194,12 @@ test_to_format2_via_native_color_directory_uri_inputs:
       value: 1
     - path: [inputs, 1, validators, 0, expression]
       value: "^s3://"
+
+test_to_format2_multiple_text_validators:
+  fixture: synthetic-multiple-text-validators.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, 0, type_]
+      value: [string]
+    - path: [inputs, 0, validators, 0, expression]
+      value: "^S[0-9]+$"

@@ -33,13 +33,16 @@ from pydantic import Field
 
 from .._comment_helpers import flatten_comment_data, unflatten_comment_data
 from .._labels import Labels, unlabeled_node_id
-from .._semantic_validators import REGEX_VALIDATOR_TYPE_VALUES
 from ..options import (
     ConversionOptions,
     default_url_resolver,
     MAX_EXPANSION_DEPTH,
 )
-from ..schema._input_parameter import input_parameter_class
+from ..schema._input_parameter import (
+    input_parameter_class,
+    INPUT_TYPES,
+    input_types_declaring,
+)
 from ..schema.gxformat2 import (
     BaseInputParameter,
     CreatorOrganization,
@@ -56,6 +59,8 @@ from ..schema.gxformat2 import (
 )
 from ..schema.gxformat2 import ToolShedRepository as Format2ToolShedRepository
 from ..schema.gxformat2 import (
+    WorkflowCollectionParameter,
+    WorkflowDataParameter,
     WorkflowInputParameter,
     WorkflowOutputParameter,
     WorkflowStepInput,
@@ -518,6 +523,9 @@ def _build_format2_workflow(
     )
 
 
+_REGEX_VALIDATOR_TYPES = input_types_declaring("validators")
+
+
 def _native_text_validator_to_format2(validator: dict[str, Any]) -> dict[str, Any] | None:
     if validator.get("type") != "regex":
         return None
@@ -561,7 +569,7 @@ def _build_input_param(step: NormalizedNativeStep) -> BaseInputParameter:
                     if validator.get(bound) is not None:
                         kwargs[bound] = validator[bound]
                 break
-    elif input_type == ["string"] or (isinstance(input_type, str) and input_type in REGEX_VALIDATOR_TYPE_VALUES):
+    elif input_type == ["string"] or (isinstance(input_type, str) and input_type in _REGEX_VALIDATOR_TYPES):
         text_validators = [_native_text_validator_to_format2(v) for v in tool_state.get("validators") or []]
         text_validators = [v for v in text_validators if v is not None]
         if text_validators:
@@ -1181,13 +1189,12 @@ def _build_native_workflow(
     )
 
 
+_CLASS_STEP_TYPES: dict[type[BaseInputParameter], NativeStepType] = {
+    WorkflowDataParameter: NativeStepType.data_input,
+    WorkflowCollectionParameter: NativeStepType.data_collection_input,
+}
 _INPUT_TYPE_STEP_TYPES: dict[str, NativeStepType] = {
-    **dict.fromkeys(("File", "data", "data_input"), NativeStepType.data_input),
-    **dict.fromkeys(("collection", "data_collection", "data_collection_input"), NativeStepType.data_collection_input),
-    **dict.fromkeys(
-        ("text", "string", "integer", "int", "float", "color", "boolean", "directory_uri"),
-        NativeStepType.parameter_input,
-    ),
+    t: _CLASS_STEP_TYPES.get(input_parameter_class(t), NativeStepType.parameter_input) for t in INPUT_TYPES
 }
 
 
@@ -1259,7 +1266,7 @@ def _build_input_step(
         maximum = getattr(inp, "max", None)
         if minimum is not None or maximum is not None:
             tool_state["validators"] = [{"type": "in_range", "min": minimum, "max": maximum, "negate": False}]
-    elif step_type == NativeStepType.parameter_input and type_str in REGEX_VALIDATOR_TYPE_VALUES:
+    elif step_type == NativeStepType.parameter_input and type_str in _REGEX_VALIDATOR_TYPES:
         text_validators = getattr(inp, "validators", None)
         if text_validators:
             tool_state["validators"] = [

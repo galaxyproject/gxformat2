@@ -47,3 +47,11 @@ def input_parameter_class(type_value: str | None) -> type[BaseInputParameter]:
     if type_value is None:
         return WorkflowDataParameter
     return _INPUT_TYPE_TO_CLASS.get(type_value, WorkflowDataParameter)
+
+
+def input_types_declaring(field: str) -> frozenset[str]:
+    """Format2 input type strings whose specific model declares ``field``."""
+    return frozenset(t for t, cls in _INPUT_TYPE_TO_CLASS.items() if field in cls.model_fields)
+
+
+INPUT_TYPES: frozenset[str] = frozenset(_INPUT_TYPE_TO_CLASS)

@@ -448,6 +448,13 @@
     - tests/test_interop_tests.py
     - tests/test_export_abstract.py
 
+- file: native/synthetic-multiple-text-validators.ga
+  origin: synthetic
+  format: native
+  description: Multiple text input carrying a regex validator.
+  tests:
+    - tests/test_interop_tests.py
+
 - file: native/synthetic-numeric-range-validators.ga
   origin: synthetic
   format: native
