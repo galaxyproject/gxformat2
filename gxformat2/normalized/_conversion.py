@@ -33,6 +33,7 @@ from pydantic import Field
 
 from .._comment_helpers import flatten_comment_data, unflatten_comment_data
 from .._labels import Labels, unlabeled_node_id
+from .._semantic_validators import REGEX_VALIDATOR_TYPE_VALUES
 from ..options import (
     ConversionOptions,
     default_url_resolver,
@@ -379,8 +380,6 @@ def ensure_native(
 
 
 INPUT_STEP_TYPES = ("data_input", "data_collection_input", "parameter_input")
-# Format2 input types that carry regex ``validators``.
-REGEX_VALIDATOR_INPUT_TYPES = ("text", "string", "directory_uri")
 
 
 def native_input_to_format2_type(step: dict, tool_state: dict) -> str | list[str]:
@@ -562,7 +561,7 @@ def _build_input_param(step: NormalizedNativeStep) -> BaseInputParameter:
                     if validator.get(bound) is not None:
                         kwargs[bound] = validator[bound]
                 break
-    elif (input_type[0] if isinstance(input_type, list) else input_type) in REGEX_VALIDATOR_INPUT_TYPES:
+    elif input_type == ["string"] or (isinstance(input_type, str) and input_type in REGEX_VALIDATOR_TYPE_VALUES):
         text_validators = [_native_text_validator_to_format2(v) for v in tool_state.get("validators") or []]
         text_validators = [v for v in text_validators if v is not None]
         if text_validators:
@@ -1260,7 +1259,7 @@ def _build_input_step(
         maximum = getattr(inp, "max", None)
         if minimum is not None or maximum is not None:
             tool_state["validators"] = [{"type": "in_range", "min": minimum, "max": maximum, "negate": False}]
-    elif step_type == NativeStepType.parameter_input and type_str in REGEX_VALIDATOR_INPUT_TYPES:
+    elif step_type == NativeStepType.parameter_input and type_str in REGEX_VALIDATOR_TYPE_VALUES:
         text_validators = getattr(inp, "validators", None)
         if text_validators:
             tool_state["validators"] = [

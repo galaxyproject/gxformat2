@@ -730,6 +730,7 @@ $graph:
         Size of the comment as ``[width, height]``.
     - name: color
       type: string?
+      # Shares the GalaxyType symbol IRI to avoid a JSON-LD predicate collision.
       jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/color"
       doc: |
         Display color of the comment (e.g. ``"none"``, ``"blue"``).

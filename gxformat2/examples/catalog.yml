@@ -692,6 +692,18 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-bad-multiple-color.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-multiple-directory-uri.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-bad-validators-on-int.gxwf.yml
   origin: synthetic
   format: format2

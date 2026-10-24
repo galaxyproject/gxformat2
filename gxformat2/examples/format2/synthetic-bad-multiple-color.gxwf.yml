@@ -1,0 +1,6 @@
+class: GalaxyWorkflow
+inputs:
+  bad:
+    type: [color]
+outputs: {}
+steps: {}

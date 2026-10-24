@@ -22,12 +22,15 @@ _COLUMN_NAME_RE = re.compile(r"^[\w\-_ \?]*$")
 _RECORD_RANK_RE = re.compile(r"(?:^|:)record(?::|$)")
 
 _TEXT_TYPE_VALUES = {"text", "string"}
-_REGEX_VALIDATOR_TYPE_VALUES = _TEXT_TYPE_VALUES | {"directory_uri"}
+# Format2 input types that carry regex ``validators``.
+REGEX_VALIDATOR_TYPE_VALUES = frozenset(_TEXT_TYPE_VALUES | {"directory_uri"})
+# Galaxy offers ``multiple`` on neither.
+_SCALAR_ONLY_TYPE_VALUES = {"color", "directory_uri"}
 _PARAMETER_FIELD_TYPE_VALUES = {
     "restrictions": _TEXT_TYPE_VALUES,
     "suggestions": _TEXT_TYPE_VALUES,
     "restrictOnConnections": _TEXT_TYPE_VALUES,
-    "validators": _REGEX_VALIDATOR_TYPE_VALUES,
+    "validators": REGEX_VALIDATOR_TYPE_VALUES,
 }
 _COLLECTION_TYPE_VALUES = {"collection", "data_collection", "data_collection_input"}
 
@@ -106,6 +109,8 @@ def validate_input_parameter(input_param: Any) -> None:
     else:
         type_values = [str(type_value)]
     is_collection_only = bool(type_values) and all(t in _COLLECTION_TYPE_VALUES for t in type_values)
+    if isinstance(type_value, list) and _SCALAR_ONLY_TYPE_VALUES.intersection(type_values):
+        raise ValueError(f"multiple values are not supported for type={type_value!r}")
 
     collection_type = data.get("collection_type")
     if collection_type is None:

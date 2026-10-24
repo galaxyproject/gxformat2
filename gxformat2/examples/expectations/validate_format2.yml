@@ -510,3 +510,23 @@ test_restrictions_on_directory_uri_rejected_format2_strict:
   fixture: synthetic-bad-restrictions-on-directory-uri.gxwf.yml
   operation: validate_format2_strict
   expect_error: true
+
+test_multiple_color_rejected_format2:
+  fixture: synthetic-bad-multiple-color.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_multiple_color_rejected_format2_strict:
+  fixture: synthetic-bad-multiple-color.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
+
+test_multiple_directory_uri_rejected_format2:
+  fixture: synthetic-bad-multiple-directory-uri.gxwf.yml
+  operation: validate_format2
+  expect_error: true
+
+test_multiple_directory_uri_rejected_format2_strict:
+  fixture: synthetic-bad-multiple-directory-uri.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true
