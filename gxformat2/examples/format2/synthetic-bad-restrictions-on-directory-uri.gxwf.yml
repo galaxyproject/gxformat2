@@ -1,0 +1,7 @@
+class: GalaxyWorkflow
+inputs:
+  bad:
+    type: directory_uri
+    restrictions: ["s3://a/", "s3://b/"]
+outputs: {}
+steps: {}

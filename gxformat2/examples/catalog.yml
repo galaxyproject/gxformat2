@@ -440,12 +440,29 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: native/synthetic-color-directory-uri-inputs.ga
+  origin: synthetic
+  format: native
+  description: Color and directory URI parameter inputs.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_export_abstract.py
+
 - file: native/synthetic-numeric-range-validators.ga
   origin: synthetic
   format: native
   description: Integer/float parameter inputs with in_range and regex validators.
   tests:
     - tests/test_interop_tests.py
+
+- file: format2/synthetic-color-directory-uri-inputs.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Color and directory URI parameter inputs.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_export_abstract.py
+    - tests/test_pydantic_schema.py
 
 - file: format2/synthetic-int-input.gxwf.yml
   origin: synthetic
@@ -663,6 +680,18 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-bad-validators-on-color.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-restrictions-on-directory-uri.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-bad-validators-on-int.gxwf.yml
   origin: synthetic
   format: format2
@@ -840,6 +869,13 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-lint-bad-color-directory-uri-defaults.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Non-string defaults on color and directory URI inputs — triggers type mismatch lint errors.
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-lint-bad-string-default.gxwf.yml
   origin: synthetic
   format: format2
@@ -851,6 +887,13 @@
   origin: synthetic
   format: format2
   description: Multiple text/int/float inputs with mistyped default entries and a boolean int default — triggers type mismatch lint errors.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-bad-color-directory-uri-defaults.ga
+  origin: synthetic
+  format: native
+  description: Non-string defaults on color and directory URI parameter inputs — triggers type mismatch lint errors.
   tests:
     - tests/test_interop_tests.py
 

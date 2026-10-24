@@ -1,0 +1,15 @@
+class: GalaxyWorkflow
+doc: Color and directory URI parameter inputs.
+inputs:
+  - id: highlight
+    type: color
+    default: "#ff0000"
+  - id: output_dir
+    type: directory_uri
+    optional: true
+    validators:
+      - type: regex
+        expression: "^s3://"
+        message: must be an S3 URI
+outputs: {}
+steps: {}

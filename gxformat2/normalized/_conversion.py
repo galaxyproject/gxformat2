@@ -379,6 +379,8 @@ def ensure_native(
 
 
 INPUT_STEP_TYPES = ("data_input", "data_collection_input", "parameter_input")
+# Format2 input types that carry regex ``validators``.
+REGEX_VALIDATOR_INPUT_TYPES = ("text", "string", "directory_uri")
 
 
 def native_input_to_format2_type(step: dict, tool_state: dict) -> str | list[str]:
@@ -560,7 +562,7 @@ def _build_input_param(step: NormalizedNativeStep) -> BaseInputParameter:
                     if validator.get(bound) is not None:
                         kwargs[bound] = validator[bound]
                 break
-    elif input_type in ("string", ["string"]):
+    elif (input_type[0] if isinstance(input_type, list) else input_type) in REGEX_VALIDATOR_INPUT_TYPES:
         text_validators = [_native_text_validator_to_format2(v) for v in tool_state.get("validators") or []]
         text_validators = [v for v in text_validators if v is not None]
         if text_validators:
@@ -1183,7 +1185,10 @@ def _build_native_workflow(
 _INPUT_TYPE_STEP_TYPES: dict[str, NativeStepType] = {
     **dict.fromkeys(("File", "data", "data_input"), NativeStepType.data_input),
     **dict.fromkeys(("collection", "data_collection", "data_collection_input"), NativeStepType.data_collection_input),
-    **dict.fromkeys(("text", "string", "integer", "int", "float", "color", "boolean"), NativeStepType.parameter_input),
+    **dict.fromkeys(
+        ("text", "string", "integer", "int", "float", "color", "boolean", "directory_uri"),
+        NativeStepType.parameter_input,
+    ),
 }
 
 
@@ -1255,7 +1260,7 @@ def _build_input_step(
         maximum = getattr(inp, "max", None)
         if minimum is not None or maximum is not None:
             tool_state["validators"] = [{"type": "in_range", "min": minimum, "max": maximum, "negate": False}]
-    elif step_type == NativeStepType.parameter_input and type_str in ("text", "string"):
+    elif step_type == NativeStepType.parameter_input and type_str in REGEX_VALIDATOR_INPUT_TYPES:
         text_validators = getattr(inp, "validators", None)
         if text_validators:
             tool_state["validators"] = [

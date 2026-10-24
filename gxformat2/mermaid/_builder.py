@@ -29,6 +29,7 @@ STEP_TYPE_SHAPES = {
     "text": SHAPE_PARAM,
     "boolean": SHAPE_PARAM,
     "color": SHAPE_PARAM,
+    "directory_uri": SHAPE_PARAM,
     "input": SHAPE_INPUT,
     "tool": SHAPE_TOOL,
     "subworkflow": SHAPE_SUBWORKFLOW,

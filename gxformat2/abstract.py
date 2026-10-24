@@ -150,6 +150,8 @@ def _galaxy_type_to_cwl(galaxy_type: GalaxyType | str | list[GalaxyType | str] |
     if type_str == "collection":
         # TODO: handle nested collections, pairs, etc...
         return "File[]"
+    if type_str in ("color", "directory_uri"):
+        return "string"
     return type_str
 
 

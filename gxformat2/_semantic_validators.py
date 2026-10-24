@@ -22,6 +22,13 @@ _COLUMN_NAME_RE = re.compile(r"^[\w\-_ \?]*$")
 _RECORD_RANK_RE = re.compile(r"(?:^|:)record(?::|$)")
 
 _TEXT_TYPE_VALUES = {"text", "string"}
+_REGEX_VALIDATOR_TYPE_VALUES = _TEXT_TYPE_VALUES | {"directory_uri"}
+_PARAMETER_FIELD_TYPE_VALUES = {
+    "restrictions": _TEXT_TYPE_VALUES,
+    "suggestions": _TEXT_TYPE_VALUES,
+    "restrictOnConnections": _TEXT_TYPE_VALUES,
+    "validators": _REGEX_VALIDATOR_TYPE_VALUES,
+}
 _COLLECTION_TYPE_VALUES = {"collection", "data_collection", "data_collection_input"}
 
 
@@ -84,8 +91,9 @@ def validate_input_parameter(input_param: Any) -> None:
     Enforces:
     - column_definitions only on collection inputs whose collection_type
       starts with 'sample_sheet'.
-    - restrictions/suggestions/restrictOnConnections/validators only on text/string
-      inputs (or catch-all WorkflowInputParameter in text mode).
+    - restrictions/suggestions/restrictOnConnections only on text/string inputs
+      (or catch-all WorkflowInputParameter in text mode); validators also on
+      directory_uri inputs.
     - Each SampleSheetColumnDefinition is internally consistent.
     """
     data = _as_dict(input_param)
@@ -97,7 +105,6 @@ def validate_input_parameter(input_param: Any) -> None:
         type_values = []
     else:
         type_values = [str(type_value)]
-    is_text_only = bool(type_values) and all(t in _TEXT_TYPE_VALUES for t in type_values)
     is_collection_only = bool(type_values) and all(t in _COLLECTION_TYPE_VALUES for t in type_values)
 
     collection_type = data.get("collection_type")
@@ -125,16 +132,16 @@ def validate_input_parameter(input_param: Any) -> None:
         if not _RECORD_RANK_RE.search(collection_type):
             raise ValueError(f"fields requires collection_type containing 'record', got {collection_type!r}")
 
-    text_only_fields = ("restrictions", "suggestions", "restrictOnConnections", "validators")
-    for field in text_only_fields:
+    for field, allowed_types in _PARAMETER_FIELD_TYPE_VALUES.items():
         if data.get(field) in (None, [], False):
             # restrictOnConnections=False is the schema default and harmless;
             # only flag when the field is set on a non-text input.
             continue
         if data.get(field) is None:
             continue
-        if type_values and not is_text_only:
-            raise ValueError(f"{field} is only valid on text/string inputs, got type={type_value!r}")
+        if type_values and not all(t in allowed_types for t in type_values):
+            allowed = "/".join(sorted(allowed_types))
+            raise ValueError(f"{field} is only valid on {allowed} inputs, got type={type_value!r}")
 
 
 def _state_is_specified(value: Any) -> bool:

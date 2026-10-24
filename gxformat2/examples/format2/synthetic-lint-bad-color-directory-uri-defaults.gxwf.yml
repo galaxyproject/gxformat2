@@ -1,0 +1,11 @@
+class: GalaxyWorkflow
+label: Bad color and directory URI defaults
+inputs:
+  - id: highlight
+    type: color
+    default: 7
+  - id: output_dir
+    type: directory_uri
+    default: true
+outputs: {}
+steps: {}

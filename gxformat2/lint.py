@@ -284,6 +284,8 @@ class _DefaultCheck(NamedTuple):
 _STRING_DEFAULT = _DefaultCheck("string", "a string", "a string or a list of strings", _is_string)
 _INTEGER_DEFAULT = _DefaultCheck("int", "an integer", "an integer or a list of integers", _is_integer)
 _FLOAT_DEFAULT = _DefaultCheck("float", "a number", "a number or a list of numbers", _is_number)
+_COLOR_DEFAULT = _DefaultCheck("color", "a string", "a string or a list of strings", _is_string)
+_DIRECTORY_URI_DEFAULT = _DefaultCheck("directory_uri", "a string", "a string or a list of strings", _is_string)
 _DEFAULT_CHECKS: dict[str, _DefaultCheck] = {
     GalaxyType.string: _STRING_DEFAULT,
     GalaxyType.text: _STRING_DEFAULT,
@@ -291,6 +293,8 @@ _DEFAULT_CHECKS: dict[str, _DefaultCheck] = {
     GalaxyType.integer: _INTEGER_DEFAULT,
     GalaxyType.float: _FLOAT_DEFAULT,
     GalaxyType.double: _FLOAT_DEFAULT,
+    GalaxyType.color: _COLOR_DEFAULT,
+    GalaxyType.directory_uri: _DIRECTORY_URI_DEFAULT,
 }
 
 
