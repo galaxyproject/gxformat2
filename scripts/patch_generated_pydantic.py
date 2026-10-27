@@ -35,7 +35,8 @@ _INPUT_TYPE_TO_CLASS: dict[str, type[BaseInputParameter]] = {
     "string": WorkflowTextParameter,
     "float": WorkflowFloatParameter,
     "boolean": WorkflowBooleanParameter,
-    "color": WorkflowTextParameter,
+    "color": WorkflowColorParameter,
+    "directory_uri": WorkflowDirectoryUriParameter,
 }
 
 

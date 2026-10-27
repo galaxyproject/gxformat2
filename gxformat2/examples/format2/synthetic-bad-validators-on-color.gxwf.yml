@@ -1,0 +1,9 @@
+class: GalaxyWorkflow
+inputs:
+  bad:
+    type: color
+    validators:
+      - type: regex
+        expression: "^#"
+outputs: {}
+steps: {}

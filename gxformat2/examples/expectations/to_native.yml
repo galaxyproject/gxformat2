@@ -291,3 +291,23 @@ test_to_native_inline_subworkflow_no_class:
       value: subworkflow
     - path: [steps, "1", subworkflow, steps, "1", tool_id]
       value: cat1
+
+test_to_native_color_directory_uri_inputs:
+  fixture: synthetic-color-directory-uri-inputs.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", type_]
+      value: parameter_input
+    - path: [steps, "0", tool_state, parameter_type]
+      value: color
+    - path: [steps, "0", tool_state, default]
+      value: "#ff0000"
+    - path: [steps, "1", type_]
+      value: parameter_input
+    - path: [steps, "1", tool_state, parameter_type]
+      value: directory_uri
+    - path: [steps, "1", tool_state, optional]
+      value: true
+    - path: [steps, "1", tool_state, validators]
+      value:
+        - {type: regex, expression: "^s3://", message: must be an S3 URI, negate: false}

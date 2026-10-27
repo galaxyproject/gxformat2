@@ -117,6 +117,13 @@ def test_string_inputs():
         assert abstract_as_dict["inputs"]["seed"]["default"] == "mycooldefault"
 
 
+def test_color_directory_uri_inputs():
+    for name in ("synthetic-color-directory-uri-inputs.gxwf.yml", "synthetic-color-directory-uri-inputs.ga"):
+        abstract_as_dict = _run_example_path(example_path(name))
+        assert abstract_as_dict["inputs"]["highlight"]["type"] == "string"
+        assert abstract_as_dict["inputs"]["output_dir"]["type"] == "string?"
+
+
 def test_multi_string_inputs():
     abstract_as_dict = from_dict(ordered_load(MULTI_STRING_INPUT_WORKFLOW))
     assert abstract_as_dict["inputs"]["multi-text"]["type"] == "string[]"
