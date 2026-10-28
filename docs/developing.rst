@@ -45,6 +45,12 @@ gxformat2 publishes to PyPI via GitHub Actions trusted publishing — no
 ``~/.pypirc`` or PyPI credentials are needed on the release machine. Pushing
 a version tag to ``galaxyproject/gxformat2`` triggers the publish workflow.
 
+**Agents:** the ``/ready-release`` Claude Code command
+(``.claude/commands/ready-release.md``) walks through this whole process
+interactively. Pause for maintainer confirmation before ``make release``
+(pushes to upstream and publishes to PyPI) and before publishing the GitHub
+release (its ``@`` acknowledgements notify contributors).
+
 Pre-release checklist
 ---------------------
 
@@ -101,11 +107,6 @@ Cutting the release
          make release-notes > notes.md
          gh release create X.Y.Z --repo galaxyproject/gxformat2 \
              --title X.Y.Z --verify-tag --notes-file notes.md
-
-   * **Agents** — the ``/ready-release`` Claude Code command
-     (``.claude/commands/ready-release.md``) covers this step; show the notes
-     to the maintainer before publishing, since the ``@`` acknowledgements
-     notify contributors.
 
 If you need finer control the release can be broken into its pieces:
 ``make release-local`` (commit, tag, next-dev) followed by
