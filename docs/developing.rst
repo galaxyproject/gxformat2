@@ -86,6 +86,27 @@ Cutting the release
    the tag to ``UPSTREAM``. The pushed tag triggers the PyPI publish
    workflow on GitHub.
 
+5. Create the GitHub release for the tag. ``make release`` only pushes the
+   tag; the release page is a separate step. Its body is the version's
+   ``HISTORY.rst`` entries as Markdown, printed by::
+
+       make release-notes               # latest tag
+       make release-notes RELEASE_TAG=X.Y.Z
+
+   * **GitHub UI** — on the repository's *Releases* page choose *Draft a new
+     release*, pick the existing ``X.Y.Z`` tag, title it ``X.Y.Z``, paste the
+     ``make release-notes`` output, and publish.
+   * **CLI** — with `gh <https://cli.github.com/>`__::
+
+         make release-notes > notes.md
+         gh release create X.Y.Z --repo galaxyproject/gxformat2 \
+             --title X.Y.Z --verify-tag --notes-file notes.md
+
+   * **Agents** — the ``/ready-release`` Claude Code command
+     (``.claude/commands/ready-release.md``) covers this step; show the notes
+     to the maintainer before publishing, since the ``@`` acknowledgements
+     notify contributors.
+
 If you need finer control the release can be broken into its pieces:
 ``make release-local`` (commit, tag, next-dev) followed by
 ``make push-release`` (push main and tags).

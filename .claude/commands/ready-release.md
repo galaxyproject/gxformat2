@@ -10,4 +10,6 @@ Walk me through readying a gxformat2 release. The full process is documented in 
 
 4. **Release** — after I confirm, run `make release`.
 
+5. **GitHub release** — run `make release-notes`, show me the output, and after I confirm create the release with `gh release create` as in `docs/developing.rst`.
+
 Stop after each step and report status before moving to the next.
