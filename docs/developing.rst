@@ -45,8 +45,8 @@ gxformat2 publishes to PyPI via GitHub Actions trusted publishing — no
 ``~/.pypirc`` or PyPI credentials are needed on the release machine. Pushing
 a version tag to ``galaxyproject/gxformat2`` triggers the publish workflow.
 
-**Agents:** the ``/ready-release`` Claude Code command
-(``.claude/commands/ready-release.md``) walks through this whole process
+**Agents:** the ``ready-release`` skill
+(``.agents/skills/ready-release/SKILL.md``) walks through this whole process
 interactively. Pause for maintainer confirmation before ``make release``
 (pushes to upstream and publishes to PyPI) and before publishing the GitHub
 release (its ``@`` acknowledgements notify contributors).

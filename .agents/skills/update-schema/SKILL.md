@@ -1,4 +1,9 @@
-Augment the Galaxy Format2 workflow schema definition in `schema/v19_09/workflow.yml` based on the user's request below.
+---
+name: update-schema
+description: Augment the Galaxy Format2 Schema Salad definition (schema/v19_09/workflow.yml) and verify it builds.
+---
+
+Augment the Galaxy Format2 workflow schema definition in `schema/v19_09/workflow.yml` based on the user's request.
 
 ## Background
 
@@ -103,4 +108,4 @@ The `GalaxyWorkflow` record needs a `comments` field that accepts an array of co
 
 ## User's Request
 
-$ARGUMENTS
+Apply the schema change the user asked for.

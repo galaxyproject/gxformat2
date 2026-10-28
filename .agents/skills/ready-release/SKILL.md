@@ -1,3 +1,8 @@
+---
+name: ready-release
+description: Walk a maintainer through cutting a gxformat2 release (changelog, checks, make release, GitHub release).
+---
+
 Walk me through readying a gxformat2 release. The full process is documented in `docs/developing.rst` — read that first and defer to it for details. This command drives the interactive parts.
 
 ## Steps
