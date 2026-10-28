@@ -75,4 +75,4 @@ SchemaStrictExtraField:
   description: "Unknown field present on a closed record under strict validation."
   tests:
     positive: [synthetic-basic.gxwf.yml, real-unicycler-assembly.ga]
-    negative: [synthetic-extra-field.gxwf.yml, synthetic-extra-field.ga]
+    negative: [synthetic-extra-field.gxwf.yml, synthetic-extra-field-output.gxwf.yml, synthetic-extra-field.ga]

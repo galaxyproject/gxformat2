@@ -163,7 +163,7 @@ directly executed."""
 
     # Discriminated union on 'type'
     inputs: list[Annotated[Annotated[WorkflowDataParameter, Tag("WorkflowDataParameter")] | Annotated[WorkflowCollectionParameter, Tag("WorkflowCollectionParameter")] | Annotated[WorkflowIntegerParameter, Tag("WorkflowIntegerParameter")] | Annotated[WorkflowFloatParameter, Tag("WorkflowFloatParameter")] | Annotated[WorkflowTextParameter, Tag("WorkflowTextParameter")] | Annotated[WorkflowBooleanParameter, Tag("WorkflowBooleanParameter")] | Annotated[WorkflowColorParameter, Tag("WorkflowColorParameter")] | Annotated[WorkflowDirectoryUriParameter, Tag("WorkflowDirectoryUriParameter")], Discriminator(_discriminate_inputs)]] | dict[str, WorkflowDataParameter | WorkflowCollectionParameter | WorkflowIntegerParameter | WorkflowFloatParameter | WorkflowTextParameter | WorkflowBooleanParameter | WorkflowColorParameter | WorkflowDirectoryUriParameter | str] | dict[str, Any]
-    outputs: list[WorkflowOutputParameter] | dict[str, WorkflowOutputParameter | str] | dict[str, Any] = Field(description="Defines the parameters representing the output of the process.  May be used to generate and/or validate the output object.")
+    outputs: list[WorkflowOutputParameter] | dict[str, WorkflowOutputParameter | str] = Field(description="Defines the parameters representing the output of the process.  May be used to generate and/or validate the output object.")
 
 class HasUUID(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")

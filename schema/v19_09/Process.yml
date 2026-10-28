@@ -98,7 +98,7 @@ $graph:
       type:
         type: array
         items: OutputParameter
-      pydantic:type: "list[WorkflowOutputParameter] | dict[str, WorkflowOutputParameter | str] | dict[str, Any]"
+      pydantic:type: "list[WorkflowOutputParameter] | dict[str, WorkflowOutputParameter | str]"
       jsonldPredicate:
         _id: "cwl:outputs"
         mapSubject: id
