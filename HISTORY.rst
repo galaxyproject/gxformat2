@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.29.0.dev0
+0.29.0 (2026-10-28)
 ---------------------
 * Lint duplicate step labels as errors (thanks to `@mvdbeek`_). `Pull Request 268`_
 * Bump aiohttp from 3.14.3 to 3.14.4 (thanks to `@dependabot[bot]`_). `Pull Request 269`_
