@@ -6,6 +6,12 @@ History
 .. to_doc
 
 ---------------------
+0.30.0.dev0
+---------------------
+
+    
+
+---------------------
 0.29.0 (2026-10-28)
 ---------------------
 * Lint duplicate step labels as errors (thanks to `@mvdbeek`_). `Pull Request 268`_
