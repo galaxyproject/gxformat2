@@ -8,6 +8,19 @@ History
 ---------------------
 0.29.0.dev0
 ---------------------
+* Lint duplicate step labels as errors (thanks to `@mvdbeek`_). `Pull Request 268`_
+* Bump aiohttp from 3.14.3 to 3.14.4 (thanks to `@dependabot[bot]`_). `Pull Request 269`_
+* Add support for Python 3.15 (thanks to `@nsoranzo`_). `Pull Request 270`_
+* Bump certifi from 2026.5.20 to 2026.10.19 (thanks to `@dependabot[bot]`_). `Pull Request 273`_
+* Bump black from 26.5.1 to 26.10.1 (thanks to `@dependabot[bot]`_). `Pull Request 274`_
+* Match Galaxy's `${name}` semantics in untyped parameter lint (thanks to `@jmchilton`_). `Pull Request 271`_
+* Require class: GalaxyWorkflow on Format2 workflows (thanks to `@richard-burhans`_). `Pull Request 278`_
+* Lint multiple text and native parameter input defaults (thanks to `@jmchilton`_). `Pull Request 275`_
+* Follow-up fixes for required GalaxyWorkflow class (#278) (thanks to `@jmchilton`_). `Pull Request 279`_
+* Support Galaxy color and directory_uri workflow parameter inputs (thanks to `@jmchilton`_). `Pull Request 281`_
+* Bump the actions group with 2 updates (thanks to `@dependabot[bot]`_). `Pull Request 282`_
+* Bump serialize-javascript from 7.1.2 to 7.1.4 in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 283`_
+* Reject unknown keys on workflow outputs under strict validation (thanks to `@richard-burhans`_). `Pull Request 277`_
 
     
 
@@ -479,6 +492,19 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 268: https://github.com/galaxyproject/gxformat2/pull/268
+.. _Pull Request 269: https://github.com/galaxyproject/gxformat2/pull/269
+.. _Pull Request 270: https://github.com/galaxyproject/gxformat2/pull/270
+.. _Pull Request 273: https://github.com/galaxyproject/gxformat2/pull/273
+.. _Pull Request 274: https://github.com/galaxyproject/gxformat2/pull/274
+.. _Pull Request 271: https://github.com/galaxyproject/gxformat2/pull/271
+.. _Pull Request 278: https://github.com/galaxyproject/gxformat2/pull/278
+.. _Pull Request 275: https://github.com/galaxyproject/gxformat2/pull/275
+.. _Pull Request 279: https://github.com/galaxyproject/gxformat2/pull/279
+.. _Pull Request 281: https://github.com/galaxyproject/gxformat2/pull/281
+.. _Pull Request 282: https://github.com/galaxyproject/gxformat2/pull/282
+.. _Pull Request 283: https://github.com/galaxyproject/gxformat2/pull/283
+.. _Pull Request 277: https://github.com/galaxyproject/gxformat2/pull/277
 .. _Pull Request 220: https://github.com/galaxyproject/gxformat2/pull/220
 .. _Pull Request 221: https://github.com/galaxyproject/gxformat2/pull/221
 .. _Pull Request 222: https://github.com/galaxyproject/gxformat2/pull/222
@@ -609,4 +635,5 @@ History
 .. _@jmchilton: https://github.com/jmchilton
 .. _@loichuder: https://github.com/loichuder
 .. _@simleo: https://github.com/simleo
+.. _@richard-burhans: https://github.com/richard-burhans
 .. _`@dependabot[bot]`: https://github.com/apps/dependabot
