@@ -43,3 +43,26 @@ def test_lint_format2_still_accepts_normalized_model():
     nf2 = ensure_format2(wf_dict, expand=True)
     lint_format2(ctx, nf2, raw_dict=wf_dict)
     assert ctx.error_messages == []
+
+
+class _ContextWithoutChild:
+    """Mimics Galaxy's tool lint context, which older Planemo passes to ``lint_ga``."""
+
+    training_topic = None
+
+    def __init__(self):
+        self.warn_messages = []
+        self.error_messages = []
+
+    def warn(self, message, linter=None, *args, **kwargs):
+        self.warn_messages.append(message)
+
+    def error(self, message, linter=None, *args, **kwargs):
+        self.error_messages.append(message)
+
+
+def test_lint_ga_accepts_context_without_child():
+    ctx = _ContextWithoutChild()
+    wf_dict = load("synthetic-lint-duplicate-step-label-in-subworkflow.ga")
+    lint_ga(ctx, wf_dict, path="/fake/path.ga")
+    assert ctx.error_messages == ["Duplicated step label 'concat' (step 0, step 1)"]
