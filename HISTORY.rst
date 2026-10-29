@@ -6,8 +6,10 @@ History
 .. to_doc
 
 ---------------------
-0.30.0.dev0
+0.29.1.dev0
 ---------------------
+* Document GitHub release step; add make release-notes (thanks to `@jmchilton`_). `Pull Request 284`_
+* Fall back when lint context lacks child() (thanks to `@jmchilton`_). `Pull Request 285`_
 
     
 
@@ -498,6 +500,8 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 284: https://github.com/galaxyproject/gxformat2/pull/284
+.. _Pull Request 285: https://github.com/galaxyproject/gxformat2/pull/285
 .. _Pull Request 268: https://github.com/galaxyproject/gxformat2/pull/268
 .. _Pull Request 269: https://github.com/galaxyproject/gxformat2/pull/269
 .. _Pull Request 270: https://github.com/galaxyproject/gxformat2/pull/270
