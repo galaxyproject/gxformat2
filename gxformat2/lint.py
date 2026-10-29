@@ -95,7 +95,7 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
     _lint_duplicate_step_labels(
         lint_context,
         [
-            (step.label, f"step {key}", _native_step_context(lint_context, key).child("label"))
+            (step.label, f"step {key}", _child_context(_native_step_context(lint_context, key), "label"))
             for key, step in nnw.steps.items()
         ],
     )
@@ -117,7 +117,7 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
             if not step.subworkflow.steps:
                 lint_context.error("subworkflow is missing steps or steps are empty")
             else:
-                lint_ga(step_context.child("subworkflow"), step.subworkflow)
+                lint_ga(_child_context(step_context, "subworkflow"), step.subworkflow)
 
         _lint_step_errors(lint_context, step.errors)
         _lint_tool_if_present(lint_context, step.tool_id)
@@ -208,7 +208,13 @@ def _validate_output_sources(lint_context, nf2: NormalizedFormat2):
 
 
 def _native_step_context(lint_context: LintContext, step_key: str) -> LintContext:
-    return lint_context.child("steps").child(step_key)
+    return _child_context(_child_context(lint_context, "steps"), step_key)
+
+
+def _child_context(lint_context: LintContext, pointer_segment: str) -> LintContext:
+    # Galaxy's tool LintContext (passed by older Planemo) has no child().
+    child = getattr(lint_context, "child", None)
+    return child(pointer_segment) if child is not None else lint_context
 
 
 def _lint_duplicate_step_labels(
