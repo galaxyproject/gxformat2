@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.29.1.dev0
+0.29.1 (2026-10-29)
 ---------------------
 * Document GitHub release step; add make release-notes (thanks to `@jmchilton`_). `Pull Request 284`_
 * Fall back when lint context lacks child() (thanks to `@jmchilton`_). `Pull Request 285`_
