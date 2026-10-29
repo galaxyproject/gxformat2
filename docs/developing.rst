@@ -45,6 +45,12 @@ gxformat2 publishes to PyPI via GitHub Actions trusted publishing — no
 ``~/.pypirc`` or PyPI credentials are needed on the release machine. Pushing
 a version tag to ``galaxyproject/gxformat2`` triggers the publish workflow.
 
+**Agents:** the ``ready-release`` skill
+(``.agents/skills/ready-release/SKILL.md``) walks through this whole process
+interactively. Pause for maintainer confirmation before ``make release``
+(pushes to upstream and publishes to PyPI) and before publishing the GitHub
+release (its ``@`` acknowledgements notify contributors).
+
 Pre-release checklist
 ---------------------
 
@@ -85,6 +91,22 @@ Cutting the release
    bumps ``__version__`` to the next ``.dev0``, and pushes ``main`` plus
    the tag to ``UPSTREAM``. The pushed tag triggers the PyPI publish
    workflow on GitHub.
+
+5. Create the GitHub release for the tag. ``make release`` only pushes the
+   tag; the release page is a separate step. Its body is the version's
+   ``HISTORY.rst`` entries as Markdown, printed by::
+
+       make release-notes               # latest tag
+       make release-notes RELEASE_TAG=X.Y.Z
+
+   * **GitHub UI** — on the repository's *Releases* page choose *Draft a new
+     release*, pick the existing ``X.Y.Z`` tag, title it ``X.Y.Z``, paste the
+     ``make release-notes`` output, and publish.
+   * **CLI** — with `gh <https://cli.github.com/>`__::
+
+         make release-notes > notes.md
+         gh release create X.Y.Z --repo galaxyproject/gxformat2 \
+             --title X.Y.Z --verify-tag --notes-file notes.md
 
 If you need finer control the release can be broken into its pieces:
 ``make release-local`` (commit, tag, next-dev) followed by

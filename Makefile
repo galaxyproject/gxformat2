@@ -14,6 +14,7 @@ SOURCE_DIR?=gxformat2
 BUILD_SCRIPTS_DIR=scripts
 DEV_RELEASE?=0
 VERSION?=$(shell $(IN_VENV) DEV_RELEASE=$(DEV_RELEASE) python $(BUILD_SCRIPTS_DIR)/print_version_for_release.py $(SOURCE_DIR) $(DEV_RELEASE))
+RELEASE_TAG?=$(shell git describe --tags --abbrev=0)
 DOC_URL?=https://gxformat2.readthedocs.org
 PROJECT_NAME?=gxformat2
 UPSTREAM_REPO?=$(UPSTREAM)/$(PROJECT_NAME)
@@ -144,6 +145,9 @@ push-release: ## Push a tagged release to github
 	git push --tags $(UPSTREAM)
 
 release: release-local push-release ## package, review, and upload a release
+
+release-notes: ## Print GitHub release notes for RELEASE_TAG (default: latest tag)
+	@$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/print_release_notes.py $(RELEASE_TAG)
 
 add-history: ## Reformat HISTORY.rst with data from Github's API
 	$(IN_VENV) python $(BUILD_SCRIPTS_DIR)/bootstrap_history.py --acknowledgements
