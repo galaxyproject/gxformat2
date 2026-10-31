@@ -86,6 +86,7 @@ done
 # Native workflow format schema
 cd "${PROJECT_DIRECTORY}"/schema/native_v0_1
 schema-salad-tool --codegen python workflow.yml > "${SCHEME_SOURCE_DIRECTORY}/native_v0_1.py"
+python3 "${PROJECT_DIRECTORY}/scripts/patch_generated_pydantic.py" "${SCHEME_SOURCE_DIRECTORY}/native_v0_1.py"
 
 out="${DIST_DIRECTORY}/native_v0_1.html"
 schema-salad-doc \
