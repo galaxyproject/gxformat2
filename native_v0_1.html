@@ -202,9 +202,9 @@ In the JSON document this field is written as <code>format-version</code>.</p>
 <div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>creator</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
-<div class="col-xs-7 col-lg-3"><code>list[<a href="#NativeCreatorPerson">NativeCreatorPerson</a> | <a href="#NativeCreatorOrganization">NativeCreatorOrganization</a>] | None</code></div>
+<div class="col-xs-7 col-lg-3"><code>list[<a href="#CreatorPerson">CreatorPerson</a> | <a href="#CreatorOrganization">CreatorOrganization</a>] | None</code></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Creator(s) of this workflow. An array of schema.org
-NativeCreatorPerson or NativeCreatorOrganization objects,
+CreatorPerson or CreatorOrganization objects,
 dispatched via the <code>class</code> field (<code>Person</code> or <code>Organization</code>).</p>
 </div>
 </div>
@@ -1008,7 +1008,9 @@ without arguments.</p>
 <div class="col-xs-12 col-lg-6 description-col"><p>Galaxy-flavored Markdown content for the invocation report. Supports
 template directives like <code>history_dataset_as_image(output=&quot;...&quot;)</code>.</p>
 </div>
-</div></div><h2 id="NativeCreatorPerson" class="section">NativeCreatorPerson <a href="#NativeCreatorPerson">&sect;</a></h2><p>A person who created or contributed to the workflow.
+</div></div><h2 id="NativeCreator" class="section">NativeCreator <a href="#NativeCreator">&sect;</a></h2><p>A workflow creator, either a person or organization. Dispatched via
+the <code>class</code> field (<code>Person</code> or <code>Organization</code>).</p>
+<h3 id="CreatorPerson" class="section">CreatorPerson <a href="#CreatorPerson">&sect;</a></h3><p>A person who created or contributed to the workflow.
 Corresponds to a <code>schema.org Person &lt;https://schema.org/Person&gt;</code>_.</p>
 <h3>Fields</h3>
 <div class="responsive-table">
@@ -1021,7 +1023,7 @@ Corresponds to a <code>schema.org Person &lt;https://schema.org/Person&gt;</code
 <div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>class</code></div>
 <div class="col-xs-2 col-lg-1">required</div>
-<div class="col-xs-7 col-lg-3"><a href="#NativeCreatorPersonType">NativeCreatorPersonType</a></div>
+<div class="col-xs-7 col-lg-3"><a href="#CreatorPersonType">CreatorPersonType</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Creator type discriminator (<code>Person</code>).</p>
 </div>
 </div>
@@ -1123,8 +1125,8 @@ Corresponds to a <code>schema.org Person &lt;https://schema.org/Person&gt;</code
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Job title or role.</p>
 </div>
-</div></div><h2 id="NativeCreatorPersonType" class="section">NativeCreatorPersonType <a href="#NativeCreatorPersonType">&sect;</a></h2><p>Discriminator for schema.org Person creators.</p>
-<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Person</code></td><td></td></tr></table><h2 id="NativeCreatorOrganization" class="section">NativeCreatorOrganization <a href="#NativeCreatorOrganization">&sect;</a></h2><p>An organization that created or contributed to the workflow.
+</div></div><h3 id="CreatorPersonType" class="section">CreatorPersonType <a href="#CreatorPersonType">&sect;</a></h3><p>Discriminator for schema.org Person creators.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Person</code></td><td></td></tr></table><h3 id="CreatorOrganization" class="section">CreatorOrganization <a href="#CreatorOrganization">&sect;</a></h3><p>An organization that created or contributed to the workflow.
 Corresponds to a <code>schema.org Organization &lt;https://schema.org/Organization&gt;</code>_.</p>
 <h3>Fields</h3>
 <div class="responsive-table">
@@ -1137,7 +1139,7 @@ Corresponds to a <code>schema.org Organization &lt;https://schema.org/Organizati
 <div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>class</code></div>
 <div class="col-xs-2 col-lg-1">required</div>
-<div class="col-xs-7 col-lg-3"><a href="#NativeCreatorOrganizationType">NativeCreatorOrganizationType</a></div>
+<div class="col-xs-7 col-lg-3"><a href="#CreatorOrganizationType">CreatorOrganizationType</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Creator type discriminator (<code>Organization</code>).</p>
 </div>
 </div>
@@ -1204,10 +1206,8 @@ Corresponds to a <code>schema.org Organization &lt;https://schema.org/Organizati
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
 <div class="col-xs-12 col-lg-6 description-col"><p>Fax number.</p>
 </div>
-</div></div><h2 id="NativeCreatorOrganizationType" class="section">NativeCreatorOrganizationType <a href="#NativeCreatorOrganizationType">&sect;</a></h2><p>Discriminator for schema.org Organization creators.</p>
-<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Organization</code></td><td></td></tr></table><h2 id="NativeCreator" class="section">NativeCreator <a href="#NativeCreator">&sect;</a></h2><p>A workflow creator, either a person or organization. Dispatched via
-the <code>class</code> field (<code>Person</code> or <code>Organization</code>).</p>
-<h2 id="NativeSourceMetadata" class="section">NativeSourceMetadata <a href="#NativeSourceMetadata">&sect;</a></h2><p>Provenance tracking for workflows imported from external sources.
+</div></div><h3 id="CreatorOrganizationType" class="section">CreatorOrganizationType <a href="#CreatorOrganizationType">&sect;</a></h3><p>Discriminator for schema.org Organization creators.</p>
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Organization</code></td><td></td></tr></table><h2 id="NativeSourceMetadata" class="section">NativeSourceMetadata <a href="#NativeSourceMetadata">&sect;</a></h2><p>Provenance tracking for workflows imported from external sources.
 Contains either a direct URL or TRS (Tool Registry Service) metadata,
 depending on how the workflow was imported.</p>
 <p>For URL imports, only <code>url</code> is set. For TRS imports (Dockstore,
