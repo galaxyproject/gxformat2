@@ -512,3 +512,9 @@ def load_document(path: str | Path) -> NativeGalaxyWorkflow | list[NativeGalaxyW
 def _load_single(data: dict[str, Any]) -> NativeGalaxyWorkflow:
     """Load a single document dict."""
     return NativeGalaxyWorkflow.model_validate(data)
+
+
+# Backward-compatible aliases: creator types moved to common.yml (#165).
+BaseNativeCreator = BaseCreator
+NativeCreatorPerson = CreatorPerson
+NativeCreatorOrganization = CreatorOrganization

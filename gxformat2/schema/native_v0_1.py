@@ -13179,3 +13179,9 @@ def load_document_by_yaml(
         loadingOptions,
     )
     return result
+
+
+# Backward-compatible aliases: creator types moved to common.yml (#165).
+BaseNativeCreator = BaseCreator
+NativeCreatorPerson = CreatorPerson
+NativeCreatorOrganization = CreatorOrganization

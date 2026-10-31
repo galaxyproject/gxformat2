@@ -1,6 +1,6 @@
 """Post-codegen patches for schema-salad-plus-pydantic output.
 
-Three patches are applied:
+Four patches are applied:
 
 1. Fix invalid ``Field(default="X", "Y", ...)`` emitted for multi-symbol
    ``Literal`` defaults. The generator passes every symbol as a positional
@@ -11,6 +11,11 @@ Three patches are applied:
 3. Make ``GalaxyWorkflow.class_`` required in the Format2 modules. The
    generator defaults every ``Literal`` field to its first symbol, which let
    documents without ``class: GalaxyWorkflow`` validate (#186).
+4. Append backward-compatible aliases for the native creator classes to the
+   native modules (pydantic and schema-salad). The creator types moved to
+   ``schema/common/common.yml`` and are now generated as ``BaseCreator`` /
+   ``CreatorPerson`` / ``CreatorOrganization``; the ``Native*`` names were
+   public in releases 0.25.0 through 0.29.x (#165).
 """
 
 import re
@@ -50,6 +55,15 @@ def input_parameter_class(type_value: str | None) -> type[BaseInputParameter]:
     return _INPUT_TYPE_TO_CLASS.get(type_value, WorkflowDataParameter)
 '''
 
+_NATIVE_CREATOR_ALIASES = """
+
+# Backward-compatible aliases: creator types moved to common.yml (#165).
+BaseNativeCreator = BaseCreator
+NativeCreatorPerson = CreatorPerson
+NativeCreatorOrganization = CreatorOrganization
+"""
+_NATIVE_MODULES = {"native.py", "native_strict.py", "native_v0_1.py"}
+
 
 def patch_default_args(text: str) -> str:
     return _FIELD_DEFAULT_FIXUP.sub(r"Field(default=\1\3", text)
@@ -69,6 +83,15 @@ def append_dispatcher(text: str) -> str:
     return text.rstrip() + "\n" + _INPUT_DISPATCHER
 
 
+def append_native_creator_aliases(text: str) -> str:
+    if "NativeCreatorPerson = CreatorPerson" in text:
+        return text
+    for name in ("BaseCreator", "CreatorPerson", "CreatorOrganization"):
+        if not re.search(rf"^class {name}\b", text, re.MULTILINE):
+            raise ValueError(f"class {name} not found; update append_native_creator_aliases for the new codegen output")
+    return text.rstrip() + "\n" + _NATIVE_CREATOR_ALIASES
+
+
 def main(paths: list[str]) -> None:
     for raw in paths:
         path = Path(raw)
@@ -76,6 +99,8 @@ def main(paths: list[str]) -> None:
         new_text = patch_default_args(text)
         if path.name in {"gxformat2.py", "gxformat2_strict.py", "gxformat2_draft.py", "gxformat2_draft_strict.py"}:
             new_text = require_workflow_class(append_dispatcher(new_text))
+        if path.name in _NATIVE_MODULES:
+            new_text = append_native_creator_aliases(new_text)
         if new_text != text:
             path.write_text(new_text)
             print(f"patched {path}")
