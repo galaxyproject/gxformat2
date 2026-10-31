@@ -609,7 +609,21 @@ $graph:
         Galaxy-flavored Markdown content for the invocation report. Supports
         template directives like ``history_dataset_as_image(output="...")``.
 
-# Creator types are shared from common.yml (CreatorPerson, CreatorOrganization)
+# Creator record types are shared from common.yml. This union only exists so
+# schema-salad-doc renders them under NativeGalaxyWorkflow (``creator`` is
+# typed ``Any`` so nothing else references them).
+- name: NativeCreator
+  type: union
+  names:
+    - gxformat2common:CreatorPerson
+    - gxformat2common:CreatorOrganization
+  docParent: "#NativeGalaxyWorkflow"
+  docChild:
+    - gxformat2common:CreatorPerson
+    - gxformat2common:CreatorOrganization
+  doc: |
+    A workflow creator, either a person or organization. Dispatched via
+    the ``class`` field (``Person`` or ``Organization``).
 
 - name: NativeSourceMetadata
   type: record

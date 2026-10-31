@@ -12530,6 +12530,7 @@ _vocab.update({
     "HasStepPosition": "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition",
     "HasUUID": "https://galaxyproject.org/gxformat2/gxformat2common#HasUUID",
     "NativeComment": "https://galaxyproject.org/gxformat2/native_v0_1#NativeComment",
+    "NativeCreator": "https://galaxyproject.org/gxformat2/native_v0_1#NativeCreator",
     "NativeFrameComment": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameComment",
     "NativeFrameCommentData": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameCommentData",
     "NativeFreehandComment": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandComment",
@@ -12593,6 +12594,7 @@ _rvocab.update({
     "https://galaxyproject.org/gxformat2/gxformat2common#HasStepPosition": "HasStepPosition",
     "https://galaxyproject.org/gxformat2/gxformat2common#HasUUID": "HasUUID",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeComment": "NativeComment",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeCreator": "NativeCreator",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameComment": "NativeFrameComment",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeFrameCommentData": "NativeFrameCommentData",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandComment": "NativeFreehandComment",
@@ -12761,6 +12763,7 @@ NativeFreehandCommentLoader: Final = _RecordLoader(NativeFreehandComment, None, 
 NativeCommentLoader: Final = _UnionLoader((), "NativeCommentLoader")
 NativeStepLoader: Final = _RecordLoader(NativeStep, None, None)
 NativeReportLoader: Final = _RecordLoader(NativeReport, None, None)
+NativeCreatorLoader: Final = _UnionLoader((), "NativeCreatorLoader")
 NativeSourceMetadataLoader: Final = _RecordLoader(NativeSourceMetadata, None, None)
 NativeGalaxyWorkflowLoader: Final = _RecordLoader(NativeGalaxyWorkflow, None, None)
 array_of_strtype: Final = _ArrayLoader(strtype)
@@ -13087,6 +13090,12 @@ NativeCommentLoader.add_loaders(
         NativeMarkdownCommentLoader,
         NativeFrameCommentLoader,
         NativeFreehandCommentLoader,
+    )
+)
+NativeCreatorLoader.add_loaders(
+    (
+        CreatorPersonLoader,
+        CreatorOrganizationLoader,
     )
 )
 
