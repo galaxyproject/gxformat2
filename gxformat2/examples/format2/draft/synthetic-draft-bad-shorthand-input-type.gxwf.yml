@@ -1,0 +1,10 @@
+class: GalaxyWorkflowDraft
+outputs: {}
+inputs:
+  reads: TODO_data
+steps:
+  cat:
+    tool_id: TODO
+    in:
+      TODO_in: reads
+    out: [TODO_out]

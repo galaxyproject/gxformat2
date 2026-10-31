@@ -1,0 +1,77 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Bad parameter defaults",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "parameter_input",
+            "label": "mixed_list",
+            "tool_state": "{\"parameter_type\": \"text\", \"optional\": false, \"multiple\": true, \"default\": [\"a\", 1]}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
+        },
+        "1": {
+            "id": 1,
+            "type": "parameter_input",
+            "label": "number_default",
+            "tool_state": "{\"parameter_type\": \"text\", \"optional\": false, \"default\": 7}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
+        },
+        "2": {
+            "id": 2,
+            "type": "parameter_input",
+            "label": "string_list",
+            "tool_state": "{\"parameter_type\": \"text\", \"optional\": false, \"multiple\": true, \"default\": [\"a\", \"b\"]}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
+        },
+        "3": {
+            "id": 3,
+            "type": "parameter_input",
+            "label": "bare_string",
+            "tool_state": "{\"parameter_type\": \"text\", \"optional\": false, \"multiple\": true, \"default\": \"a\"}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
+        },
+        "4": {
+            "id": 4,
+            "type": "parameter_input",
+            "label": "int_default",
+            "tool_state": "{\"parameter_type\": \"integer\", \"optional\": false, \"default\": 3}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
+        },
+        "5": {
+            "id": 5,
+            "type": "parameter_input",
+            "label": "bool_as_int",
+            "tool_state": "{\"parameter_type\": \"integer\", \"optional\": false, \"default\": true}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
+        },
+        "6": {
+            "id": 6,
+            "type": "parameter_input",
+            "label": "int_list",
+            "tool_state": "{\"parameter_type\": \"integer\", \"optional\": false, \"multiple\": true, \"default\": [1, \"bad\"]}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
+        }
+    }
+}

@@ -9,15 +9,18 @@ All step/input ids are populated.
 from __future__ import annotations
 
 import copy
+import json
 import os
+from collections.abc import Iterable
 from functools import cached_property
 from pathlib import Path
-from typing import Any, Literal, NamedTuple, Union
+from typing import Any, Literal, NamedTuple, TypeAlias
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
-from typing_extensions import TypeAlias
+from pydantic import BaseModel, ConfigDict, Field, field_validator, SerializeAsAny
 
+from gxformat2.schema._input_parameter import input_parameter_class
 from gxformat2.schema.gxformat2 import (
+    BaseInputParameter,
     CreatorOrganization,
     CreatorPerson,
     FrameComment,
@@ -35,9 +38,11 @@ from gxformat2.schema.gxformat2 import (
     WorkflowStepOutput,
     WorkflowStepType,
 )
+from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWorkflow
+from gxformat2.schema.native import NativePostJobAction
 from gxformat2.yaml import ordered_load_path
 
-from ._types import ToolReference
+from ._types import INLINE_TOOL_CLASSES, ToolReference
 
 
 class GalaxyUserToolStub(BaseModel):
@@ -72,7 +77,7 @@ class SourceReference(NamedTuple):
     output_name: str
 
 
-def resolve_source_reference(value: str, known_labels: set | dict) -> SourceReference:
+def resolve_source_reference(value: str, known_labels: Iterable[str]) -> SourceReference:
     """Parse a source reference into (step_label_or_id, output_name).
 
     Tries matching known labels first to handle labels containing '/'.
@@ -106,7 +111,7 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
     Ids are guaranteed populated.
     """
 
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     id: str = Field(description="Step identifier — always populated.")
     label: str | None = Field(default=None)
@@ -118,7 +123,7 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
     position: StepPosition | None = Field(default=None)
     when: str | None = Field(default=None)
     state: dict[str, Any] | None = Field(default=None)
-    tool_state: str | dict[str, Any] | None = Field(default=None)
+    tool_state: dict[str, Any] | None = Field(default=None, description="Always a parsed dict, never a JSON string.")
     runtime_inputs: list[str] | None = Field(default=None)
     errors: str | None = Field(default=None)
     uuid: str | None = Field(default=None)
@@ -126,6 +131,10 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
         default_factory=list, alias="in", description="Always a list, shorthands expanded."
     )
     out: list[WorkflowStepOutput] = Field(default_factory=list, description="Always a list, shorthands expanded.")
+    post_job_actions: dict[str, NativePostJobAction] | None = Field(
+        default=None,
+        description="Explicit post-job actions keyed by ``{ActionType}{OutputName}`` compound strings.",
+    )
     run: NormalizedFormat2 | GalaxyUserToolStub | ImportReference | str | None = Field(default=None)
 
     @field_validator("run", mode="before")
@@ -156,6 +165,27 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
         return self.type_ == WorkflowStepType.pick_value
 
     @property
+    def is_inline_tool_step(self) -> bool:
+        """The step embeds an inline tool source via ``run``.
+
+        True when ``run`` is a ``GalaxyUserToolStub`` or a dict whose ``class``
+        is in ``INLINE_TOOL_CLASSES``. Native-validated stubs always normalize
+        through ``GalaxyUserToolStub``; the dict branch is defensive.
+        """
+        if isinstance(self.run, GalaxyUserToolStub):
+            return True
+        return isinstance(self.run, dict) and self.run.get("class") in INLINE_TOOL_CLASSES
+
+    @property
+    def inline_tool_representation(self) -> dict[str, Any] | None:
+        """The embedded tool source as a dict, or ``None`` if not an inline tool step."""
+        if isinstance(self.run, GalaxyUserToolStub):
+            return self.run.model_dump(by_alias=True, exclude_none=True)
+        if isinstance(self.run, dict) and self.run.get("class") in INLINE_TOOL_CLASSES:
+            return self.run
+        return None
+
+    @property
     def connected_paths(self) -> frozenset[str]:
         """State paths that have incoming connections."""
         return frozenset(si.id for si in self.in_ if si.source is not None and si.id is not None)
@@ -169,12 +199,12 @@ class NormalizedFormat2(_DictMixin, BaseModel):
     Step ids are always populated.
     """
 
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     class_: Literal["GalaxyWorkflow"] = Field(default="GalaxyWorkflow", alias="class")
     label: str | None = Field(default=None)
     doc: str | None = Field(default=None, description="Annotation, joined if originally a list.")
-    inputs: list[WorkflowInputParameter] = Field(
+    inputs: list[SerializeAsAny[BaseInputParameter]] = Field(
         default_factory=list, description="Always a list, shorthands expanded."
     )
     outputs: list[WorkflowOutputParameter] = Field(default_factory=list, description="Always a list.")
@@ -200,6 +230,25 @@ class NormalizedFormat2(_DictMixin, BaseModel):
         """Parse a source reference string (e.g. ``step/output``) against this workflow's labels."""
         return resolve_source_reference(source, self.known_labels)
 
+    @cached_property
+    def _render_identity_by_key(self) -> dict[str, str]:
+        identities: dict[str, str] = {}
+        for step in self.steps:
+            identity = step.label or step.id
+            identities[step.id] = identity
+            identities[identity] = identity
+        return identities
+
+    def resolve_render_source(self, source: str) -> SourceReference:
+        """Resolve a source to the step render identity (``label or id``) visualizers key nodes by.
+
+        Unlike :meth:`resolve_source`, a step addressed by its ``id`` while carrying a
+        distinct ``label`` resolves to that label. Input refs pass through unchanged.
+        """
+        identities = self._render_identity_by_key
+        ref = resolve_source_reference(source, self.known_labels | identities.keys())
+        return SourceReference(identities.get(ref.step_label, ref.step_label), ref.output_name)
+
     @property
     def unique_tools(self) -> frozenset[ToolReference]:
         """All unique (tool_id, tool_version) pairs in this workflow and its inline subworkflows."""
@@ -221,6 +270,8 @@ NormalizedFormat2.model_rebuild()
 
 def normalized_format2(
     workflow: dict[str, Any] | str | Path | os.PathLike[str] | GalaxyWorkflow,
+    *,
+    strict_structure: bool = False,
 ) -> NormalizedFormat2:
     """Normalize a Format 2 Galaxy workflow into a fully typed model.
 
@@ -234,6 +285,10 @@ def normalized_format2(
 
     Returns a ``NormalizedFormat2`` where steps/inputs/outputs are always
     lists, shorthands are expanded, and ids are populated.
+
+    When *strict_structure* is True, the raw input dict is validated
+    against the strict schema (``extra="forbid"``) before normalization,
+    raising ``ValidationError`` on any unrecognised keys.
     """
     if isinstance(workflow, (str, Path)):
         workflow = ordered_load_path(str(workflow))
@@ -245,6 +300,8 @@ def normalized_format2(
         elif "$graph" in workflow and "class" not in workflow:
             workflow = _resolve_graph(workflow)
         assert isinstance(workflow, dict)
+        if strict_structure:
+            StrictGalaxyWorkflow.model_validate(workflow)
         # Migrate legacy 'name' to 'label'
         if "name" in workflow and "label" not in workflow:
             workflow = {**workflow, "label": workflow["name"]}
@@ -256,15 +313,22 @@ def normalized_format2(
         if "steps" not in workflow:
             workflow = {**workflow, "steps": {}}
         workflow = _pre_clean_steps(workflow)
+        workflow = _pre_normalize_input_types(workflow)
         workflow = GalaxyWorkflow.model_validate(workflow)
+    elif isinstance(workflow, GalaxyWorkflow) and strict_structure:
+        # Typed model input (e.g. nested sub-workflow recursion) -- dump and
+        # strict-validate since the lax model carries extras (extra="allow")
+        # that strict forbids, and the parent's strict pre-validation doesn't
+        # recurse through the run union (which includes dict[str, Any]).
+        StrictGalaxyWorkflow.model_validate(workflow.model_dump(by_alias=True, exclude_none=True))
     assert isinstance(workflow, GalaxyWorkflow)
-    return _normalize_workflow(workflow)
+    return _normalize_workflow(workflow, strict_structure=strict_structure)
 
 
-def _normalize_workflow(wf: GalaxyWorkflow) -> NormalizedFormat2:
+def _normalize_workflow(wf: GalaxyWorkflow, strict_structure: bool = False) -> NormalizedFormat2:
     inputs = _normalize_inputs(wf.inputs)
     outputs = _normalize_outputs(wf.outputs)
-    steps = _normalize_steps(wf.steps, inputs_offset=len(inputs))
+    steps = _normalize_steps(wf.steps, inputs_offset=len(inputs), strict_structure=strict_structure)
     comments = _normalize_comments(wf.comments)
     doc = _join_doc(wf.doc)
 
@@ -309,20 +373,28 @@ def _normalize_input_type(value: Any) -> Any:
     return value
 
 
+def _validate_input_dict(d: dict[str, Any]) -> BaseInputParameter:
+    """Validate an input dict using the specific discriminated type."""
+    type_val = d.get("type")
+    if isinstance(type_val, list):
+        return WorkflowInputParameter.model_validate(d)
+    return input_parameter_class(type_val).model_validate(d)
+
+
 def _normalize_inputs(
-    inputs: list[WorkflowInputParameter] | dict[str, WorkflowInputParameter | str] | dict[str, Any],
-) -> list[WorkflowInputParameter]:
+    inputs: list[BaseInputParameter] | dict[str, BaseInputParameter | str] | dict[str, Any] | Any,
+) -> list[BaseInputParameter]:
     if isinstance(inputs, list):
-        result = []
+        result: list[BaseInputParameter] = []
         for inp in inputs:
-            if isinstance(inp, WorkflowInputParameter):
+            if isinstance(inp, BaseInputParameter):
                 result.append(inp)
             elif isinstance(inp, dict):
                 if "type" in inp:
                     inp = {**inp, "type": _normalize_input_type(inp["type"])}
-                result.append(WorkflowInputParameter.model_validate(inp))
+                result.append(_validate_input_dict(inp))
             else:
-                result.append(WorkflowInputParameter.model_validate(inp))
+                result.append(_validate_input_dict(inp))
         return result
 
     # Dict form — keys are ids, values are WorkflowInputParameter, type string, or dict
@@ -331,8 +403,8 @@ def _normalize_inputs(
         if isinstance(value, str):
             # Shorthand: input_name: "data"
             normalized_type = _normalize_input_type(value)
-            result.append(WorkflowInputParameter.model_validate({"id": key, "type": normalized_type}))
-        elif isinstance(value, WorkflowInputParameter):
+            result.append(input_parameter_class(normalized_type)(id=key, type_=normalized_type))
+        elif isinstance(value, BaseInputParameter):
             if value.id is None:
                 value = value.model_copy(update={"id": key})
             result.append(value)
@@ -343,9 +415,9 @@ def _normalize_inputs(
                 value = {**value, "type": _normalize_input_type(value["type"])}
             if "format" in value and isinstance(value["format"], str):
                 value = {**value, "format": [value["format"]]}
-            result.append(WorkflowInputParameter.model_validate(value))
+            result.append(_validate_input_dict(value))
         else:
-            result.append(WorkflowInputParameter(id=key))
+            result.append(input_parameter_class(None)(id=key))
     return result
 
 
@@ -374,6 +446,33 @@ def _normalize_outputs(
         else:
             result.append(WorkflowOutputParameter(id=key))
     return result
+
+
+def _pre_normalize_input_types(workflow: dict[str, Any]) -> dict[str, Any]:
+    """Normalize input type aliases (File → data, etc.) before discriminator runs.
+
+    The discriminated union on ``Process.inputs`` routes based on the raw
+    ``type`` field, so alias normalization must happen before model validation.
+    """
+    inputs = workflow.get("inputs")
+    if inputs is None:
+        return workflow
+
+    def norm_entry(entry: Any) -> Any:
+        if isinstance(entry, dict) and "type" in entry:
+            return {**entry, "type": _normalize_input_type(entry["type"])}
+        if isinstance(entry, str):
+            return _normalize_input_type(entry)
+        return entry
+
+    new_inputs: dict[str, Any] | list[Any]
+    if isinstance(inputs, dict):
+        new_inputs = {k: norm_entry(v) for k, v in inputs.items()}
+    elif isinstance(inputs, list):
+        new_inputs = [norm_entry(v) for v in inputs]
+    else:
+        return workflow
+    return {**workflow, "inputs": new_inputs}
 
 
 def _pre_clean_steps(workflow: dict[str, Any]) -> dict[str, Any]:
@@ -431,6 +530,7 @@ def _pre_clean_step(step: dict[str, Any]) -> dict[str, Any]:
 def _normalize_steps(
     steps: list[WorkflowStep] | dict[str, WorkflowStep],
     inputs_offset: int = 0,
+    strict_structure: bool = False,
 ) -> list[NormalizedWorkflowStep]:
     if isinstance(steps, dict):
         step_list = []
@@ -463,26 +563,27 @@ def _normalize_steps(
             else:
                 step_list.append(step)
 
-    return [_normalize_step(s) for s in step_list]
+    return [_normalize_step(s, strict_structure=strict_structure) for s in step_list]
 
 
 _CONNECTED_VALUE = {"__class__": "ConnectedValue"}
 
 
-def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
+def _normalize_step(step: WorkflowStep, strict_structure: bool = False) -> NormalizedWorkflowStep:
     in_list = _normalize_step_inputs(step.in_)
     out_list = _normalize_step_outputs(step.out)
 
     run: NormalizedFormat2 | GalaxyUserToolStub | ImportReference | str | None = None
     if isinstance(step.run, GalaxyWorkflow):
-        run = _normalize_workflow(step.run)
+        run = normalized_format2(step.run, strict_structure=strict_structure)
     elif isinstance(step.run, dict):
         if "@import" in step.run:
             run = ImportReference.model_validate(step.run)
         elif step.run.get("class") == "GalaxyUserTool":
             run = GalaxyUserToolStub.model_validate(step.run)
         else:
-            run = normalized_format2(step.run)
+            # Inline runs may omit class; only the root document must declare it.
+            run = normalized_format2({"class": "GalaxyWorkflow", **step.run}, strict_structure=strict_structure)
     elif isinstance(step.run, str):
         run = step.run
 
@@ -508,13 +609,36 @@ def _normalize_step(step: WorkflowStep) -> NormalizedWorkflowStep:
         position=step.position,
         when=step.when,
         state=step.state,
-        tool_state=step.tool_state,
+        tool_state=json.loads(step.tool_state) if isinstance(step.tool_state, str) else step.tool_state,
         runtime_inputs=step.runtime_inputs,
         errors=step.errors,
         uuid=step.uuid,
         out=out_list,
+        post_job_actions=_normalize_post_job_actions(step.post_job_actions),
         run=run,
     )
+
+
+def _normalize_post_job_actions(
+    raw: dict[str, Any] | None,
+) -> dict[str, NativePostJobAction] | None:
+    """Validate raw PJA dict-of-dicts into typed records.
+
+    Galaxy emits explicit ``post_job_actions:`` as plain mapping; the schema
+    field is ``Any?`` to keep the raw model lax.  Coerce here so downstream
+    code (lint, conversion) sees the same typed shape as the native side.
+    """
+    if not raw:
+        return None
+    return {key: NativePostJobAction.model_validate(value) for key, value in raw.items()}
+
+
+def _link_source(link: dict[str, Any]) -> str:
+    """Return a ``$link`` source reference, stringifying numeric step ids."""
+    source = link["$link"]
+    if type(source) is int:
+        return str(source)
+    return source
 
 
 def _resolve_links(
@@ -531,8 +655,7 @@ def _resolve_links(
         connections = {}
 
     if isinstance(value, dict) and "$link" in value:
-        link_value = value["$link"]
-        connections.setdefault(key, []).append(link_value)
+        connections.setdefault(key, []).append(_link_source(value))
         return dict(_CONNECTED_VALUE), connections
 
     if isinstance(value, dict):
@@ -546,8 +669,7 @@ def _resolve_links(
         new_list: list[Any] = []
         for i, v in enumerate(value):
             if isinstance(v, dict) and "$link" in v:
-                link_value = v["$link"]
-                connections.setdefault(key, []).append(link_value)
+                connections.setdefault(key, []).append(_link_source(v))
                 new_list.append(None)
             else:
                 child_key = f"{key}_{i}"
@@ -559,7 +681,7 @@ def _resolve_links(
 
 
 def _normalize_step_inputs(
-    in_: list[WorkflowStepInput] | dict[str, WorkflowStepInput | str] | None,
+    in_: list[WorkflowStepInput] | dict[str, WorkflowStepInput | str | list[str]] | None,
 ) -> list[WorkflowStepInput]:
     if in_ is None:
         return []
@@ -570,6 +692,9 @@ def _normalize_step_inputs(
     for key, value in in_.items():
         if isinstance(value, str):
             # Shorthand: input_name: "source_step/output"
+            result.append(WorkflowStepInput(id=key, source=value))
+        elif isinstance(value, list):
+            # Shorthand (mapPredicate: source): bare list value is the multi-source.
             result.append(WorkflowStepInput(id=key, source=value))
         elif isinstance(value, WorkflowStepInput):
             if value.id is None:
@@ -627,7 +752,7 @@ _COMMENT_TYPE_MAP = {
 }
 
 
-Format2Comment: TypeAlias = Union[TextComment, MarkdownComment, FrameComment, FreehandComment]
+Format2Comment: TypeAlias = TextComment | MarkdownComment | FrameComment | FreehandComment
 
 
 def _normalize_comments(
@@ -668,7 +793,7 @@ def _resolve_graph(raw: dict[str, Any]) -> dict[str, Any]:
     main: dict[str, Any] | None = None
     for entry in graph:
         if not isinstance(entry, dict):
-            raise Exception("Malformed workflow content in $graph")
+            raise TypeError("Malformed workflow content in $graph")
         if "id" not in entry:
             raise Exception("No subworkflow ID found for entry in $graph.")
         graph_id = entry["id"]

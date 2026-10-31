@@ -25,19 +25,26 @@ import json
 import logging
 import os
 import uuid as uuid_mod
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Literal, overload, TypedDict
+from typing import Any, Literal, overload, TypedDict
 
 from pydantic import Field
 
 from .._comment_helpers import flatten_comment_data, unflatten_comment_data
-from .._labels import Labels, UNLABELED_INPUT_PREFIX, UNLABELED_STEP_PREFIX
+from .._labels import Labels, unlabeled_node_id
 from ..options import (
     ConversionOptions,
     default_url_resolver,
     MAX_EXPANSION_DEPTH,
 )
+from ..schema._input_parameter import (
+    input_parameter_class,
+    INPUT_TYPES,
+    input_types_declaring,
+)
 from ..schema.gxformat2 import (
+    BaseInputParameter,
     CreatorOrganization,
     CreatorPerson,
     FrameComment,
@@ -52,12 +59,15 @@ from ..schema.gxformat2 import (
 )
 from ..schema.gxformat2 import ToolShedRepository as Format2ToolShedRepository
 from ..schema.gxformat2 import (
+    WorkflowCollectionParameter,
+    WorkflowDataParameter,
     WorkflowInputParameter,
     WorkflowOutputParameter,
     WorkflowStepInput,
     WorkflowStepOutput,
     WorkflowStepType,
 )
+from ..schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWorkflow
 from ..schema.native import CreatorOrganization as NativeCreatorOrganization
 from ..schema.native import CreatorPerson as NativeCreatorPerson
 from ..schema.native import (
@@ -73,6 +83,7 @@ from ..schema.native import StepPosition as NativeStepPosition
 from ..schema.native import (
     ToolShedRepository,
 )
+from ..schema.native_strict import NativeGalaxyWorkflow as StrictNativeGalaxyWorkflow
 from ..yaml import ordered_load_path
 from ._format2 import (
     GalaxyUserToolStub,
@@ -91,13 +102,30 @@ from ._native import (
 log = logging.getLogger(__name__)
 
 
+def _validate_format2_output(result: NormalizedFormat2) -> None:
+    """Validate conversion output against the strict Format2 schema."""
+    StrictGalaxyWorkflow.model_validate(result.to_dict())
+
+
+def _validate_native_output(result: NormalizedNativeWorkflow) -> None:
+    """Validate conversion output against the strict native schema."""
+    StrictNativeGalaxyWorkflow.model_validate(result.to_dict())
+
+
 # --- Expanded model definitions ---
 
 
 class ExpandedWorkflowStep(NormalizedWorkflowStep):
-    """Format2 step with run fully resolved."""
+    """Format2 step with run fully resolved.
 
-    run: ExpandedFormat2 | None = Field(default=None, description="Always resolved or absent.")
+    Inline tool stubs (``GalaxyUserToolStub``) pass through expansion unchanged
+    -- they're already self-contained and have no references to resolve.
+    """
+
+    run: ExpandedFormat2 | GalaxyUserToolStub | None = Field(
+        default=None,
+        description="Resolved subworkflow, inline tool stub, or absent.",
+    )
 
 
 class ExpandedFormat2(NormalizedFormat2):
@@ -168,13 +196,13 @@ def _ensure_format2(resolved: dict[str, Any], options: ConversionOptions) -> Nor
     """Convert a fetched workflow dict to NormalizedFormat2, handling cross-format."""
     if resolved.get("a_galaxy_workflow") == "true":
         return to_format2(resolved, options=options, expand=False)
-    return normalized_format2(resolved)
+    return normalized_format2(resolved, strict_structure=options.strict_structure)
 
 
 def _ensure_native(resolved: dict[str, Any], options: ConversionOptions) -> NormalizedNativeWorkflow:
     """Convert a fetched workflow dict to NormalizedNativeWorkflow, handling cross-format."""
     if resolved.get("a_galaxy_workflow") == "true":
-        return normalized_native(resolved)
+        return normalized_native(resolved, strict_structure=options.strict_structure)
     return to_native(resolved, options=options, expand=False)
 
 
@@ -258,13 +286,16 @@ def ensure_format2(
     if isinstance(workflow, NormalizedFormat2):
         result = workflow
     elif isinstance(workflow, GalaxyWorkflow):
-        result = normalized_format2(workflow)
-    elif isinstance(workflow, (NativeGalaxyWorkflow, NormalizedNativeWorkflow)):
-        result = to_format2(workflow, options=options, expand=False)
-    elif isinstance(workflow, dict) and workflow.get("a_galaxy_workflow") == "true":
+        result = normalized_format2(workflow, strict_structure=options.strict_structure)
+    elif isinstance(workflow, (NativeGalaxyWorkflow, NormalizedNativeWorkflow)) or (
+        isinstance(workflow, dict) and workflow.get("a_galaxy_workflow") == "true"
+    ):
         result = to_format2(workflow, options=options, expand=False)
     else:
-        result = normalized_format2(workflow)
+        result = normalized_format2(workflow, strict_structure=options.strict_structure)
+
+    if options.strict_structure:
+        _validate_format2_output(result)
 
     if expand:
         return expanded_format2(result, options)
@@ -327,20 +358,23 @@ def ensure_native(
     if isinstance(workflow, NormalizedNativeWorkflow):
         result = workflow
     elif isinstance(workflow, NativeGalaxyWorkflow):
-        result = normalized_native(workflow)
+        result = normalized_native(workflow, strict_structure=options.strict_structure)
     elif isinstance(workflow, (NormalizedFormat2, GalaxyWorkflow)):
         result = to_native(workflow, options=options, expand=False)
     elif isinstance(workflow, dict) and workflow.get("a_galaxy_workflow") == "true":
-        result = normalized_native(workflow)
+        result = normalized_native(workflow, strict_structure=options.strict_structure)
     elif isinstance(workflow, dict) and workflow.get("class") == "GalaxyWorkflow":
         result = to_native(workflow, options=options, expand=False)
     else:
         # str or Path — could be either format, try native first
         loaded = ordered_load_path(str(workflow)) if isinstance(workflow, (str, Path)) else workflow
         if isinstance(loaded, dict) and loaded.get("a_galaxy_workflow") == "true":
-            result = normalized_native(loaded)
+            result = normalized_native(loaded, strict_structure=options.strict_structure)
         else:
             result = to_native(loaded, options=options, expand=False)
+
+    if options.strict_structure:
+        _validate_native_output(result)
 
     if expand:
         return expanded_native(result, options)
@@ -417,9 +451,12 @@ def to_format2(
     """
     options = options or ConversionOptions()
     if not isinstance(workflow, NormalizedNativeWorkflow):
-        workflow = normalized_native(workflow)
+        workflow = normalized_native(workflow, strict_structure=options.strict_structure)
 
     result = _build_format2_workflow(workflow, options)
+
+    if options.strict_structure:
+        _validate_format2_output(result)
 
     if expand:
         return expanded_format2(result, options)
@@ -435,15 +472,10 @@ def _build_format2_workflow(
     # Build label map for source references
     label_map: dict[str, str] = {}
     for key, step in wf.steps.items():
-        if step.label is not None:
-            label_map[str(key)] = step.label
-        elif step.type_ in INPUT_STEP_TYPES:
-            label_map[str(key)] = f"{UNLABELED_INPUT_PREFIX}{step.id}"
-        else:
-            label_map[str(key)] = f"{UNLABELED_STEP_PREFIX}{step.id}"
+        label_map[key] = unlabeled_node_id(step.label, step.id, step.type_ in INPUT_STEP_TYPES)
 
     # Separate inputs from non-input steps
-    input_params: list[WorkflowInputParameter] = []
+    input_params: list[BaseInputParameter] = []
     fmt2_steps: list[NormalizedWorkflowStep] = []
     labels = Labels()
 
@@ -491,8 +523,22 @@ def _build_format2_workflow(
     )
 
 
-def _build_input_param(step: NormalizedNativeStep) -> WorkflowInputParameter:
-    step_id = step.label if step.label is not None else f"{UNLABELED_INPUT_PREFIX}{step.id}"
+_REGEX_VALIDATOR_TYPES = input_types_declaring("validators")
+
+
+def _native_text_validator_to_format2(validator: dict[str, Any]) -> dict[str, Any] | None:
+    if validator.get("type") != "regex":
+        return None
+    format2_validator = {"type": "regex", "expression": validator["expression"]}
+    if validator.get("message") is not None:
+        format2_validator["message"] = validator["message"]
+    if validator.get("negate"):
+        format2_validator["negate"] = True
+    return format2_validator
+
+
+def _build_input_param(step: NormalizedNativeStep) -> BaseInputParameter:
+    step_id = unlabeled_node_id(step.label, step.id, is_input=True)
     tool_state = step.tool_state
     input_type = native_input_to_format2_type({"type": step.type_}, tool_state)
 
@@ -516,12 +562,30 @@ def _build_input_param(step: NormalizedNativeStep) -> WorkflowInputParameter:
             else:
                 kwargs[key] = tool_state[key]
 
+    if input_type in ("int", "float"):
+        for validator in tool_state.get("validators") or []:
+            if validator.get("type") == "in_range" and not validator.get("negate", False):
+                for bound in ("min", "max"):
+                    if validator.get(bound) is not None:
+                        kwargs[bound] = validator[bound]
+                break
+    elif input_type == ["string"] or (isinstance(input_type, str) and input_type in _REGEX_VALIDATOR_TYPES):
+        text_validators = [_native_text_validator_to_format2(v) for v in tool_state.get("validators") or []]
+        text_validators = [v for v in text_validators if v is not None]
+        if text_validators:
+            kwargs["validators"] = text_validators
+
     if step.annotation:
         kwargs["doc"] = step.annotation
     if step.position:
         kwargs["position"] = _convert_position(step.position)
 
-    return WorkflowInputParameter(**kwargs)
+    # Use the specific discriminated type when possible; fall back to
+    # WorkflowInputParameter for list types (multiple inputs) since the
+    # specific classes only accept scalar Literal type_ values.
+    if isinstance(input_type, list):
+        return WorkflowInputParameter(**kwargs)
+    return input_parameter_class(input_type)(**kwargs)
 
 
 def _build_format2_step(
@@ -554,11 +618,11 @@ def _build_tool_format2_step(
         return _build_user_tool_format2_step(step, label_map, options.compact)
 
     in_list = _build_format2_step_inputs(step, label_map)
-    out_list = _build_format2_step_outputs(step)
+    out_list, remaining_pjas = _build_format2_step_outputs(step)
 
     # Handle tool state
     state: dict[str, Any] | None = None
-    tool_state: str | dict[str, Any] | None = None
+    tool_state: dict[str, Any] | None = None
 
     converted_state = None
     if options.state_encode_to_format2 is not None:
@@ -571,10 +635,7 @@ def _build_tool_format2_step(
     if converted_state is not None:
         state = converted_state
     else:
-        ts = dict(step.tool_state)
-        ts.pop("__page__", None)
-        ts.pop("__rerun_remap_job_id__", None)
-        tool_state = ts
+        tool_state = _passthrough_tool_state(step)
 
     raw_label = step.label or label_map.get(str(step.id))
     step_id = raw_label or str(step.id)
@@ -591,6 +652,7 @@ def _build_tool_format2_step(
         tool_state=tool_state,
         in_=in_list,
         out=out_list,
+        post_job_actions=remaining_pjas,
         position=_convert_position(step.position) if not options.compact else None,
         when=step.when,
         uuid=step.uuid,
@@ -598,13 +660,22 @@ def _build_tool_format2_step(
     )
 
 
+def _passthrough_tool_state(step: NormalizedNativeStep) -> dict[str, Any]:
+    ts = dict(step.tool_state)
+    ts.pop("__page__", None)
+    ts.pop("__rerun_remap_job_id__", None)
+    return ts
+
+
+# state_encode_to_format2 resolves tools by tool_id, which a user-defined tool
+# step doesn't have, so its tool_state always passes through verbatim.
 def _build_user_tool_format2_step(
     step: NormalizedNativeStep,
     label_map: dict[str, str],
     compact: bool,
 ) -> NormalizedWorkflowStep:
     in_list = _build_format2_step_inputs(step, label_map)
-    out_list = _build_format2_step_outputs(step)
+    out_list, remaining_pjas = _build_format2_step_outputs(step)
     raw_label = step.label or label_map.get(str(step.id))
     step_id = raw_label or str(step.id)
 
@@ -613,9 +684,14 @@ def _build_user_tool_format2_step(
         label=raw_label,
         doc=step.annotation or None,
         run=GalaxyUserToolStub.model_validate(step.tool_representation) if step.tool_representation else None,
+        tool_state=_passthrough_tool_state(step) or None,
         in_=in_list,
         out=out_list,
+        post_job_actions=remaining_pjas,
         position=_convert_position(step.position) if not compact else None,
+        when=step.when,
+        uuid=step.uuid,
+        errors=step.errors,
     )
 
 
@@ -625,7 +701,7 @@ def _build_subworkflow_format2_step(
     options: ConversionOptions,
 ) -> NormalizedWorkflowStep:
     in_list = _build_format2_step_inputs(step, label_map)
-    out_list = _build_format2_step_outputs(step)
+    out_list, remaining_pjas = _build_format2_step_outputs(step)
 
     run: NormalizedFormat2 | str | None = None
     content_source = step.content_source
@@ -647,6 +723,7 @@ def _build_subworkflow_format2_step(
         run=run,
         in_=in_list,
         out=out_list,
+        post_job_actions=remaining_pjas,
         position=_convert_position(step.position) if not options.compact else None,
         when=step.when,
         uuid=step.uuid,
@@ -680,7 +757,7 @@ def _build_pick_value_format2_step(
     options: ConversionOptions,
 ) -> NormalizedWorkflowStep:
     in_list = _build_format2_step_inputs(step, label_map)
-    out_list = _build_format2_step_outputs(step)
+    out_list, remaining_pjas = _build_format2_step_outputs(step)
 
     state: dict[str, Any] | None = None
     tool_state = step.tool_state
@@ -699,6 +776,7 @@ def _build_pick_value_format2_step(
         state=state,
         in_=in_list,
         out=out_list,
+        post_job_actions=remaining_pjas,
         position=_convert_position(step.position) if not compact else None,
     )
 
@@ -748,50 +826,61 @@ def _build_format2_step_inputs(
     return in_list
 
 
-def _build_format2_step_outputs(step: NormalizedNativeStep) -> list[WorkflowStepOutput]:
-    """Convert native post_job_actions to Format2 step outputs."""
+def _build_format2_step_outputs(
+    step: NormalizedNativeStep,
+) -> tuple[list[WorkflowStepOutput], dict[str, NativePostJobAction] | None]:
+    """Convert native post_job_actions to Format2 step outputs.
+
+    Returns ``(out_list, remaining_pjas)``: PJAs with a known ``out:``
+    shorthand are folded into output entries; everything else (including
+    actions like ``ValidateOutputsAction`` that have no output_name) is
+    returned as-is for the caller to surface on the Format2 step's
+    ``post_job_actions:`` field.
+    """
     if not step.post_job_actions:
-        return []
+        return [], None
 
     outputs_by_name: dict[str, dict[str, Any]] = {}
-    remaining_pjas: dict[str, Any] = {}
+    remaining_pjas: dict[str, NativePostJobAction] = {}
 
     for pja_key, pja in step.post_job_actions.items():
         action_type = pja.action_type
         output_name = pja.output_name
         action_args = pja.action_arguments or {}
 
-        if output_name not in outputs_by_name:
-            outputs_by_name[output_name] = {}
-        output_dict = outputs_by_name[output_name]
-
         handled = True
-        if action_type == "RenameDatasetAction":
-            output_dict["rename"] = action_args["newname"]
-        elif action_type == "HideDatasetAction":
-            output_dict["hide"] = True
-        elif action_type == "DeleteIntermediatesAction":
-            output_dict["delete_intermediate_datasets"] = True
-        elif action_type == "ChangeDatatypeAction":
-            output_dict["change_datatype"] = action_args["newtype"]
-        elif action_type == "TagDatasetAction":
-            output_dict["add_tags"] = action_args["tags"].split(",")
-        elif action_type == "RemoveTagDatasetAction":
-            output_dict["remove_tags"] = action_args["tags"].split(",")
-        elif action_type == "ColumnSetAction":
-            if action_args:
-                output_dict["set_columns"] = action_args
+        if output_name is not None:
+            output_dict = outputs_by_name.setdefault(output_name, {})
+            if action_type == "RenameDatasetAction":
+                output_dict["rename"] = action_args["newname"]
+            elif action_type == "HideDatasetAction":
+                output_dict["hide"] = True
+            elif action_type == "DeleteIntermediatesAction":
+                output_dict["delete_intermediate_datasets"] = True
+            elif action_type == "ChangeDatatypeAction":
+                output_dict["change_datatype"] = action_args["newtype"]
+            elif action_type == "TagDatasetAction":
+                output_dict["add_tags"] = action_args["tags"].split(",")
+            elif action_type == "RemoveTagDatasetAction":
+                output_dict["remove_tags"] = action_args["tags"].split(",")
+            elif action_type == "ColumnSetAction":
+                if action_args:
+                    output_dict["set_columns"] = action_args
+            else:
+                handled = False
+                if not output_dict:
+                    del outputs_by_name[output_name]
         else:
             handled = False
 
         if not handled:
-            remaining_pjas[pja_key] = pja.model_dump(by_alias=True, exclude_none=True)
+            remaining_pjas[pja_key] = pja
 
     result: list[WorkflowStepOutput] = []
     for name, props in outputs_by_name.items():
         result.append(WorkflowStepOutput(id=name, **props))
 
-    return result
+    return result, (remaining_pjas or None)
 
 
 def _to_source(output_name: str, label_map: dict[str, str], step_id: int) -> str:
@@ -817,7 +906,7 @@ def _replace_anonymous_output_references(
     for step in fmt2_steps:
         label = step.label or step.id
         if isinstance(step.run, NormalizedFormat2):
-            runs_by_label[str(label)] = step.run
+            runs_by_label[label] = step.run
 
     for out in output_params:
         source = out.outputSource
@@ -845,7 +934,7 @@ def _replace_anonymous_output_references(
                     break
 
 
-_CREATOR_CLASS_MAP: dict[str, type[CreatorPerson] | type[CreatorOrganization]] = {
+_CREATOR_CLASS_MAP: dict[str, type[CreatorPerson | CreatorOrganization]] = {
     "Person": CreatorPerson,
     "Organization": CreatorOrganization,
 }
@@ -864,7 +953,7 @@ def _convert_creators(
     return result
 
 
-_COMMENT_TYPE_MAP: dict[str, type[TextComment] | type[MarkdownComment] | type[FrameComment] | type[FreehandComment]] = {
+_COMMENT_TYPE_MAP: dict[str, type[TextComment | MarkdownComment | FrameComment | FreehandComment]] = {
     "text": TextComment,
     "markdown": MarkdownComment,
     "frame": FrameComment,
@@ -990,26 +1079,30 @@ def to_native(
 
     # Handle $graph + deduplicate_subworkflows before normalization
     deduplicated_subworkflows: dict[str, NormalizedNativeWorkflow] | None = None
-    if isinstance(workflow, dict) and "$graph" in workflow and "class" not in workflow:
-        if options.deduplicate_subworkflows:
-            deduplicated_subworkflows = {}
-            graph = workflow["$graph"]
-            main_dict = None
-            for entry in graph:
-                graph_id = entry.get("id")
-                if graph_id == "main":
-                    main_dict = entry
-                elif graph_id:
-                    sub_wf = normalized_format2(entry)
-                    sub_ctx = _ConversionContext(options)
-                    _register_labels(sub_wf, sub_ctx)
-                    deduplicated_subworkflows[graph_id] = _build_native_workflow(sub_wf, sub_ctx)
-            if main_dict is None:
-                raise Exception("$graph has no 'main' workflow")
-            workflow = main_dict
+    if (
+        isinstance(workflow, dict)
+        and "$graph" in workflow
+        and "class" not in workflow
+        and options.deduplicate_subworkflows
+    ):
+        deduplicated_subworkflows = {}
+        graph = workflow["$graph"]
+        main_dict = None
+        for entry in graph:
+            graph_id = entry.get("id")
+            if graph_id == "main":
+                main_dict = entry
+            elif graph_id:
+                sub_wf = normalized_format2(entry, strict_structure=options.strict_structure)
+                sub_ctx = _ConversionContext(options)
+                _register_labels(sub_wf, sub_ctx)
+                deduplicated_subworkflows[graph_id] = _build_native_workflow(sub_wf, sub_ctx)
+        if main_dict is None:
+            raise Exception("$graph has no 'main' workflow")
+        workflow = main_dict
 
     if not isinstance(workflow, NormalizedFormat2):
-        workflow = normalized_format2(workflow)
+        workflow = normalized_format2(workflow, strict_structure=options.strict_structure)
 
     ctx = _ConversionContext(options)
     _register_labels(workflow, ctx)
@@ -1017,6 +1110,9 @@ def to_native(
     result = _build_native_workflow(workflow, ctx)
     if deduplicated_subworkflows is not None:
         result = result.model_copy(update={"subworkflows": deduplicated_subworkflows})
+
+    if options.strict_structure:
+        _validate_native_output(result)
 
     if expand:
         return expanded_native(result, options)
@@ -1049,7 +1145,7 @@ class _ConversionContext:
         return int(label_or_id)
 
     def step_output(self, value: str) -> tuple[int, str]:
-        label_or_id, output_name = resolve_source_reference(str(value), self.labels)
+        label_or_id, output_name = resolve_source_reference(value, self.labels)
         return self.step_id(label_or_id), output_name
 
     def child_context(self) -> _ConversionContext:
@@ -1093,14 +1189,41 @@ def _build_native_workflow(
     )
 
 
+_CLASS_STEP_TYPES: dict[type[BaseInputParameter], NativeStepType] = {
+    WorkflowDataParameter: NativeStepType.data_input,
+    WorkflowCollectionParameter: NativeStepType.data_collection_input,
+}
+_INPUT_TYPE_STEP_TYPES: dict[str, NativeStepType] = {
+    t: _CLASS_STEP_TYPES.get(input_parameter_class(t), NativeStepType.parameter_input) for t in INPUT_TYPES
+}
+
+
+def _input_type_str(input_type: Any) -> str:
+    if input_type is not None and hasattr(input_type, "value"):
+        return input_type.value
+    return str(input_type) if input_type else "data"
+
+
+def format2_input_step_type(inp: BaseInputParameter) -> NativeStepType | None:
+    """Native step type a Format2 input converts to, or None if unsupported."""
+    # type_ lives on concrete subclasses, not BaseInputParameter
+    input_type = getattr(inp, "type_", None)
+    if isinstance(input_type, list):
+        if len(input_type) != 1:
+            return None
+        input_type = input_type[0]
+    return _INPUT_TYPE_STEP_TYPES.get(_input_type_str(input_type))
+
+
 def _build_input_step(
-    inp: WorkflowInputParameter,
+    inp: BaseInputParameter,
     order_index: int,
     ctx: _ConversionContext,
 ) -> NormalizedNativeStep:
     raw_label = inp.id or f"Input {order_index}"
-    label = None if Labels.is_unlabeled(raw_label) else raw_label
-    input_type = inp.type_
+    label = native_input_label(inp, order_index)
+    # type_ lives on concrete subclasses, not BaseInputParameter
+    input_type = getattr(inp, "type_", None)
     if isinstance(input_type, list):
         if len(input_type) != 1:
             raise Exception("Only simple arrays of workflow inputs are currently supported")
@@ -1109,18 +1232,9 @@ def _build_input_step(
     else:
         multiple = False
 
-    type_str = (
-        input_type.value
-        if input_type is not None and hasattr(input_type, "value")
-        else str(input_type) if input_type else "data"
-    )
-    if type_str in ("File", "data", "data_input"):
-        step_type = NativeStepType.data_input
-    elif type_str in ("collection", "data_collection", "data_collection_input"):
-        step_type = NativeStepType.data_collection_input
-    elif type_str in ("text", "string", "integer", "int", "float", "color", "boolean"):
-        step_type = NativeStepType.parameter_input
-    else:
+    type_str = _input_type_str(input_type)
+    step_type = format2_input_step_type(inp)
+    if step_type is None:
         raise Exception(f"Unknown input type [{type_str}] encountered.")
 
     tool_state: dict[str, Any] = {"name": raw_label}
@@ -1135,18 +1249,43 @@ def _build_input_step(
         tool_state["multiple"] = True
     if inp.optional is not None:
         tool_state["optional"] = inp.optional
-    if inp.format:
-        tool_state["format"] = inp.format
-    if inp.collection_type:
-        tool_state["collection_type"] = inp.collection_type
+    # getattr because inp is typed as BaseInputParameter but may be any subclass:
+    # format lives on BaseDataParameter, collection_type on WorkflowCollectionParameter
+    # and WorkflowInputParameter (catch-all). Non-data types (integer, text, etc.) lack these.
+    fmt = getattr(inp, "format", None)
+    if fmt:
+        tool_state["format"] = fmt
+    collection_type = getattr(inp, "collection_type", None)
+    if collection_type:
+        tool_state["collection_type"] = collection_type
     if inp.default is not None:
         tool_state["default"] = inp.default
 
-    # Copy extra fields from input (restrictions, suggestions, etc.)
-    if inp.model_extra:
-        for key in ("restrictions", "suggestions", "restrictOnConnections", "fields", "column_definitions"):
-            if key in inp.model_extra:
-                tool_state[key] = inp.model_extra[key]
+    if step_type == NativeStepType.parameter_input and type_str in ("integer", "int", "float"):
+        minimum = getattr(inp, "min", None)
+        maximum = getattr(inp, "max", None)
+        if minimum is not None or maximum is not None:
+            tool_state["validators"] = [{"type": "in_range", "min": minimum, "max": maximum, "negate": False}]
+    elif step_type == NativeStepType.parameter_input and type_str in _REGEX_VALIDATOR_TYPES:
+        text_validators = getattr(inp, "validators", None)
+        if text_validators:
+            tool_state["validators"] = [
+                {"negate": False, **v.model_dump(by_alias=True, exclude_none=True)} for v in text_validators
+            ]
+
+    # Copy text-parameter / sample-sheet / record fields from the typed model.
+    for key in ("restrictions", "suggestions", "restrictOnConnections", "column_definitions", "fields"):
+        value = getattr(inp, key, None)
+        if value is None:
+            continue
+        if isinstance(value, list):
+            tool_state[key] = [
+                v.model_dump(by_alias=True, exclude_none=True) if hasattr(v, "model_dump") else v for v in value
+            ]
+        elif hasattr(value, "model_dump"):
+            tool_state[key] = value.model_dump(by_alias=True, exclude_none=True)
+        else:
+            tool_state[key] = value
 
     position = _default_position(inp.position, order_index)
 
@@ -1262,14 +1401,14 @@ def _build_tool_step(
     input_connections = _build_input_connections(connect, ctx, is_subworkflow=False)
 
     # Build post job actions
-    post_job_actions = _build_post_job_actions(step.out)
+    post_job_actions = _build_post_job_actions(step.out, step.post_job_actions)
 
     position = _default_position(step.position, order_index)
 
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.tool,
-        label=_step_label(step),
+        label=native_step_label(step),
         name=tool_id or (tool_representation or {}).get("name", "User Defined Tool"),
         annotation=step.doc or "",
         tool_id=tool_id,
@@ -1283,6 +1422,7 @@ def _build_tool_step(
         when=step.when,
         uuid=step.uuid,
         errors=step.errors,
+        in_=_extract_step_in_defaults(step.in_),
     )
 
 
@@ -1306,7 +1446,7 @@ def _build_subworkflow_step(
     elif isinstance(step.run, dict):
         # Dict subworkflow -- normalize and convert
         subworkflow_child_ctx = ctx.child_context()
-        sub_fmt2 = normalized_format2(step.run)
+        sub_fmt2 = normalized_format2(step.run, strict_structure=ctx.options.strict_structure)
         _register_subworkflow_labels(sub_fmt2, subworkflow_child_ctx)
         subworkflow = _build_native_workflow(sub_fmt2, subworkflow_child_ctx)
 
@@ -1315,13 +1455,13 @@ def _build_subworkflow_step(
     input_connections = _build_input_connections(
         connect, ctx, is_subworkflow=is_subworkflow, subworkflow_ctx=subworkflow_child_ctx
     )
-    post_job_actions = _build_post_job_actions(step.out)
+    post_job_actions = _build_post_job_actions(step.out, step.post_job_actions)
     position = _default_position(step.position, order_index)
 
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.subworkflow,
-        label=_step_label(step),
+        label=native_step_label(step),
         annotation=step.doc or "",
         tool_state={},
         subworkflow=subworkflow,
@@ -1331,6 +1471,7 @@ def _build_subworkflow_step(
         position=position,
         when=step.when,
         uuid=step.uuid,
+        in_=_extract_step_in_defaults(step.in_),
     )
 
 
@@ -1347,7 +1488,7 @@ def _build_pause_step(
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.pause,
-        label=_step_label(step),
+        label=native_step_label(step),
         name=name,
         annotation=step.doc or "",
         tool_state={"name": name},
@@ -1374,13 +1515,13 @@ def _build_pick_value_step(
     if num_inputs > 0:
         tool_state["num_inputs"] = max(2, num_inputs)
 
-    post_job_actions = _build_post_job_actions(step.out)
+    post_job_actions = _build_post_job_actions(step.out, step.post_job_actions)
     position = _default_position(step.position, order_index)
 
     return NormalizedNativeStep(
         id=order_index,
         type_=NativeStepType.pick_value,
-        label=_step_label(step),
+        label=native_step_label(step),
         name=name,
         annotation=step.doc or "",
         tool_state=tool_state,
@@ -1410,6 +1551,27 @@ def _extract_connections(step: NormalizedWorkflowStep) -> dict[str, list]:
             else:
                 connect[input_id] = [source]
     return connect
+
+
+def _extract_step_in_defaults(step_in_: list[WorkflowStepInput]) -> dict[str, Any] | None:
+    """Collect ``in: {param: {default: ...}}`` entries for native ``step["in"]``.
+
+    Galaxy reads ``step_dict["in"][name]["default"]`` to seed
+    ``WorkflowStepInput.default_value`` (see
+    ``galaxy.managers.workflows`` ``__module_from_dict``). Format2 surfaces
+    these as ``WorkflowStepInput.default`` on the normalized step; keep them
+    on the native side so tool-state defaults and File-class defaults are
+    not lost.
+    """
+    in_defaults: dict[str, Any] = {}
+    for step_input in step_in_:
+        input_id = step_input.id
+        if input_id is None:
+            continue
+        if step_input.default is None:
+            continue
+        in_defaults[input_id] = {"default": step_input.default}
+    return in_defaults or None
 
 
 def _build_input_connections(
@@ -1445,6 +1607,7 @@ def _build_input_connections(
 
 def _build_post_job_actions(
     outputs: list[WorkflowStepOutput],
+    explicit: dict[str, NativePostJobAction] | None = None,
 ) -> dict[str, NativePostJobAction]:
     post_job_actions: dict[str, NativePostJobAction] = {}
     for output in outputs:
@@ -1463,6 +1626,10 @@ def _build_post_job_actions(
                     output_name=output_name,
                     action_arguments=action_dict["arguments"](action_value),
                 )
+    if explicit:
+        # Explicit step.post_job_actions wins over out:-shorthand-derived entries
+        # for keys that collide; otherwise merged.
+        post_job_actions.update(explicit)
     return post_job_actions
 
 
@@ -1553,12 +1720,22 @@ def _register_subworkflow_labels(sub_wf: NormalizedFormat2, child_ctx: _Conversi
             child_ctx.labels[sub_label] = len(sub_wf.inputs) + j
 
 
-def _step_label(step: NormalizedWorkflowStep) -> str | None:
-    """Extract the user label from a Format2 step.
+def native_input_label(inp: BaseInputParameter, order_index: int) -> str | None:
+    """Native step label for a Format2 input at ``order_index``.
 
-    For dict-keyed steps, the key is stored in ``id`` and ``label`` is None.
-    Non-numeric ids are user labels; numeric ids are auto-assigned indices.
+    Inputs are labeled by ``id``, falling back to ``Input <order_index>``.
     Sentinel labels (``_unlabeled_*``) are cleared to None.
+    """
+    raw_label = inp.id or f"Input {order_index}"
+    return None if Labels.is_unlabeled(raw_label) else raw_label
+
+
+def native_step_label(step: NormalizedWorkflowStep) -> str | None:
+    """Native step label for a Format2 step.
+
+    An explicit ``label`` wins (normalization also stores dict keys there);
+    otherwise a non-numeric ``id`` is a user label and numeric ids are
+    auto-assigned indices. Sentinel labels (``_unlabeled_*``) are cleared to None.
     """
     if step.label is not None:
         if Labels.is_unlabeled(step.label):
@@ -1592,7 +1769,7 @@ def _default_position(position: Any, order_index: int) -> NativeStepPosition:
     return NativeStepPosition(left=10 * order_index, top=10 * order_index)
 
 
-_NATIVE_CREATOR_MAP: dict[str, type[NativeCreatorPerson] | type[NativeCreatorOrganization]] = {
+_NATIVE_CREATOR_MAP: dict[str, type[NativeCreatorPerson | NativeCreatorOrganization]] = {
     "Person": NativeCreatorPerson,
     "Organization": NativeCreatorOrganization,
 }
@@ -1649,7 +1826,7 @@ def expanded_native(
     """
     options = options or ConversionOptions()
     if not isinstance(workflow, NormalizedNativeWorkflow):
-        workflow = normalized_native(workflow)
+        workflow = normalized_native(workflow, strict_structure=options.strict_structure)
     ctx = _ExpansionContext(options)
     return _expand_native(workflow, ctx)
 
@@ -1657,8 +1834,10 @@ def expanded_native(
 def _expand_format2(wf: NormalizedFormat2, ctx: _ExpansionContext) -> ExpandedFormat2:
     expanded_steps: list[ExpandedWorkflowStep] = []
     for step in wf.steps:
-        expanded_run: ExpandedFormat2 | None = None
-        if isinstance(step.run, NormalizedFormat2):
+        expanded_run: ExpandedFormat2 | GalaxyUserToolStub | None = None
+        if isinstance(step.run, GalaxyUserToolStub):
+            expanded_run = step.run
+        elif isinstance(step.run, NormalizedFormat2):
             expanded_run = _expand_format2(step.run, ctx)
         elif isinstance(step.run, str):
             resolved = _resolve_run_reference(step.run, ctx)
@@ -1682,8 +1861,8 @@ def _expand_format2(wf: NormalizedFormat2, ctx: _ExpansionContext) -> ExpandedFo
         step_data = step.model_dump(by_alias=True, exclude={"run"})
         expanded_steps.append(ExpandedWorkflowStep(**step_data, run=expanded_run))
 
-    wf_data = wf.model_dump(by_alias=True, exclude={"steps"})
-    return ExpandedFormat2(**wf_data, steps=expanded_steps)
+    wf_data = wf.model_dump(by_alias=True, exclude={"steps", "inputs"})
+    return ExpandedFormat2(**wf_data, inputs=wf.inputs, steps=expanded_steps)
 
 
 def _expand_native(wf: NormalizedNativeWorkflow, ctx: _ExpansionContext) -> ExpandedNativeWorkflow:

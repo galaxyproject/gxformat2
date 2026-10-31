@@ -36,13 +36,21 @@ $graph:
     - File
     - data
     - collection
+    - color
+    - directory_uri
   doc:
-    - "Extends primitive types with the native Galaxy concepts such datasets and collections."
-    - "integer: an alias for int type - matches syntax used by Galaxy tools"
-    - "text: an alias for string type - matches syntax used by Galaxy tools"
-    - "File: an alias for data - there are subtle differences between a plain file, the CWL concept of 'File', and the Galaxy concept of a dataset - this may have subtly difference semantics in the future"
-    - "data: a Galaxy dataset"
-    - "collection: a Galaxy dataset collection"
+    - "Extends primitive types with the native Galaxy concepts such as datasets and collections."
+    - "Normalized gxformat2 workflow input declaration spellings are ``data``, ``collection``, ``string``, ``int``, ``float``, ``boolean``, ``color``, and ``directory_uri``. Other spellings are accepted as compatibility aliases on import but normalized gxformat2 output emits the normalized spellings."
+    - "data: one Galaxy dataset input. Native Galaxy ``data_input`` converts to this spelling."
+    - "File: accepted alias for ``data``, but normalized gxformat2 output emits ``data``. Note: workflow **test job** YAML uses ``type: File`` to mean 'stage this file as test input data', which is a separate concept from workflow input declaration."
+    - "collection: one Galaxy dataset collection input. Native Galaxy ``data_collection_input`` converts to this spelling."
+    - "string: normalized gxformat2 spelling for native Galaxy text workflow parameters."
+    - "text: accepted alias for ``string`` because native Galaxy parameter state and Galaxy tool XML terminology use ``text``."
+    - "int: normalized gxformat2 spelling for native Galaxy integer workflow parameters."
+    - "integer: accepted alias for ``int`` because native Galaxy parameter state and Galaxy tool XML terminology use ``integer``."
+    - "color: native Galaxy color workflow parameter; the value is a color string such as ``#ff0000``."
+    - "directory_uri: native Galaxy directory URI workflow parameter; the value is a URI string such as ``s3://bucket/path/``."
+
 
 - name: WorkflowStepType
   type: enum
@@ -60,12 +68,317 @@ $graph:
     - "pause: Pause computation on this branch of workflow until user allows it to continue."
     - "pick_value: Select the first non-null value from multiple inputs. Used to merge branches of conditional or optional workflow paths."
 
-- name: WorkflowInputParameter
+- name: BaseInputParameter
   type: record
   extends:
     - cwl:InputParameter
     - gxformat2common:HasStepPosition
+  fields:
+    - name: optional
+      type:
+      - boolean
+      - "null"
+      default: false
+      doc: |
+        Controls whether Galaxy allows invocation of the workflow without a
+        user-supplied value for this input. If ``true``, the input may be omitted
+        at invocation time. ``optional`` and ``default`` are independent: a
+        required input (``optional: false``) may still declare a ``default``,
+        and an optional input may have no ``default``. ``default`` supplies a
+        value when the invocation input is missing or ``null``; ``optional``
+        controls whether the missing case is even permitted.
+
+- name: BaseDataParameter
+  type: record
+  extends: [BaseInputParameter]
+  fields:
+    - name: format
+      doc: |
+        Specify datatype extensions for valid input datasets.
+      type:
+        - "null"
+        - type: array
+          items: string
+
+- name: WorkflowDataParameter
+  type: record
+  extends:
+    - BaseDataParameter
   docParent: "#GalaxyWorkflow"
+  doc: |
+    A data input parameter for a Galaxy workflow. Represents one Galaxy dataset.
+    Normalized gxformat2 output uses ``type: data``. ``type: File`` is accepted as
+    an alias, but should not be confused with workflow test job syntax where
+    ``type: File`` means stage a file as test input data.
+  fields:
+    - name: type
+      type:
+        - string
+        - "null"
+      default: data
+      pydantic:type: 'Literal["data", "File"] | None'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Specify valid types of data that may be assigned to this parameter.
+
+- name: WorkflowCollectionParameter
+  type: record
+  extends:
+    - BaseDataParameter
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A collection input parameter for a Galaxy workflow - represents a dataset collection.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["collection"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``collection``.
+    - name: collection_type
+      doc: |
+        Collection type (defaults to `list` if `type` is `collection`). Nested
+        collection types are separated with colons, e.g. `list:list:paired`.
+      type:
+        - "null"
+        - string
+      jsonldPredicate:
+        _id: "gxformat2:collection_type"
+        noLinkCheck: true
+    - name: column_definitions
+      doc: |
+        Column schema for sample-sheet collection inputs. Only meaningful when
+        `collection_type` begins with `sample_sheet` - cross-field validation is
+        applied in the pydantic post-validator.
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:SampleSheetColumnDefinition
+      jsonldPredicate: "gxformat2:column_definitions"
+    - name: fields
+      doc: |
+        Field schema for `record` collection inputs. Only meaningful when
+        `collection_type` contains `record` (e.g. `record`, `list:record`,
+        `sample_sheet:record`).
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:RecordFieldDefinition
+      jsonldPredicate:
+        _id: "sld:fields"
+        mapSubject: name
+        mapPredicate: type
+
+- name: MinMax
+  type: record
+  fields:
+    - name: min
+      type:
+        - int
+        - float
+        - "null"
+      jsonldPredicate:
+        _id: "gxformat2:MinMax/min"
+        noLinkCheck: true
+      doc: |
+        Minimum allowed value (inclusive).
+    - name: max
+      type:
+        - int
+        - float
+        - "null"
+      jsonldPredicate:
+        _id: "gxformat2:MinMax/max"
+        noLinkCheck: true
+      doc: |
+        Maximum allowed value (inclusive).
+
+- name: WorkflowIntegerParameter
+  type: record
+  extends:
+    - BaseInputParameter
+    - MinMax
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A scalar integer workflow parameter. Normalized gxformat2 output uses
+    ``type: int``. ``type: integer`` is accepted for compatibility with native
+    Galaxy parameter state and Galaxy tool XML terminology.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["integer", "int"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``integer`` or ``int``.
+
+- name: WorkflowFloatParameter
+  type: record
+  extends:
+    - BaseInputParameter
+    - MinMax
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A float input parameter for a Galaxy workflow.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["float"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``float``.
+
+- name: WorkflowTextParameter
+  type: record
+  extends:
+    - BaseInputParameter
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A scalar text workflow parameter. Normalized gxformat2 output uses
+    ``type: string``. ``type: text`` is accepted for compatibility with native
+    Galaxy parameter state and Galaxy tool XML terminology.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["text", "string"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``text`` or ``string``.
+    - name: restrictions
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - gxformat2common:WorkflowTextOption
+      jsonldPredicate: "gxformat2common:restrictions"
+      doc: |
+        Closed set of permitted values. When present, Galaxy renders the
+        runtime input as a select. Items may be plain strings or
+        `{value, label}` records.
+    - name: suggestions
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - gxformat2common:WorkflowTextOption
+      jsonldPredicate: "gxformat2common:suggestions"
+      doc: |
+        Open suggestion list. Galaxy still treats the input as text but
+        offers these as suggestions.
+    - name: restrictOnConnections
+      type: boolean?
+      jsonldPredicate: "gxformat2:restrictOnConnections"
+      doc: |
+        Ask Galaxy to derive valid choices from connected tool or
+        subworkflow select inputs at runtime. Falls back to free text when
+        derivation fails.
+    - name: validators
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:WorkflowTextValidator
+      jsonldPredicate: "gxformat2common:validators"
+      doc: |
+        Validators applied to values supplied for this input.
+
+- name: WorkflowBooleanParameter
+  type: record
+  extends:
+    - BaseInputParameter
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A boolean input parameter for a Galaxy workflow.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["boolean"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``boolean``.
+
+- name: WorkflowColorParameter
+  type: record
+  extends:
+    - BaseInputParameter
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A color input parameter for a Galaxy workflow. The value is a color
+    string such as ``#ff0000``.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["color"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``color``.
+
+- name: WorkflowDirectoryUriParameter
+  type: record
+  extends:
+    - BaseInputParameter
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    A directory URI input parameter for a Galaxy workflow. The value is a
+    URI string such as ``s3://bucket/path/``.
+  fields:
+    - name: type
+      type: string
+      pydantic:type: 'Literal["directory_uri"]'
+      jsonldPredicate:
+        "_id": "sld:type"
+        "_type": "@vocab"
+        refScope: 2
+        typeDSL: True
+      doc: |
+        Must be ``directory_uri``.
+    - name: validators
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:WorkflowTextValidator
+      jsonldPredicate: "gxformat2common:validators"
+      doc: |
+        Validators applied to values supplied for this input.
+
+- name: WorkflowInputParameter
+  type: record
+  extends:
+    - BaseDataParameter
+    - MinMax
+  docParent: "#GalaxyWorkflow"
+  doc: |
+    An input parameter to a Galaxy workflow. This is the catch-all type used
+    by the Schema Salad codegen. The pydantic layer uses a discriminated union
+    of the specific parameter types instead.
   fields:
     - name: type
       type:
@@ -82,20 +395,6 @@ $graph:
         typeDSL: True
       doc: |
         Specify valid types of data that may be assigned to this parameter.
-    - name: optional
-      type:
-      - boolean
-      - "null"
-      default: false
-      doc: |
-        If set to true, `WorkflowInputParameter` is not required to submit the workflow.
-    - name: format
-      doc: |
-        Specify datatype extension for valid input datasets.
-      type:
-        - "null"
-        - type: array
-          items: string
     - name: collection_type
       doc: |
         Collection type (defaults to `list` if `type` is `collection`). Nested
@@ -103,6 +402,66 @@ $graph:
       type:
         - "null"
         - string
+      jsonldPredicate:
+        _id: "gxformat2:collection_type"
+        noLinkCheck: true
+    - name: column_definitions
+      doc: |
+        Column schema for sample-sheet collection inputs. Only meaningful when
+        `collection_type` begins with `sample_sheet`.
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:SampleSheetColumnDefinition
+      jsonldPredicate: "gxformat2:column_definitions"
+    - name: fields
+      doc: |
+        Field schema for `record` collection inputs. Only meaningful when
+        `collection_type` contains `record`.
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:RecordFieldDefinition
+      jsonldPredicate:
+        _id: "sld:fields"
+        mapSubject: name
+        mapPredicate: type
+    - name: restrictions
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - gxformat2common:WorkflowTextOption
+      jsonldPredicate: "gxformat2common:restrictions"
+      doc: |
+        Closed set of permitted values for text-typed inputs. See
+        `WorkflowTextParameter.restrictions`.
+    - name: suggestions
+      type:
+        - "null"
+        - type: array
+          items:
+            - string
+            - gxformat2common:WorkflowTextOption
+      jsonldPredicate: "gxformat2common:suggestions"
+      doc: |
+        Open suggestion list for text-typed inputs.
+    - name: restrictOnConnections
+      type: boolean?
+      jsonldPredicate: "gxformat2:restrictOnConnections"
+      doc: |
+        For text-typed inputs - derive runtime choices from connected
+        tool/subworkflow select inputs.
+    - name: validators
+      type:
+        - "null"
+        - type: array
+          items: gxformat2common:WorkflowTextValidator
+      jsonldPredicate: "gxformat2common:validators"
+      doc: |
+        Validators for text-typed and ``directory_uri`` inputs. See
+        `WorkflowTextParameter.validators`.
 
 - name: WorkflowOutputParameter
   type: record
@@ -167,7 +526,7 @@ $graph:
   fields:
     - name: in
       type:  WorkflowStepInput[]?
-      pydantic:type: "list[WorkflowStepInput] | dict[str, WorkflowStepInput | str] | None"
+      pydantic:type: "list[WorkflowStepInput] | dict[str, WorkflowStepInput | str | list[str]] | None"
       jsonldPredicate:
         _id: "gxformat2:in"
         mapSubject: id
@@ -210,6 +569,21 @@ $graph:
         noLinkCheck: true
       doc: |
         Unstructured tool state.
+    - name: post_job_actions
+      type: Any?
+      pydantic:type: "dict[str, Any] | None"
+      jsonldPredicate:
+        _id: "gxformat2:post_job_actions"
+        noLinkCheck: true
+      doc: |
+        Optional dict of post-job actions keyed by ``{ActionType}{OutputName}``
+        compound strings.  Same shape as the native ``post_job_actions`` field;
+        each value is a record with ``action_type``, ``output_name``,
+        ``action_arguments``.  Use the ``out:`` shorthand (``rename:``,
+        ``hide:``, ``change_datatype:``, etc.) for common actions; this
+        explicit form covers actions without an ``out:`` shorthand
+        (``ValidateOutputsAction``, etc.) and any case where the typed
+        record is preferred.
     - name: type
       type: WorkflowStepType?
       jsonldPredicate:
@@ -356,6 +730,8 @@ $graph:
         Size of the comment as ``[width, height]``.
     - name: color
       type: string?
+      # Shares the GalaxyType symbol IRI to avoid a JSON-LD predicate collision.
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/color"
       doc: |
         Display color of the comment (e.g. ``"none"``, ``"blue"``).
     - name: label

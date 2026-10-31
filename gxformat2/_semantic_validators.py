@@ -1,0 +1,206 @@
+"""Cross-field semantic checks for Format2 input parameters.
+
+The schema-salad-plus-pydantic codegen produces structural pydantic models
+but cannot express cross-field rules (e.g. "column_definitions only on
+sample_sheet collection inputs"). These checks are run after structural
+validation and raise ``ValueError`` on violation - callers wrap them in
+``pydantic.ValidationError`` where useful.
+Type mismatches also use ``ValueError`` so those callers collect diagnostics
+instead of propagating ``TypeError``.
+
+Mirrors the constraints enforced by Galaxy's runtime
+``galaxy.model.dataset_collections.types.sample_sheet_util.SampleSheetColumnDefinitionModel``.
+"""
+
+from __future__ import annotations
+
+import re
+from collections.abc import Iterable, Mapping
+from typing import Any
+
+from gxformat2.schema._input_parameter import input_types_declaring
+
+_COLUMN_NAME_RE = re.compile(r"^[\w\-_ \?]*$")
+_RECORD_RANK_RE = re.compile(r"(?:^|:)record(?::|$)")
+
+# Galaxy offers ``multiple`` on neither.
+_SCALAR_ONLY_TYPE_VALUES = {"color", "directory_uri"}
+# Parameter fields valid only on the input types whose model declares them.
+_PARAMETER_FIELD_TYPE_VALUES = {
+    field: input_types_declaring(field)
+    for field in ("restrictions", "suggestions", "restrictOnConnections", "validators")
+}
+_COLLECTION_TYPE_VALUES = {"collection", "data_collection", "data_collection_input"}
+
+
+def _as_dict(model_or_dict: Any) -> Mapping[str, Any]:
+    if hasattr(model_or_dict, "model_dump"):
+        return model_or_dict.model_dump(by_alias=True)
+    if not isinstance(model_or_dict, Mapping):
+        raise ValueError("Expected a mapping for semantic validation")  # noqa: TRY004
+    return model_or_dict
+
+
+def _column_default_matches_type(column_type: Any, default_value: Any) -> bool:
+    if default_value is None:
+        return True
+    if column_type == "string" or column_type == "element_identifier":
+        return isinstance(default_value, str)
+    if column_type == "int":
+        return isinstance(default_value, int) and not isinstance(default_value, bool)
+    if column_type == "float":
+        return isinstance(default_value, (int, float)) and not isinstance(default_value, bool)
+    if column_type == "boolean":
+        return isinstance(default_value, bool)
+    return True
+
+
+def _column_value_matches_type(column_type: Any, value: Any) -> bool:
+    return _column_default_matches_type(column_type, value)
+
+
+def validate_column_definition(column: Any) -> None:
+    """Validate a SampleSheetColumnDefinition instance or dict."""
+    column_dict = _as_dict(column)
+    name = column_dict.get("name")
+    if isinstance(name, str) and not _COLUMN_NAME_RE.match(name):
+        raise ValueError(f"Sample sheet column name {name!r} contains disallowed characters")
+
+    column_type = column_dict.get("type")
+    default_value = column_dict.get("default_value")
+    if not _column_default_matches_type(column_type, default_value):
+        raise ValueError(
+            f"Sample sheet column {name!r} default_value {default_value!r} does not match column type {column_type!r}"
+        )
+
+    for field in ("restrictions", "suggestions"):
+        values = column_dict.get(field)
+        if not values:
+            continue
+        if not isinstance(values, list):
+            raise ValueError(f"Sample sheet column {name!r} {field} must be a list")  # noqa: TRY004
+        for v in values:
+            if not _column_value_matches_type(column_type, v):
+                raise ValueError(
+                    f"Sample sheet column {name!r} {field} entry {v!r} does not match column type {column_type!r}"
+                )
+
+
+def validate_input_parameter(input_param: Any) -> None:
+    """Validate cross-field rules on a workflow input parameter.
+
+    Enforces:
+    - column_definitions only on collection inputs whose collection_type
+      starts with 'sample_sheet'.
+    - restrictions/suggestions/restrictOnConnections only on text/string inputs
+      (or catch-all WorkflowInputParameter in text mode); validators also on
+      directory_uri inputs.
+    - Each SampleSheetColumnDefinition is internally consistent.
+    """
+    data = _as_dict(input_param)
+    type_value = data.get("type")
+    type_values: Iterable[str]
+    if isinstance(type_value, list):
+        type_values = [str(t) for t in type_value]
+    elif type_value is None:
+        type_values = []
+    else:
+        type_values = [str(type_value)]
+    is_collection_only = bool(type_values) and all(t in _COLLECTION_TYPE_VALUES for t in type_values)
+    if isinstance(type_value, list) and _SCALAR_ONLY_TYPE_VALUES.intersection(type_values):
+        raise ValueError(f"multiple values are not supported for type={type_value!r}")
+
+    collection_type = data.get("collection_type")
+    if collection_type is None:
+        collection_type = ""
+    if not isinstance(collection_type, str):
+        raise ValueError("collection_type must be a string")  # noqa: TRY004
+    column_definitions = data.get("column_definitions")
+    if column_definitions:
+        if not isinstance(column_definitions, list):
+            raise ValueError("column_definitions must be a list")
+        if not is_collection_only and type_values:
+            raise ValueError(f"column_definitions is only valid on collection inputs, got type={type_value!r}")
+        if not collection_type.startswith("sample_sheet"):
+            raise ValueError(
+                f"column_definitions requires collection_type starting with 'sample_sheet', got {collection_type!r}"
+            )
+        for column in column_definitions:
+            validate_column_definition(column)
+
+    fields = data.get("fields")
+    if fields:
+        if not is_collection_only and type_values:
+            raise ValueError(f"fields is only valid on collection inputs, got type={type_value!r}")
+        if not _RECORD_RANK_RE.search(collection_type):
+            raise ValueError(f"fields requires collection_type containing 'record', got {collection_type!r}")
+
+    for field, allowed_types in _PARAMETER_FIELD_TYPE_VALUES.items():
+        if data.get(field) in (None, [], False):
+            # restrictOnConnections=False is the schema default and harmless.
+            continue
+        if type_values and not all(t in allowed_types for t in type_values):
+            allowed = "/".join(sorted(allowed_types))
+            raise ValueError(f"{field} is only valid on {allowed} inputs, got type={type_value!r}")
+
+
+def _state_is_specified(value: Any) -> bool:
+    """Report whether a step's ``state``/``tool_state`` field actually carries content.
+
+    Uses non-empty semantics: ``None``, an empty dict, and a blank or ``{}``
+    JSON string all count as unspecified. This matches the downstream notion of
+    an "empty" state, so an empty ``state: {}`` left by conversion does not
+    falsely conflict with a populated ``tool_state``.
+    """
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip() not in ("", "{}")
+    if isinstance(value, Mapping):
+        return len(value) > 0
+    return bool(value)
+
+
+def validate_step(step: Mapping[str, Any]) -> None:
+    """Validate cross-field rules on a single workflow step.
+
+    Enforces:
+    - ``state`` and ``tool_state`` are mutually exclusive (the schema doc says
+      "Only one or the other should be specified"); they are two encodings of
+      the same tool state, so carrying both is ambiguous.
+    """
+    if _state_is_specified(step.get("state")) and _state_is_specified(step.get("tool_state")):
+        raise ValueError("Workflow step specifies both 'state' and 'tool_state'; only one may be set")
+
+
+def validate_workflow(workflow: Any) -> None:
+    """Validate cross-field rules on a (lax or strict) GalaxyWorkflow model.
+
+    Handles both list and dict input forms.
+    """
+    data = _as_dict(workflow)
+    inputs = data.get("inputs") or []
+    iter_inputs: Iterable[Any]
+    if isinstance(inputs, dict):
+        iter_inputs = inputs.values()
+    else:
+        iter_inputs = inputs
+    for inp in iter_inputs:
+        if isinstance(inp, str):
+            continue
+        validate_input_parameter(inp)
+
+    # Recurse into subworkflows (run blocks under steps).
+    steps = data.get("steps") or []
+    iter_steps: Iterable[Any]
+    if isinstance(steps, dict):
+        iter_steps = steps.values()
+    else:
+        iter_steps = steps
+    for step in iter_steps:
+        if not isinstance(step, Mapping):
+            continue
+        validate_step(step)
+        run = step.get("run")
+        if isinstance(run, Mapping) and run.get("class") in {"GalaxyWorkflow", "GalaxyWorkflowDraft"}:
+            validate_workflow(run)

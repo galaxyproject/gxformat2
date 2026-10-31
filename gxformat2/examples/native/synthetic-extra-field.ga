@@ -1,0 +1,13 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Extra field native",
+    "not_a_real_field": "should cause strict validation failure",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "tool",
+            "tool_id": "cat1"
+        }
+    }
+}

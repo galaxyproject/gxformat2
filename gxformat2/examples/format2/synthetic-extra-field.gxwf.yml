@@ -1,0 +1,12 @@
+class: GalaxyWorkflow
+label: Extra field workflow
+not_a_real_field: should cause strict validation failure
+inputs:
+  x:
+    type: File
+outputs: {}
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: x

@@ -1,0 +1,14 @@
+class: GalaxyWorkflow
+inputs:
+  input_record:
+    type: collection
+    collection_type: record
+    fields:
+      - name: parent
+        type: File
+      - name: child
+        type:
+          - File
+          - "null"
+outputs: {}
+steps: {}

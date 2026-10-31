@@ -1,0 +1,15 @@
+class: GalaxyWorkflow
+inputs:
+  Host/Contaminant Genome: data
+outputs:
+  the_output:
+    outputSource: second_cat/out_file1
+steps:
+  Host/Contaminant Filter:
+    tool_id: cat1
+    in:
+      input1: Host/Contaminant Genome
+  second_cat:
+    tool_id: cat1
+    in:
+      input1: Host/Contaminant Filter/out_file1

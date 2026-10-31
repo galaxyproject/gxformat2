@@ -1,0 +1,12 @@
+{
+    "a_galaxy_workflow": "false",
+    "format-version": "0.1",
+    "name": "Bad marker value",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "tool",
+            "tool_id": "cat1"
+        }
+    }
+}

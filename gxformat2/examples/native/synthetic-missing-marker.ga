@@ -1,0 +1,11 @@
+{
+    "format-version": "0.1",
+    "name": "Missing a_galaxy_workflow marker",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "tool",
+            "tool_id": "cat1"
+        }
+    }
+}

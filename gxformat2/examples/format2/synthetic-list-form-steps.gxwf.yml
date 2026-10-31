@@ -1,0 +1,21 @@
+class: GalaxyWorkflow
+label: List form workflow
+doc: |
+  Inputs, outputs and steps all in list form while the step's in/out stay in
+  dict form -- the combination downstream normalization is easiest to miss.
+inputs:
+  - id: the_input
+    type: File
+    doc: input doc
+outputs:
+  - id: the_output
+    outputSource: cat/out_file1
+steps:
+  - label: cat
+    tool_id: cat1
+    doc: cat doc
+    in:
+      input1: the_input
+    out:
+      out_file1:
+        hide: true

@@ -1,0 +1,61 @@
+# Step normalization: when, PJAs, runtime_inputs, pause, $link, user-defined tools
+
+test_when_expression:
+  fixture: synthetic-when-step.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, when]
+      value: "$(inputs.seed != 'skip')"
+    - path: [steps, 0, tool_id]
+      value: random_lines1
+
+test_pja_hide_and_rename:
+  fixture: synthetic-pja-hide-rename.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, {id: first_cat}, out, $length]
+      value: 1
+    - path: [steps, {id: first_cat}, out, 0, id]
+      value: out_file1
+    - path: [steps, {id: first_cat}, out, 0, hide]
+      value: true
+    - path: [steps, {id: first_cat}, out, 0, rename]
+      value: "the new value"
+
+test_runtime_inputs:
+  fixture: synthetic-runtime-inputs.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, {id: random}, runtime_inputs]
+      value: ["num_lines"]
+    - path: [steps, {id: the_pause}, type_]
+      value: pause
+
+test_rules_tool_link_resolution:
+  fixture: synthetic-rules-tool.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, {id: apply}, state, input, __class__]
+      value: ConnectedValue
+    - path: [steps, {id: apply}, in_, {id: input}, source]
+      value: input_c
+    - path: [steps, {id: random_lines}, state, input, __class__]
+      value: ConnectedValue
+    - path: [steps, {id: random_lines}, in_, {id: input}, source]
+      value: apply/output
+
+test_user_defined_tool_run:
+  fixture: synthetic-user-defined-tool.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, run, name]
+      value: cat_user_defined
+    - path: [steps, 0, run, container]
+      value: busybox
+
+test_pipe_separated_input_key:
+  fixture: synthetic-string-input.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, 0, in_, $length]
+      value: 2

@@ -1,0 +1,35 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Several unlabeled steps",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "tool",
+            "tool_id": "cat1",
+            "label": null,
+            "workflow_outputs": []
+        },
+        "1": {
+            "id": 1,
+            "type": "tool",
+            "tool_id": "cat1",
+            "label": "",
+            "workflow_outputs": []
+        },
+        "2": {
+            "id": 2,
+            "type": "tool",
+            "tool_id": "cat1",
+            "workflow_outputs": [
+                {"output_name": "out_file1", "label": "out"}
+            ]
+        },
+        "3": {
+            "id": 3,
+            "type": "tool",
+            "tool_id": "cat1",
+            "workflow_outputs": []
+        }
+    }
+}

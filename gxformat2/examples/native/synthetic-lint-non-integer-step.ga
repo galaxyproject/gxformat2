@@ -1,0 +1,12 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Non-integer step key",
+    "steps": {
+        "step_one": {
+            "id": 0,
+            "type": "tool",
+            "tool_id": "cat1"
+        }
+    }
+}

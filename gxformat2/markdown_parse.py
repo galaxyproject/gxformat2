@@ -9,7 +9,6 @@ projects (e.g. gxformat2).
 import re
 from typing import (
     cast,
-    Union,
 )
 
 BLOCK_FENCE_START = re.compile(r"```.*")
@@ -24,7 +23,7 @@ class DynamicArguments:
 
 DYNAMIC_ARGUMENTS = DynamicArguments()
 SHARED_ARGUMENTS: list[str] = ["collapse"]
-VALID_ARGUMENTS: dict[str, Union[list[str], DynamicArguments]] = {
+VALID_ARGUMENTS: dict[str, list[str] | DynamicArguments] = {
     "history_link": ["history_id"],
     "history_dataset_display": ["input", "output", "history_dataset_id"],
     "history_dataset_embedded": ["input", "output", "history_dataset_id"],
@@ -87,7 +86,7 @@ def validate_galaxy_markdown(galaxy_markdown, internal=True):
     def invalid_line(template, line_no, **kwd):
         if "line" in kwd:
             kwd["line"] = kwd["line"].rstrip("\r\n")
-        raise ValueError("Invalid line %d: %s" % (line_no + 1, template.format(**kwd)))
+        raise ValueError(f"Invalid line {line_no + 1}: {template.format(**kwd)}")
 
     def _validate_arg(arg_str, valid_args, line_no):
         if arg_str is not None:
@@ -181,16 +180,15 @@ def _split_markdown_lines(markdown):
     for line_number, line in enumerate(markdown.splitlines(True)):
         open_fence_this_iteration = False
         indent_fenced = bool(line.startswith("    ") or (indent_fenced and WHITE_SPACE_ONLY_PATTERN.match(line)))
-        if not block_fenced:
-            if BLOCK_FENCE_START.match(line):
-                open_fence_this_iteration = True
-                block_fenced = True
+        if not block_fenced and BLOCK_FENCE_START.match(line):
+            open_fence_this_iteration = True
+            block_fenced = True
         yield (line, block_fenced or indent_fenced, open_fence_this_iteration, line_number)
         if not open_fence_this_iteration and BLOCK_FENCE_END.match(line):
             block_fenced = False
 
 
 __all__ = (
-    "validate_galaxy_markdown",
     "GALAXY_MARKDOWN_FUNCTION_CALL_LINE",
+    "validate_galaxy_markdown",
 )

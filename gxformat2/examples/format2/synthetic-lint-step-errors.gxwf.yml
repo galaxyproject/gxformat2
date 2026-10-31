@@ -1,0 +1,14 @@
+class: GalaxyWorkflow
+label: Step with errors
+inputs:
+  the_input:
+    type: File
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    errors: "Tool is not installed"
+    in:
+      input1: the_input

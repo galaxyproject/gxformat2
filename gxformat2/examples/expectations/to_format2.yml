@@ -1,0 +1,205 @@
+test_to_format2_metadata:
+  fixture: synthetic-labeled-tool.ga
+  operation: to_format2
+  assertions:
+    - path: [label]
+      value: "Test Workflow"
+    - path: [doc]
+      value: "A test workflow"
+
+test_to_format2_inputs:
+  fixture: synthetic-labeled-tool.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, $length]
+      value: 1
+    - path: [inputs, 0, id]
+      value: the_input
+
+test_to_format2_outputs:
+  fixture: synthetic-labeled-tool.ga
+  operation: to_format2
+  assertions:
+    - path: [outputs, $length]
+      value: 1
+    - path: [outputs, 0, id]
+      value: the_output
+    - path: [outputs, 0, outputSource]
+      value_contains: the_cat
+
+test_to_format2_tool_step:
+  fixture: synthetic-labeled-tool.ga
+  operation: to_format2
+  assertions:
+    - path: [steps, $length]
+      value: 1
+    - path: [steps, 0, tool_id]
+      value: cat1
+    - path: [steps, 0, tool_version]
+      value: "1.0"
+
+test_to_format2_step_inputs:
+  fixture: synthetic-labeled-tool.ga
+  operation: to_format2
+  assertions:
+    - path: [steps, 0, in_, $length]
+      value: 1
+    - path: [steps, 0, in_, 0, id]
+      value: input1
+    - path: [steps, 0, in_, 0, source]
+      value: the_input
+
+test_to_format2_inline_subworkflow:
+  fixture: synthetic-outer-inline-subworkflow.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, $length]
+      value: 1
+    - path: [inputs, 0, id]
+      value: inp
+    - path: [steps, 0, run, inputs, $length]
+      value: 1
+    - path: [steps, 0, run, inputs, 0, id]
+      value: inner_input
+    - path: [steps, 0, run, steps, 0, tool_id]
+      value: random_lines1
+
+test_to_format2_url_subworkflow:
+  fixture: synthetic-outer-url-subworkflow.ga
+  operation: to_format2
+  assertions:
+    - path: [steps, 0, run]
+      value: "https://example.com/inner.ga"
+
+test_to_format2_rename_pja:
+  fixture: synthetic-rename-pja.ga
+  operation: to_format2
+  assertions:
+    - path: [steps, 0, out, $length]
+      value: 1
+    - path: [steps, 0, out, 0, id]
+      value: out_file1
+    - path: [steps, 0, out, 0, rename]
+      value: renamed_output
+
+test_to_format2_range_validator_min_max:
+  fixture: synthetic-numeric-range-validators.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, 0, id]
+      value: int_min_max
+    - path: [inputs, 0, min]
+      value: 1
+    - path: [inputs, 0, max]
+      value: 5
+
+test_to_format2_range_validator_max_only:
+  fixture: synthetic-numeric-range-validators.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, 1, id]
+      value: float_max_only
+    - path: [inputs, 1, min]
+      value: null
+    - path: [inputs, 1, max]
+      value: 0.5
+
+test_to_format2_non_range_validator_no_bounds:
+  fixture: synthetic-numeric-range-validators.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, 2, id]
+      value: int_regex
+    - path: [inputs, 2, min]
+      value: null
+    - path: [inputs, 2, max]
+      value: null
+
+test_to_format2_via_native_input_bounds:
+  fixture: synthetic-numeric-input-bounds.gxwf.yml
+  operation: to_format2_via_native
+  assertions:
+    - path: [inputs, 0, min]
+      value: 1
+    - path: [inputs, 0, max]
+      value: 5
+    - path: [inputs, 1, min]
+      value: 0
+    - path: [inputs, 1, max]
+      value: null
+    - path: [inputs, 2, min]
+      value: null
+    - path: [inputs, 2, max]
+      value: 0.5
+
+test_to_format2_via_native_text_input_validators:
+  fixture: synthetic-text-input-validators.gxwf.yml
+  operation: to_format2_via_native
+  assertions:
+    - path: [inputs, 0, validators, $length]
+      value: 1
+    - path: [inputs, 0, validators, 0, expression]
+      value: "^moo"
+    - path: [inputs, 0, validators, 0, message]
+      value: must start with moo
+    - path: [inputs, 1, validators, 0, expression]
+      value: cow
+    - path: [inputs, 1, validators, 0, negate]
+      value: true
+
+test_to_format2_via_native_multi_text_input_validators:
+  fixture: synthetic-multi-text-input-validators.gxwf.yml
+  operation: to_format2_via_native
+  assertions:
+    - path: [inputs, 0, validators, 0, expression]
+      value: "^[ACGT]+$"
+
+test_to_format2_empty_text_input_validators_dropped:
+  fixture: real-amr-gene-detection.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, {id: StarAMR database}, type_]
+      value: string
+    - path: [inputs, {id: StarAMR database}, validators]
+      value: null
+
+test_to_format2_color_directory_uri_inputs:
+  fixture: synthetic-color-directory-uri-inputs.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, 0, type_]
+      value: color
+    - path: [inputs, 0, default]
+      value: "#ff0000"
+    - path: [inputs, 1, type_]
+      value: directory_uri
+    - path: [inputs, 1, optional]
+      value: true
+    - path: [inputs, 1, validators, 0, expression]
+      value: "^s3://"
+    - path: [inputs, 1, validators, 0, message]
+      value: must be an S3 URI
+
+test_to_format2_via_native_color_directory_uri_inputs:
+  fixture: synthetic-color-directory-uri-inputs.gxwf.yml
+  operation: to_format2_via_native
+  assertions:
+    - path: [inputs, 0, type_]
+      value: color
+    - path: [inputs, 0, default]
+      value: "#ff0000"
+    - path: [inputs, 1, type_]
+      value: directory_uri
+    - path: [inputs, 1, validators, $length]
+      value: 1
+    - path: [inputs, 1, validators, 0, expression]
+      value: "^s3://"
+
+test_to_format2_multiple_text_validators:
+  fixture: synthetic-multiple-text-validators.ga
+  operation: to_format2
+  assertions:
+    - path: [inputs, 0, type_]
+      value: [string]
+    - path: [inputs, 0, validators, 0, expression]
+      value: "^S[0-9]+$"

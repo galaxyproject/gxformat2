@@ -1,0 +1,19 @@
+class: GalaxyWorkflowDraft
+inputs:
+  reads: data
+outputs:
+  result:
+    outputSource: 3/output
+steps:
+  - tool_id: TODO
+    in:
+      input1: reads
+    out: [output]
+  - tool_id: cat1
+    in:
+      input1: reads
+    out: [output]
+  - tool_id: cat1
+    in:
+      input1: 2/output
+    out: [output]

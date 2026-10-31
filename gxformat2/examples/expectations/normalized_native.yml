@@ -1,0 +1,56 @@
+test_tool_state_always_dict:
+  fixture: synthetic-minimal-tool.ga
+  operation: normalized_native
+  assertions:
+    - path: [steps, "0", tool_state, input1]
+      value: {__class__: ConnectedValue}
+
+test_containers_never_none:
+  fixture: synthetic-minimal-tool.ga
+  operation: normalized_native
+  assertions:
+    - path: [steps, "0", input_connections]
+      value: {}
+    - path: [steps, "0", inputs]
+      value: []
+    - path: [steps, "0", outputs]
+      value: []
+    - path: [steps, "0", workflow_outputs]
+      value: []
+    - path: [steps, "0", post_job_actions]
+      value: {}
+
+test_tags_never_none:
+  fixture: synthetic-minimal-tool.ga
+  operation: normalized_native
+  assertions:
+    - path: [tags]
+      value: []
+
+test_connected_paths_empty:
+  fixture: synthetic-minimal-tool.ga
+  operation: normalized_native
+  assertions:
+    - path: [steps, "0", connected_paths]
+      value_set: []
+
+test_extra_position_fields_stripped:
+  fixture: synthetic-unlinted-best-practices.ga
+  operation: normalized_native
+  assertions:
+    - path: [steps, "0", position, top]
+      value_truthy: true
+    - path: [steps, "0", position, left]
+      value_truthy: true
+    - path: [steps, "0", position, bottom]
+      value_absent: true
+    - path: [steps, "0", position, height]
+      value_absent: true
+    - path: [steps, "0", position, right]
+      value_absent: true
+    - path: [steps, "1", position, bottom]
+      value_absent: true
+    - path: [steps, "1", position, height]
+      value_absent: true
+    - path: [steps, "1", position, right]
+      value_absent: true

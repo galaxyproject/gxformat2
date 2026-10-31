@@ -1,0 +1,11 @@
+class: GalaxyWorkflow
+steps:
+  cat1:
+    tool_id: cat1
+    in:
+      input1:
+        default:
+          class: File
+          basename: a file
+          format: txt
+          location: https://raw.githubusercontent.com/galaxyproject/galaxy/dev/test-data/1.bed

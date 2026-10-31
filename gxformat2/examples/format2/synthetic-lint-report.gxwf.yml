@@ -1,0 +1,17 @@
+class: GalaxyWorkflow
+label: Workflow with report
+inputs:
+  the_input:
+    type: File
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: the_input
+report:
+  markdown: |
+    # Workflow Report
+    Some text.

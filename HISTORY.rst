@@ -6,8 +6,172 @@ History
 .. to_doc
 
 ---------------------
-0.25.0.dev0
+0.29.2.dev0
 ---------------------
+
+    
+
+---------------------
+0.29.1 (2026-10-29)
+---------------------
+* Document GitHub release step; add make release-notes (thanks to `@jmchilton`_). `Pull Request 284`_
+* Fall back when lint context lacks child() (thanks to `@jmchilton`_). `Pull Request 285`_
+
+    
+
+---------------------
+0.29.0 (2026-10-28)
+---------------------
+* Lint duplicate step labels as errors (thanks to `@mvdbeek`_). `Pull Request 268`_
+* Bump aiohttp from 3.14.3 to 3.14.4 (thanks to `@dependabot[bot]`_). `Pull Request 269`_
+* Add support for Python 3.15 (thanks to `@nsoranzo`_). `Pull Request 270`_
+* Bump certifi from 2026.5.20 to 2026.10.19 (thanks to `@dependabot[bot]`_). `Pull Request 273`_
+* Bump black from 26.5.1 to 26.10.1 (thanks to `@dependabot[bot]`_). `Pull Request 274`_
+* Match Galaxy's `${name}` semantics in untyped parameter lint (thanks to `@jmchilton`_). `Pull Request 271`_
+* Require class: GalaxyWorkflow on Format2 workflows (thanks to `@richard-burhans`_). `Pull Request 278`_
+* Lint multiple text and native parameter input defaults (thanks to `@jmchilton`_). `Pull Request 275`_
+* Follow-up fixes for required GalaxyWorkflow class (#278) (thanks to `@jmchilton`_). `Pull Request 279`_
+* Support Galaxy color and directory_uri workflow parameter inputs (thanks to `@jmchilton`_). `Pull Request 281`_
+* Bump the actions group with 2 updates (thanks to `@dependabot[bot]`_). `Pull Request 282`_
+* Bump serialize-javascript from 7.1.2 to 7.1.4 in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 283`_
+* Reject unknown keys on workflow outputs under strict validation (thanks to `@richard-burhans`_). `Pull Request 277`_
+
+    
+
+---------------------
+0.28.0 (2026-10-17)
+---------------------
+* Drop support for Python 3.9 (thanks to `@nsoranzo`_). `Pull Request 220`_
+* Bump aiohttp from 3.13.5 to 3.14.0 (thanks to `@dependabot[bot]`_). `Pull Request 221`_
+* Enforce state / tool_state mutual exclusion on workflow steps (thanks to `@jmchilton`_). `Pull Request 222`_
+* Bump aiohttp from 3.14.0 to 3.14.1 (thanks to `@dependabot[bot]`_). `Pull Request 225`_
+* Bump js-yaml from 4.1.1 to 4.2.0 in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 226`_
+* Bump form-data from 3.0.4 to 3.0.5 in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 227`_
+* Bump msgpack from 1.1.2 to 1.2.1 (thanks to `@dependabot[bot]`_). `Pull Request 230`_
+* Bump com.fasterxml.jackson.core:jackson-databind from 2.14.2 to 2.22.0 in /java (thanks to `@dependabot[bot]`_). `Pull Request 231`_
+* Bump uuid and nyc in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 232`_
+* Implement gxwf-layout to relayout workflows (thanks to `@jmchilton`_). `Pull Request 233`_
+* Bump actions/setup-node from 6 to 7 (thanks to `@dependabot[bot]`_). `Pull Request 234`_
+* Bump com.fasterxml.jackson.core:jackson-databind from 2.22.0 to 2.22.1 in /java (thanks to `@dependabot[bot]`_). `Pull Request 235`_
+* Bump actions/checkout from 6 to 7 (thanks to `@dependabot[bot]`_). `Pull Request 229`_
+* Harden GitHub Actions workflows (zizmor) (thanks to `@jmchilton`_). `Pull Request 223`_
+* Bump the actions group with 5 updates (thanks to `@dependabot[bot]`_). `Pull Request 236`_
+* Bump js-yaml from 4.2.0 to 4.3.0 in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 238`_
+* Fix errors reported by ruff 0.16.0 (thanks to `@nsoranzo`_). `Pull Request 240`_
+* Bump the actions group across 1 directory with 3 updates (thanks to `@dependabot[bot]`_). `Pull Request 239`_
+* Bump aiohttp from 3.14.1 to 3.14.3 (thanks to `@dependabot[bot]`_). `Pull Request 241`_
+* Bump the actions group with 2 updates (thanks to `@dependabot[bot]`_). `Pull Request 242`_
+* Bump js-yaml from 4.3.0 to 4.3.1 in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 243`_
+* Bump actions/setup-java from 5.7.0 to 6.0.0 in the actions group (thanks to `@dependabot[bot]`_). `Pull Request 244`_
+* Bump brace-expansion in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 245`_
+* Bump mistune from 3.2.1 to 3.3.0 (thanks to `@dependabot[bot]`_). `Pull Request 246`_
+* Bump serialize-javascript and mocha in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 247`_
+* Bump browserslist from 4.28.4 to 4.28.8 in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 248`_
+* Bump mistune from 3.3.0 to 3.3.3 (thanks to `@dependabot[bot]`_). `Pull Request 249`_
+* Bump zizmorcore/zizmor-action from 0.6.2 to 0.6.3 in the actions group (thanks to `@dependabot[bot]`_). `Pull Request 250`_
+* Bump js-yaml from 4.3.1 to 4.3.2 in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 251`_
+* Declarative coverage for list-form inputs/steps with dict-form step in/out (thanks to `@jmchilton`_). `Pull Request 252`_
+* Bump the actions group with 2 updates (thanks to `@dependabot[bot]`_). `Pull Request 253`_
+* Keep a user-defined tool step's state when converting to format2 (thanks to `@mvdbeek`_). `Pull Request 254`_
+* Preserve numeric workflow input bounds in conversions (thanks to `@jmchilton`_). `Pull Request 255`_
+* Bump com.fasterxml.jackson.core:jackson-databind from 2.22.1 to 2.22.2 in /java (thanks to `@dependabot[bot]`_). `Pull Request 256`_
+* Bump brace-expansion in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 257`_
+* Bump serialize-javascript from 7.1.1 to 7.1.2 in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 258`_
+* Bump com.fasterxml.jackson.core:jackson-databind from 2.22.2 to 2.22.3 in /java (thanks to `@dependabot[bot]`_). `Pull Request 259`_
+* Bump urllib3 from 2.7.0 to 2.8.0 (thanks to `@dependabot[bot]`_). `Pull Request 260`_
+* Type check with Pyrefly alongside mypy (thanks to `@jmchilton`_). `Pull Request 261`_
+* Bump multidict from 6.7.1 to 6.9.1 (thanks to `@dependabot[bot]`_). `Pull Request 262`_
+* Fix default_url_resolver for GA4GH TRS URLs (thanks to `@mvdbeek`_). `Pull Request 263`_
+* Round-trip text input regex validators (thanks to `@jmchilton`_). `Pull Request 265`_
+* Make check-release pass on main (thanks to `@jmchilton`_). `Pull Request 267`_
+* Add draft workflow support (``class: GalaxyWorkflowDraft``): the draft
+  schema with ``_plan_*`` step fields and ``TODO`` sentinel constants,
+  ``validate_format2_draft[_strict]``, and ``gxformat2.draft`` operations
+  ``detect_draft``, ``validate_draft``, ``next_draft_step`` and
+  ``extract_draft_subset``, ported from galaxy-tool-util-ts with shared
+  declarative fixtures (thanks to `@jmchilton`_). `Pull Request 219`_
+* Mermaid and Cytoscape render draft workflows with planned steps and edges
+  marked.
+* Mermaid and Cytoscape resolve a source that names a step by its key when the
+  step carries a different label (previously the edge was dropped or dangled).
+
+---------------------
+0.27.0 (2026-05-27)
+---------------------
+* Update development and release docs (thanks to `@jmchilton`_). `Pull Request 192`_
+* Bump lxml from 6.0.2 to 6.1.0 (thanks to `@dependabot[bot]`_). `Pull Request 193`_
+* Source venv when resolving VERSION in Makefile (thanks to `@jmchilton`_). `Pull Request 190`_
+* Declarative YAML test coverage for gxformat2.mermaid (thanks to `@jmchilton`_). `Pull Request 194`_
+* Bump uuid from 8.3.2 to 14.0.0 in /typescript (thanks to `@dependabot[bot]`_). `Pull Request 195`_
+* Declarative YAML test coverage for gxformat2.cytoscape (thanks to `@jmchilton`_). `Pull Request 196`_
+* Bump cytoscape.html CDN deps to current versions (thanks to `@jmchilton`_). `Pull Request 197`_
+* cytoscape: --layout flag with shared topological algorithm (thanks to `@jmchilton`_). `Pull Request 198`_
+* Fix integer order_index step keys in native workflow loading (thanks to `@nsoranzo`_). `Pull Request 199`_
+* Clarify input type aliases; move input_parameter_class out of generated file (thanks to `@jmchilton`_). `Pull Request 203`_
+* Accept bare-list multi-source and integer $link in Format2 dicts (thanks to `@jmchilton`_). `Pull Request 211`_
+* Propagate step-level post_job_actions through Format2 (closes #206) (thanks to `@jmchilton`_). `Pull Request 210`_
+* Propagate step input defaults through Format2 (thanks to `@jmchilton`_). `Pull Request 213`_
+* Flush out workflow input fields in schema.  (thanks to `@jmchilton`_). `Pull Request 212`_
+* Clean-ups for #207 (thanks to `@nsoranzo`_). `Pull Request 215`_
+* Model `fields` on workflow record inputs (closes #214) (thanks to `@jmchilton`_). `Pull Request 216`_
+* Bump idna from 3.11 to 3.15 (thanks to `@dependabot[bot]`_). `Pull Request 217`_
+* Less Broken User Defined Tool Support during Normalization (thanks to `@jmchilton`_). `Pull Request 218`_
+
+* Declarative YAML-driven test coverage for ``gxformat2.mermaid``; fix
+  ``_input_type_str`` to accept string input types (previous ``.value``
+  attribute access crashed on real workflows).
+* Declarative YAML-driven test coverage for ``gxformat2.cytoscape``; stop
+  ``test_interop_generation`` from leaking ``tmp*.gxwf.*`` files into
+  ``tests/examples/cytoscape/`` on each run.
+
+
+---------------------
+0.26.0 (2026-04-17)
+---------------------
+* Restore Planemo compatibility for lint API and gxformat2.interface (thanks to `@mvdbeek`_). `Pull Request 191`_
+* Restore Planemo-compatible ``lint_format2`` / ``lint_ga`` signatures: accept a
+  raw ``dict`` in the second position (normalized internally) and a trailing
+  ``path=`` keyword (currently ignored). `Issue 187`_
+* Make ``LintContext`` message formatting compatible with
+  ``galaxy.tool_util.lint`` by using ``%``-style substitution for positional
+  arguments, falling back to ``.format()``. `Issue 187`_
+* Restore ``gxformat2.interface`` as a deprecated compatibility shim for
+  Planemo. ``bioblend`` is now an optional dependency (install
+  ``gxformat2[bioblend]``) and is imported lazily inside
+  ``BioBlendImporterGalaxyInterface``. `Issue 187`_
+
+.. _Issue 187: https://github.com/galaxyproject/gxformat2/issues/187
+
+---------------------
+0.25.0 (2026-04-16)
+---------------------
+* Schema Salad Modeling for Native Workflows (thanks to `@jmchilton`_). `Pull Request 153`_
+* Allow Pluggable State Handling During Conversion in Both Directions (thanks to `@jmchilton`_). `Pull Request 154`_
+* Add deploy GitHub workflow (thanks to `@nsoranzo`_). `Pull Request 160`_
+* Full GalaxyUserTool support in workflows (thanks to `@jmchilton`_). `Pull Request 158`_
+* Add auto-generated CLI docs via sphinx-argparse (thanks to `@jmchilton`_). `Pull Request 156`_
+* Migrate Best Practice Linting from Planemo, Rich Fixture Tracking and Docs (thanks to `@jmchilton`_). `Pull Request 159`_
+* Modernize linting and dev tools in various small ways (thanks to `@jmchilton`_). `Pull Request 163`_
+* Add pre-commit config sample based on Galaxy's setup (thanks to `@jmchilton`_). `Pull Request 166`_
+* From foundation to finish: typed models across the library (thanks to `@jmchilton`_). `Pull Request 164`_
+* Bump actions/upload-artifact from 6 to 7 (thanks to `@dependabot[bot]`_). `Pull Request 168`_
+* Bump codecov/codecov-action from 5 to 6 (thanks to `@dependabot[bot]`_). `Pull Request 169`_
+* Migrate a Bunch of Python Testing to be More Declarative/Interoparble (thanks to `@jmchilton`_). `Pull Request 173`_
+* Bump actions/download-artifact from 7 to 8 (thanks to `@dependabot[bot]`_). `Pull Request 170`_
+* Bump pygments from 2.19.2 to 2.20.0 (thanks to `@dependabot[bot]`_). `Pull Request 171`_
+* Extract declarative test harness into gxformat2.testing, rename test file (thanks to `@jmchilton`_). `Pull Request 174`_
+* Modernize Doc Styling (thanks to `@jmchilton`_). `Pull Request 176`_
+* CLI Tweaks (thanks to `@jmchilton`_). `Pull Request 175`_
+* More declarative testing (thanks to `@jmchilton`_). `Pull Request 179`_
+* Mermaid docs (thanks to `@jmchilton`_). `Pull Request 177`_
+* Improve rendering of schema files post Galaxy-Modern-Style refactor (thanks to `@jmchilton`_). `Pull Request 182`_
+* Add sphinxcontrib-mermaid to docs requirements (thanks to `@jmchilton`_). `Pull Request 183`_
+* Add strict_structure support to normalized models and conversion (thanks to `@jmchilton`_). `Pull Request 181`_
+* Split WorkflowInputParameter into type-specific discriminated union (thanks to `@jmchilton`_). `Pull Request 180`_
+* Fix merge issue (thanks to `@jmchilton`_). `Pull Request 184`_
+* Enforce Literal types for native workflow marker fields (thanks to `@jmchilton`_). `Pull Request 185`_
+* Linting Improvements (thanks to `@jmchilton`_). `Pull Request 188`_
+* Use native step ids in native best-practice lint messages (thanks to `@jmchilton`_). `Pull Request 189`_
 
     
 
@@ -342,6 +506,111 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 284: https://github.com/galaxyproject/gxformat2/pull/284
+.. _Pull Request 285: https://github.com/galaxyproject/gxformat2/pull/285
+.. _Pull Request 268: https://github.com/galaxyproject/gxformat2/pull/268
+.. _Pull Request 269: https://github.com/galaxyproject/gxformat2/pull/269
+.. _Pull Request 270: https://github.com/galaxyproject/gxformat2/pull/270
+.. _Pull Request 273: https://github.com/galaxyproject/gxformat2/pull/273
+.. _Pull Request 274: https://github.com/galaxyproject/gxformat2/pull/274
+.. _Pull Request 271: https://github.com/galaxyproject/gxformat2/pull/271
+.. _Pull Request 278: https://github.com/galaxyproject/gxformat2/pull/278
+.. _Pull Request 275: https://github.com/galaxyproject/gxformat2/pull/275
+.. _Pull Request 279: https://github.com/galaxyproject/gxformat2/pull/279
+.. _Pull Request 281: https://github.com/galaxyproject/gxformat2/pull/281
+.. _Pull Request 282: https://github.com/galaxyproject/gxformat2/pull/282
+.. _Pull Request 283: https://github.com/galaxyproject/gxformat2/pull/283
+.. _Pull Request 277: https://github.com/galaxyproject/gxformat2/pull/277
+.. _Pull Request 220: https://github.com/galaxyproject/gxformat2/pull/220
+.. _Pull Request 221: https://github.com/galaxyproject/gxformat2/pull/221
+.. _Pull Request 222: https://github.com/galaxyproject/gxformat2/pull/222
+.. _Pull Request 225: https://github.com/galaxyproject/gxformat2/pull/225
+.. _Pull Request 226: https://github.com/galaxyproject/gxformat2/pull/226
+.. _Pull Request 227: https://github.com/galaxyproject/gxformat2/pull/227
+.. _Pull Request 230: https://github.com/galaxyproject/gxformat2/pull/230
+.. _Pull Request 231: https://github.com/galaxyproject/gxformat2/pull/231
+.. _Pull Request 232: https://github.com/galaxyproject/gxformat2/pull/232
+.. _Pull Request 233: https://github.com/galaxyproject/gxformat2/pull/233
+.. _Pull Request 234: https://github.com/galaxyproject/gxformat2/pull/234
+.. _Pull Request 235: https://github.com/galaxyproject/gxformat2/pull/235
+.. _Pull Request 229: https://github.com/galaxyproject/gxformat2/pull/229
+.. _Pull Request 223: https://github.com/galaxyproject/gxformat2/pull/223
+.. _Pull Request 236: https://github.com/galaxyproject/gxformat2/pull/236
+.. _Pull Request 238: https://github.com/galaxyproject/gxformat2/pull/238
+.. _Pull Request 240: https://github.com/galaxyproject/gxformat2/pull/240
+.. _Pull Request 239: https://github.com/galaxyproject/gxformat2/pull/239
+.. _Pull Request 241: https://github.com/galaxyproject/gxformat2/pull/241
+.. _Pull Request 242: https://github.com/galaxyproject/gxformat2/pull/242
+.. _Pull Request 243: https://github.com/galaxyproject/gxformat2/pull/243
+.. _Pull Request 244: https://github.com/galaxyproject/gxformat2/pull/244
+.. _Pull Request 245: https://github.com/galaxyproject/gxformat2/pull/245
+.. _Pull Request 246: https://github.com/galaxyproject/gxformat2/pull/246
+.. _Pull Request 247: https://github.com/galaxyproject/gxformat2/pull/247
+.. _Pull Request 248: https://github.com/galaxyproject/gxformat2/pull/248
+.. _Pull Request 249: https://github.com/galaxyproject/gxformat2/pull/249
+.. _Pull Request 250: https://github.com/galaxyproject/gxformat2/pull/250
+.. _Pull Request 251: https://github.com/galaxyproject/gxformat2/pull/251
+.. _Pull Request 252: https://github.com/galaxyproject/gxformat2/pull/252
+.. _Pull Request 253: https://github.com/galaxyproject/gxformat2/pull/253
+.. _Pull Request 254: https://github.com/galaxyproject/gxformat2/pull/254
+.. _Pull Request 255: https://github.com/galaxyproject/gxformat2/pull/255
+.. _Pull Request 256: https://github.com/galaxyproject/gxformat2/pull/256
+.. _Pull Request 257: https://github.com/galaxyproject/gxformat2/pull/257
+.. _Pull Request 258: https://github.com/galaxyproject/gxformat2/pull/258
+.. _Pull Request 259: https://github.com/galaxyproject/gxformat2/pull/259
+.. _Pull Request 260: https://github.com/galaxyproject/gxformat2/pull/260
+.. _Pull Request 261: https://github.com/galaxyproject/gxformat2/pull/261
+.. _Pull Request 262: https://github.com/galaxyproject/gxformat2/pull/262
+.. _Pull Request 219: https://github.com/galaxyproject/gxformat2/pull/219
+.. _Pull Request 263: https://github.com/galaxyproject/gxformat2/pull/263
+.. _Pull Request 265: https://github.com/galaxyproject/gxformat2/pull/265
+.. _Pull Request 267: https://github.com/galaxyproject/gxformat2/pull/267
+.. _Pull Request 192: https://github.com/galaxyproject/gxformat2/pull/192
+.. _Pull Request 193: https://github.com/galaxyproject/gxformat2/pull/193
+.. _Pull Request 190: https://github.com/galaxyproject/gxformat2/pull/190
+.. _Pull Request 194: https://github.com/galaxyproject/gxformat2/pull/194
+.. _Pull Request 195: https://github.com/galaxyproject/gxformat2/pull/195
+.. _Pull Request 196: https://github.com/galaxyproject/gxformat2/pull/196
+.. _Pull Request 197: https://github.com/galaxyproject/gxformat2/pull/197
+.. _Pull Request 198: https://github.com/galaxyproject/gxformat2/pull/198
+.. _Pull Request 199: https://github.com/galaxyproject/gxformat2/pull/199
+.. _Pull Request 203: https://github.com/galaxyproject/gxformat2/pull/203
+.. _Pull Request 211: https://github.com/galaxyproject/gxformat2/pull/211
+.. _Pull Request 210: https://github.com/galaxyproject/gxformat2/pull/210
+.. _Pull Request 213: https://github.com/galaxyproject/gxformat2/pull/213
+.. _Pull Request 212: https://github.com/galaxyproject/gxformat2/pull/212
+.. _Pull Request 215: https://github.com/galaxyproject/gxformat2/pull/215
+.. _Pull Request 216: https://github.com/galaxyproject/gxformat2/pull/216
+.. _Pull Request 217: https://github.com/galaxyproject/gxformat2/pull/217
+.. _Pull Request 218: https://github.com/galaxyproject/gxformat2/pull/218
+.. _Pull Request 191: https://github.com/galaxyproject/gxformat2/pull/191
+.. _Pull Request 153: https://github.com/galaxyproject/gxformat2/pull/153
+.. _Pull Request 154: https://github.com/galaxyproject/gxformat2/pull/154
+.. _Pull Request 160: https://github.com/galaxyproject/gxformat2/pull/160
+.. _Pull Request 158: https://github.com/galaxyproject/gxformat2/pull/158
+.. _Pull Request 156: https://github.com/galaxyproject/gxformat2/pull/156
+.. _Pull Request 159: https://github.com/galaxyproject/gxformat2/pull/159
+.. _Pull Request 163: https://github.com/galaxyproject/gxformat2/pull/163
+.. _Pull Request 166: https://github.com/galaxyproject/gxformat2/pull/166
+.. _Pull Request 164: https://github.com/galaxyproject/gxformat2/pull/164
+.. _Pull Request 168: https://github.com/galaxyproject/gxformat2/pull/168
+.. _Pull Request 169: https://github.com/galaxyproject/gxformat2/pull/169
+.. _Pull Request 173: https://github.com/galaxyproject/gxformat2/pull/173
+.. _Pull Request 170: https://github.com/galaxyproject/gxformat2/pull/170
+.. _Pull Request 171: https://github.com/galaxyproject/gxformat2/pull/171
+.. _Pull Request 174: https://github.com/galaxyproject/gxformat2/pull/174
+.. _Pull Request 176: https://github.com/galaxyproject/gxformat2/pull/176
+.. _Pull Request 175: https://github.com/galaxyproject/gxformat2/pull/175
+.. _Pull Request 179: https://github.com/galaxyproject/gxformat2/pull/179
+.. _Pull Request 177: https://github.com/galaxyproject/gxformat2/pull/177
+.. _Pull Request 182: https://github.com/galaxyproject/gxformat2/pull/182
+.. _Pull Request 183: https://github.com/galaxyproject/gxformat2/pull/183
+.. _Pull Request 181: https://github.com/galaxyproject/gxformat2/pull/181
+.. _Pull Request 180: https://github.com/galaxyproject/gxformat2/pull/180
+.. _Pull Request 184: https://github.com/galaxyproject/gxformat2/pull/184
+.. _Pull Request 185: https://github.com/galaxyproject/gxformat2/pull/185
+.. _Pull Request 188: https://github.com/galaxyproject/gxformat2/pull/188
+.. _Pull Request 189: https://github.com/galaxyproject/gxformat2/pull/189
 .. _Pull Request 142: https://github.com/galaxyproject/gxformat2/pull/142
 .. _Pull Request 144: https://github.com/galaxyproject/gxformat2/pull/144
 .. _Pull Request 148: https://github.com/galaxyproject/gxformat2/pull/148
@@ -382,3 +651,5 @@ History
 .. _@jmchilton: https://github.com/jmchilton
 .. _@loichuder: https://github.com/loichuder
 .. _@simleo: https://github.com/simleo
+.. _@richard-burhans: https://github.com/richard-burhans
+.. _`@dependabot[bot]`: https://github.com/apps/dependabot

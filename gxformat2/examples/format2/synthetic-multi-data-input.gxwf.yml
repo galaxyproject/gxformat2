@@ -1,0 +1,18 @@
+class: GalaxyWorkflow
+label: Multi-data input
+inputs:
+  optional:
+    optional: true
+    type: data
+  required:
+    optional: false
+    type: data
+outputs: {}
+steps:
+  count_multi_file:
+    tool_id: count_multi_file
+    in:
+      input1:
+        source:
+        - required
+        - optional

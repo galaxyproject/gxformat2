@@ -202,10 +202,15 @@ Key options:
 - `encode_tool_state_json` — JSON-encode tool_state in native output (default True)
 - `state_encode_to_native` — Galaxy-provided callback to encode Format2 state
   back to native `tool_state` (accepts `(step_dict, state_dict)`, returns
-  encoded dict or `None` for default)
+  clean dict or `None` for default dict passthrough — no JSON encoding)
 - `state_encode_to_format2` — Galaxy-provided callback to decode native
   `tool_state` to Format2 `state` (accepts step dict, returns state dict
   or `None` for default)
+- `strict_structure` — validate input against the strict schema
+  (`extra="forbid"`) before normalization and sanity-check conversion
+  output against the target strict schema. Raises `ValidationError` on
+  any unrecognised keys. Threaded into nested sub-workflow normalization
+  (`$graph` dedup entries and inline `run:` dicts). Default False.
 
 See {py:class}`~gxformat2.options.ConversionOptions` for the full parameter list.
 
@@ -334,6 +339,26 @@ nnw = normalized_native(native_galaxy_workflow_model)
 from gxformat2.normalized import ensure_format2
 nf2 = ensure_format2(native_dict)
 ```
+
+Normalized models use `extra="ignore"`: unknown keys in the input dict
+are silently dropped and never appear in `to_dict()` output. To reject
+them instead, pass `strict_structure=True` — the raw dict is validated
+against the strict schema (`extra="forbid"`) before normalization and
+a `pydantic.ValidationError` is raised on any unrecognised keys:
+
+```python
+from pydantic import ValidationError
+
+try:
+    nf2 = normalized_format2(format2_dict, strict_structure=True)
+    nnw = normalized_native(native_dict, strict_structure=True)
+except ValidationError as e:
+    ...  # extra/unknown keys present
+```
+
+`GalaxyUserToolStub` and `ImportReference` (opaque passthroughs) keep
+`extra="allow"` regardless of this flag. The flag is also available on
+`ConversionOptions` for the `to_*` / `ensure_*` / `expanded_*` functions.
 
 ### Expanded Models
 

@@ -1,0 +1,253 @@
+# Format2 workflow linting
+# lint operations return {errors: [...], warnings: [...], error_count: N, warn_count: N}
+
+test_lint_basic_clean:
+  fixture: synthetic-basic.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_nested_subworkflow_clean:
+  fixture: synthetic-nested-subworkflow.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_pja_clean:
+  fixture: synthetic-pja-hide-rename.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_tags_clean:
+  fixture: synthetic-tags.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_rules_tool_clean:
+  fixture: synthetic-rules-tool.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_runtime_inputs_clean:
+  fixture: synthetic-runtime-inputs.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_user_defined_tool_clean:
+  fixture: synthetic-user-defined-tool.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_slash_labels_clean:
+  fixture: synthetic-slash-in-label-chained.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_when_step_clean:
+  fixture: synthetic-when-step.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_float_default_clean:
+  fixture: synthetic-float-input-default.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+# --- Structural error cases ---
+
+test_lint_format2_missing_class:
+  fixture: synthetic-lint-no-class.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "class"
+
+test_lint_format2_missing_steps:
+  fixture: synthetic-missing-steps.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "steps"
+
+test_lint_format2_nested_no_steps:
+  fixture: synthetic-lint-nested-no-steps.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "subworkflow"
+
+test_lint_format2_step_errors:
+  fixture: synthetic-lint-step-errors.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 1
+    - path: [warnings, 0]
+      value_contains: "error indicated during Galaxy export"
+
+test_lint_format2_testtoolshed:
+  fixture: synthetic-lint-testtoolshed.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 1
+    - path: [warnings, 0]
+      value_contains: "test tool shed"
+
+# --- Output/input validation ---
+
+test_lint_format2_bad_output_source:
+  fixture: synthetic-lint-bad-output-source.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "nonexistent_step"
+
+test_lint_format2_bad_int_default:
+  fixture: synthetic-lint-bad-int-default.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "invalid type"
+
+test_lint_format2_bad_float_default:
+  fixture: synthetic-lint-bad-float-default.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "invalid type"
+
+test_lint_format2_bad_string_default:
+  fixture: synthetic-lint-bad-string-default.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "invalid type"
+
+test_lint_format2_bad_list_defaults:
+  fixture: synthetic-lint-bad-list-defaults.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 5
+    - path: [errors, 0]
+      value: "Input default is of invalid type. Input mixed_list is [string]; its default must be a string or a list of strings."
+    - path: [errors, 1]
+      value: "Input default is of invalid type. Input number_default is [string]; its default must be a string or a list of strings."
+    - path: [errors, 2]
+      value: "Input default is of invalid type. Input bool_as_int is int; its default must be an integer."
+    - path: [errors, 3]
+      value: "Input default is of invalid type. Input int_list is [int]; its default must be an integer or a list of integers."
+    - path: [errors, 4]
+      value: "Input default is of invalid type. Input float_list is [float]; its default must be a number or a list of numbers."
+
+# --- Report validation ---
+
+test_lint_format2_report_clean:
+  fixture: synthetic-lint-report.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_duplicate_input_step_label:
+  fixture: synthetic-lint-duplicate-input-step-label.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'reads' (input reads, step reads)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+
+test_lint_duplicate_step_label_list:
+  fixture: synthetic-lint-duplicate-step-label-list.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'concat' (step 1, step 2)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+
+test_lint_duplicate_default_input_label:
+  fixture: synthetic-lint-duplicate-default-input-label.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'Input 0' (input 0, step 1)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+
+test_lint_duplicate_step_label_in_subworkflow:
+  fixture: synthetic-lint-duplicate-step-label-in-subworkflow.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'a' (step 1, step 2)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+
+test_lint_step_label_reused_in_subworkflow:
+  fixture: synthetic-lint-step-label-reused-in-subworkflow.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_format2_bad_color_directory_uri_defaults:
+  fixture: synthetic-lint-bad-color-directory-uri-defaults.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 2
+    - path: [errors, 0]
+      value: "Input default is of invalid type. Input highlight is color; its default must be a string."
+    - path: [errors, 1]
+      value: "Input default is of invalid type. Input output_dir is directory_uri; its default must be a string."

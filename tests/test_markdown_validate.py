@@ -12,7 +12,7 @@ def assert_markdown_invalid(markdown, at_line=None):
     except ValueError as e:
         failed = True
         if at_line is not None:
-            assert "Invalid line %d" % (at_line + 1) in str(e)
+            assert f"Invalid line {at_line + 1}" in str(e)
     assert failed, f"Expected markdown [{markdown}] to fail validation but it did not."
 
 

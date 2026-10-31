@@ -1,0 +1,19 @@
+class: GalaxyWorkflow
+inputs:
+  input1: data
+outputs:
+  out1:
+    outputSource: second_cat/out_file1
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: input1
+    out:
+       out_file1:
+         hide: true
+         rename: "the new value"
+  second_cat:
+    tool_id: cat1
+    in:
+      input1: first_cat/out_file1

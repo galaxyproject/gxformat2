@@ -1,22 +1,23 @@
 name: Deploy
 on: [push, pull_request]
+permissions: {}
 jobs:
   build_packages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7.0.0
         with:
-          python-version: '3.14'
+          python-version: '3.15'
           cache: pip
       - name: Install requirements
         run: |
           python3 -m pip install build twine
       - name: Create and check sdist and wheel packages
         run: make dist
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: packages
           path: dist/
@@ -28,7 +29,7 @@ jobs:
       id-token: write
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && github.repository_owner == 'galaxyproject'
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: packages
           path: dist

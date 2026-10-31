@@ -1,0 +1,13 @@
+class: GalaxyWorkflow
+inputs:
+  x: data
+outputs:
+  final_output:
+    outputSource: step1/out1
+steps:
+  step1:
+    tool_id: cat1
+    in:
+      input1: x
+    out:
+      - out1

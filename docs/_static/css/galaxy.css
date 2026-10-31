@@ -1,0 +1,480 @@
+/* Galaxy Design System overrides for pydata-sphinx-theme
+ *
+ * Brand tokens from Galaxy Core, Hub, and IWC design systems.
+ * Primary blue: #25537b | Dark navy: #2c3143 | Gold accent: #ffd700
+ * Font: Atkinson Hyperlegible (Braille Institute, accessibility-focused)
+ */
+
+@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap");
+
+/* ── Override pydata theme CSS custom properties ──────────────────────── */
+
+html,
+html:not([data-theme]),
+html[data-theme="light"] {
+    --pst-color-primary: #25537b;
+    --pst-color-primary-bg: #edf4fa;
+    --pst-color-secondary: #2c3143;
+    --pst-color-secondary-bg: #f8f9fa;
+    --pst-color-accent: #ffd700;
+    --pst-color-accent-bg: #fff8e1;
+    --pst-color-info: #25537b;
+    --pst-color-info-bg: #edf4fa;
+    --pst-color-warning: #fe7f02;
+    --pst-color-warning-bg: #fff3e0;
+    --pst-color-success: #66cc66;
+    --pst-color-success-bg: #e8f5e9;
+    --pst-color-danger: #e31a1e;
+    --pst-color-danger-bg: #fce4ec;
+    --pst-color-text-base: #2c3143;
+    --pst-color-text-muted: #58585a;
+    --pst-color-heading: #2c3143;
+    --pst-color-link: #25537b;
+    --pst-color-link-hover: #1d4263;
+    --pst-color-border: #dee2e6;
+    --pst-color-border-muted: rgba(44, 49, 67, 0.15);
+    --pst-color-background: #ffffff;
+    --pst-color-on-background: #ffffff;
+    --pst-color-surface: #f8f9fa;
+    --pst-color-on-surface: #2c3143;
+    --pst-color-shadow: rgba(44, 49, 67, 0.08);
+    --pst-color-inline-code: #25537b;
+    --pst-color-target: #fff8e1;
+    --pst-color-table-outer-border: #dee2e6;
+    --pst-color-table-heading-bg: #25537b;
+    --pst-color-table-inner-border: #dee2e6;
+    --pst-color-table-row-zebra-high-bg: #ffffff;
+    --pst-color-table-row-zebra-low-bg: #f8f9fa;
+    --pst-color-table-row-hover-bg: #edf4fa;
+    --pst-color-blockquote-notch: #ffd700;
+    --pst-font-family-base: "Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --pst-font-family-heading: "Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --pst-font-family-monospace: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
+/* ── Subtle grid background ───────────────────────────────────────────── */
+
+.bd-main {
+    background-image:
+        linear-gradient(to right, rgba(37, 83, 123, 0.04) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(37, 83, 123, 0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────── */
+
+.bd-header.navbar-fixed-top,
+.bd-header {
+    background: linear-gradient(135deg, #2c3143 0%, #25537b 100%) !important;
+    border-bottom: 3px solid #ffd700 !important;
+    box-shadow: 0 2px 8px rgba(44, 49, 67, 0.15);
+}
+
+.bd-header .navbar-brand,
+.bd-header .navbar-brand:hover,
+.bd-header .navbar-brand:focus,
+.bd-header .navbar-brand .logo__title,
+.bd-header .navbar-brand p,
+.bd-header .navbar-brand .title {
+    color: #ffffff !important;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.02em;
+}
+
+.bd-header .navbar-brand:hover,
+.bd-header .navbar-brand:hover .logo__title,
+.bd-header .navbar-brand:hover p,
+.bd-header .navbar-brand:hover .title {
+    color: #ffd700 !important;
+}
+
+/* Navbar links */
+.bd-header .bd-navbar-elements a.nav-link,
+.bd-header .navbar-nav .nav-link,
+.bd-header .nav-link,
+.bd-header a {
+    color: rgba(248, 249, 250, 0.85) !important;
+}
+
+.bd-header .bd-navbar-elements a.nav-link:hover,
+.bd-header .navbar-nav .nav-link:hover,
+.bd-header .nav-link:hover,
+.bd-header a:hover {
+    color: #ffd700 !important;
+}
+
+.bd-header .bd-navbar-elements a.nav-link.active,
+.bd-header .navbar-nav .nav-link.active {
+    color: #ffffff !important;
+}
+
+/* Active link underline - use gold instead of theme primary */
+.bd-header .bd-navbar-elements a.nav-link.active::before,
+.bd-header .navbar-nav .nav-link.active::before {
+    border-bottom-color: #ffd700 !important;
+}
+
+/* Search button / icon buttons in header */
+.bd-header .btn,
+.bd-header button {
+    color: rgba(248, 249, 250, 0.85) !important;
+    border-color: rgba(248, 249, 250, 0.25) !important;
+}
+
+.bd-header .btn:hover,
+.bd-header button:hover {
+    color: #ffd700 !important;
+    border-color: #ffd700 !important;
+}
+
+/* Theme switcher and icon links in header */
+.bd-header .theme-switch-button,
+.bd-header .navbar-icon-links a {
+    color: rgba(248, 249, 250, 0.85) !important;
+}
+
+.bd-header .theme-switch-button:hover,
+.bd-header .navbar-icon-links a:hover {
+    color: #ffd700 !important;
+}
+
+/* Dropdown menus in header */
+.bd-header .dropdown-menu {
+    background: #2c3143 !important;
+    border-color: rgba(248, 249, 250, 0.15) !important;
+}
+
+.bd-header .dropdown-menu a {
+    color: rgba(248, 249, 250, 0.85) !important;
+}
+
+.bd-header .dropdown-menu a:hover {
+    color: #ffd700 !important;
+    background-color: rgba(255, 215, 0, 0.1) !important;
+}
+
+/* ── Headings ─────────────────────────────────────────────────────────── */
+
+.bd-content h1 {
+    color: #2c3143;
+}
+
+.bd-content h2 {
+    color: #2c3143;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.25);
+    padding-bottom: 0.5rem;
+}
+
+.bd-content h3,
+.bd-content h4 {
+    color: #25537b;
+}
+
+/* ── Sidebar navigation ───────────────────────────────────────────────── */
+
+.bd-sidebar-primary .nav-link.active,
+.sidebar-primary-items__start .nav-link.active {
+    color: #25537b !important;
+    border-left-color: #ffd700 !important;
+    font-weight: 700;
+}
+
+/* ── Tables ───────────────────────────────────────────────────────────── */
+
+.bd-content table thead th,
+table.docutils thead th {
+    background-color: #25537b !important;
+    color: #ffffff !important;
+    border-color: #1d4263 !important;
+}
+
+/* ── Inline code ──────────────────────────────────────────────────────── */
+
+.bd-content code.literal,
+code:not([class]) {
+    background-color: #edf4fa;
+    color: #25537b;
+    border: 1px solid #dee2e6;
+    border-radius: 3px;
+    padding: 1px 4px;
+}
+
+/* ── Code blocks ──────────────────────────────────────────────────────── */
+
+.bd-content div.highlight {
+    border-radius: 0.5rem;
+    border: 1px solid #dee2e6;
+}
+
+/* ── Blockquotes ──────────────────────────────────────────────────────── */
+
+.bd-content blockquote {
+    border-left-color: #ffd700;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────── */
+
+.bd-footer {
+    background-color: #2c3143 !important;
+    color: #f8f9fa !important;
+    border-top: 3px solid #ffd700;
+}
+
+.bd-footer a {
+    color: #dee2e6 !important;
+}
+
+.bd-footer a:hover {
+    color: #ffd700 !important;
+}
+
+.bd-footer p,
+.bd-footer .footer-items__center,
+.bd-footer .footer-items__start,
+.bd-footer .footer-items__end {
+    color: rgba(248, 249, 250, 0.8) !important;
+}
+
+/* ── Sphinx-design cards ──────────────────────────────────────────────── */
+
+.sd-card {
+    border-color: #dee2e6 !important;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.sd-card:hover {
+    border-color: #25537b !important;
+    box-shadow: 0 4px 12px rgba(37, 83, 123, 0.1) !important;
+}
+
+.sd-card .sd-card-title {
+    color: #2c3143;
+}
+
+.sd-card .sd-card-body {
+    color: #58585a;
+}
+
+/* ── Cytoscape visualization iframes ──────────────────────────────────── */
+
+iframe[src*="workflow_viz"] {
+    border: 2px solid #2c3143 !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 2px 8px rgba(44, 49, 67, 0.1);
+}
+
+/* ── Prev/next page links ─────────────────────────────────────────────── */
+
+.prev-next-area a {
+    color: #25537b !important;
+    border-color: #dee2e6 !important;
+}
+
+.prev-next-area a:hover {
+    color: #2c3143 !important;
+    border-color: #ffd700 !important;
+}
+
+/* ── Admonitions ──────────────────────────────────────────────────────── */
+
+.admonition.tip {
+    border-left-color: #ffd700 !important;
+}
+
+/* ── Field lists (examples catalog) ───────────────────────────────────── */
+
+dl.field-list dt {
+    color: #25537b;
+    font-weight: 700;
+}
+
+/* ── Collapsible containers ───────────────────────────────────────────── */
+
+details {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+}
+
+details summary {
+    color: #25537b;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+details summary:hover {
+    color: #2c3143;
+}
+
+/* ── Header article bar (breadcrumbs + icon links row) ────────────────── */
+
+.bd-header-article {
+    border-bottom-color: #dee2e6 !important;
+    background-color: #f8f9fa;
+}
+
+/* ── Skip link ────────────────────────────────────────────────────────── */
+
+.skip-link {
+    background-color: #2c3143 !important;
+    color: #ffd700 !important;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.skip-link:focus {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ── Dark mode overrides ──────────────────────────────────────────────── */
+
+html[data-theme="dark"] {
+    --pst-color-primary: #6fa5d4;
+    --pst-color-primary-bg: #1a2332;
+    --pst-color-secondary: #8fb9dd;
+    --pst-color-secondary-bg: #212532;
+    --pst-color-accent: #ffd700;
+    --pst-color-info: #6fa5d4;
+    --pst-color-info-bg: #1a2332;
+    --pst-color-warning: #ff9245;
+    --pst-color-warning-bg: #2a1a08;
+    --pst-color-success: #98e192;
+    --pst-color-success-bg: #0a2a0a;
+    --pst-color-danger: #ff817b;
+    --pst-color-danger-bg: #2a0a0a;
+    --pst-color-text-base: #dee2e6;
+    --pst-color-text-muted: #aab0b4;
+    --pst-color-heading: #f8f9fa;
+    --pst-color-link: #6fa5d4;
+    --pst-color-link-hover: #8fb9dd;
+    --pst-color-border: #3c435c;
+    --pst-color-border-muted: rgba(248, 249, 250, 0.1);
+    --pst-color-background: #14181e;
+    --pst-color-on-background: #1c2028;
+    --pst-color-surface: #212532;
+    --pst-color-on-surface: #dee2e6;
+    --pst-color-shadow: rgba(0, 0, 0, 0.3);
+    --pst-color-inline-code: #8fb9dd;
+    --pst-color-target: #2a2308;
+    --pst-color-table-outer-border: #3c435c;
+    --pst-color-table-heading-bg: #25537b;
+    --pst-color-table-inner-border: #3c435c;
+    --pst-color-table-row-zebra-high-bg: #1c2028;
+    --pst-color-table-row-zebra-low-bg: #212532;
+    --pst-color-table-row-hover-bg: #1a2332;
+    --pst-color-blockquote-notch: #ffd700;
+    --pst-font-family-base: "Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --pst-font-family-heading: "Atkinson Hyperlegible", -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --pst-font-family-monospace: Monaco, Menlo, Consolas, "Courier New", monospace;
+}
+
+/* Dark mode grid background */
+html[data-theme="dark"] .bd-main {
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+/* Dark mode headings */
+html[data-theme="dark"] .bd-content h1 {
+    color: #f8f9fa;
+}
+
+html[data-theme="dark"] .bd-content h2 {
+    color: #f8f9fa;
+    border-bottom-color: rgba(255, 215, 0, 0.3);
+}
+
+html[data-theme="dark"] .bd-content h3,
+html[data-theme="dark"] .bd-content h4 {
+    color: #8fb9dd;
+}
+
+/* Dark mode inline code */
+html[data-theme="dark"] .bd-content code.literal,
+html[data-theme="dark"] code:not([class]) {
+    background-color: #212532;
+    color: #8fb9dd;
+    border-color: #3c435c;
+}
+
+/* Dark mode code blocks */
+html[data-theme="dark"] .bd-content div.highlight {
+    border-color: #3c435c;
+}
+
+/* Dark mode cards */
+html[data-theme="dark"] .sd-card {
+    border-color: #3c435c !important;
+    background-color: #1c2028 !important;
+}
+
+html[data-theme="dark"] .sd-card:hover {
+    border-color: #6fa5d4 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+html[data-theme="dark"] .sd-card .sd-card-title {
+    color: #f8f9fa !important;
+}
+
+html[data-theme="dark"] .sd-card .sd-card-body {
+    color: #aab0b4 !important;
+}
+
+/* Dark mode header-article bar */
+html[data-theme="dark"] .bd-header-article {
+    border-bottom-color: #3c435c !important;
+    background-color: #1c2028;
+}
+
+/* Dark mode footer */
+html[data-theme="dark"] .bd-footer {
+    background-color: #0e1117 !important;
+}
+
+/* Dark mode sidebar */
+html[data-theme="dark"] .bd-sidebar-primary .nav-link.active,
+html[data-theme="dark"] .sidebar-primary-items__start .nav-link.active {
+    color: #6fa5d4 !important;
+    border-left-color: #ffd700 !important;
+}
+
+/* Dark mode field lists */
+html[data-theme="dark"] dl.field-list dt {
+    color: #6fa5d4;
+}
+
+/* Dark mode details/collapsible */
+html[data-theme="dark"] details {
+    border-color: #3c435c;
+}
+
+html[data-theme="dark"] details summary {
+    color: #6fa5d4;
+}
+
+/* Dark mode prev/next */
+html[data-theme="dark"] .prev-next-area a {
+    color: #6fa5d4 !important;
+    border-color: #3c435c !important;
+}
+
+html[data-theme="dark"] .prev-next-area a:hover {
+    color: #ffd700 !important;
+    border-color: #ffd700 !important;
+}
+
+/* Dark mode cytoscape iframes */
+html[data-theme="dark"] iframe[src*="workflow_viz"] {
+    border-color: #3c435c !important;
+}

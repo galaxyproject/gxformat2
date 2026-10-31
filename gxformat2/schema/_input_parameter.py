@@ -1,0 +1,57 @@
+"""Resolve Format2 input ``type`` strings to pydantic model classes.
+
+The discriminator map mirrors ``pydantic:discriminator_map`` on
+``Process.inputs`` in ``schema/v19_09/Process.yml``. Keep the two in sync.
+
+Lives outside the generated modules in this package so ``build_schema.sh``
+regeneration does not clobber it.
+"""
+
+from __future__ import annotations
+
+from .gxformat2 import (
+    BaseInputParameter,
+    WorkflowBooleanParameter,
+    WorkflowCollectionParameter,
+    WorkflowColorParameter,
+    WorkflowDataParameter,
+    WorkflowDirectoryUriParameter,
+    WorkflowFloatParameter,
+    WorkflowIntegerParameter,
+    WorkflowTextParameter,
+)
+
+_INPUT_TYPE_TO_CLASS: dict[str, type[BaseInputParameter]] = {
+    "data": WorkflowDataParameter,
+    "File": WorkflowDataParameter,
+    "data_input": WorkflowDataParameter,
+    "collection": WorkflowCollectionParameter,
+    "data_collection": WorkflowCollectionParameter,
+    "data_collection_input": WorkflowCollectionParameter,
+    "integer": WorkflowIntegerParameter,
+    "int": WorkflowIntegerParameter,
+    "text": WorkflowTextParameter,
+    "string": WorkflowTextParameter,
+    "float": WorkflowFloatParameter,
+    "boolean": WorkflowBooleanParameter,
+    "color": WorkflowColorParameter,
+    "directory_uri": WorkflowDirectoryUriParameter,
+}
+
+
+def input_parameter_class(type_value: str | None) -> type[BaseInputParameter]:
+    """Return the specific input parameter class for a Format2 type string.
+
+    Falls back to WorkflowDataParameter for unknown or None types.
+    """
+    if type_value is None:
+        return WorkflowDataParameter
+    return _INPUT_TYPE_TO_CLASS.get(type_value, WorkflowDataParameter)
+
+
+def input_types_declaring(field: str) -> frozenset[str]:
+    """Format2 input type strings whose specific model declares ``field``."""
+    return frozenset(t for t, cls in _INPUT_TYPE_TO_CLASS.items() if field in cls.model_fields)
+
+
+INPUT_TYPES: frozenset[str] = frozenset(_INPUT_TYPE_TO_CLASS)

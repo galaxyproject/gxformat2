@@ -11,10 +11,9 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
-from typing import Annotated, Any, Union
+from typing import Annotated, Any, TypeAlias
 
 from pydantic import BaseModel, ConfigDict, Discriminator, Field, field_validator, Tag
-from typing_extensions import TypeAlias
 
 from gxformat2.schema.native import (
     _discriminate_comments,
@@ -38,24 +37,20 @@ from gxformat2.schema.native import (
     StepPosition,
     ToolShedRepository,
 )
+from gxformat2.schema.native_strict import NativeGalaxyWorkflow as StrictNativeGalaxyWorkflow
 
-from ._types import ToolReference
+from ._types import INLINE_TOOL_CLASSES, ToolReference
 
 NativeComment: TypeAlias = Annotated[
-    Union[
-        Annotated[NativeTextComment, Tag("NativeTextComment")],
-        Annotated[NativeMarkdownComment, Tag("NativeMarkdownComment")],
-        Annotated[NativeFrameComment, Tag("NativeFrameComment")],
-        Annotated[NativeFreehandComment, Tag("NativeFreehandComment")],
-    ],
+    Annotated[NativeTextComment, Tag("NativeTextComment")]
+    | Annotated[NativeMarkdownComment, Tag("NativeMarkdownComment")]
+    | Annotated[NativeFrameComment, Tag("NativeFrameComment")]
+    | Annotated[NativeFreehandComment, Tag("NativeFreehandComment")],
     Discriminator(_discriminate_comments),
 ]
 
 NativeCreator: TypeAlias = Annotated[
-    Union[
-        Annotated[CreatorPerson, Tag("CreatorPerson")],
-        Annotated[CreatorOrganization, Tag("CreatorOrganization")],
-    ],
+    Annotated[CreatorPerson, Tag("CreatorPerson")] | Annotated[CreatorOrganization, Tag("CreatorOrganization")],
     Discriminator(_discriminate_creator),
 ]
 
@@ -77,7 +72,7 @@ class NormalizedNativeStep(_DictMixin, BaseModel):
     tool_state is guaranteed to be a parsed dict.
     """
 
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     id: int = Field(description="Step ID.")
     name: str | None = Field(default=None)
@@ -137,6 +132,24 @@ class NormalizedNativeStep(_DictMixin, BaseModel):
         return self.type_ == NativeStepType.pick_value
 
     @property
+    def is_inline_tool_step(self) -> bool:
+        """The step carries an inline tool source via ``tool_representation``.
+
+        Currently matches ``class: GalaxyUserTool`` (per-user dynamic tools);
+        see ``INLINE_TOOL_CLASSES`` for the full list.
+        """
+        if not self.tool_representation:
+            return False
+        return self.tool_representation.get("class") in INLINE_TOOL_CLASSES
+
+    @property
+    def inline_tool_class(self) -> str | None:
+        """The ``class`` field of an inline tool representation, or ``None``."""
+        if not self.tool_representation:
+            return None
+        return self.tool_representation.get("class")
+
+    @property
     def connected_paths(self) -> frozenset[str]:
         """State paths that have incoming connections."""
         return frozenset(self.input_connections.keys())
@@ -148,7 +161,7 @@ class NormalizedNativeWorkflow(_DictMixin, BaseModel):
     Steps contain NormalizedNativeStep instances.
     """
 
-    model_config = ConfigDict(populate_by_name=True, extra="allow")
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     name: str | None = Field(default=None)
     a_galaxy_workflow: str = Field(default="true")
@@ -215,7 +228,7 @@ def _normalize_native_for_validation(data: dict[str, Any]) -> dict[str, Any]:
         for key, step in data["steps"].items():
             if isinstance(step, dict):
                 step = _normalize_step_for_validation(step)
-            steps[key] = step
+            steps[str(key)] = step  # Galaxy may use integer order_index as keys
         data["steps"] = steps
     return data
 
@@ -260,6 +273,8 @@ def _normalize_tags(data: dict[str, Any]) -> None:
 
 def normalized_native(
     workflow: dict[str, Any] | str | Path | os.PathLike[str] | NativeGalaxyWorkflow,
+    *,
+    strict_structure: bool = False,
 ) -> NormalizedNativeWorkflow:
     """Normalize a native Galaxy workflow into a fully typed model.
 
@@ -267,11 +282,17 @@ def normalized_native(
     ``NativeGalaxyWorkflow``.  Returns a ``NormalizedNativeWorkflow``
     where tool_state is always a dict, and all optional containers are
     resolved to empty defaults.
+
+    When *strict_structure* is True, the raw input dict is validated
+    against the strict schema (``extra="forbid"``) before normalization,
+    raising ``ValidationError`` on any unrecognised keys.
     """
     if isinstance(workflow, (str, Path)):
         with open(workflow) as f:
             workflow = json.load(f)
     if isinstance(workflow, dict):
+        if strict_structure:
+            StrictNativeGalaxyWorkflow.model_validate(workflow)
         workflow = load_native(workflow, strict=False)
     assert isinstance(workflow, NativeGalaxyWorkflow)
     return _normalize_workflow(workflow)
@@ -309,6 +330,13 @@ def _normalize_workflow(wf: NativeGalaxyWorkflow) -> NormalizedNativeWorkflow:
     )
 
 
+def _normalize_position(position: StepPosition | None) -> StepPosition | None:
+    """Strip legacy extra fields (bottom, height, right, width, x, y) from step positions."""
+    if position is None:
+        return None
+    return StepPosition(top=position.top, left=position.left)
+
+
 def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
     tool_state: dict[str, Any]
     if isinstance(step.tool_state, str):
@@ -339,7 +367,7 @@ def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
         tool_uuid=step.tool_uuid,
         uuid=step.uuid,
         errors=step.errors,
-        position=step.position,
+        position=_normalize_position(step.position),
         input_connections={k: v if isinstance(v, list) else [v] for k, v in (step.input_connections or {}).items()},
         inputs=step.inputs or [],
         outputs=step.outputs or [],

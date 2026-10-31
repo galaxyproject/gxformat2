@@ -2,7 +2,6 @@
 
 import os
 from enum import Enum
-from typing import List, Optional
 
 import yaml
 from pydantic import BaseModel
@@ -36,7 +35,7 @@ class CatalogEntry(BaseModel):
     file: str
     origin: ExampleOrigin
     format: ExampleFormat
-    tests: List[str]
+    tests: list[str]
 
     @property
     def name(self) -> str:
@@ -59,13 +58,13 @@ class CatalogEntry(BaseModel):
             return f.read()
 
     @property
-    def workflow_label(self) -> Optional[str]:
+    def workflow_label(self) -> str | None:
         """Workflow label or name extracted from the file."""
         wf = self.load()
         return wf.get("label") or wf.get("name")
 
     @property
-    def workflow_annotation(self) -> Optional[str]:
+    def workflow_annotation(self) -> str | None:
         """Workflow doc or annotation extracted from the file."""
         wf = self.load()
         doc = wf.get("doc") or wf.get("annotation") or ""
@@ -74,7 +73,7 @@ class CatalogEntry(BaseModel):
         return doc.strip() or None
 
 
-def load_catalog() -> List[CatalogEntry]:
+def load_catalog() -> list[CatalogEntry]:
     """Load and validate the example workflow catalog."""
     with open(os.path.join(EXAMPLES_DIR, "catalog.yml")) as f:
         raw = yaml.safe_load(f)
@@ -82,11 +81,18 @@ def load_catalog() -> List[CatalogEntry]:
 
 
 def get_path(name: str) -> str:
-    """Return absolute path to an example workflow file by name (with extension)."""
-    for subdir in [FORMAT2_DIR, NATIVE_DIR]:
-        path = os.path.join(subdir, name)
+    """Return absolute path to an example workflow file by name (with extension).
+
+    Recursively searches FORMAT2_DIR / NATIVE_DIR so callers can use bare names
+    regardless of subdir nesting (e.g. format2/draft/).
+    """
+    for root in [FORMAT2_DIR, NATIVE_DIR]:
+        path = os.path.join(root, name)
         if os.path.exists(path):
             return path
+        for dirpath, _dirnames, filenames in os.walk(root):
+            if name in filenames:
+                return os.path.join(dirpath, name)
     raise FileNotFoundError(f"Example workflow not found: {name}")
 
 

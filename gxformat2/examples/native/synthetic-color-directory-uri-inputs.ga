@@ -1,0 +1,29 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Color and directory URI parameter inputs",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "parameter_input",
+            "label": "highlight",
+            "tool_state": "{\"parameter_type\": \"color\", \"optional\": false, \"default\": \"#ff0000\"}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "position": {"left": 0, "top": 0},
+            "workflow_outputs": []
+        },
+        "1": {
+            "id": 1,
+            "type": "parameter_input",
+            "label": "output_dir",
+            "tool_state": "{\"parameter_type\": \"directory_uri\", \"optional\": true, \"validators\": [{\"type\": \"regex\", \"expression\": \"^s3://\", \"message\": \"must be an S3 URI\", \"negate\": false}]}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "position": {"left": 0, "top": 100},
+            "workflow_outputs": []
+        }
+    }
+}

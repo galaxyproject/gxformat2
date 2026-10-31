@@ -1,0 +1,31 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "PJA Test",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "data_input",
+            "label": "inp",
+            "tool_state": "{}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
+        },
+        "1": {
+            "id": 1,
+            "type": "tool",
+            "tool_id": "cat1",
+            "label": "cat",
+            "input_connections": {"input1": {"id": 0, "output_name": "output"}},
+            "post_job_actions": {
+                "RenameDatasetActionout_file1": {
+                    "action_type": "RenameDatasetAction",
+                    "output_name": "out_file1",
+                    "action_arguments": {"newname": "renamed_output"}
+                }
+            }
+        }
+    }
+}

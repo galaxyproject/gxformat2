@@ -1,0 +1,33 @@
+class: GalaxyWorkflowDraft
+label: bare-step source shorthand — `<step>` means `<step>/output`
+inputs:
+  reads:
+    type: data
+outputs:
+  out1:
+    outputSource: keep
+steps:
+  alpha:
+    tool_id: TODO
+    tool_version: TODO
+    label: drafty consumer of zebra via bare ref
+    in:
+      x: zebra
+    out:
+      - id: output
+  zebra:
+    tool_id: TODO
+    tool_version: TODO
+    label: drafty source
+    in:
+      x: reads
+    out:
+      - id: output
+  keep:
+    tool_id: cat1
+    tool_version: "1.0.0"
+    label: concrete consumer of zebra via bare ref
+    in:
+      input1: zebra
+    out:
+      - id: output

@@ -1,0 +1,27 @@
+class: GalaxyWorkflow
+doc: The same step label in the parent and an inline subworkflow — separate namespaces, lints clean.
+inputs:
+  reads: data
+outputs:
+  out:
+    outputSource: concat/out_file1
+steps:
+  nested:
+    in:
+      inner_reads: reads
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner_reads: data
+      outputs:
+        out:
+          outputSource: concat/out_file1
+      steps:
+        concat:
+          tool_id: cat1
+          in:
+            input1: inner_reads
+  concat:
+    tool_id: cat1
+    in:
+      input1: nested/out

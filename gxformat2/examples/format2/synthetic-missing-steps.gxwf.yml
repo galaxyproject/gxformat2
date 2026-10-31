@@ -1,0 +1,5 @@
+class: GalaxyWorkflow
+label: Missing steps
+inputs:
+  x:
+    type: File

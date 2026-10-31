@@ -1,0 +1,17 @@
+class: GalaxyWorkflow
+doc: |
+  Step has both an ``out:`` shorthand PJA (``rename:``) and an explicit
+  ``post_job_actions:`` entry — both should appear in the native step.
+inputs:
+  input1: data
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: input1
+    out:
+      out_file1:
+        rename: renamed.txt
+    post_job_actions:
+      ValidateOutputsAction:
+        action_type: ValidateOutputsAction

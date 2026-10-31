@@ -1,0 +1,13 @@
+class: GalaxyWorkflow
+doc: |
+  ``$link`` value parsed by YAML as an integer (e.g. ``$link: 0``). The
+  resolver expects a string source reference, so unquoted-numeric values
+  are coerced before source resolution.
+inputs:
+  myinput: data
+steps:
+  cat:
+    tool_id: cat1
+    state:
+      input1:
+        $link: 0

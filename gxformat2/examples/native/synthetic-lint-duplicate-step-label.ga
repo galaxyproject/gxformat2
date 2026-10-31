@@ -1,0 +1,23 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Duplicate step label",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "parameter_input",
+            "label": "Strip version from ids",
+            "tool_state": "{\"parameter_type\": \"boolean\", \"optional\": false}",
+            "workflow_outputs": []
+        },
+        "1": {
+            "id": 1,
+            "type": "tool",
+            "tool_id": "cat1",
+            "label": "Strip version from ids",
+            "workflow_outputs": [
+                {"output_name": "out_file1", "label": "out"}
+            ]
+        }
+    }
+}

@@ -4,7 +4,6 @@ from gxformat2.normalized import ensure_native, NormalizedNativeWorkflow, to_nat
 
 from .example_wfs import (
     BASIC_WORKFLOW,
-    INT_INPUT,
     MULTI_DATA_INPUT_WORKFLOW,
     MULTI_STRING_INPUT_WORKFLOW,
 )
@@ -19,22 +18,10 @@ def _to_native_model(yaml_str, **kwds):
 
 class TestToNativeBasic:
 
-    def test_basic_workflow(self):
-        result = _to_native_model(BASIC_WORKFLOW)
-        assert isinstance(result, NormalizedNativeWorkflow)
-        assert result.a_galaxy_workflow == "true"
-        assert result.format_version == "0.1"
-        assert len(result.steps) > 0
-
     def test_all_tool_state_are_dicts(self):
         result = _to_native_model(BASIC_WORKFLOW)
         for step in result.steps.values():
             assert isinstance(step.tool_state, dict), f"Step {step.id} tool_state is {type(step.tool_state)}"
-
-    def test_input_step_type(self):
-        result = _to_native_model(BASIC_WORKFLOW)
-        input_step = result.steps["0"]
-        assert input_step.type_ in ("data_input", "data_collection_input", "parameter_input")
 
     def test_tool_step_has_connections(self):
         result = _to_native_model(BASIC_WORKFLOW)
@@ -52,13 +39,6 @@ class TestToNativeBasic:
             all_outputs.extend(step.workflow_outputs)
         assert len(all_outputs) > 0
 
-    def test_int_input(self):
-        result = _to_native_model(INT_INPUT)
-        # Should have a parameter_input step
-        param_steps = [s for s in result.steps.values() if s.type_ == "parameter_input"]
-        assert len(param_steps) > 0
-        assert param_steps[0].tool_state.get("parameter_type") == "integer"
-
     def test_multi_data_input(self):
         result = _to_native_model(MULTI_DATA_INPUT_WORKFLOW)
         assert isinstance(result, NormalizedNativeWorkflow)
@@ -73,26 +53,6 @@ class TestToNativeBasic:
 
 class TestEnsureNative:
 
-    def test_accepts_native_dict(self):
-        native_dict = {
-            "a_galaxy_workflow": "true",
-            "format-version": "0.1",
-            "name": "native test",
-            "steps": {},
-        }
-        result = ensure_native(native_dict)
-        assert isinstance(result, NormalizedNativeWorkflow)
-        assert result.a_galaxy_workflow == "true"
-
-    def test_converts_format2_dict(self):
-        from gxformat2.yaml import ordered_load
-
-        fmt2 = ordered_load(BASIC_WORKFLOW)
-        result = ensure_native(fmt2)
-        assert isinstance(result, NormalizedNativeWorkflow)
-        assert result.a_galaxy_workflow == "true"
-        assert len(result.steps) > 0
-
     def test_expand_true_returns_expanded_type(self):
         from gxformat2.normalized import ExpandedNativeWorkflow
         from gxformat2.yaml import ordered_load
@@ -100,83 +60,6 @@ class TestEnsureNative:
         fmt2 = ordered_load(BASIC_WORKFLOW)
         result = ensure_native(fmt2, expand=True)
         assert isinstance(result, ExpandedNativeWorkflow)
-
-
-class TestToNativeSubworkflow:
-
-    def test_inline_subworkflow(self):
-        result = _to_native_model("""
-class: GalaxyWorkflow
-inputs:
-  outer_input: data
-steps:
-  first_cat:
-    tool_id: cat1
-    in:
-      input1: outer_input
-  nested_workflow:
-    run:
-      class: GalaxyWorkflow
-      inputs:
-        inner_input: data
-      steps:
-        - tool_id: random_lines1
-          state:
-            num_lines: 1
-            input:
-              $link: inner_input
-            seed_source:
-              seed_source_selector: set_seed
-              seed: asdf
-    in:
-      inner_input: first_cat/out_file1
-""")
-        sub_steps = [s for s in result.steps.values() if s.type_ == "subworkflow"]
-        assert len(sub_steps) == 1
-        assert sub_steps[0].subworkflow is not None
-        assert sub_steps[0].subworkflow.a_galaxy_workflow == "true"
-
-    def test_url_subworkflow_passthrough(self):
-        result = _to_native_model("""
-class: GalaxyWorkflow
-inputs:
-  outer_input: data
-steps:
-  first_cat:
-    tool_id: cat1
-    in:
-      input1: outer_input
-  nested_workflow:
-    run: https://example.com/my_subworkflow.gxwf.yml
-    in:
-      inner_input: first_cat/out_file1
-""")
-        sub_steps = [s for s in result.steps.values() if s.type_ == "subworkflow"]
-        assert len(sub_steps) == 1
-        assert sub_steps[0].content_id == "https://example.com/my_subworkflow.gxwf.yml"
-        assert sub_steps[0].subworkflow is None
-
-
-class TestToNativePause:
-
-    def test_pause_step(self):
-        result = _to_native_model("""
-class: GalaxyWorkflow
-inputs:
-  test_input: data
-steps:
-  first_cat:
-    tool_id: cat1
-    in:
-      input1: test_input
-  the_pause:
-    type: pause
-    in:
-      input: first_cat/out_file1
-""")
-        pause_steps = [s for s in result.steps.values() if s.type_ == "pause"]
-        assert len(pause_steps) == 1
-        assert pause_steps[0].tool_state.get("name") is not None
 
 
 class TestToNativePickValue:
@@ -197,24 +80,6 @@ steps:
         pick_steps = [s for s in result.steps.values() if s.type_ == "pick_value"]
         assert len(pick_steps) == 1
         assert pick_steps[0].tool_state.get("num_inputs", 0) >= 2
-
-
-class TestToNativeComments:
-
-    def test_comments_converted(self):
-        result = _to_native_model("""
-class: GalaxyWorkflow
-inputs:
-  the_input: data
-outputs: {}
-steps: {}
-comments:
-  - type: text
-    text: Hello world
-    position: [10, 20]
-    size: [100, 50]
-""")
-        assert len(result.comments) == 1
 
 
 class TestToNativeUserTool:

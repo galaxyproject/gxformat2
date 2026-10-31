@@ -1,0 +1,179 @@
+<!doctype html>
+
+<html>
+
+<head>
+    <title>Galaxy Workflow</title>
+    <script src="https://unpkg.com/cytoscape@3.33.2/dist/cytoscape.min.js"></script>
+    <script src="https://unpkg.com/dagre@0.8.5/dist/dagre.min.js"></script>
+    <script src="https://unpkg.com/cytoscape-dagre@2.5.0/cytoscape-dagre.js"></script>
+    <script src="https://unpkg.com/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://unpkg.com/cytoscape-popper@2.0.0/cytoscape-popper.js"></script>
+    <script src="https://unpkg.com/tippy.js@6.3.7/dist/tippy.umd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6.3.7/dist/tippy.css" />
+    <script>
+document.addEventListener("DOMContentLoaded", function() {
+    var requestedLayout = $layout;
+    var dagreReady = (typeof cytoscapeDagre !== 'undefined');
+    if (dagreReady && cytoscape.use) {
+        try { cytoscape.use(cytoscapeDagre); } catch (e) { /* already registered */ }
+    }
+    var layoutConfig = (function(name) {
+        if (name === 'dagre') {
+            return dagreReady
+                ? { name: 'dagre', rankDir: 'LR', nodeSep: 40, rankSep: 80 }
+                : { name: 'preset' };
+        }
+        if (name === 'breadthfirst') return { name: 'breadthfirst', directed: true, spacingFactor: 1.2 };
+        if (name === 'grid') return { name: 'grid' };
+        if (name === 'cose') return { name: 'cose' };
+        if (name === 'random') return { name: 'random' };
+        if (name === 'topological') return { name: 'preset' };
+        return { name: 'preset' };
+    })(requestedLayout);
+    var cy = cytoscape({
+        container: document.getElementById('cy'),
+        elements: $elements,
+        layout: layoutConfig,
+        // so we can see the ids
+        style: [
+            {
+                selector: 'node',
+                style: {
+                    'label': 'data(label)'
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'curve-style': 'bezier',
+                    'target-arrow-shape': 'vee',
+                    'arrow-scale': 2
+                }
+            },
+            {
+                selector: ".input",
+                style: {
+                    shape: 'diamond',
+                    'background-color': '#d0bb46'
+                }
+            },
+            {
+                selector: ".runnable",
+                style: {
+                    shape: 'round-rectangle',
+                    'background-color': '#2c3143'
+                }
+            },
+            {
+                selector: 'edge.mapover_1',
+                style: { width: 4, 'line-color': '#5a8' }
+            },
+            {
+                selector: 'edge.mapover_2',
+                style: { width: 6, 'line-color': '#5a8' }
+            },
+            {
+                selector: 'edge.mapover_3',
+                style: { width: 8, 'line-color': '#5a8' }
+            },
+            {
+                selector: 'edge.reduction',
+                style: {
+                    'line-style': 'dashed',
+                    'line-color': '#a55',
+                    'target-arrow-shape': 'tee',
+                    'target-arrow-color': '#a55'
+                }
+            }
+        ]
+      });
+
+  function makePopper(ele) {
+    let ref = ele.popperRef(); // used only for positioning
+    let dummyDomEle = document.createElement('div');
+
+    ele.tippy = tippy(dummyDomEle, { // tippy options:
+      getReferenceClientRect: ref.getBoundingClientRect.bind(ref),
+      content: function() {
+        let content = document.createElement('div');
+
+        let innerHTML = '';
+        if(ele.isNode()) {
+            let stepType = ele.data("step_type");
+            innerHTML +=  "<p><i>Step Type:</i> " + stepType + "</p>";
+            let toolId = ele.data("tool_id");
+            if (toolId) {
+                innerHTML +=  "<p><i>ToolID:</i> " + toolId + "</p>";
+            }
+            let repoLink = ele.data("repo_link");
+            if (repoLink) {
+                innerHTML += "<a href=" + repoLink + '">Visit Tool Shed Repository</a>';
+            }
+            let doc = ele.data('doc');
+            if (doc) {
+                innerHTML += "<p>" + doc + "</p>";
+            }
+        } else {
+            let output = ele.data("output");
+            let input = ele.data("input");
+            if(output) {
+                innerHTML += "Output named " + output + " connects to " + input;
+            } else {
+                innerHTML += "Connected to input " + input;
+            }
+            let mapDepth = ele.data("map_depth");
+            if (mapDepth) {
+                let mapping = ele.data("mapping");
+                innerHTML += "<p><i>Map depth:</i> " + mapDepth + (mapping ? " (" + mapping + ")" : "") + "</p>";
+            }
+            if (ele.data("reduction")) {
+                innerHTML += "<p><i>Reduction:</i> list → multi-data</p>";
+            }
+        }
+        content.innerHTML = innerHTML;
+
+        return content;
+      },
+      delay: [0,1000],
+      interactive: true,
+      placement: 'bottom',
+      trigger: 'manual', // probably want manual mode
+      appendTo: document.body
+    });
+  }
+
+ cy.ready(function() {
+    cy.elements().forEach(function(ele) {
+      makePopper(ele);
+    });
+  });
+
+  cy.elements().unbind('mouseover');
+  cy.elements().bind('mouseover', function(event) { event.target.tippy.show(); });
+
+  cy.elements().unbind('mouseout');
+  cy.elements().bind('mouseout', function(event) { event.target.tippy.hide(); });
+  // document.querySelector('#cypng').setAttribute('src', cy.png());
+});
+
+    </script>
+</head>
+
+<style>
+    #cy {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+    }
+    a {
+        color: #d0bb46
+    }
+</style>
+
+<body>
+    <div id="cy"></div>
+</body>
+</html>

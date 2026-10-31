@@ -1,0 +1,13 @@
+class: GalaxyWorkflow
+label: TestToolShed reference
+inputs:
+  the_input:
+    type: File
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: testtoolshed.g2.bx.psu.edu/repos/devteam/cat/cat1/1.0.0
+    in:
+      input1: the_input

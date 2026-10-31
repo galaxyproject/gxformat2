@@ -7,6 +7,23 @@
     - tests/test_schema.py
     - tests/test_to_native.py
     - tests/test_export_abstract.py
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+    - tests/test_layout.py
+
+- file: format2/synthetic-cycle.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_layout.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-crossing-reversed.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_layout.py
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-nested-subworkflow.gxwf.yml
   origin: synthetic
@@ -14,12 +31,154 @@
   tests:
     - tests/test_lint.py
     - tests/test_export_abstract.py
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-tool-step.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_pydantic_schema.py
+
+- file: format2/draft/synthetic-draft-plan-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_pydantic_schema.py
+
+- file: format2/draft/synthetic-draft-plan-top-level.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-chain.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-subworkflow-inner-draft.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-extract-cascade.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-fully-concrete.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-next-step-tiebreak.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-todo-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-dangling-edge.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-plan-on-concrete.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bare-step-ref.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-diagnostics.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-todo-shapes.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-list-form.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-plan-fields.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-inner-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-next-outer-first.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-extract-rewrites.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-extract-drop-order.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-extract-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-user-tool.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-unlinted-best-practices.gxwf.yml
   origin: synthetic
   format: format2
   tests:
     - tests/test_lint_best_practices.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-untyped-params.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
 
 - file: native/real-unicycler-assembly.ga
   origin: real
@@ -27,62 +186,89 @@
   tests:
     - tests/test_lint.py
     - tests/test_basic.py
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
 
 - file: native/real-hacked-unicycler-assembly-with-tags.ga
   origin: real-hacked
   format: native
   tests:
     - tests/test_lint.py
+    - tests/test_interop_tests.py
 
 - file: native/real-hacked-unicycler-assembly-no-tool.ga
   origin: real-hacked
   format: native
   tests:
     - tests/test_lint.py
+    - tests/test_interop_tests.py
 
 - file: native/real-hacked-unicycler-assembly-testtoolshed.ga
   origin: real-hacked
   format: native
   tests:
     - tests/test_lint.py
+    - tests/test_interop_tests.py
 
 - file: native/real-hacked-unicycler-assembly-extra-annotations.ga
   origin: real-hacked
   format: native
   tests:
     - tests/test_cytoscape.py
+    - tests/test_interop_tests.py
 
 - file: native/real-sars-cov2-variant-calling.ga
   origin: real
   format: native
+  description: >
+    Real Galaxy export with legacy issues: tags exported as empty string
+    instead of list, and extra position fields (bottom, height, right, width)
+    that Galaxy no longer emits.
   tests:
     - tests/test_to_format2.py
     - tests/test_to_native.py
     - tests/test_export_abstract.py
+    - tests/test_interop_tests.py
+
+- file: native/real-amr-gene-detection.ga
+  origin: real
+  format: native
+  description: >
+    Real IWC workflow (bacterial_genomics/amr_gene_detection): 13 nodes, 28
+    edges over 4 layers. A dense, real-world graph where the ``layered`` layout
+    strategy visibly reduces edge crossings versus ``topological`` (13 -> 2).
+    Used by the layout crossing-reduction test and the gxwf-layout docs.
+  tests:
+    - tests/test_layout.py
+    - tests/test_interop_tests.py
 
 - file: native/real-ecoli-comparison.ga
   origin: real
   format: native
   tests:
     - tests/test_lint.py
+    - tests/test_interop_tests.py
 
 - file: native/real-shed-tools-raw.ga
   origin: real
   format: native
   tests:
     - tests/test_lint.py
+    - tests/test_interop_tests.py
 
 - file: native/real-multi-data-input.ga
   origin: real
   format: native
   tests:
     - tests/test_to_format2.py
+    - tests/test_interop_tests.py
 
 - file: native/real-multi-string-input.ga
   origin: real
   format: native
   tests:
     - tests/test_to_format2.py
+    - tests/test_interop_tests.py
 
 - file: native/real-basic-without-step-input-label.ga
   origin: real
@@ -90,21 +276,921 @@
   tests:
     - tests/test_to_format2.py
     - tests/test_export_abstract.py
+    - tests/test_interop_tests.py
+    - tests/test_layout.py
 
 - file: native/synthetic-unlinted-best-practices.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_lint_best_practices.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-unlinted-best-practices-dict-tool-state.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_lint_best_practices.py
+    - tests/test_interop_tests.py
 
 - file: native/synthetic-unlinted-best-practices-bad-identifier.ga
   origin: synthetic
   format: native
   tests:
     - tests/test_lint_best_practices.py
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-untyped-params.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_interop_tests.py
+
+# --- test_normalized.py fixtures ---
+
+- file: format2/synthetic-graph-simple.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-graph-with-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-inner-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-input-shorthand.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-step-in-shorthand.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-url-run-yml.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-inner-nested-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-single-versioned-tool.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-tool-with-inline-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-minimal-tool.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-inner-subworkflow.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-native-data-input.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-outer-inline-subworkflow.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-outer-url-subworkflow.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-native-tool-with-subworkflow.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_normalized.py
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-linked-trs-subworkflows.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_interop_tests.py
+
+# --- test_interop_tests.py conversion fixtures ---
+
+- file: native/synthetic-labeled-tool.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-rename-pja.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-numeric-input-bounds.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Int/float parameter inputs with min/max bounds.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-color-directory-uri-inputs.ga
+  origin: synthetic
+  format: native
+  description: Color and directory URI parameter inputs.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_export_abstract.py
+
+- file: native/synthetic-multiple-text-validators.ga
+  origin: synthetic
+  format: native
+  description: Multiple text input carrying a regex validator.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-numeric-range-validators.ga
+  origin: synthetic
+  format: native
+  description: Integer/float parameter inputs with in_range and regex validators.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-color-directory-uri-inputs.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Color and directory URI parameter inputs.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_export_abstract.py
+    - tests/test_pydantic_schema.py
+
+- file: format2/synthetic-int-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-pause-step.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-comments-list.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+# --- normalization gap coverage fixtures ---
+
+- file: format2/synthetic-doc-array.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-input-type-aliases.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-step-out-shorthand.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-inputs-array.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-list-form-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: List-form inputs/outputs/steps with dict-form step in/out.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-tool-state-json.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-state-tool-state-conflict.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-tags.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+# --- migrated from example_wfs.py ---
+
+- file: format2/synthetic-optional-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-when-step.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-pja-hide-rename.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-paired-list-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-float-input-default.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-string-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-integer-type-alias.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-multi-data-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_to_native.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-multi-string-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_to_native.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-rules-tool.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-runtime-inputs.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_to_native.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-slash-in-input-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-slash-in-step-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-slash-in-label-chained.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-sample-sheet-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-text-restrictions.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-text-restrictions-options.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-multi-text-input-validators.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Multiple-value text parameter input with a regex validator.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-text-input-validators.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Text parameter inputs with regex validators.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-text-suggestions.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-text-restrict-on-connections.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-restrictions-on-data.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-validators-on-color.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-restrictions-on-directory-uri.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-multiple-color.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-multiple-directory-uri.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-validators-on-int.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-column-defs-on-list.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-column-default-mismatch.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-record-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bad-fields-on-list.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-comments-dict.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_comments.py
+    - tests/test_interop_tests.py
+    - tests/test_layout.py
+
+- file: format2/synthetic-user-defined-tool.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_basic.py
+    - tests/test_interop_tests.py
+
+# --- validation test fixtures ---
+
+- file: format2/synthetic-extra-field.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
+- file: format2/synthetic-extra-field-output.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
+- file: format2/synthetic-missing-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
+- file: format2/synthetic-inline-subworkflow-no-class.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Inline subworkflow run without class — normalizes as GalaxyWorkflow.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-extra-field.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
+- file: native/synthetic-missing-marker.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
+- file: native/real-hacked-basic-missing-format-version.ga
+  origin: real-hacked
+  format: native
+  description: real-basic-without-step-input-label.ga with format-version removed.
+  tests:
+    - tests/test_schema_rules_catalog.py
+
+# --- lint error/warning fixture files ---
+
+- file: format2/synthetic-lint-no-class.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Missing class key — triggers lint and schema validation errors.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
+- file: format2/synthetic-lint-nested-no-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Inline subworkflow with no steps — triggers nested lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-duplicate-default-input-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Id-less list-form input defaults to label "Input 0", which a step reuses — triggers duplicate step label lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-duplicate-input-step-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Input and step share a label — triggers duplicate step label lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-duplicate-step-label-list.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: List-form steps repeat a label — triggers duplicate step label lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-duplicate-step-label-in-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Two steps of an inline subworkflow share a label — triggers nested lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-step-errors.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Step with errors field set — triggers Galaxy export error warning.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-step-label-reused-in-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Same step label in parent and inline subworkflow — separate namespaces, lints clean.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-testtoolshed.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Step referencing test tool shed — triggers warning.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-bad-output-source.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: outputSource pointing to nonexistent step — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-bad-int-default.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: String default on int input — triggers type mismatch lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-bad-float-default.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: String default on float input — triggers type mismatch lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-bad-color-directory-uri-defaults.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Non-string defaults on color and directory URI inputs — triggers type mismatch lint errors.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-bad-string-default.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Integer default on string input — triggers type mismatch lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-bad-list-defaults.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Multiple text/int/float inputs with mistyped default entries and a boolean int default — triggers type mismatch lint errors.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-bad-color-directory-uri-defaults.ga
+  origin: synthetic
+  format: native
+  description: Non-string defaults on color and directory URI parameter inputs — triggers type mismatch lint errors.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-bad-parameter-defaults.ga
+  origin: synthetic
+  format: native
+  description: Text and integer parameter inputs (single and multiple) with mistyped defaults — triggers type mismatch lint errors.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-report.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Valid workflow report — verifies clean lint pass.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-lint-report-bad-type.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Report with non-string markdown (integer) — pydantic rejects.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
+- file: native/synthetic-lint-no-steps.ga
+  origin: synthetic
+  format: native
+  description: Missing steps key — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-bad-format-version.ga
+  origin: synthetic
+  format: native
+  description: Invalid format-version value — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
+- file: native/synthetic-lint-bad-marker.ga
+  origin: synthetic
+  format: native
+  description: a_galaxy_workflow set to "false" — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
+- file: native/synthetic-lint-non-integer-step.ga
+  origin: synthetic
+  format: native
+  description: Non-integer step key — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-duplicate-step-label.ga
+  origin: synthetic
+  format: native
+  description: Parameter input and tool step share a label (as in IWC PR 310) — triggers lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-duplicate-step-label-in-subworkflow.ga
+  origin: synthetic
+  format: native
+  description: Two steps of a subworkflow share a label — triggers nested lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-step-label-reused-in-subworkflow.ga
+  origin: synthetic
+  format: native
+  description: Same step label in parent and subworkflow — separate namespaces, lints clean.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-unlabeled-steps.ga
+  origin: synthetic
+  format: native
+  description: Several steps with null, empty or missing labels — not duplicates, lints clean.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-nested-no-steps.ga
+  origin: synthetic
+  format: native
+  description: Subworkflow with empty steps — triggers nested lint error.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-output-no-label.ga
+  origin: synthetic
+  format: native
+  description: Workflow output without label — triggers warning.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-report.ga
+  origin: synthetic
+  format: native
+  description: Valid workflow report — verifies clean lint pass.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-lint-report-bad-type.ga
+  origin: synthetic
+  format: native
+  description: Report with non-string markdown (integer) — pydantic rejects.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema_rules_catalog.py
+
+# --- best practices lint fixture files ---
+
+- file: format2/synthetic-bp-no-annotation.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: No doc field — triggers "not annotated" best practice warning.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bp-disconnected-input.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Step input with no source or default — triggers disconnected warning.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-bp-step-no-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: List-form steps without labels — triggers "no label" warning.
+  tests:
+    - tests/test_interop_tests.py
+
+# --- schema-vs-codegen mismatches (issue #205) ---
+
+- file: format2/synthetic-int-link.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: $link value as a YAML integer; coerced to str during source resolution.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-multisource-bare-list.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: "Dict-form in: value as a bare list of source references (mapPredicate shorthand for multi-source)."
+  tests:
+    - tests/test_interop_tests.py
+
+# --- post_job_actions fixtures (issue #206) ---
+
+- file: format2/synthetic-step-post-job-actions.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Step-level explicit post_job_actions map (ValidateOutputsAction).
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-step-post-job-actions-merged.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Step has both out:-shorthand and explicit post_job_actions; both flow to native.
+  tests:
+    - tests/test_interop_tests.py
+
+# --- step-input default fixtures (issue #207) ---
+
+- file: format2/synthetic-step-input-default-scalar.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: "Tool step with scalar tool-state defaults via in/param/default."
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-step-input-default-file.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: "Tool step with an inline File-class default via in/input1/default."
+  tests:
+    - tests/test_interop_tests.py
+- file: format2/draft/synthetic-draft-mixed-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-planned-source.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+
+- file: format2/draft/synthetic-draft-slash-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-implicit-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-list-form-bad-todo.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-unlabeled-list-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-mixed-case-order.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-labeled-step-id-ref.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-extract-list-identities.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_normalized.py
+
+- file: format2/draft/synthetic-draft-extract-nested-list-identities.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_normalized.py
+
+- file: format2/draft/synthetic-draft-bad-shorthand-input-type.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-shared-semantics.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-nested-input-shapes.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-unicode-order.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-bad-record-input-type.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py

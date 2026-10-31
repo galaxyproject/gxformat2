@@ -1,0 +1,14 @@
+class: GalaxyWorkflow
+inputs:
+  inner_input: data
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      input: inner_input
+      num_lines:
+        default: 2
+      seed_source|seed_source_selector:
+        default: set_seed
+      seed_source|seed:
+        default: asdf

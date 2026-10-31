@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Modify version...
 import os
 import os.path
@@ -26,7 +25,8 @@ def main(argv):
 
     history_path = os.path.join(PROJECT_DIRECTORY, "HISTORY.rst")
     if not DEV_RELEASE:
-        history = open(history_path).read()
+        with open(history_path) as f:
+            history = f.read()
 
         def extend(from_str, line):
             from_str += "\n"
@@ -41,15 +41,18 @@ def main(argv):
 
     """,
         )
-        open(history_path, "w").write(history)
+        with open(history_path, "w") as f:
+            f.write(history)
 
     mod_path = os.path.join(PROJECT_DIRECTORY, source_dir, "__init__.py")
-    mod = open(mod_path).read()
+    with open(mod_path) as f:
+        mod = f.read()
     if not DEV_RELEASE:
         mod = re.sub(r'__version__ = "[\d\.]+"', f'__version__ = "{new_version}.dev0"', mod, 1)
     else:
         mod = re.sub(f"dev{dev_version}", f"dev{new_dev_version}", mod, 1)
-    mod = open(mod_path, "w").write(mod)
+    with open(mod_path, "w") as f:
+        f.write(mod)
     shell(
         [
             "git",

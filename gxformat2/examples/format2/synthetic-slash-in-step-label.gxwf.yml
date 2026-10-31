@@ -1,0 +1,11 @@
+class: GalaxyWorkflow
+inputs:
+  the_input: data
+outputs:
+  the_output:
+    outputSource: Host/Contaminant Filter/out_file1
+steps:
+  Host/Contaminant Filter:
+    tool_id: cat1
+    in:
+      input1: the_input

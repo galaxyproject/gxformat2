@@ -153,11 +153,15 @@ $graph:
       doc: |
         The action type identifier (e.g. ``HideDatasetAction``).
     - name: output_name
-      type: string
+      type:
+        - string
+        - "null"
       jsonldPredicate:
         _id: "gxnative:output_name"
       doc: |
-        The step output this action applies to.
+        The step output this action applies to.  Optional: action types that
+        operate on the step as a whole (e.g. ``ValidateOutputsAction``) omit
+        this field.
     - name: action_arguments
       type: Any?
       pydantic:type: "dict[str, Any] | None"
@@ -670,6 +674,7 @@ $graph:
         symbols: [ gxnative:NativeGalaxyWorkflow ]
     - name: a_galaxy_workflow
       type: string
+      pydantic:type: "Literal['true']"
       doc: |
         Format marker. Always the string ``"true"``.
     - name: format_version
@@ -677,6 +682,7 @@ $graph:
       jsonldPredicate:
         _id: "gxnative:format_version"
       pydantic:alias: "format-version"
+      pydantic:type: "Literal['0.1']"
       doc: |
         Format version. Always ``"0.1"`` currently.
         In the JSON document this field is written as ``format-version``.

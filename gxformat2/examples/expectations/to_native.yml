@@ -1,0 +1,313 @@
+test_to_native_basic_structure:
+  fixture: synthetic-basic.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [a_galaxy_workflow]
+      value: "true"
+    - path: [format_version]
+      value: "0.1"
+    - path: [name]
+      value: "Simple workflow"
+
+test_to_native_input_step_type:
+  fixture: synthetic-basic.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", type_]
+      value: data_input
+    - path: [steps, "0", label]
+      value: the_input
+
+test_to_native_tool_step:
+  fixture: synthetic-basic.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", tool_id]
+      value: cat1
+    - path: [steps, "1", label]
+      value: cat
+
+test_to_native_tool_connections:
+  fixture: synthetic-basic.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", input_connections, input1, $length]
+      value: 1
+
+test_to_native_workflow_outputs:
+  fixture: synthetic-basic.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", workflow_outputs, $length]
+      value: 1
+    - path: [steps, "1", workflow_outputs, 0, label]
+      value: the_output
+
+test_to_native_int_input:
+  fixture: synthetic-int-input.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: parameter_input
+    - path: [steps, "1", tool_state, parameter_type]
+      value: integer
+
+test_to_native_inline_subworkflow:
+  fixture: synthetic-graph-with-subworkflow.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "2", type_]
+      value: subworkflow
+    - path: [steps, "2", subworkflow, a_galaxy_workflow]
+      value: "true"
+    - path: [steps, "2", subworkflow, steps, "1", tool_id]
+      value: random_lines1
+
+test_to_native_url_subworkflow:
+  fixture: synthetic-url-run-yml.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: subworkflow
+    - path: [steps, "1", content_id]
+      value: "https://example.com/wf.yml"
+    - path: [steps, "1", subworkflow]
+      value: null
+
+test_to_native_pause_step:
+  fixture: synthetic-pause-step.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "2", type_]
+      value: pause
+    - path: [steps, "2", label]
+      value: the_pause
+    - path: [steps, "2", tool_state, name]
+      value: the_pause
+
+test_to_native_comments:
+  fixture: synthetic-comments-list.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [comments, $length]
+      value: 1
+
+# --- migrated from test_basic.py ---
+
+test_to_native_when_expression:
+  fixture: synthetic-when-step.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "2", when]
+      value: "$(inputs.seed != 'skip')"
+
+test_to_native_pja_hide:
+  fixture: synthetic-pja-hide-rename.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", post_job_actions, HideDatasetActionout_file1, action_type]
+      value: HideDatasetAction
+
+test_to_native_pja_rename:
+  fixture: synthetic-pja-hide-rename.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", post_job_actions, RenameDatasetActionout_file1, action_arguments, newname]
+      value: "the new value"
+
+test_to_native_multi_data_connections:
+  fixture: synthetic-multi-data-input.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "2", input_connections, input1, $length]
+      value: 2
+
+test_to_native_user_defined_tool:
+  fixture: synthetic-user-defined-tool.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, $length]
+      value: 2
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", tool_representation, class]
+      value: GalaxyUserTool
+    - path: [steps, "1", tool_representation, name]
+      value: cat_user_defined
+    - path: [steps, "1", tool_representation, container]
+      value: busybox
+    - path: [steps, "1", tool_id]
+      value: null
+    - path: [steps, "1", tool_uuid]
+      value: null
+
+test_to_native_comments_dict:
+  fixture: synthetic-comments-dict.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [comments, $length]
+      value: 3
+
+test_to_native_step_input_default_scalar:
+  fixture: synthetic-step-input-default-scalar.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", tool_id]
+      value: random_lines1
+    - path: [steps, "1", in_,num_lines, default]
+      value: 2
+    - path: [steps, "1", in_,"seed_source|seed_source_selector", default]
+      value: set_seed
+    - path: [steps, "1", in_,"seed_source|seed", default]
+      value: asdf
+
+test_to_native_step_input_default_file:
+  fixture: synthetic-step-input-default-file.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", type_]
+      value: tool
+    - path: [steps, "0", tool_id]
+      value: cat1
+    - path: [steps, "0", in_, input1, default, class]
+      value: File
+    - path: [steps, "0", in_, input1, default, basename]
+      value: a file
+
+test_to_native_list_form_steps:
+  fixture: synthetic-list-form-steps.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [a_galaxy_workflow]
+      value: "true"
+    - path: [name]
+      value: "List form workflow"
+    - path: [steps, "0", type_]
+      value: data_input
+    - path: [steps, "0", label]
+      value: the_input
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", tool_id]
+      value: cat1
+    - path: [steps, "1", label]
+      value: cat
+
+test_to_native_list_form_step_dict_in_connections:
+  fixture: synthetic-list-form-steps.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", input_connections, input1, $length]
+      value: 1
+    - path: [steps, "1", input_connections, input1, 0, id]
+      value: 0
+    - path: [steps, "1", input_connections, input1, 0, output_name]
+      value: output
+
+test_to_native_list_form_step_dict_out_pja:
+  fixture: synthetic-list-form-steps.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", workflow_outputs, $length]
+      value: 1
+    - path: [steps, "1", workflow_outputs, 0, label]
+      value: the_output
+    - path: [steps, "1", post_job_actions, HideDatasetActionout_file1, action_type]
+      value: HideDatasetAction
+
+test_to_native_unlabelled_list_step_numeric_output_source:
+  fixture: synthetic-bp-step-no-label.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: tool
+    - path: [steps, "1", workflow_outputs, $length]
+      value: 1
+    - path: [steps, "1", workflow_outputs, 0, label]
+      value: the_output
+    - path: [steps, "0", workflow_outputs, $length]
+      value: 0
+
+test_to_native_input_bounds_min_max:
+  fixture: synthetic-numeric-input-bounds.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", tool_state, parameter_type]
+      value: integer
+    - path: [steps, "0", tool_state, validators]
+      value:
+        - {type: in_range, min: 1, max: 5, negate: false}
+
+test_to_native_input_bounds_min_only:
+  fixture: synthetic-numeric-input-bounds.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", tool_state, validators]
+      value:
+        - {type: in_range, min: 0, max: null, negate: false}
+
+test_to_native_input_bounds_max_only:
+  fixture: synthetic-numeric-input-bounds.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "2", tool_state, parameter_type]
+      value: float
+    - path: [steps, "2", tool_state, validators]
+      value:
+        - {type: in_range, min: null, max: 0.5, negate: false}
+
+test_to_native_text_input_validators:
+  fixture: synthetic-text-input-validators.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", tool_state, parameter_type]
+      value: text
+    - path: [steps, "0", tool_state, validators]
+      value:
+        - {type: regex, expression: "^moo", message: must start with moo, negate: false}
+    - path: [steps, "1", tool_state, validators]
+      value:
+        - {type: regex, expression: cow, negate: true}
+
+test_to_native_multi_text_input_validators:
+  fixture: synthetic-multi-text-input-validators.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", tool_state, multiple]
+      value: true
+    - path: [steps, "0", tool_state, validators]
+      value:
+        - {type: regex, expression: "^[ACGT]+$", negate: false}
+
+test_to_native_inline_subworkflow_no_class:
+  fixture: synthetic-inline-subworkflow-no-class.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", type_]
+      value: subworkflow
+    - path: [steps, "1", subworkflow, steps, "1", tool_id]
+      value: cat1
+
+test_to_native_color_directory_uri_inputs:
+  fixture: synthetic-color-directory-uri-inputs.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "0", type_]
+      value: parameter_input
+    - path: [steps, "0", tool_state, parameter_type]
+      value: color
+    - path: [steps, "0", tool_state, default]
+      value: "#ff0000"
+    - path: [steps, "1", type_]
+      value: parameter_input
+    - path: [steps, "1", tool_state, parameter_type]
+      value: directory_uri
+    - path: [steps, "1", tool_state, optional]
+      value: true
+    - path: [steps, "1", tool_state, validators]
+      value:
+        - {type: regex, expression: "^s3://", message: must be an S3 URI, negate: false}

@@ -1,0 +1,195 @@
+# Native workflow linting
+# lint operations return {errors: [...], warnings: [...], error_count: N, warn_count: N}
+
+test_lint_native_unicycler_clean:
+  fixture: real-unicycler-assembly.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_native_no_outputs_warns:
+  fixture: real-shed-tools-raw.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warnings, 0]
+      value_contains: "no outputs"
+
+test_lint_native_missing_tool_warns:
+  fixture: real-hacked-unicycler-assembly-no-tool.ga
+  operation: lint_native
+  assertions:
+    - path: [warn_count]
+      value: 1
+    - path: [warnings, 0]
+      value_contains: "error indicated during Galaxy export"
+
+test_lint_native_testtoolshed_warns:
+  fixture: real-hacked-unicycler-assembly-testtoolshed.ga
+  operation: lint_native
+  assertions:
+    - path: [warn_count]
+      value: 1
+    - path: [warnings, 0]
+      value_contains: "test tool shed"
+
+test_lint_native_minimal_no_outputs:
+  fixture: synthetic-minimal-tool.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warnings, 0]
+      value_contains: "no outputs"
+
+# --- Structural error cases ---
+
+test_lint_native_missing_steps:
+  fixture: synthetic-lint-no-steps.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "steps"
+
+test_lint_native_bad_format_version:
+  fixture: synthetic-lint-bad-format-version.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "format-version"
+
+test_lint_native_bad_marker:
+  fixture: synthetic-lint-bad-marker.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "a_galaxy_workflow"
+
+test_lint_native_non_integer_step_key:
+  fixture: synthetic-lint-non-integer-step.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "integer"
+    - path: [errors, 0, linter]
+      value: NativeStepKeyNotInteger
+    - path: [errors, 0, json_pointer]
+      value_contains: "/steps/"
+
+test_lint_native_duplicate_step_label:
+  fixture: synthetic-lint-duplicate-step-label.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'Strip version from ids' (step 0, step 1)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+    - path: [errors, 0, json_pointer]
+      value: "/steps/1/label"
+
+test_lint_native_duplicate_step_label_in_subworkflow:
+  fixture: synthetic-lint-duplicate-step-label-in-subworkflow.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Duplicated step label 'concat' (step 0, step 1)"
+    - path: [errors, 0, linter]
+      value: StepLabelNotUnique
+    - path: [errors, 0, json_pointer]
+      value: "/steps/0/subworkflow/steps/1/label"
+
+test_lint_native_step_label_reused_in_subworkflow:
+  fixture: synthetic-lint-step-label-reused-in-subworkflow.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_native_unlabeled_steps:
+  fixture: synthetic-lint-unlabeled-steps.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_native_nested_no_steps:
+  fixture: synthetic-lint-nested-no-steps.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "subworkflow"
+
+test_lint_native_output_no_label:
+  fixture: synthetic-lint-output-no-label.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 1
+    - path: [warnings, 0]
+      value_contains: "output without a label"
+
+# --- Report validation ---
+
+test_lint_native_missing_marker:
+  fixture: synthetic-missing-marker.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value_contains: "a_galaxy_workflow"
+
+test_lint_native_report_clean:
+  fixture: synthetic-lint-report.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_native_bad_parameter_defaults:
+  fixture: synthetic-lint-bad-parameter-defaults.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 4
+    - path: [errors, 0]
+      value: "Input default is of invalid type. Input mixed_list is [string]; its default must be a string or a list of strings."
+    - path: [errors, 1]
+      value: "Input default is of invalid type. Input number_default is string; its default must be a string."
+    - path: [errors, 2]
+      value: "Input default is of invalid type. Input bool_as_int is int; its default must be an integer."
+    - path: [errors, 3]
+      value: "Input default is of invalid type. Input int_list is [int]; its default must be an integer or a list of integers."
+
+test_lint_native_bad_color_directory_uri_defaults:
+  fixture: synthetic-lint-bad-color-directory-uri-defaults.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 2
+    - path: [errors, 0]
+      value: "Input default is of invalid type. Input highlight is color; its default must be a string."
+    - path: [errors, 1]
+      value: "Input default is of invalid type. Input output_dir is directory_uri; its default must be a string."

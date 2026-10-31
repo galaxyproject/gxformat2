@@ -7,12 +7,23 @@ can load and validate both Format2 and native Galaxy workflow documents.
 import json
 
 import pytest
+from pydantic import ValidationError
 
+from gxformat2.draft import is_todo_sentinel, PLAN_FIELDS, TODO_SENTINEL_PATTERN
+from gxformat2.examples import load
 from gxformat2.export import from_galaxy_native
 from gxformat2.schema.gxformat2 import (
     GalaxyWorkflow,
     WorkflowStep,
 )
+from gxformat2.schema.gxformat2_draft import (
+    DraftWorkflowStep,
+    GalaxyWorkflowDraft,
+)
+from gxformat2.schema.gxformat2_draft_strict import DraftWorkflowStep as StrictDraftWorkflowStep
+from gxformat2.schema.gxformat2_draft_strict import GalaxyWorkflowDraft as StrictGalaxyWorkflowDraft
+from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWorkflow
+from gxformat2.schema.json_schema import workflow_json_schema
 from gxformat2.schema.native import (
     NativeGalaxyWorkflow,
     NativeInputConnection,
@@ -281,11 +292,60 @@ class TestFormat2Pydantic:
         wf = GalaxyWorkflow.model_validate(data)
         assert len(wf.creator) == 1
 
+    @pytest.mark.parametrize("model", [GalaxyWorkflow, StrictGalaxyWorkflow])
+    def test_color_directory_uri_input_classes(self, model):
+        wf = model.model_validate(load("synthetic-color-directory-uri-inputs.gxwf.yml"))
+        assert [type(i).__name__ for i in wf.inputs] == ["WorkflowColorParameter", "WorkflowDirectoryUriParameter"]
+
+    @pytest.mark.parametrize("strict", [False, True])
+    def test_json_schema_color_directory_uri_inputs(self, strict):
+        defs = workflow_json_schema(strict=strict)["$defs"]
+        assert defs["WorkflowColorParameter"]["properties"]["type"]["const"] == "color"
+        directory_uri = defs["WorkflowDirectoryUriParameter"]["properties"]
+        assert directory_uri["type"]["const"] == "directory_uri"
+        assert "validators" in directory_uri
+
     def test_extra_fields_allowed(self):
         data = ordered_load(BASIC_FORMAT2)
         data["unknown"] = "value"
         wf = GalaxyWorkflow.model_validate(data)
         assert wf.label == "simple workflow"
+
+    def test_draft_plan_fields_round_trip_by_alias(self):
+        wf = StrictGalaxyWorkflowDraft.model_validate(load("synthetic-draft-tool-step.gxwf.yml"))
+        assert wf.class_ == "GalaxyWorkflowDraft"
+        step = wf.steps["fastp"]
+        assert isinstance(step, StrictDraftWorkflowStep)
+        assert step.plan_state.startswith("Adapter trimming")
+        assert step.plan_context.startswith("Upstream process")
+        assert step.plan_in == "TODO_input is the paired reads collection.\n"
+        assert "TODO_trimmed_paired" in step.plan_out
+        dumped = step.model_dump(by_alias=True)
+        for field in PLAN_FIELDS:
+            assert field in dumped
+
+    def test_draft_plan_fields_allowed_on_subworkflow_step(self):
+        wf = StrictGalaxyWorkflowDraft.model_validate(load("synthetic-draft-plan-subworkflow.gxwf.yml"))
+        step = wf.steps["qc"]
+        assert step.type_.value == "subworkflow"
+        assert step.plan_context.startswith("The nested workflow is settled")
+
+    def test_draft_workflow_is_separate_model(self):
+        draft = load("synthetic-draft-tool-step.gxwf.yml")
+        wf = GalaxyWorkflowDraft.model_validate(draft)
+        assert wf.class_ == "GalaxyWorkflowDraft"
+        assert isinstance(wf.steps["fastp"], DraftWorkflowStep)
+        with pytest.raises(ValidationError):
+            StrictGalaxyWorkflow.model_validate(draft)
+
+    def test_todo_sentinel_metadata(self):
+        assert TODO_SENTINEL_PATTERN == r"^TODO(_[a-zA-Z0-9_]+)?$"
+        assert is_todo_sentinel("TODO")
+        assert is_todo_sentinel("TODO_trimmed_paired")
+        assert is_todo_sentinel("TODO_Trimmed")
+        assert is_todo_sentinel("TODO_TRIMMED")
+        assert not is_todo_sentinel("todo_trimmed_paired")
+        assert not is_todo_sentinel("TODO-TRIMMED")
 
 
 # --- IWC integration tests ---

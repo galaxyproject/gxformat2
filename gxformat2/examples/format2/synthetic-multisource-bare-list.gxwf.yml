@@ -1,0 +1,15 @@
+class: GalaxyWorkflow
+doc: |
+  Dict-form ``in:`` value as a bare YAML list of source references for a
+  multi-source input. The schema's ``mapPredicate: source`` shorthand
+  permits this and ``Sink.source`` accepts ``list[str]``.
+inputs:
+  input1: data
+  input2: data
+steps:
+  count_multi_file:
+    tool_id: count_multi_file
+    in:
+      input1:
+        - input1
+        - input2

@@ -3,6 +3,7 @@ on: [push, pull_request]
 concurrency:
   group: tox-${{ github.ref }}
   cancel-in-progress: true
+permissions: {}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -10,22 +11,22 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        python-version: ['3.9', '3.10', '3.11', '3.12', '3.13', '3.14']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14', '3.15']
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
       with:
         persist-credentials: false
     - name: Clone IWC
       if: matrix.python-version == '3.13'
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         repository: galaxyproject/iwc
         ref: main
         path: iwc
         persist-credentials: false
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7.0.0
       with:
         python-version: ${{ matrix.python-version }}
         allow-prereleases: true

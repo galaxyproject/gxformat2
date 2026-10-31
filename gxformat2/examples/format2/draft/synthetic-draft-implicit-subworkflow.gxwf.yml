@@ -1,0 +1,29 @@
+class: GalaxyWorkflowDraft
+label: subworkflow step with no explicit type
+inputs:
+  reads:
+    type: data
+outputs:
+  result:
+    outputSource: sub/out
+steps:
+  sub:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner:
+          type: data
+      outputs:
+        out:
+          outputSource: cat/out_file1
+      steps:
+        cat:
+          tool_id: cat1
+          in:
+            input1: inner
+    in:
+      inner: reads
+    out:
+      - id: out
+    _plan_context: |
+      Subworkflow type is inferred from run:, not declared.

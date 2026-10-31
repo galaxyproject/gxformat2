@@ -27,7 +27,7 @@ DIST_DIRECTORY="${PROJECT_DIRECTORY}/dist/schema"
 rm -rf "${DIST_DIRECTORY}"
 mkdir -p "${DIST_DIRECTORY}"
 cp schema/*png "${DIST_DIRECTORY}"
-curl https://raw.githubusercontent.com/jxtx/galaxy-bootstrap/master/dist/galaxy_bootstrap.min.css -o "$DIST_DIRECTORY/galaxy_bootstrap.min.css"
+cp schema/galaxy_docs.css "${DIST_DIRECTORY}/galaxy_docs.css"
 
 # Requires schema-salad-doc that recognizes --brandstyle and --brandinverse
 for schema in "v19_09";
@@ -35,16 +35,26 @@ do
     cd schema/"$schema";
     python_schema_name=${schema//./_}
     schema-salad-tool --codegen python workflow.yml > "${SCHEME_SOURCE_DIRECTORY}/${python_schema_name}.py"
+    schema-salad-tool --codegen python draft_workflow.yml > "${SCHEME_SOURCE_DIRECTORY}/${python_schema_name}_draft.py"
 
     out="${DIST_DIRECTORY}/${schema}.html"
     schema-salad-doc \
-        --brandstyle '<link rel="stylesheet" href="galaxy_bootstrap.min.css">' \
+        --brandstyle '<link rel="stylesheet" href="galaxy_docs.css">' \
         --brandinverse \
-        --brand '<img src="icon.png" />' \
+        --brand '<img src="icon.png" /> Galaxy Workflow Format 2' \
         --brandlink '' \
         --only "https://galaxyproject.org/gxformat2/${schema}#WorkflowDoc" \
         --only "https://galaxyproject.org/gxformat2/${schema}#GalaxyWorkflow" \
         workflow.yml > "$out"
+
+    draft_out="${DIST_DIRECTORY}/${schema}_draft.html"
+    schema-salad-doc \
+        --brandstyle '<link rel="stylesheet" href="galaxy_docs.css">' \
+        --brandinverse \
+        --brand '<img src="icon.png" /> Galaxy Workflow Format 2 Draft' \
+        --brandlink '' \
+        --only "https://galaxyproject.org/gxformat2/${schema}/draft#GalaxyWorkflowDraft" \
+        draft_workflow.yml > "$draft_out"
 
     if [ $SKIP_JAVA -eq 0 ]; then
         java_package="${PROJECT_DIRECTORY}/java"
@@ -79,9 +89,9 @@ schema-salad-tool --codegen python workflow.yml > "${SCHEME_SOURCE_DIRECTORY}/na
 
 out="${DIST_DIRECTORY}/native_v0_1.html"
 schema-salad-doc \
-    --brandstyle '<link rel="stylesheet" href="galaxy_bootstrap.min.css">' \
+    --brandstyle '<link rel="stylesheet" href="galaxy_docs.css">' \
     --brandinverse \
-    --brand '<img src="icon.png" />' \
+    --brand '<img src="icon.png" /> Galaxy Workflow Format 2' \
     --brandlink '' \
     --only "https://galaxyproject.org/gxformat2/native_v0_1#NativeWorkflowDoc" \
     --only "https://galaxyproject.org/gxformat2/native_v0_1#NativeGalaxyWorkflow" \
@@ -95,9 +105,28 @@ if [ $SKIP_PYDANTIC -eq 0 ]; then
     cd "${PROJECT_DIRECTORY}"
     schema-salad-plus-pydantic generate schema/v19_09/workflow.yml -o "${SCHEME_SOURCE_DIRECTORY}/gxformat2.py"
     schema-salad-plus-pydantic generate schema/v19_09/workflow.yml --strict -o "${SCHEME_SOURCE_DIRECTORY}/gxformat2_strict.py"
+    python3 scripts/generate_pydantic.py schema/v19_09/draft_workflow.yml \
+        --document-root GalaxyWorkflowDraft \
+        -o "${SCHEME_SOURCE_DIRECTORY}/gxformat2_draft.py"
+    python3 scripts/generate_pydantic.py schema/v19_09/draft_workflow.yml \
+        --document-root GalaxyWorkflowDraft \
+        --strict \
+        -o "${SCHEME_SOURCE_DIRECTORY}/gxformat2_draft_strict.py"
     schema-salad-plus-pydantic generate schema/native_v0_1/workflow.yml -o "${SCHEME_SOURCE_DIRECTORY}/native.py"
     schema-salad-plus-pydantic generate schema/native_v0_1/workflow.yml --strict -o "${SCHEME_SOURCE_DIRECTORY}/native_strict.py"
+    schema-salad-plus-pydantic enhance-docs schema/v19_09/draft_workflow.yml "${DIST_DIRECTORY}/v19_09_draft.html"
     schema-salad-plus-pydantic enhance-docs schema/native_v0_1/workflow.yml "${DIST_DIRECTORY}/native_v0_1.html"
+
+    # Post-codegen patches: fix Field(default=...) emitted with positional
+    # extras for multi-symbol Literals, and re-add the input_parameter_class
+    # dispatcher helper that newer generators no longer emit.
+    python3 "${PROJECT_DIRECTORY}/scripts/patch_generated_pydantic.py" \
+        "${SCHEME_SOURCE_DIRECTORY}/gxformat2.py" \
+        "${SCHEME_SOURCE_DIRECTORY}/gxformat2_strict.py" \
+        "${SCHEME_SOURCE_DIRECTORY}/gxformat2_draft.py" \
+        "${SCHEME_SOURCE_DIRECTORY}/gxformat2_draft_strict.py" \
+        "${SCHEME_SOURCE_DIRECTORY}/native.py" \
+        "${SCHEME_SOURCE_DIRECTORY}/native_strict.py"
 else
     # Fallback post-processing without schema-salad-plus-pydantic
     sed -i.bak 's/format_version/format-version/g' "$out"

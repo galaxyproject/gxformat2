@@ -1,0 +1,19 @@
+class: GalaxyWorkflow
+doc: |
+  Step-level explicit ``post_job_actions:`` map.  Cribbed from Galaxy's
+  ``test_validated_post_job_action_validated`` to exercise PJAs that have
+  no ``out:`` shorthand (``ValidateOutputsAction`` operates on the step
+  as a whole, not on a specific output).  See gxformat2 #206.
+inputs:
+  input1: data
+outputs:
+  wf_output_1:
+    outputSource: first_cat/out_file1
+steps:
+  first_cat:
+    tool_id: cat1
+    in:
+      input1: input1
+    post_job_actions:
+      ValidateOutputsAction:
+        action_type: ValidateOutputsAction

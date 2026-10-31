@@ -1,0 +1,10 @@
+class: GalaxyWorkflow
+inputs:
+  x: data
+outputs: {}
+steps:
+  step1:
+    tool_id: cat1
+    tool_state: '{"input1": "value1", "num_lines": 5}'
+    in:
+      input1: x

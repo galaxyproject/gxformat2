@@ -137,6 +137,56 @@ class ReferencesTool(BaseModel):
     tool_shed_repository: None | ToolShedRepository = Field(default=None, description="The Galaxy Tool Shed repository that should be installed in order to use this tool.")
     tool_version: None | str = Field(default=None, description="The tool version corresponding used to run this step of the workflow. For tool shed installed tools, the ID generally uniquely specifies a version and this field is optional.")
 
+class SampleSheetColumnDefinition(BaseModel):
+    """Describes one column of a sample-sheet collection input.
+Used in `column_definitions` on a `collection_type: sample_sheet[:<type>]`
+workflow input."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    name: str = Field(description="Column name. Must not contain special characters (matches `^[\\w\\-_ \\?]*$`).")
+    description: None | str = Field(default=None, description="Optional human-readable column description.")
+    type_: Literal["string", "int", "float", "boolean", "element_identifier"] = Field(default="string", alias="type", description="Value type for this column. One of `string`, `int`, `float`, `boolean`, or `element_identifier`. Mirrors Galaxy's runtime `SampleSheetColumnType`.")
+    optional: bool = Field(description="If true, rows may omit a value for this column.")
+    default_value: None | str | int | float | bool = Field(default=None, description="Default value used when a row omits this column. Type must be compatible with `type` - validated by the pydantic post-validator.")
+    validators: None | list[Any] = Field(default=None, description="Galaxy-style parameter validators. Modelled as opaque records here - full validator schema lives in galaxy.tool_util_models.")
+    restrictions: None | list[str | int | float | bool] = Field(default=None, description="Closed set of permitted values for this column. Item type must be compatible with the column `type` (post-validated).")
+    suggestions: None | list[str | int | float | bool] = Field(default=None, description="Open suggestion list for this column.")
+
+class RecordFieldDefinition(BaseModel):
+    """Describes one field of a `record` collection input.
+Used in `fields` on a `collection_type` containing `record` (e.g.
+`record`, `list:record`, `sample_sheet:record`). Mirrors a subset of
+the CWL `InputRecordSchema` shape that Galaxy persists on
+`DatasetCollection.fields`."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    name: str = Field(description="Field name. Must equal the corresponding element identifier in the materialized record collection.")
+    type_: Literal["File", "null", "boolean", "int", "float", "string"] | list[Literal["File", "null", "boolean", "int", "float", "string"]] = Field(default="File", alias="type", description="Field value type. A subset of the CWL primitive types: `File`, `null`, `boolean`, `int`, `float`, `string`. May be a list to express a union (e.g. `[\"File\", \"null\"]` for an optional file).")
+    format: None | str = Field(default=None, description="Optional Galaxy datatype hint for `File`-typed fields.")
+
+class WorkflowTextOption(BaseModel):
+    """A `{value, label}` option used in `restrictions` or `suggestions` on a
+text workflow parameter. Plain strings are also accepted in those
+arrays as shorthand for `{value: <str>, label: <str>}`."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    value: str = Field(description="Machine value submitted to the connected tool input.")
+    label: None | str = Field(default=None, description="Human label shown in Galaxy. Defaults to `value` when omitted.")
+
+class WorkflowTextValidator(BaseModel):
+    """A validator restricting values of a text workflow parameter. Persisted
+in native Galaxy as an entry of the input step's `tool_state.validators`."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    type_: Literal["regex"] = Field(default="regex", alias="type", description="Validator type. Only `regex` is supported.")
+    expression: str = Field(description="Regular expression matched from the start of the value. End it with `$` to require a complete-value match.")
+    message: None | str = Field(default=None, description="Message shown when a value fails validation.")
+    negate: None | bool = Field(default=None, description="Reject matching values instead of values that do not match. Defaults to `false`.")
+
 class ToolShedRepository(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
@@ -235,7 +285,7 @@ Common action types: ``HideDatasetAction``, ``RenameDatasetAction``,
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
     action_type: str = Field(description="The action type identifier (e.g. ``HideDatasetAction``).")
-    output_name: str = Field(description="The step output this action applies to.")
+    output_name: str | None = Field(default=None, description="The step output this action applies to.  Optional: action types that operate on the step as a whole (e.g. ``ValidateOutputsAction``) omit this field.")
     action_arguments: dict[str, Any] | None = Field(default=None, description="Action-specific arguments. For ``RenameDatasetAction``: ``{\"newname\": \"...\"}``; for ``ChangeDatatypeAction``: ``{\"newtype\": \"tabular\"}``; for ``TagDatasetAction``: ``{\"tags\": \"name:tag\"...")
 
 class NativeTextCommentData(BaseModel):
@@ -391,8 +441,8 @@ added without version bumps."""
 
     name: None | str = Field(default=None, description="Workflow display name.")
     class_: Literal["NativeGalaxyWorkflow"] = Field(default="NativeGalaxyWorkflow", alias="class")
-    a_galaxy_workflow: str = Field(description="Format marker. Always the string ``\"true\"``.")
-    format_version: str = Field(alias="format-version", description="Format version. Always ``\"0.1\"`` currently. In the JSON document this field is written as ``format-version``.")
+    a_galaxy_workflow: Literal['true'] = Field(description="Format marker. Always the string ``\"true\"``.")
+    format_version: Literal['0.1'] = Field(alias="format-version", description="Format version. Always ``\"0.1\"`` currently. In the JSON document this field is written as ``format-version``.")
     annotation: None | str = Field(default=None, description="Human-readable workflow description.")
     tags: None | list[str] = Field(default=None, description="Classification tags for the workflow.")
     version: None | int = Field(default=None, description="Internal revision counter.")
@@ -422,6 +472,10 @@ HasStepErrors.model_rebuild()
 HasStepPosition.model_rebuild()
 StepPosition.model_rebuild()
 ReferencesTool.model_rebuild()
+SampleSheetColumnDefinition.model_rebuild()
+RecordFieldDefinition.model_rebuild()
+WorkflowTextOption.model_rebuild()
+WorkflowTextValidator.model_rebuild()
 ToolShedRepository.model_rebuild()
 BaseCreator.model_rebuild()
 CreatorPerson.model_rebuild()

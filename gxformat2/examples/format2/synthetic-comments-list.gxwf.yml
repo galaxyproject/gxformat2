@@ -1,0 +1,10 @@
+class: GalaxyWorkflow
+inputs:
+  the_input: data
+outputs: {}
+steps: {}
+comments:
+  - type: text
+    text: Hello world
+    position: [10, 20]
+    size: [100, 50]

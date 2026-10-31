@@ -1,0 +1,27 @@
+class: GalaxyWorkflowDraft
+inputs: {}
+outputs:
+  result:
+    outputSource: outer/result
+steps:
+  outer:
+    type: subworkflow
+    out: [result]
+    run:
+      class: GalaxyWorkflowDraft
+      inputs:
+        reads: data
+      outputs:
+        result:
+          outputSource: 3/output
+      steps:
+        - tool_id: TODO
+          out: [output]
+        - tool_id: cat1
+          in:
+            input1: reads
+          out: [output]
+        - tool_id: cat1
+          in:
+            input1: 2/output
+          out: [output]

@@ -1,0 +1,10 @@
+class: GalaxyWorkflow
+inputs:
+  x: data
+outputs: {}
+steps:
+  step1:
+    tool_id: cat1
+    tool_version: '1.0'
+    in:
+      x: x

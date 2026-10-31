@@ -1,0 +1,16 @@
+class: GalaxyWorkflow
+label: Disconnected input workflow
+doc: A workflow with a disconnected step input.
+inputs:
+  the_input:
+    type: File
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    doc: cat doc
+    in:
+      input1: the_input
+      disconnected_input: {}

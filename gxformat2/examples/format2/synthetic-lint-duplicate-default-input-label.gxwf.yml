@@ -1,0 +1,12 @@
+class: GalaxyWorkflow
+doc: A list-form input without an id gets the label "Input 0", which a step also uses.
+inputs:
+  - type: data
+outputs:
+  out:
+    outputSource: "Input 0/out_file1"
+steps:
+  - label: "Input 0"
+    tool_id: cat1
+    in:
+      input1: "0"

@@ -1,13 +1,11 @@
 """Abstractions for dealing with Format2 data."""
 
+from collections.abc import Iterable
 from typing import (
     Any,
     cast,
-    Optional,
-    Union,
+    Literal,
 )
-
-from typing_extensions import Literal
 
 from gxformat2.normalized._format2 import resolve_source_reference as _resolve_source_impl
 
@@ -25,7 +23,7 @@ _GxFormat2StepTypeAlias = Literal[
     "input_collection",
     "parameter",
 ]
-_StepTypes = Union[_NativeGalaxyStepType, _GxFormat2StepTypeAlias]
+_StepTypes = _NativeGalaxyStepType | _GxFormat2StepTypeAlias
 
 
 _STEP_TYPES = [
@@ -53,13 +51,13 @@ def get_native_step_type(gxformat2_step_dict: dict) -> _NativeGalaxyStepType:
         raise Exception(f"Unknown step type encountered {raw_step_type}")
     step_type: _NativeGalaxyStepType
     if raw_step_type in _STEP_TYPE_ALIASES:
-        step_type = _STEP_TYPE_ALIASES[cast(_GxFormat2StepTypeAlias, raw_step_type)]
+        step_type = _STEP_TYPE_ALIASES[raw_step_type]
     else:
         step_type = cast(_NativeGalaxyStepType, raw_step_type)
     return step_type
 
 
-def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, list]] = None) -> Any:
+def setup_connected_values(value, key: str = "", append_to: dict[str, list] | None = None) -> Any:
     """Replace links with connected value."""
 
     def append_link(key: str, value: dict):
@@ -98,14 +96,14 @@ def setup_connected_values(value, key: str = "", append_to: Optional[dict[str, l
                 append_link(key, list_v)
                 new_list_values.append(None)
             else:
-                new_key = "%s_%d" % (key, i)
+                new_key = f"{key}_{i}"
                 new_list_values.append(recurse(list_v, new_key))
         return new_list_values
     else:
         return value
 
 
-def resolve_source_reference(value: str, known_labels: Union[set, dict]) -> tuple:
+def resolve_source_reference(value: str, known_labels: Iterable[str]) -> tuple:
     """Parse a source reference into (step_label_or_id, output_name).
 
     Deprecated: use ``gxformat2.normalized.resolve_source_reference`` directly.
@@ -121,14 +119,14 @@ def _is_link(value: Any) -> bool:
     return isinstance(value, dict) and "$link" in value
 
 
-def _join_prefix(prefix: Optional[str], key: str):
+def _join_prefix(prefix: str | None, key: str):
     if prefix:
         return f"{prefix}|{key}"
     return key
 
 
 def _convert_dict_to_id_list_if_needed(
-    dict_or_list: Union[dict, list],
+    dict_or_list: dict | list,
     add_label: bool = False,
     mutate: bool = False,
 ) -> list:
@@ -151,7 +149,7 @@ def _convert_dict_to_id_list_if_needed(
                 value["id"] = key
             rval.append(value)
     else:
-        rval = cast(list, dict_or_list)
+        rval = dict_or_list
     return rval
 
 

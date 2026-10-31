@@ -1,0 +1,18 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Multiple text input with regex validators",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "parameter_input",
+            "label": "sample_ids",
+            "tool_state": "{\"parameter_type\": \"text\", \"optional\": false, \"multiple\": true, \"validators\": [{\"type\": \"regex\", \"expression\": \"^S[0-9]+$\", \"negate\": false}]}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "position": {"left": 0, "top": 0},
+            "workflow_outputs": []
+        }
+    }
+}

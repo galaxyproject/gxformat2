@@ -1,0 +1,207 @@
+"""Declarative normalization tests driven by YAML expectation files.
+
+Expectation files live in gxformat2/examples/expectations/.
+Uses gxformat2.testing for the harness — this module just provides
+the operations dict and fixture loader.
+"""
+
+import os
+from collections.abc import Callable
+from typing import Any
+
+from gxformat2.cytoscape import cytoscape_elements as _cytoscape_impl
+from gxformat2.draft import detect_draft, extract_draft_subset, next_draft_step, validate_draft
+from gxformat2.examples import EXAMPLES_DIR, load
+from gxformat2.layout import apply_layout as _apply_layout_impl
+from gxformat2.layout import GRAPH_PROPERTY_CHECKERS
+from gxformat2.lint import lint_best_practices_format2 as _lint_bp_format2_impl
+from gxformat2.lint import lint_best_practices_ga as _lint_bp_ga_impl
+from gxformat2.lint import lint_format2 as _lint_format2_impl
+from gxformat2.lint import lint_ga as _lint_ga_impl
+from gxformat2.linting import LintContext
+from gxformat2.mermaid import workflow_to_mermaid as _mermaid_impl
+from gxformat2.normalized import (
+    ensure_format2,
+    ensure_native,
+    expanded_format2,
+    expanded_native,
+    normalized_format2,
+    normalized_native,
+    to_format2,
+    to_native,
+)
+from gxformat2.normalized._conversion import ExpandedFormat2
+from gxformat2.normalized._native import NormalizedNativeWorkflow
+from gxformat2.options import trs_descriptor_url
+from gxformat2.testing import DeclarativeTestSuite
+from gxformat2.validators import (
+    validate_format2,
+    validate_format2_draft,
+    validate_format2_draft_strict,
+    validate_format2_strict,
+    validate_native,
+    validate_native_strict,
+)
+
+
+def _lint_format2(wf_dict):
+    ctx = LintContext()
+    try:
+        nf2 = ensure_format2(wf_dict, expand=True)
+    except Exception:
+        nf2 = None
+    if nf2 is not None:
+        _lint_format2_impl(ctx, nf2, raw_dict=wf_dict)
+    else:
+        # Model build failed — still run raw_dict structural checks
+        _lint_format2_impl(ctx, ExpandedFormat2(), raw_dict=wf_dict)
+    return {
+        "errors": ctx.error_messages,
+        "warnings": ctx.warn_messages,
+        "error_count": len(ctx.error_messages),
+        "warn_count": len(ctx.warn_messages),
+    }
+
+
+def _empty_nnw():
+    return NormalizedNativeWorkflow()
+
+
+def _lint_native(wf_dict):
+    ctx = LintContext()
+    try:
+        nnw = ensure_native(wf_dict)
+    except Exception:
+        nnw = None
+    if nnw is not None:
+        _lint_ga_impl(ctx, nnw, raw_dict=wf_dict)
+    else:
+        # Model build failed — still run raw_dict structural checks
+        _lint_ga_impl(ctx, _empty_nnw(), raw_dict=wf_dict)
+    return {
+        "errors": ctx.error_messages,
+        "warnings": ctx.warn_messages,
+        "error_count": len(ctx.error_messages),
+        "warn_count": len(ctx.warn_messages),
+    }
+
+
+def _lint_best_practices_format2(wf_dict):
+    ctx = LintContext()
+    _lint_bp_format2_impl(ctx, wf_dict)
+    return {
+        "errors": ctx.error_messages,
+        "warnings": ctx.warn_messages,
+        "error_count": len(ctx.error_messages),
+        "warn_count": len(ctx.warn_messages),
+    }
+
+
+def _lint_best_practices_native(wf_dict):
+    ctx = LintContext()
+    _lint_bp_ga_impl(ctx, wf_dict)
+    return {
+        "errors": ctx.error_messages,
+        "warnings": ctx.warn_messages,
+        "error_count": len(ctx.error_messages),
+        "warn_count": len(ctx.warn_messages),
+    }
+
+
+def _workflow_to_mermaid(wf_dict):
+    return _mermaid_impl(wf_dict)
+
+
+def _workflow_to_mermaid_lines(wf_dict):
+    return _mermaid_impl(wf_dict).split("\n")
+
+
+def _workflow_to_mermaid_with_comments_lines(wf_dict):
+    return _mermaid_impl(wf_dict, comments=True).split("\n")
+
+
+def _layout(wf_dict):
+    # apply_layout self-detects native vs Format2 via ``a_galaxy_workflow``.
+    return _apply_layout_impl(wf_dict, overwrite=True)
+
+
+def _layout_layered(wf_dict):
+    return _apply_layout_impl(wf_dict, strategy="layered", overwrite=True)
+
+
+def _cytoscape_elements_to_list(wf_dict):
+    return _cytoscape_impl(wf_dict).to_list()
+
+
+def _cytoscape_node_ids(wf_dict):
+    flat = _cytoscape_impl(wf_dict).to_list()
+    return [el["data"]["id"] for el in flat if el["group"] == "nodes"]
+
+
+def _cytoscape_edge_ids(wf_dict):
+    flat = _cytoscape_impl(wf_dict).to_list()
+    return [el["data"]["id"] for el in flat if el["group"] == "edges"]
+
+
+def _to_format2_via_native(wf_dict):
+    return to_format2(to_native(wf_dict).to_dict())
+
+
+def _linked_subworkflow_descriptor_urls(wf_dict):
+    # {label: TRS descriptor URL (None for non-TRS URLs)} for linked subworkflow steps.
+    return {
+        step.get("label"): trs_descriptor_url(step["content_id"])
+        for step in wf_dict["steps"].values()
+        if step.get("type") == "subworkflow" and isinstance(step.get("content_id"), str)
+    }
+
+
+EXPECTATIONS_DIR = os.path.join(EXAMPLES_DIR, "expectations")
+OPERATIONS: dict[str, Callable[..., Any]] = {
+    "normalized_format2": normalized_format2,
+    "normalized_native": normalized_native,
+    "expanded_format2": expanded_format2,
+    "expanded_native": expanded_native,
+    "to_format2": to_format2,
+    "to_native": to_native,
+    "to_format2_via_native": _to_format2_via_native,
+    "ensure_format2": ensure_format2,
+    "ensure_native": ensure_native,
+    "validate_format2": validate_format2,
+    "validate_format2_draft": validate_format2_draft,
+    "validate_format2_draft_strict": validate_format2_draft_strict,
+    "validate_format2_strict": validate_format2_strict,
+    "validate_native": validate_native,
+    "validate_native_strict": validate_native_strict,
+    "lint_format2": _lint_format2,
+    "lint_native": _lint_native,
+    "lint_best_practices_format2": _lint_best_practices_format2,
+    "lint_best_practices_native": _lint_best_practices_native,
+    "workflow_to_mermaid": _workflow_to_mermaid,
+    "workflow_to_mermaid_lines": _workflow_to_mermaid_lines,
+    "workflow_to_mermaid_with_comments_lines": _workflow_to_mermaid_with_comments_lines,
+    "layout_format2": _layout,
+    "layout_native": _layout,
+    "layout_layered_format2": _layout_layered,
+    "layout_layered_native": _layout_layered,
+    "cytoscape_elements_to_list": _cytoscape_elements_to_list,
+    "cytoscape_node_ids": _cytoscape_node_ids,
+    "cytoscape_edge_ids": _cytoscape_edge_ids,
+    "linked_subworkflow_descriptor_urls": _linked_subworkflow_descriptor_urls,
+    "detect_draft": detect_draft,
+    "validate_draft": validate_draft,
+    "next_draft_step": next_draft_step,
+    "extract_draft_subset": extract_draft_subset,
+}
+
+suite = DeclarativeTestSuite(
+    operations=OPERATIONS,
+    load_fixture=load,
+    expectations_dir=EXPECTATIONS_DIR,
+    graph_property_checkers=GRAPH_PROPERTY_CHECKERS,
+)
+
+
+@suite.pytest_params()
+def test_declarative(test_id, case):
+    suite.run(test_id, case)

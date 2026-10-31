@@ -5,10 +5,12 @@ Planemo.  The typed API is :func:`gxformat2.normalized.to_format2`.
 """
 
 import argparse
+import io
 import json
 import sys
 from collections import OrderedDict
-from typing import Any, Callable, Dict, Optional, Union
+from collections.abc import Callable
+from typing import Any
 
 from .normalized import to_format2
 from .options import ConversionOptions
@@ -17,7 +19,7 @@ from .yaml import ordered_dump
 
 log = __import__("logging").getLogger(__name__)
 
-ConvertToolStateFn = Optional[Callable[[dict], Optional[Dict[str, Any]]]]
+ConvertToolStateFn = Callable[[dict], dict[str, Any] | None] | None
 """Callback to convert a native tool step's tool_state to format2 state.
 
 Accepts a native step dict (with tool_id, tool_version, tool_state).
@@ -30,7 +32,7 @@ Convert a native Galaxy workflow description into a Format 2 description.
 
 
 def from_galaxy_native(
-    native_workflow_dict: Union[dict[str, Any], NativeGalaxyWorkflow],
+    native_workflow_dict: dict[str, Any] | NativeGalaxyWorkflow,
     tool_interface=None,
     json_wrapper: bool = False,
     compact: bool = False,
@@ -138,20 +140,33 @@ def main(argv=None):
     args = _parser().parse_args(argv)
 
     format2_path = args.input_path
-    output_path = args.output_path or (format2_path + ".gxwf.yml")
+    output_path = args.output or args.output_path
     with open(format2_path) as f:
         native_workflow_dict = json.load(f)
 
     as_dict = from_galaxy_native(native_workflow_dict, compact=args.compact)
-    with open(output_path, "w") as f:
-        ordered_dump(as_dict, f)
+
+    if args.json_output:
+        output_text = json.dumps(as_dict, indent=4) + "\n"
+    else:
+        stream = io.StringIO()
+        ordered_dump(as_dict, stream)
+        output_text = stream.getvalue()
+
+    if output_path:
+        with open(output_path, "w") as f:
+            f.write(output_text)
+    else:
+        sys.stdout.write(output_text)
 
 
 def _parser():
     parser = argparse.ArgumentParser(description=SCRIPT_DESCRIPTION)
     parser.add_argument("input_path", metavar="INPUT", type=str, help="input workflow path (.ga)")
-    parser.add_argument("output_path", metavar="OUTPUT", type=str, nargs="?", help="output workflow path (.gxfw.yml)")
-    parser.add_argument("--compact", action="store_true", help="Generate compact workflow without position information")
+    parser.add_argument("output_path", metavar="OUTPUT", type=str, nargs="?", help="output workflow path (.gxwf.yml)")
+    parser.add_argument("--output", "-o", help="output file (default: stdout)")
+    parser.add_argument("--compact", action="store_true", help="generate compact workflow without position information")
+    parser.add_argument("--json", dest="json_output", action="store_true", help="output JSON instead of YAML")
     return parser
 
 

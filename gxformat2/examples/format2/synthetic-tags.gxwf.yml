@@ -1,0 +1,8 @@
+class: GalaxyWorkflow
+tags:
+  - genomics
+  - testing
+inputs:
+  x: data
+outputs: {}
+steps: {}

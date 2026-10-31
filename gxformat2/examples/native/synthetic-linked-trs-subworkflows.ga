@@ -1,0 +1,55 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "Linked TRS subworkflows",
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "data_input",
+            "label": "inp",
+            "tool_state": "{}"
+        },
+        "1": {
+            "id": 1,
+            "type": "subworkflow",
+            "label": "trs_unencoded",
+            "content_source": "trs_url",
+            "content_id": "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/iwc-workflows/rnaseq-pe/main/versions/v1.5"
+        },
+        "2": {
+            "id": 2,
+            "type": "subworkflow",
+            "label": "trs_encoded",
+            "content_source": "trs_url",
+            "content_id": "https://dockstore.org/api/ga4gh/trs/v2/tools/%23workflow%2Fgithub.com%2Fiwc-workflows%2Frnaseq-pe%2Fmain/versions/v1.5"
+        },
+        "3": {
+            "id": 3,
+            "type": "subworkflow",
+            "label": "trs_descriptor",
+            "content_source": "trs_url",
+            "content_id": "https://dockstore.org/api/ga4gh/trs/v2/tools/#workflow/github.com/iwc-workflows/rnaseq-pe/main/versions/v1.5/GALAXY/descriptor"
+        },
+        "4": {
+            "id": 4,
+            "type": "subworkflow",
+            "label": "trs_encoded_descriptor",
+            "content_source": "trs_url",
+            "content_id": "https://dockstore.org/api/ga4gh/trs/v2/tools/%23workflow%2Fgithub.com%2Fiwc-workflows%2Frnaseq-pe%2Fmain/versions/v1.5/GALAXY/descriptor"
+        },
+        "5": {
+            "id": 5,
+            "type": "subworkflow",
+            "label": "trs_special_chars",
+            "content_source": "trs_url",
+            "content_id": "https://trs.example.org/ga4gh/trs/v2/tools/#workflow/github.com/o'rg/repo%20(beta)!*~/main/versions/v1"
+        },
+        "6": {
+            "id": 6,
+            "type": "subworkflow",
+            "label": "plain_url",
+            "content_source": "url",
+            "content_id": "https://example.org/inner.ga"
+        }
+    }
+}

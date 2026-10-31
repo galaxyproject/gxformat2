@@ -1,0 +1,14 @@
+class: GalaxyWorkflow
+label: Bad float default
+inputs:
+  the_input:
+    type: float
+    default: "not_a_float"
+outputs:
+  the_output:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: the_input

@@ -1,0 +1,10 @@
+class: GalaxyWorkflow
+inputs:
+  bad:
+    type: collection
+    collection_type: list
+    fields:
+      - name: parent
+        type: File
+outputs: {}
+steps: {}

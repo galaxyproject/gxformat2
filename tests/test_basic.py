@@ -14,6 +14,7 @@ from ._helpers import (
 from .example_wfs import (
     OPTIONAL_INPUT,
     PAIRED_LIST_COLLECTION_INPUT,
+    RECORD_COLLECTION_INPUT,
     SAMPLE_SHEET_COLLECTION_INPUT,
     SLASH_IN_INPUT_LABEL,
     SLASH_IN_LABEL_CHAINED,
@@ -98,6 +99,74 @@ steps:
             "location": "test.txt",
         }
     }
+
+
+def test_step_input_default_file_inline_to_native():
+    as_dict_native = to_native("""
+class: GalaxyWorkflow
+steps:
+  cat1:
+    tool_id: cat1
+    in:
+      input1:
+        default:
+          class: File
+          basename: a file
+          format: txt
+          location: test.txt
+""")
+    cat_step = as_dict_native["steps"]["0"]
+    assert cat_step["tool_id"] == "cat1"
+    assert cat_step["in"]["input1"]["default"] == {
+        "class": "File",
+        "basename": "a file",
+        "format": "txt",
+        "location": "test.txt",
+    }
+
+
+def test_step_input_default_scalar_to_native():
+    as_dict_native = to_native("""
+class: GalaxyWorkflow
+inputs:
+  inner_input: data
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      input: inner_input
+      num_lines:
+        default: 2
+      seed_source|seed_source_selector:
+        default: set_seed
+      seed_source|seed:
+        default: asdf
+""")
+    rl_step = as_dict_native["steps"]["1"]
+    assert rl_step["tool_id"] == "random_lines1"
+    assert rl_step["in"]["num_lines"] == {"default": 2}
+    assert rl_step["in"]["seed_source|seed_source_selector"] == {"default": "set_seed"}
+    assert rl_step["in"]["seed_source|seed"] == {"default": "asdf"}
+
+
+def test_step_input_default_round_trip():
+    fmt2 = round_trip("""
+class: GalaxyWorkflow
+inputs:
+  inner_input: data
+steps:
+  random_lines:
+    tool_id: random_lines1
+    in:
+      input: inner_input
+      num_lines:
+        default: 2
+""")
+    step = fmt2["steps"]["random_lines"]
+    assert isinstance(step["in"], dict)
+    num_lines_entry = step["in"]["num_lines"]
+    assert isinstance(num_lines_entry, dict)
+    assert num_lines_entry["default"] == 2
 
 
 def test_docs_round_trip():
@@ -298,7 +367,8 @@ def test_round_trip_whens():
 
 def test_export_native_no_labels():
     # Ensure outputs don't get mapped to 'null' key and ensure
-    native_unicycler = ordered_load(open(example_path("real-unicycler-assembly.ga")).read())
+    with open(example_path("real-unicycler-assembly.ga")) as f:
+        native_unicycler = ordered_load(f.read())
     before_output_count = 0
     for _ in native_workflow_outputs(native_unicycler):
         before_output_count += 1
@@ -327,6 +397,18 @@ def test_optional_inputs():
 def test_paired_list_inputs():
     as_dict = round_trip(PAIRED_LIST_COLLECTION_INPUT)
     assert as_dict["inputs"]["input_list"]["collection_type"] == "list:paired"
+
+
+def test_record_inputs():
+    as_dict = round_trip(RECORD_COLLECTION_INPUT)
+    assert as_dict["inputs"]["input_record"]["collection_type"] == "record"
+    fields = as_dict["inputs"]["input_record"]["fields"]
+    assert fields
+    assert len(fields) == 2
+    assert fields[0]["name"] == "parent"
+    assert fields[0]["type"] == "File"
+    assert fields[1]["name"] == "child"
+    assert fields[1]["type"] == ["File", "null"]
 
 
 def test_sample_sheet_inputs():
@@ -667,24 +749,6 @@ def test_unlabeled_pause_step_round_trip():
     # Step 1 should be a pause, not reassigned
     assert as_native_rt["steps"]["1"]["type"] == "pause"
     assert as_native_rt["steps"]["1"]["label"] is None
-
-
-def test_user_defined_tool_to_native():
-    """Format2 workflow with GalaxyUserTool converts to native with tool_representation."""
-    as_dict_native = to_native(USER_DEFINED_TOOL_WORKFLOW)
-    assert_valid_native(as_dict_native)
-    steps = as_dict_native["steps"]
-    assert len(steps) == 2  # input + tool
-    tool_step = steps["1"]
-    assert tool_step["type"] == "tool"
-    assert "tool_representation" in tool_step
-    tool_rep = tool_step["tool_representation"]
-    assert tool_rep["class"] == "GalaxyUserTool"
-    assert tool_rep["name"] == "cat_user_defined"
-    assert tool_rep["container"] == "busybox"
-    # tool_id and tool_uuid should be None for user-defined tools
-    assert tool_step.get("tool_id") is None
-    assert tool_step.get("tool_uuid") is None
 
 
 def test_user_defined_tool_round_trip():
