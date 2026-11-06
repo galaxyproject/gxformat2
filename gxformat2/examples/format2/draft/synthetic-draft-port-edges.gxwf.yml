@@ -5,9 +5,14 @@ inputs:
     type: data
   adapters:
     type: data
+  # Refs to this input look like refs to dr/aft's TODO_unused port, but aren't edges on it.
+  dr/aft/TODO_unused:
+    type: data
 outputs:
   report:
     outputSource: dr/aft/TODO_shared
+  shadowed_report:
+    outputSource: dr/aft/TODO_unused
 steps:
   done_a:
     tool_id: cat1
@@ -55,6 +60,7 @@ steps:
       input1: dr/aft/TODO_shared
       queries:
         source: [reads, dr/aft/TODO_shared, dr/aft/TODO_shared]
+      shadowed: dr/aft/TODO_unused
     out:
       - id: out_file1
   y/z:

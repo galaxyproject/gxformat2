@@ -640,9 +640,10 @@ def next_draft_step(workflow: Any) -> NextStepResult:
 
 
 def _next_draft_step_in(workflow: dict, prefix: StepPath) -> NextStepResult:
-    step_labels = {label for label, _ in _iterate_steps(workflow)}
-    output_refs = _collect_output_refs(workflow.get("outputs"), step_labels)
-    consumers = _collect_step_consumers(workflow, step_labels)
+    known_labels = {label for label, _ in _iterate_steps(workflow)}
+    known_labels.update(label for label, _ in _iterate_labeled(workflow.get("inputs")))
+    output_refs = _collect_output_refs(workflow.get("outputs"), known_labels)
+    consumers = _collect_step_consumers(workflow, known_labels)
     for label, step in _topo_ordered_steps(workflow):
         if not isinstance(step, dict):
             continue
@@ -689,20 +690,20 @@ def _topo_ordered_steps(workflow: dict) -> list[tuple[str, Any]]:
     return ordered
 
 
-def _collect_output_refs(outputs: Any, step_labels: set[str]) -> dict[str, dict[str, set[str]]]:
+def _collect_output_refs(outputs: Any, known_labels: set[str]) -> dict[str, dict[str, set[str]]]:
     """Map step label -> port -> labels of workflow outputs referencing it."""
     by_step_port: dict[str, dict[str, set[str]]] = {}
     for label, output in _iterate_labeled(outputs):
         ref = _read_output_source(output)
         if ref is None:
             continue
-        step_label, port = _split_source_ref(ref, step_labels)
+        step_label, port = _split_source_ref(ref, known_labels)
         if port is not None:
             by_step_port.setdefault(step_label, {}).setdefault(port, set()).add(label)
     return by_step_port
 
 
-def _collect_step_consumers(workflow: dict, step_labels: set[str]) -> dict[str, dict[str, set[str]]]:
+def _collect_step_consumers(workflow: dict, known_labels: set[str]) -> dict[str, dict[str, set[str]]]:
     """Map step label -> port -> ``<step>/<input>`` of the step inputs it feeds."""
     by_step_port: dict[str, dict[str, set[str]]] = {}
     for consumer, step in _iterate_steps(workflow):
@@ -710,7 +711,7 @@ def _collect_step_consumers(workflow: dict, step_labels: set[str]) -> dict[str, 
             continue
         for in_key, in_value in _iterate_step_input_entries(step.get("in")):
             for ref in _extract_source_refs(in_value):
-                step_label, port = _split_source_ref(ref, step_labels)
+                step_label, port = _split_source_ref(ref, known_labels)
                 if port is not None:
                     by_step_port.setdefault(step_label, {}).setdefault(port, set()).add(f"{consumer}/{in_key}")
     return by_step_port
