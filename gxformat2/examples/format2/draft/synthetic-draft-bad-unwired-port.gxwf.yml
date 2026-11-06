@@ -12,6 +12,10 @@ steps:
       TODO_empty: {}
       TODO_empty_source:
         source: []
+      TODO_null_source:
+        source: null
+      TODO_null_default:
+        default: null
       TODO_wired: reads
       TODO_defaulted:
         default: 5

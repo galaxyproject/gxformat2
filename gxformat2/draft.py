@@ -282,8 +282,8 @@ def _extract_source_refs(value: Any) -> list[str]:
     return []
 
 
-def _has_default(in_value: Any) -> bool:
-    return isinstance(in_value, dict) and "default" in in_value
+def _has_default_value(in_value: Any) -> bool:
+    return isinstance(in_value, dict) and in_value.get("default") is not None
 
 
 def _split_source_ref(ref: str, step_labels: set[str] | dict[str, Any]) -> tuple[str, str | None]:
@@ -596,7 +596,7 @@ def _walk_draft_validation(
             refs = _extract_source_refs(in_value)
             for ref in refs:
                 check_edge_ref(ref, step_path, f'step input "{in_key}"')
-            if is_todo_sentinel(in_key) and not refs and not _has_default(in_value):
+            if is_todo_sentinel(in_key) and not refs and not _has_default_value(in_value):
                 topology_errors.append(
                     DraftValidationDiagnostic(
                         path=step_path,
@@ -728,7 +728,7 @@ def _in_port_edges(in_value: Any) -> str:
     refs = _extract_source_refs(in_value)
     if refs:
         return f"sourced from {_quoted(refs)}"
-    return "no source: default value" if _has_default(in_value) else "no source: unwired"
+    return "no source: default value" if _has_default_value(in_value) else "no source: unwired"
 
 
 def _step_work_items(
@@ -939,7 +939,7 @@ def _check_step_cascade(
                 local_deps.append((ref_step, [*prefix, ref_step]))
             else:
                 any_alive = True
-        if not any_alive and not _has_default(in_value):
+        if not any_alive and not (isinstance(in_value, dict) and "default" in in_value):
             cascade = True
             for key, path in local_deps:
                 depends_on.setdefault(key, path)

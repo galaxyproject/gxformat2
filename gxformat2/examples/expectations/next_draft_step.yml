@@ -166,7 +166,7 @@ test_next_draft_step_reports_edges_around_todo_ports:
   operation: next_draft_step
   assertions:
     - path: [step]
-      value: [work]
+      value: [dr/aft]
     - path: [work]
       value:
         - "TODO[tool_id]: pick a Galaxy Tool Shed wrapper for this step"
@@ -178,7 +178,7 @@ test_next_draft_step_reports_edges_around_todo_ports:
         - "TODO[in.TODO_bare_list]: assign the real wrapper input port name (semantic hint: 'bare_list'; sourced from 'reads', 'adapters')"
         - "TODO[in.TODO_source_and_default]: assign the real wrapper input port name (semantic hint: 'source_and_default'; sourced from 'reads')"
         - "TODO[in.TODO_default]: assign the real wrapper input port name (semantic hint: 'default'; no source: default value)"
-        - "TODO[out.TODO_shared]: assign the real wrapper output port name (semantic hint: 'shared'; referenced by workflow output 'report'; consumed by 'alpha/input1', 'alpha/queries', 'zeta/TODO_input')"
+        - "TODO[out.TODO_shared]: assign the real wrapper output port name (semantic hint: 'shared'; referenced by workflow output 'report'; consumed by 'alpha/input1', 'alpha/queries', 'y/z/input1', 'zeta/TODO_input')"
         - "TODO[out.TODO_unused]: assign the real wrapper output port name (semantic hint: 'unused')"
 
 # The port's consumer is only reachable from the producer's side: `b` isn't

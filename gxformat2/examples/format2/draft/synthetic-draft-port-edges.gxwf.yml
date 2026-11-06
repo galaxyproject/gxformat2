@@ -7,7 +7,7 @@ inputs:
     type: data
 outputs:
   report:
-    outputSource: work/TODO_shared
+    outputSource: dr/aft/TODO_shared
 steps:
   done_a:
     tool_id: cat1
@@ -23,7 +23,7 @@ steps:
       input1: reads
     out:
       - id: out_file1
-  work:
+  dr/aft:
     tool_id: TODO
     tool_version: TODO
     in:
@@ -45,15 +45,22 @@ steps:
     tool_id: TODO
     tool_version: TODO
     in:
-      TODO_input: work/TODO_shared
+      TODO_input: dr/aft/TODO_shared
     out:
       - id: TODO_output
   alpha:
     tool_id: cat1
     tool_version: "1.0"
     in:
-      input1: work/TODO_shared
+      input1: dr/aft/TODO_shared
       queries:
-        source: [reads, work/TODO_shared]
+        source: [reads, dr/aft/TODO_shared, dr/aft/TODO_shared]
+    out:
+      - id: out_file1
+  y/z:
+    tool_id: cat1
+    tool_version: "1.0"
+    in:
+      input1: dr/aft/TODO_shared
     out:
       - id: out_file1
