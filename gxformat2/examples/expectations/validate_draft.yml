@@ -366,3 +366,39 @@ test_validate_draft_rejects_record_fields_on_data_input:
       value: 1
     - path: [semantic_errors, 0, message]
       value_contains: fields is only valid on collection inputs
+
+test_validate_draft_port_edges_clean:
+  fixture: synthetic-draft-port-edges.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [topology_errors, $length]
+      value: 0
+
+# A TODO port with no source and no default has no edge to rename. Concrete
+# ports, wired ports and defaults aren't flagged; subworkflows are walked.
+test_validate_draft_rejects_unwired_todo_port:
+  fixture: synthetic-draft-bad-unwired-port.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 4
+    - path: [topology_errors, 0, path]
+      value: [map_form]
+    - path: [topology_errors, 0, message]
+      value: 'step input "TODO_empty" has no source or default; wire the port or remove it'
+    - path: [topology_errors, 1, message]
+      value_contains: '"TODO_empty_source"'
+    - path: [topology_errors, 2, path]
+      value: [list_form]
+    - path: [topology_errors, 2, message]
+      value_contains: '"TODO_listed"'
+    - path: [topology_errors, 3, path]
+      value: [sub, inner]
+    - path: [topology_errors, 3, message]
+      value_contains: '"TODO_inner"'

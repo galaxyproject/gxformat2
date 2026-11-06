@@ -13,7 +13,7 @@ normalization strips ``_plan_*``) and never mutate their input.
 from __future__ import annotations
 
 import re
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from typing import Annotated, Any, Final, Literal
 
 from pydantic import BaseModel, Field, ValidationError
@@ -282,6 +282,10 @@ def _extract_source_refs(value: Any) -> list[str]:
     return []
 
 
+def _has_default(in_value: Any) -> bool:
+    return isinstance(in_value, dict) and "default" in in_value
+
+
 def _split_source_ref(ref: str, step_labels: set[str] | dict[str, Any]) -> tuple[str, str | None]:
     """Parse a source ref into ``(label, port)`` via :func:`resolve_source_reference`.
 
@@ -401,8 +405,8 @@ def validate_draft(workflow: Any) -> DraftValidationResult:
 
     - ``structure_errors``: draft schema validation failures.
     - ``topology_errors``: TODO sentinels where topology must be concrete (input,
-      output and step labels, input and step types) and edge refs that don't
-      resolve to a declared step + port.
+      output and step labels, input and step types), edge refs that don't resolve
+      to a declared step + port, and TODO input ports with no source or default.
     - ``semantic_errors``: shared input/step cross-field violations, malformed
       TODO-shaped strings, and ``_plan_*`` left on a resolved tool step.
     - ``warnings``: bare ``TODO`` in port position; ``_plan_*`` on a draft root.
@@ -589,8 +593,16 @@ def _walk_draft_validation(
             _check_todo_like(out_id, step_path, f'out: id "{out_id}"', semantic_errors)
 
         for in_key, in_value in _iterate_step_input_entries(step.get("in")):
-            for ref in _extract_source_refs(in_value):
+            refs = _extract_source_refs(in_value)
+            for ref in refs:
                 check_edge_ref(ref, step_path, f'step input "{in_key}"')
+            if is_todo_sentinel(in_key) and not refs and not _has_default(in_value):
+                topology_errors.append(
+                    DraftValidationDiagnostic(
+                        path=step_path,
+                        message=f'step input "{in_key}" has no source or default; wire the port or remove it',
+                    )
+                )
 
         # Planning context must be stripped once a tool step is resolved. Non-tool
         # steps (subworkflow, pause, pick_value) may keep it for now.
@@ -630,11 +642,12 @@ def next_draft_step(workflow: Any) -> NextStepResult:
 def _next_draft_step_in(workflow: dict, prefix: StepPath) -> NextStepResult:
     step_labels = {label for label, _ in _iterate_steps(workflow)}
     output_refs = _collect_output_refs(workflow.get("outputs"), step_labels)
+    consumers = _collect_step_consumers(workflow, step_labels)
     for label, step in _topo_ordered_steps(workflow):
         if not isinstance(step, dict):
             continue
         step_path = [*prefix, label]
-        work = _step_work_items(step, label, output_refs)
+        work = _step_work_items(step, label, output_refs, consumers)
         if work:
             return NextStepResult(draft=True, step=step_path, work=work)
         if is_draft_workflow(step.get("run")):
@@ -689,25 +702,58 @@ def _collect_output_refs(outputs: Any, step_labels: set[str]) -> dict[str, dict[
     return by_step_port
 
 
+def _collect_step_consumers(workflow: dict, step_labels: set[str]) -> dict[str, dict[str, set[str]]]:
+    """Map step label -> port -> ``<step>/<input>`` of the step inputs it feeds."""
+    by_step_port: dict[str, dict[str, set[str]]] = {}
+    for consumer, step in _iterate_steps(workflow):
+        if not isinstance(step, dict):
+            continue
+        for in_key, in_value in _iterate_step_input_entries(step.get("in")):
+            for ref in _extract_source_refs(in_value):
+                step_label, port = _split_source_ref(ref, step_labels)
+                if port is not None:
+                    by_step_port.setdefault(step_label, {}).setdefault(port, set()).add(f"{consumer}/{in_key}")
+    return by_step_port
+
+
 def _sentinel_hint(sentinel: str) -> str | None:
     return None if sentinel == "TODO" else sentinel[len("TODO_") :]
 
 
-def _step_work_items(step: dict, step_label: str, output_refs: dict[str, dict[str, set[str]]]) -> list[str]:
+def _quoted(values: Iterable[str]) -> str:
+    return ", ".join(f"'{value}'" for value in values)
+
+
+def _in_port_edges(in_value: Any) -> str:
+    refs = _extract_source_refs(in_value)
+    if refs:
+        return f"sourced from {_quoted(refs)}"
+    return "no source: default value" if _has_default(in_value) else "no source: unwired"
+
+
+def _step_work_items(
+    step: dict,
+    step_label: str,
+    output_refs: dict[str, dict[str, set[str]]],
+    consumers: dict[str, dict[str, set[str]]],
+) -> list[str]:
     work: list[str] = []
     if is_todo_sentinel(step.get("tool_id")):
         work.append("TODO[tool_id]: pick a Galaxy Tool Shed wrapper for this step")
     if is_todo_sentinel(step.get("tool_version")):
         work.append("TODO[tool_version]: pick the wrapper version")
 
-    for key, _ in _iterate_step_input_entries(step.get("in")):
+    for key, in_value in _iterate_step_input_entries(step.get("in")):
         if not is_todo_sentinel(key):
             continue
         hint = _sentinel_hint(key)
-        hint_fragment = f" (semantic hint: '{hint}')" if hint is not None else ""
-        work.append(f"TODO[in.{key}]: assign the real wrapper input port name{hint_fragment}")
+        hint_fragment = f"semantic hint: '{hint}'; " if hint is not None else ""
+        work.append(
+            f"TODO[in.{key}]: assign the real wrapper input port name ({hint_fragment}{_in_port_edges(in_value)})"
+        )
 
     step_output_refs = output_refs.get(step_label, {})
+    step_consumers = consumers.get(step_label, {})
     for out_id in _iterate_step_out_ids(step.get("out")):
         if not is_todo_sentinel(out_id):
             continue
@@ -718,8 +764,10 @@ def _step_work_items(step: dict, step_label: str, output_refs: dict[str, dict[st
         refs = sorted(step_output_refs.get(out_id, ()))
         if refs:
             word = "output" if len(refs) == 1 else "outputs"
-            quoted = ", ".join(f"'{r}'" for r in refs)
-            parts.append(f"referenced by workflow {word} {quoted}")
+            parts.append(f"referenced by workflow {word} {_quoted(refs)}")
+        port_consumers = sorted(step_consumers.get(out_id, ()))
+        if port_consumers:
+            parts.append(f"consumed by {_quoted(port_consumers)}")
         hint_fragment = f" ({'; '.join(parts)})" if parts else ""
         work.append(f"TODO[out.{out_id}]: assign the real wrapper output port name{hint_fragment}")
 
@@ -891,7 +939,7 @@ def _check_step_cascade(
                 local_deps.append((ref_step, [*prefix, ref_step]))
             else:
                 any_alive = True
-        if not any_alive and not (isinstance(in_value, dict) and "default" in in_value):
+        if not any_alive and not _has_default(in_value):
             cascade = True
             for key, path in local_deps:
                 depends_on.setdefault(key, path)

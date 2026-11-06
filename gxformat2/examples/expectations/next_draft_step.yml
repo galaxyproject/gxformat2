@@ -95,7 +95,7 @@ test_next_draft_step_tool_step_exact_work:
     - path: [work, 1]
       value: "TODO[tool_version]: pick the wrapper version"
     - path: [work, 2]
-      value: "TODO[in.TODO_input]: assign the real wrapper input port name (semantic hint: 'input')"
+      value: "TODO[in.TODO_input]: assign the real wrapper input port name (semantic hint: 'input'; sourced from 'reads')"
     - path: [work, 3]
       value: "TODO[out.TODO_trimmed_paired]: assign the real wrapper output port name (semantic hint: 'trimmed_paired'; referenced by workflow output 'trimmed')"
     - path: [work, 4]
@@ -119,7 +119,7 @@ test_next_draft_step_bare_todo_no_semantic_hint:
       value:
         - "TODO[tool_id]: pick a Galaxy Tool Shed wrapper for this step"
         - "TODO[tool_version]: pick the wrapper version"
-        - "TODO[in.TODO]: assign the real wrapper input port name"
+        - "TODO[in.TODO]: assign the real wrapper input port name (sourced from 'reads')"
         - "TODO[out.TODO]: assign the real wrapper output port name"
 
 # alpha depends on zebra via bare ref `zebra` (= zebra/output); topology wins
@@ -149,7 +149,7 @@ test_next_draft_step_list_form_in_todo_is_work:
   operation: next_draft_step
   assertions:
     - path: [work, 2]
-      value: "TODO[in.TODO_input]: assign the real wrapper input port name (semantic hint: 'input')"
+      value: "TODO[in.TODO_input]: assign the real wrapper input port name (semantic hint: 'input'; sourced from 'reads')"
 
 
 test_next_draft_step_unicode_codepoint_order:
@@ -158,3 +158,46 @@ test_next_draft_step_unicode_codepoint_order:
   assertions:
     - path: [step]
       value: [""]
+
+# Every source shape on the in side, in declared order; on the out side, both
+# workflow outputs and consuming steps, sorted.
+test_next_draft_step_reports_edges_around_todo_ports:
+  fixture: synthetic-draft-port-edges.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [step]
+      value: [work]
+    - path: [work]
+      value:
+        - "TODO[tool_id]: pick a Galaxy Tool Shed wrapper for this step"
+        - "TODO[tool_version]: pick the wrapper version"
+        - "TODO[in.TODO_workflow_input]: assign the real wrapper input port name (semantic hint: 'workflow_input'; sourced from 'reads')"
+        - "TODO[in.TODO_step_output]: assign the real wrapper input port name (semantic hint: 'step_output'; sourced from 'done_b/out_file1')"
+        - "TODO[in.TODO_step_shorthand]: assign the real wrapper input port name (semantic hint: 'step_shorthand'; sourced from 'done_a')"
+        - "TODO[in.TODO_many]: assign the real wrapper input port name (semantic hint: 'many'; sourced from 'done_b/out_file1', 'done_a/output')"
+        - "TODO[in.TODO_bare_list]: assign the real wrapper input port name (semantic hint: 'bare_list'; sourced from 'reads', 'adapters')"
+        - "TODO[in.TODO_source_and_default]: assign the real wrapper input port name (semantic hint: 'source_and_default'; sourced from 'reads')"
+        - "TODO[in.TODO_default]: assign the real wrapper input port name (semantic hint: 'default'; no source: default value)"
+        - "TODO[out.TODO_shared]: assign the real wrapper output port name (semantic hint: 'shared'; referenced by workflow output 'report'; consumed by 'alpha/input1', 'alpha/queries', 'zeta/TODO_input')"
+        - "TODO[out.TODO_unused]: assign the real wrapper output port name (semantic hint: 'unused')"
+
+# The port's consumer is only reachable from the producer's side: `b` isn't
+# offered until its upstream `a` stops being drafty.
+test_next_draft_step_chain_names_consuming_step:
+  fixture: synthetic-draft-chain.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [step]
+      value: [b]
+    - path: [work, 3]
+      value: "TODO[out.TODO_out]: assign the real wrapper output port name (semantic hint: 'out'; consumed by 'c/TODO_input')"
+
+# draft-next-step stays total on a draft validate_draft rejects, and says so.
+test_next_draft_step_labels_unwired_port:
+  fixture: synthetic-draft-bad-unwired-port.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [step]
+      value: [list_form]
+    - path: [work, 2]
+      value: "TODO[in.TODO_listed]: assign the real wrapper input port name (semantic hint: 'listed'; no source: unwired)"
