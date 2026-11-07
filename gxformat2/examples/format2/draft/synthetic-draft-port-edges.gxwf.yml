@@ -1,0 +1,72 @@
+class: GalaxyWorkflowDraft
+label: edges around TODO ports, in every source shape
+inputs:
+  reads:
+    type: data
+  adapters:
+    type: data
+  # Refs to this input look like refs to dr/aft's TODO_unused port, but aren't edges on it.
+  dr/aft/TODO_unused:
+    type: data
+outputs:
+  report:
+    outputSource: dr/aft/TODO_shared
+  shadowed_report:
+    outputSource: dr/aft/TODO_unused
+steps:
+  done_a:
+    tool_id: cat1
+    tool_version: "1.0"
+    in:
+      input1: reads
+    out:
+      - id: output
+  done_b:
+    tool_id: cat1
+    tool_version: "1.0"
+    in:
+      input1: reads
+    out:
+      - id: out_file1
+  dr/aft:
+    tool_id: TODO
+    tool_version: TODO
+    in:
+      TODO_workflow_input: reads
+      TODO_step_output: done_b/out_file1
+      TODO_step_shorthand: done_a
+      TODO_many:
+        source: [done_b/out_file1, done_a/output]
+      TODO_bare_list: [reads, adapters]
+      TODO_source_and_default:
+        source: reads
+        default: 5
+      TODO_default:
+        default: 5
+    out:
+      - id: TODO_shared
+      - id: TODO_unused
+  zeta:
+    tool_id: TODO
+    tool_version: TODO
+    in:
+      TODO_input: dr/aft/TODO_shared
+    out:
+      - id: TODO_output
+  alpha:
+    tool_id: cat1
+    tool_version: "1.0"
+    in:
+      input1: dr/aft/TODO_shared
+      queries:
+        source: [reads, dr/aft/TODO_shared, dr/aft/TODO_shared]
+      shadowed: dr/aft/TODO_unused
+    out:
+      - id: out_file1
+  y/z:
+    tool_id: cat1
+    tool_version: "1.0"
+    in:
+      input1: dr/aft/TODO_shared
+    out:
+      - id: out_file1

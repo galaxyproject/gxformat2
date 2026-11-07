@@ -1,0 +1,44 @@
+class: GalaxyWorkflowDraft
+label: TODO input ports with neither a source nor a default
+inputs:
+  reads:
+    type: data
+outputs: {}
+steps:
+  map_form:
+    tool_id: TODO
+    tool_version: TODO
+    in:
+      TODO_empty: {}
+      TODO_empty_source:
+        source: []
+      TODO_null_source:
+        source: null
+      TODO_null_default:
+        default: null
+      TODO_wired: reads
+      TODO_defaulted:
+        default: 5
+      concrete_port: {}
+    out:
+      - id: TODO_output
+  list_form:
+    tool_id: TODO
+    tool_version: TODO
+    in:
+      - id: TODO_listed
+    out:
+      - id: TODO_output
+  sub:
+    run:
+      class: GalaxyWorkflowDraft
+      inputs: {}
+      outputs: {}
+      steps:
+        inner:
+          tool_id: TODO
+          tool_version: TODO
+          in:
+            TODO_inner: {}
+          out:
+            - id: TODO_output
