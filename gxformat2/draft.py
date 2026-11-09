@@ -282,6 +282,10 @@ def _extract_source_refs(value: Any) -> list[str]:
     return []
 
 
+def _has_default_value(in_value: Any) -> bool:
+    return isinstance(in_value, dict) and in_value.get("default") is not None
+
+
 def _split_source_ref(ref: str, step_labels: set[str] | dict[str, Any]) -> tuple[str, str | None]:
     """Parse a source ref into ``(label, port)`` via :func:`resolve_source_reference`.
 
@@ -401,8 +405,8 @@ def validate_draft(workflow: Any) -> DraftValidationResult:
 
     - ``structure_errors``: draft schema validation failures.
     - ``topology_errors``: TODO sentinels where topology must be concrete (input,
-      output and step labels, input and step types) and edge refs that don't
-      resolve to a declared step + port.
+      output and step labels, input and step types), edge refs that don't resolve
+      to a declared step + port, and TODO input ports with no source or default.
     - ``semantic_errors``: shared input/step cross-field violations, malformed
       TODO-shaped strings, and ``_plan_*`` left on a resolved tool step.
     - ``warnings``: bare ``TODO`` in port position; ``_plan_*`` on a draft root.
@@ -589,8 +593,16 @@ def _walk_draft_validation(
             _check_todo_like(out_id, step_path, f'out: id "{out_id}"', semantic_errors)
 
         for in_key, in_value in _iterate_step_input_entries(step.get("in")):
-            for ref in _extract_source_refs(in_value):
+            refs = _extract_source_refs(in_value)
+            for ref in refs:
                 check_edge_ref(ref, step_path, f'step input "{in_key}"')
+            if is_todo_sentinel(in_key) and not refs and not _has_default_value(in_value):
+                topology_errors.append(
+                    DraftValidationDiagnostic(
+                        path=step_path,
+                        message=f'step input "{in_key}" has no source or default; wire the port or remove it',
+                    )
+                )
 
         # Planning context must be stripped once a tool step is resolved. Non-tool
         # steps (subworkflow, pause, pick_value) may keep it for now.
@@ -628,13 +640,12 @@ def next_draft_step(workflow: Any) -> NextStepResult:
 
 
 def _next_draft_step_in(workflow: dict, prefix: StepPath) -> NextStepResult:
-    step_labels = {label for label, _ in _iterate_steps(workflow)}
-    output_refs = _collect_output_refs(workflow.get("outputs"), step_labels)
+    port_edges = _collect_port_edges(workflow)
     for label, step in _topo_ordered_steps(workflow):
         if not isinstance(step, dict):
             continue
         step_path = [*prefix, label]
-        work = _step_work_items(step, label, output_refs)
+        work = _step_work_items(step, port_edges.get(label, {}))
         if work:
             return NextStepResult(draft=True, step=step_path, work=work)
         if is_draft_workflow(step.get("run")):
@@ -676,52 +687,81 @@ def _topo_ordered_steps(workflow: dict) -> list[tuple[str, Any]]:
     return ordered
 
 
-def _collect_output_refs(outputs: Any, step_labels: set[str]) -> dict[str, dict[str, set[str]]]:
-    """Map step label -> port -> labels of workflow outputs referencing it."""
-    by_step_port: dict[str, dict[str, set[str]]] = {}
-    for label, output in _iterate_labeled(outputs):
+class _PortEdges(BaseModel):
+    workflow_outputs: set[str] = Field(default_factory=set)
+    consumers: set[str] = Field(default_factory=set)
+
+
+def _collect_port_edges(workflow: dict) -> dict[str, dict[str, _PortEdges]]:
+    """Map label -> port -> what references it, resolving refs against the labels validation uses."""
+    known_labels = {label for label, _ in _iterate_steps(workflow)}
+    known_labels.update(label for label, _ in _iterate_labeled(workflow.get("inputs")))
+    index: dict[str, dict[str, _PortEdges]] = {}
+
+    def edges_at(ref: str) -> _PortEdges:
+        label, port = resolve_source_reference(ref, known_labels)
+        return index.setdefault(label, {}).setdefault(port, _PortEdges())
+
+    for label, output in _iterate_labeled(workflow.get("outputs")):
         ref = _read_output_source(output)
-        if ref is None:
+        if ref is not None:
+            edges_at(ref).workflow_outputs.add(label)
+    for consumer, step in _iterate_steps(workflow):
+        if not isinstance(step, dict):
             continue
-        step_label, port = _split_source_ref(ref, step_labels)
-        if port is not None:
-            by_step_port.setdefault(step_label, {}).setdefault(port, set()).add(label)
-    return by_step_port
+        for in_key, in_value in _iterate_step_input_entries(step.get("in")):
+            for ref in _extract_source_refs(in_value):
+                edges_at(ref).consumers.add(f"{consumer}/{in_key}")
+    return index
 
 
 def _sentinel_hint(sentinel: str) -> str | None:
     return None if sentinel == "TODO" else sentinel[len("TODO_") :]
 
 
-def _step_work_items(step: dict, step_label: str, output_refs: dict[str, dict[str, set[str]]]) -> list[str]:
+def _quoted(values: list[str]) -> str:
+    return ", ".join(f"'{value}'" for value in values)
+
+
+def _in_port_edges(in_value: Any) -> str:
+    refs = _extract_source_refs(in_value)
+    if refs:
+        return f"sourced from {_quoted(refs)}"
+    return "no source: default value" if _has_default_value(in_value) else "no source: unwired"
+
+
+def _out_port_edges(edges: _PortEdges) -> list[str]:
+    parts: list[str] = []
+    if edges.workflow_outputs:
+        word = "output" if len(edges.workflow_outputs) == 1 else "outputs"
+        parts.append(f"referenced by workflow {word} {_quoted(sorted(edges.workflow_outputs))}")
+    if edges.consumers:
+        parts.append(f"consumed by {_quoted(sorted(edges.consumers))}")
+    return parts
+
+
+def _port_work_item(location: str, port_kind: str, sentinel: str, edges: list[str]) -> str:
+    hint = _sentinel_hint(sentinel)
+    parts = ([f"semantic hint: '{hint}'"] if hint is not None else []) + edges
+    fragment = f" ({'; '.join(parts)})" if parts else ""
+    return f"TODO[{location}.{sentinel}]: assign the real wrapper {port_kind} port name{fragment}"
+
+
+def _step_work_items(step: dict, port_edges: dict[str, _PortEdges]) -> list[str]:
     work: list[str] = []
     if is_todo_sentinel(step.get("tool_id")):
         work.append("TODO[tool_id]: pick a Galaxy Tool Shed wrapper for this step")
     if is_todo_sentinel(step.get("tool_version")):
         work.append("TODO[tool_version]: pick the wrapper version")
 
-    for key, _ in _iterate_step_input_entries(step.get("in")):
-        if not is_todo_sentinel(key):
-            continue
-        hint = _sentinel_hint(key)
-        hint_fragment = f" (semantic hint: '{hint}')" if hint is not None else ""
-        work.append(f"TODO[in.{key}]: assign the real wrapper input port name{hint_fragment}")
+    for key, in_value in _iterate_step_input_entries(step.get("in")):
+        if is_todo_sentinel(key):
+            work.append(_port_work_item("in", "input", key, [_in_port_edges(in_value)]))
 
-    step_output_refs = output_refs.get(step_label, {})
     for out_id in _iterate_step_out_ids(step.get("out")):
-        if not is_todo_sentinel(out_id):
-            continue
-        parts: list[str] = []
-        hint = _sentinel_hint(out_id)
-        if hint is not None:
-            parts.append(f"semantic hint: '{hint}'")
-        refs = sorted(step_output_refs.get(out_id, ()))
-        if refs:
-            word = "output" if len(refs) == 1 else "outputs"
-            quoted = ", ".join(f"'{r}'" for r in refs)
-            parts.append(f"referenced by workflow {word} {quoted}")
-        hint_fragment = f" ({'; '.join(parts)})" if parts else ""
-        work.append(f"TODO[out.{out_id}]: assign the real wrapper output port name{hint_fragment}")
+        if is_todo_sentinel(out_id):
+            edges = _out_port_edges(port_edges.get(out_id, _PortEdges()))
+            work.append(_port_work_item("out", "output", out_id, edges))
 
     for field in _present_plan_fields(step):
         work.append(f"{field}: {step[field].strip()}")
