@@ -575,10 +575,10 @@ def _walk_draft_validation(
 
     for members in _step_cycles(_step_dependencies(workflow)):
         if len(members) == 1:
-            message = f'step "{members[0]}" sources its own output; break that edge'
+            message = f'step "{members[0]}" sources its own output'
         else:
             labels = ", ".join(f'"{member}"' for member in members)
-            message = f"steps {labels} form a cycle; break one of its edges"
+            message = f"steps {labels} depend on each other through a cycle"
         topology_errors.append(DraftValidationDiagnostic(path=prefix, message=message))
 
     for label, step in _iterate_steps(workflow):
@@ -689,7 +689,7 @@ def _step_dependencies(workflow: dict) -> dict[str, set[str]]:
 
 
 def _step_cycles(deps: dict[str, set[str]]) -> list[list[str]]:
-    """Return the steps on each dependency cycle, as sorted label lists ordered by first label."""
+    """Group steps on cycles by mutual reachability; sorted label lists ordered by first label."""
     reachable = {label: _reachable_from(label, deps) for label in deps}
     cycles: list[list[str]] = []
     placed: set[str] = set()

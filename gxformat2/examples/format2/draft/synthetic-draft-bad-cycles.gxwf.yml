@@ -1,5 +1,5 @@
 class: GalaxyWorkflowDraft
-label: Step cycles, a self-loop, a cycle through a subworkflow step, and one inside it
+label: Step cycles (two sharing a step), a self-loop, a cycle through a subworkflow step, and one inside it
 inputs:
   seed:
     type: data
@@ -22,6 +22,25 @@ steps:
     tool_id: TODO_downstream
     in:
       x: b/out
+    out:
+      - id: out
+  m1:
+    tool_id: TODO_m1
+    in:
+      x: m2/out
+    out:
+      - id: out
+  m2:
+    tool_id: TODO_m2
+    in:
+      x: m1/out
+      y: m3/out
+    out:
+      - id: out
+  m3:
+    tool_id: TODO_m3
+    in:
+      x: m2/out
     out:
       - id: out
   p:
