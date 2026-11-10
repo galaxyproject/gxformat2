@@ -354,6 +354,58 @@ def _path_key(path: StepPath) -> str:
     return "/".join(path)
 
 
+# --- Step graph -------------------------------------------------------------
+
+
+def _source_labels(workflow: dict) -> set[str]:
+    """Labels a source ref resolves against: steps and workflow inputs."""
+    labels = {label for label, _ in _iterate_steps(workflow)}
+    labels.update(label for label, _ in _iterate_labeled(workflow.get("inputs")))
+    return labels
+
+
+def _step_dependencies(workflow: dict) -> dict[str, set[str]]:
+    """Map step label -> labels of the steps its inputs source from, itself included."""
+    step_labels = {label for label, _ in _iterate_steps(workflow)}
+    known_labels = _source_labels(workflow)
+    deps: dict[str, set[str]] = {}
+    for label, step in _iterate_steps(workflow):
+        step_deps: set[str] = set()
+        if isinstance(step, dict):
+            for _, in_value in _iterate_step_input_entries(step.get("in")):
+                for ref in _extract_source_refs(in_value):
+                    dep_label, _ = resolve_source_reference(ref, known_labels)
+                    if dep_label in step_labels:
+                        step_deps.add(dep_label)
+        deps[label] = step_deps
+    return deps
+
+
+def _step_cycles(deps: dict[str, set[str]]) -> list[list[str]]:
+    """Group steps on cycles by mutual reachability; sorted label lists ordered by first label."""
+    reachable = {label: _reachable_from(label, deps) for label in deps}
+    cycles: list[list[str]] = []
+    placed: set[str] = set()
+    for label in sorted(deps):
+        if label in placed or label not in reachable[label]:
+            continue
+        members = sorted(other for other in reachable[label] if label in reachable[other])
+        placed.update(members)
+        cycles.append(members)
+    return cycles
+
+
+def _reachable_from(start: str, deps: dict[str, set[str]]) -> set[str]:
+    seen: set[str] = set()
+    pending = list(deps[start])
+    while pending:
+        label = pending.pop()
+        if label not in seen:
+            seen.add(label)
+            pending.extend(deps.get(label, ()))
+    return seen
+
+
 # --- detect_draft -----------------------------------------------------------
 
 
@@ -511,6 +563,19 @@ def _check_label(
         _check_todo_like(label, path, f'{what} label "{label}"', semantic_errors)
 
 
+def _cycle_diagnostics(workflow: dict, prefix: StepPath) -> list[DraftValidationDiagnostic]:
+    """Return one topology error per group of steps that depend on each other."""
+    diagnostics: list[DraftValidationDiagnostic] = []
+    for members in _step_cycles(_step_dependencies(workflow)):
+        if len(members) == 1:
+            message = f'step "{members[0]}" sources its own output'
+        else:
+            labels = ", ".join(f'"{member}"' for member in members)
+            message = f"steps {labels} depend on each other through a cycle"
+        diagnostics.append(DraftValidationDiagnostic(path=prefix, message=message))
+    return diagnostics
+
+
 def _walk_draft_validation(
     workflow: dict,
     prefix: StepPath,
@@ -573,13 +638,7 @@ def _walk_draft_validation(
         if ref is not None:
             check_edge_ref(ref, prefix, f'workflow output "{label}"')
 
-    for members in _step_cycles(_step_dependencies(workflow)):
-        if len(members) == 1:
-            message = f'step "{members[0]}" sources its own output'
-        else:
-            labels = ", ".join(f'"{member}"' for member in members)
-            message = f"steps {labels} depend on each other through a cycle"
-        topology_errors.append(DraftValidationDiagnostic(path=prefix, message=message))
+    topology_errors.extend(_cycle_diagnostics(workflow, prefix))
 
     for label, step in _iterate_steps(workflow):
         if not isinstance(step, dict):
@@ -662,55 +721,6 @@ def _next_draft_step_in(workflow: dict, prefix: StepPath) -> NextStepResult:
             if inner.draft:
                 return inner
     return NextStepResult(draft=False)
-
-
-def _source_labels(workflow: dict) -> set[str]:
-    """Labels a source ref resolves against: steps and workflow inputs."""
-    labels = {label for label, _ in _iterate_steps(workflow)}
-    labels.update(label for label, _ in _iterate_labeled(workflow.get("inputs")))
-    return labels
-
-
-def _step_dependencies(workflow: dict) -> dict[str, set[str]]:
-    """Map step label -> labels of the steps its inputs source from, itself included."""
-    step_labels = {label for label, _ in _iterate_steps(workflow)}
-    known_labels = _source_labels(workflow)
-    deps: dict[str, set[str]] = {}
-    for label, step in _iterate_steps(workflow):
-        step_deps: set[str] = set()
-        if isinstance(step, dict):
-            for _, in_value in _iterate_step_input_entries(step.get("in")):
-                for ref in _extract_source_refs(in_value):
-                    dep_label, _ = resolve_source_reference(ref, known_labels)
-                    if dep_label in step_labels:
-                        step_deps.add(dep_label)
-        deps[label] = step_deps
-    return deps
-
-
-def _step_cycles(deps: dict[str, set[str]]) -> list[list[str]]:
-    """Group steps on cycles by mutual reachability; sorted label lists ordered by first label."""
-    reachable = {label: _reachable_from(label, deps) for label in deps}
-    cycles: list[list[str]] = []
-    placed: set[str] = set()
-    for label in sorted(deps):
-        if label in placed or label not in reachable[label]:
-            continue
-        members = sorted(other for other in reachable[label] if label in reachable[other])
-        placed.update(members)
-        cycles.append(members)
-    return cycles
-
-
-def _reachable_from(start: str, deps: dict[str, set[str]]) -> set[str]:
-    seen: set[str] = set()
-    pending = list(deps[start])
-    while pending:
-        label = pending.pop()
-        if label not in seen:
-            seen.add(label)
-            pending.extend(deps.get(label, ()))
-    return seen
 
 
 def _topo_ordered_steps(workflow: dict) -> list[tuple[str, Any]]:
