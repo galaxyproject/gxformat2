@@ -6,6 +6,12 @@ History
 .. to_doc
 
 ---------------------
+0.30.0.dev0
+---------------------
+
+    
+
+---------------------
 0.29.2 (2026-11-10)
 ---------------------
 * Move creator types to common schema, unify across formats; keep legacy `Native*Creator` names as aliases (thanks to `@jmchilton`_). `Pull Request 165`_

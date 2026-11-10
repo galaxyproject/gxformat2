@@ -10,7 +10,7 @@ from .options import (
     StateEncodeToNativeFn,
 )
 
-__version__ = "0.29.2"
+__version__ = "0.30.0.dev0"
 
 PROJECT_NAME = "gxformat2"
 PROJECT_OWNER = "galaxyproject"
