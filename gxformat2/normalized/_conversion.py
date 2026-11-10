@@ -1171,7 +1171,7 @@ def _build_native_workflow(
     _wire_workflow_outputs(wf.outputs, native_steps, ctx)
 
     # Convert comments
-    comments = _build_native_comments(wf.comments, ctx)
+    comments = _build_native_comments(wf, ctx)
 
     return NormalizedNativeWorkflow(
         a_galaxy_workflow="true",
@@ -1667,15 +1667,14 @@ def _wire_workflow_outputs(
         step.workflow_outputs.append(workflow_output)
 
 
-def _build_native_comments(
-    comments: list[TextComment | MarkdownComment | FrameComment | FreehandComment],
-    ctx: _ConversionContext,
-) -> list:
+def _build_native_comments(wf: NormalizedFormat2, ctx: _ConversionContext) -> list:
     """Convert Format2 comments to native format."""
-    if not comments:
+    if not wf.comments:
         return []
+    if wf.unresolved_frame_references:
+        raise ValueError(wf.unresolved_frame_references[0].message)
 
-    comment_dicts = [c.model_dump(by_alias=True, exclude_none=True) for c in comments]
+    comment_dicts = [c.model_dump(by_alias=True, exclude_none=True) for c in wf.comments]
 
     comment_label_map: dict[str, int] = {}
     for i, comment in enumerate(comment_dicts):
@@ -1694,15 +1693,9 @@ def _build_native_comments(
             ]
 
         if "child_comments" in native_comment:
-            resolved = []
-            for ref in native_comment["child_comments"]:
-                if isinstance(ref, str):
-                    if ref not in comment_label_map:
-                        raise Exception(f"contains_comments references unknown comment label '{ref}'")
-                    resolved.append(comment_label_map[ref])
-                else:
-                    resolved.append(ref)
-            native_comment["child_comments"] = resolved
+            native_comment["child_comments"] = [
+                comment_label_map[ref] if isinstance(ref, str) else ref for ref in native_comment["child_comments"]
+            ]
 
         native_comments.append(native_comment)
 

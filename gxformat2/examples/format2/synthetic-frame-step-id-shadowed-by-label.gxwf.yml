@@ -1,0 +1,20 @@
+class: GalaxyWorkflow
+inputs:
+  - id: input1
+    type: data
+outputs:
+  - id: out1
+    outputSource: concat/out_file1
+steps:
+  - id: cat_step
+    label: concat
+    tool_id: cat1
+    in:
+      input1: input1
+comments:
+  - type: frame
+    title: By id
+    color: none
+    position: [0, 0]
+    size: [260, 180]
+    contains_steps: [cat_step]

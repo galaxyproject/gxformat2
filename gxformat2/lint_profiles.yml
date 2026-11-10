@@ -11,6 +11,7 @@ structural:
   rules:
     - NativeStepKeyNotInteger
     - StepLabelNotUnique
+    - FrameReferenceNotFound
     - StepExportError
     - StepUsesTestToolshed
     - WorkflowHasNoOutputs
@@ -31,6 +32,7 @@ best-practices:
     - StepInputDisconnected
     - StepToolStateUntypedParameter
     - StepPJAUntypedParameter
+    - FrameIsEmpty
     - TrainingWorkflowMissingTag
     - TrainingWorkflowWrongTopic
     - TrainingWorkflowMissingDoc
