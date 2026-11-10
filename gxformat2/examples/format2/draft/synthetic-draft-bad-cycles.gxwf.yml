@@ -1,5 +1,5 @@
 class: GalaxyWorkflowDraft
-label: Step cycles (two sharing a step), a self-loop, a cycle through a subworkflow step, and one inside it
+label: Step cycles (two sharing a step, one via an undeclared port), a self-loop, a cycle through a subworkflow step, and one inside it
 inputs:
   seed:
     type: data
@@ -116,3 +116,15 @@ steps:
             i: x/out
           out:
             - id: out
+  u1:
+    tool_id: TODO_u1
+    in:
+      x: u2/missing
+    out:
+      - id: out
+  u2:
+    tool_id: TODO_u2
+    in:
+      x: u1/out
+    out:
+      - id: out

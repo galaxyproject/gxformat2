@@ -418,7 +418,7 @@ test_validate_draft_rejects_step_cycles:
     - path: [semantic_errors, $length]
       value: 0
     - path: [topology_errors, $length]
-      value: 7
+      value: 9
     - path: [topology_errors, 0, path]
       value: []
     - path: [topology_errors, 0, message]
@@ -444,9 +444,17 @@ test_validate_draft_rejects_step_cycles:
     - path: [topology_errors, 5, message]
       value: 'steps "sub", "t" depend on each other through a cycle'
     - path: [topology_errors, 6, path]
-      value: [sub]
+      value: []
     - path: [topology_errors, 6, message]
+      value: 'steps "u1", "u2" depend on each other through a cycle'
+    - path: [topology_errors, 7, path]
+      value: [sub]
+    - path: [topology_errors, 7, message]
       value: 'steps "Y", "x" depend on each other through a cycle'
+    - path: [topology_errors, 8, path]
+      value: [u1]
+    - path: [topology_errors, 8, message]
+      value: 'step input "x" source "u2/missing" references unknown port "missing" on step "u2"'
 
 test_validate_draft_rejects_list_form_step_cycle:
   fixture: synthetic-draft-bad-cycles-list-form.gxwf.yml
@@ -464,3 +472,12 @@ test_validate_draft_rejects_list_form_step_cycle:
       value: []
     - path: [topology_errors, 0, message]
       value: 'steps "2", "first" depend on each other through a cycle'
+
+test_validate_draft_input_label_shadowing_step_ref_is_not_a_cycle:
+  fixture: synthetic-draft-shadowed-step-ref.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [topology_errors, $length]
+      value: 0

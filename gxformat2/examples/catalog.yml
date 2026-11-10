@@ -1218,3 +1218,9 @@
   format: format2
   tests:
     - tests/test_interop_tests.py
+
+- file: format2/draft/synthetic-draft-shadowed-step-ref.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py

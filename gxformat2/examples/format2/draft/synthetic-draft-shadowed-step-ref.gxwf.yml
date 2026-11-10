@@ -1,0 +1,35 @@
+class: GalaxyWorkflowDraft
+label: Workflow input labels that shadow step refs
+inputs:
+  seed:
+    type: data
+  y/out:
+    type: data
+  z/out:
+    type: data
+outputs: {}
+steps:
+  b:
+    tool_id: TODO_b
+    in:
+      x: y/out
+    out:
+      - id: out
+  c:
+    tool_id: TODO_c
+    in:
+      x: z/out
+    out:
+      - id: out
+  y:
+    tool_id: TODO_y
+    in:
+      x: seed
+    out:
+      - id: out
+  z:
+    tool_id: TODO_z
+    in:
+      x: c/out
+    out:
+      - id: out

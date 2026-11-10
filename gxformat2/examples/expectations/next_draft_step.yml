@@ -201,3 +201,31 @@ test_next_draft_step_labels_unwired_port:
       value: [list_form]
     - path: [work, 2]
       value: "TODO[in.TODO_listed]: assign the real wrapper input port name (semantic hint: 'listed'; no source: unwired)"
+
+# Stays total on cyclic drafts; a stripped self-edge doesn't block its step.
+test_next_draft_step_cyclic_draft_offers_ready_step:
+  fixture: synthetic-draft-bad-cycles.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: true
+    - path: [step]
+      value: [self]
+
+# Every step is on the cycle, so ordering drains alphabetically.
+test_next_draft_step_cyclic_list_form_drains_alphabetically:
+  fixture: synthetic-draft-bad-cycles-list-form.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [draft]
+      value: true
+    - path: [step]
+      value: ["2"]
+
+# `y/out` names the input, not step y, so b depends on nothing and comes first.
+test_next_draft_step_input_label_shadows_step_ref:
+  fixture: synthetic-draft-shadowed-step-ref.gxwf.yml
+  operation: next_draft_step
+  assertions:
+    - path: [step]
+      value: [b]
