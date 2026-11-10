@@ -216,19 +216,20 @@ def _validate_output_sources(lint_context, nf2: NormalizedFormat2):
 
 def _validate_frame_references(lint_context, nf2: NormalizedFormat2):
     for ref in nf2.unresolved_frame_references:
-        entry_context = _child_context(
-            _child_context(_child_context(_child_context(lint_context, "comments"), str(ref.comment_index)), ref.field),
-            str(ref.entry_index),
-        )
-        entry_context.error(ref.message, linter=FrameReferenceNotFound)
+        field_context = _child_context(_comment_context(lint_context, ref.comment_index), ref.field)
+        _child_context(field_context, str(ref.entry_index)).error(ref.message, linter=FrameReferenceNotFound)
 
 
 def _lint_empty_frames(lint_context, nf2: NormalizedFormat2):
     for index, comment in enumerate(nf2.comments):
         if isinstance(comment, FrameComment) and not comment.contains_steps and not comment.contains_comments:
-            _child_context(_child_context(lint_context, "comments"), str(index)).warn(
+            _comment_context(lint_context, index).warn(
                 f"{frame_description(comment, index)} contains no steps or comments.", linter=FrameIsEmpty
             )
+
+
+def _comment_context(lint_context: LintContext, comment_index: int) -> LintContext:
+    return _child_context(_child_context(lint_context, "comments"), str(comment_index))
 
 
 def _native_step_context(lint_context: LintContext, step_key: str) -> LintContext:
