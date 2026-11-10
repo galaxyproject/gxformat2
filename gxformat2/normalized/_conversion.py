@@ -1693,6 +1693,9 @@ def _build_native_comments(wf: NormalizedFormat2, ctx: _ConversionContext) -> li
             ]
 
         if "child_comments" in native_comment:
+            for ref in native_comment["child_comments"]:
+                if isinstance(ref, str) and ref not in comment_label_map:
+                    raise Exception(f"contains_comments references unknown comment label '{ref}'")
             native_comment["child_comments"] = [
                 comment_label_map[ref] if isinstance(ref, str) else ref for ref in native_comment["child_comments"]
             ]

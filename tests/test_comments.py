@@ -682,3 +682,18 @@ comments:
     assert set(comments["group"]["contains_comments"]) == {"note", "docs"}
     assert comments["sketch"]["thickness"] == 2
     assert comments["sketch"]["line"] == [[610, 110], [620, 120]]
+
+
+def test_format2_to_native_text_comment_bad_contains_comments():
+    """Non-frame comment with unknown contains_comments label raises a named error."""
+    wf = {
+        "class": "GalaxyWorkflow",
+        "inputs": {"i": "data"},
+        "outputs": {},
+        "steps": {},
+        "comments": [
+            {"type": "text", "text": "x", "position": [0, 0], "size": [1, 1], "contains_comments": ["missing"]}
+        ],
+    }
+    with pytest.raises(Exception, match=r"^contains_comments references unknown comment label 'missing'$"):
+        to_native(wf)
