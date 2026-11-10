@@ -8,6 +8,9 @@ History
 ---------------------
 0.29.2.dev0
 ---------------------
+* Move creator types to common schema, unify across formats; keep legacy `Native*Creator` names as aliases (thanks to `@jmchilton`_). `Pull Request 165`_
+* Show edges around TODO ports in `next_draft_step`; reject unwired ones in `validate_draft` (thanks to `@jmchilton`_). `Pull Request 289`_
+* Add `default_positions` option to leave missing step positions unset (thanks to `@arash77`_). `Pull Request 291`_
 
     
 
@@ -506,6 +509,9 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 165: https://github.com/galaxyproject/gxformat2/pull/165
+.. _Pull Request 289: https://github.com/galaxyproject/gxformat2/pull/289
+.. _Pull Request 291: https://github.com/galaxyproject/gxformat2/pull/291
 .. _Pull Request 284: https://github.com/galaxyproject/gxformat2/pull/284
 .. _Pull Request 285: https://github.com/galaxyproject/gxformat2/pull/285
 .. _Pull Request 268: https://github.com/galaxyproject/gxformat2/pull/268
@@ -652,4 +658,5 @@ History
 .. _@loichuder: https://github.com/loichuder
 .. _@simleo: https://github.com/simleo
 .. _@richard-burhans: https://github.com/richard-burhans
+.. _@arash77: https://github.com/arash77
 .. _`@dependabot[bot]`: https://github.com/apps/dependabot
