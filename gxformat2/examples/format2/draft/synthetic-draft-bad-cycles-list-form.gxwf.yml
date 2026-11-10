@@ -1,0 +1,22 @@
+class: GalaxyWorkflowDraft
+label: Step cycle in list-form steps, one of them unlabeled
+inputs:
+  seed:
+    type: data
+outputs: {}
+steps:
+  - label: first
+    tool_id: TODO_first
+    in:
+      - id: x
+        source: 2/out
+      - id: y
+        source: seed
+    out:
+      - id: out
+  - tool_id: TODO_second
+    in:
+      - id: x
+        source: first/out
+    out:
+      - id: out

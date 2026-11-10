@@ -664,10 +664,17 @@ def _next_draft_step_in(workflow: dict, prefix: StepPath) -> NextStepResult:
     return NextStepResult(draft=False)
 
 
+def _source_labels(workflow: dict) -> set[str]:
+    """Labels a source ref resolves against: steps and workflow inputs."""
+    labels = {label for label, _ in _iterate_steps(workflow)}
+    labels.update(label for label, _ in _iterate_labeled(workflow.get("inputs")))
+    return labels
+
+
 def _step_dependencies(workflow: dict) -> dict[str, set[str]]:
     """Map step label -> labels of the steps its inputs source from, itself included."""
     step_labels = {label for label, _ in _iterate_steps(workflow)}
-    known_labels = step_labels | {label for label, _ in _iterate_labeled(workflow.get("inputs"))}
+    known_labels = _source_labels(workflow)
     deps: dict[str, set[str]] = {}
     for label, step in _iterate_steps(workflow):
         step_deps: set[str] = set()
@@ -734,8 +741,7 @@ class _PortEdges(BaseModel):
 
 def _collect_port_edges(workflow: dict) -> dict[str, dict[str, _PortEdges]]:
     """Map label -> port -> what references it, resolving refs against the labels validation uses."""
-    known_labels = {label for label, _ in _iterate_steps(workflow)}
-    known_labels.update(label for label, _ in _iterate_labeled(workflow.get("inputs")))
+    known_labels = _source_labels(workflow)
     index: dict[str, dict[str, _PortEdges]] = {}
 
     def edges_at(ref: str) -> _PortEdges:

@@ -418,7 +418,7 @@ test_validate_draft_rejects_step_cycles:
     - path: [semantic_errors, $length]
       value: 0
     - path: [topology_errors, $length]
-      value: 4
+      value: 6
     - path: [topology_errors, 0, path]
       value: []
     - path: [topology_errors, 0, message]
@@ -430,8 +430,33 @@ test_validate_draft_rejects_step_cycles:
     - path: [topology_errors, 2, path]
       value: []
     - path: [topology_errors, 2, message]
-      value: 'step "self" sources its own output; break that edge'
+      value: 'steps "s", "s/b" form a cycle; break one of its edges'
     - path: [topology_errors, 3, path]
-      value: [sub]
+      value: []
     - path: [topology_errors, 3, message]
+      value: 'step "self" sources its own output; break that edge'
+    - path: [topology_errors, 4, path]
+      value: []
+    - path: [topology_errors, 4, message]
+      value: 'steps "sub", "t" form a cycle; break one of its edges'
+    - path: [topology_errors, 5, path]
+      value: [sub]
+    - path: [topology_errors, 5, message]
       value: 'steps "Y", "x" form a cycle; break one of its edges'
+
+test_validate_draft_rejects_list_form_step_cycle:
+  fixture: synthetic-draft-bad-cycles-list-form.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [semantic_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 1
+    - path: [topology_errors, 0, path]
+      value: []
+    - path: [topology_errors, 0, message]
+      value: 'steps "2", "first" form a cycle; break one of its edges'

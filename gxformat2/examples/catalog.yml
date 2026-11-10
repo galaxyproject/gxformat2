@@ -119,6 +119,12 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/draft/synthetic-draft-bad-cycles-list-form.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/draft/synthetic-draft-bare-step-ref.gxwf.yml
   origin: synthetic
   format: format2
