@@ -60,6 +60,7 @@ class ConversionOptions:
         compact: bool = False,
         url_resolver: UrlResolverFn = None,
         strict_structure: bool = False,
+        default_positions: bool = True,
     ):
         """Initialize conversion options."""
         self.workflow_directory = str(workflow_directory) if workflow_directory else None
@@ -70,6 +71,8 @@ class ConversionOptions:
         self.compact = compact
         self.url_resolver = url_resolver
         self.strict_structure = strict_structure
+        # False leaves steps without a position unset, so the consumer can lay them out.
+        self.default_positions = default_positions
 
 
 def default_url_resolver(url: str) -> dict[str, Any]:

@@ -1287,7 +1287,7 @@ def _build_input_step(
         else:
             tool_state[key] = value
 
-    position = _default_position(inp.position, order_index)
+    position = _default_position(inp.position, order_index, ctx)
 
     in_ = None
     default = inp.default
@@ -1403,7 +1403,7 @@ def _build_tool_step(
     # Build post job actions
     post_job_actions = _build_post_job_actions(step.out, step.post_job_actions)
 
-    position = _default_position(step.position, order_index)
+    position = _default_position(step.position, order_index, ctx)
 
     return NormalizedNativeStep(
         id=order_index,
@@ -1456,7 +1456,7 @@ def _build_subworkflow_step(
         connect, ctx, is_subworkflow=is_subworkflow, subworkflow_ctx=subworkflow_child_ctx
     )
     post_job_actions = _build_post_job_actions(step.out, step.post_job_actions)
-    position = _default_position(step.position, order_index)
+    position = _default_position(step.position, order_index, ctx)
 
     return NormalizedNativeStep(
         id=order_index,
@@ -1483,7 +1483,7 @@ def _build_pause_step(
     name = step.label or "Pause for dataset review"
     connect = _extract_connections(step)
     input_connections = _build_input_connections(connect, ctx)
-    position = _default_position(step.position, order_index)
+    position = _default_position(step.position, order_index, ctx)
 
     return NormalizedNativeStep(
         id=order_index,
@@ -1516,7 +1516,7 @@ def _build_pick_value_step(
         tool_state["num_inputs"] = max(2, num_inputs)
 
     post_job_actions = _build_post_job_actions(step.out, step.post_job_actions)
-    position = _default_position(step.position, order_index)
+    position = _default_position(step.position, order_index, ctx)
 
     return NormalizedNativeStep(
         id=order_index,
@@ -1761,11 +1761,13 @@ def _convert_tool_shed_repo_to_native(repo) -> ToolShedRepository | None:
     )
 
 
-def _default_position(position: Any, order_index: int) -> NativeStepPosition:
+def _default_position(position: Any, order_index: int, ctx: _ConversionContext) -> NativeStepPosition | None:
     if position is not None:
         if isinstance(position, NativeStepPosition):
             return position
         return NativeStepPosition(left=position.left, top=position.top)
+    if not ctx.options.default_positions:
+        return None
     return NativeStepPosition(left=10 * order_index, top=10 * order_index)
 
 

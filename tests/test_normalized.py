@@ -6,6 +6,7 @@ import copy
 import pytest
 from pydantic import ValidationError
 
+from gxformat2.converter import ImportOptions, python_to_workflow
 from gxformat2.draft import extract_draft_subset, validate_draft
 from gxformat2.examples import load, load_contents
 from gxformat2.normalized import (
@@ -471,6 +472,56 @@ class TestStrictStructure:
         opts = ConversionOptions(strict_structure=True)
         result = ensure_native(nw, options=opts)
         assert result is not None
+
+
+UNPLACED_WORKFLOW = {
+    "class": "GalaxyWorkflow",
+    "inputs": {"reads": "data"},
+    "steps": {
+        "cat": {"tool_id": "cat1", "in": {"input1": "reads"}},
+        "placed": {"tool_id": "cat1", "in": {"input1": "cat/out_file1"}, "position": {"left": 300, "top": 40}},
+        "nested": {
+            "run": {
+                "class": "GalaxyWorkflow",
+                "inputs": {"inner": "data"},
+                "steps": {"inner_cat": {"tool_id": "cat1", "in": {"input1": "inner"}}},
+            },
+            "in": {"inner": "cat/out_file1"},
+        },
+    },
+}
+
+
+class TestDefaultPositions:
+    """default_positions=False leaves steps written without a position unplaced, for the consumer to lay out."""
+
+    @staticmethod
+    def _positions(native: dict) -> dict:
+        return {step["label"]: step.get("position") for step in native["steps"].values()}
+
+    def test_missing_positions_get_the_diagonal_by_default(self):
+        positions = self._positions(python_to_workflow(copy.deepcopy(UNPLACED_WORKFLOW)))
+        assert positions["reads"] == {"left": 0, "top": 0}
+        assert positions["cat"] == {"left": 10, "top": 10}
+
+    def test_missing_positions_left_unset(self):
+        native = to_native(
+            copy.deepcopy(UNPLACED_WORKFLOW), options=ConversionOptions(default_positions=False)
+        ).to_dict()
+        steps = {step["label"]: step for step in native["steps"].values()}
+        assert "position" not in steps["reads"]
+        assert "position" not in steps["cat"]
+        assert steps["placed"]["position"] == {"left": 300, "top": 40}
+        # subworkflows follow the same option
+        assert all("position" not in step for step in steps["nested"]["subworkflow"]["steps"].values())
+
+    def test_import_options_leave_positions_unset(self):
+        import_options = ImportOptions()
+        import_options.default_positions = False
+        positions = self._positions(python_to_workflow(copy.deepcopy(UNPLACED_WORKFLOW), import_options=import_options))
+        assert positions["reads"] is None
+        assert positions["cat"] is None
+        assert positions["placed"] == {"left": 300, "top": 40}
 
 
 @pytest.mark.parametrize(
