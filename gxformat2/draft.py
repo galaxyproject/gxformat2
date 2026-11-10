@@ -402,7 +402,7 @@ def _reachable_from(start: str, deps: dict[str, set[str]]) -> set[str]:
         label = pending.pop()
         if label not in seen:
             seen.add(label)
-            pending.extend(deps.get(label, ()))
+            pending.extend(deps[label])
     return seen
 
 
