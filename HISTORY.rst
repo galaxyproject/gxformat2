@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.29.2.dev0
+0.29.2 (2026-11-10)
 ---------------------
 * Move creator types to common schema, unify across formats; keep legacy `Native*Creator` names as aliases (thanks to `@jmchilton`_). `Pull Request 165`_
 * Show edges around TODO ports in `next_draft_step`; reject unwired ones in `validate_draft` (thanks to `@jmchilton`_). `Pull Request 289`_
