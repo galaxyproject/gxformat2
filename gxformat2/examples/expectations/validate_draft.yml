@@ -406,3 +406,32 @@ test_validate_draft_rejects_unwired_todo_port:
       value: [sub, inner]
     - path: [topology_errors, 5, message]
       value_contains: '"TODO_inner"'
+
+test_validate_draft_rejects_step_cycles:
+  fixture: synthetic-draft-bad-cycles.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [semantic_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 4
+    - path: [topology_errors, 0, path]
+      value: []
+    - path: [topology_errors, 0, message]
+      value: 'steps "a", "b" form a cycle; break one of its edges'
+    - path: [topology_errors, 1, path]
+      value: []
+    - path: [topology_errors, 1, message]
+      value: 'steps "p", "q", "r" form a cycle; break one of its edges'
+    - path: [topology_errors, 2, path]
+      value: []
+    - path: [topology_errors, 2, message]
+      value: 'step "self" sources its own output; break that edge'
+    - path: [topology_errors, 3, path]
+      value: [sub]
+    - path: [topology_errors, 3, message]
+      value: 'steps "Y", "x" form a cycle; break one of its edges'

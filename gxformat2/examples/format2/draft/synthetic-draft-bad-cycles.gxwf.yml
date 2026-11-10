@@ -1,0 +1,77 @@
+class: GalaxyWorkflowDraft
+label: Step cycles, a self-loop, and a cycle inside a draft subworkflow
+inputs:
+  seed:
+    type: data
+outputs: {}
+steps:
+  a:
+    tool_id: TODO_a
+    in:
+      x: b/out
+      y: seed
+    out:
+      - id: out
+  b:
+    tool_id: TODO_b
+    in:
+      x: a/out
+    out:
+      - id: out
+  downstream:
+    tool_id: TODO_downstream
+    in:
+      x: b/out
+    out:
+      - id: out
+  p:
+    tool_id: TODO_p
+    in:
+      x:
+        - seed
+        - r/out
+    out:
+      - id: out
+  q:
+    tool_id: TODO_q
+    in:
+      x:
+        source: p/out
+    out:
+      - id: output
+  r:
+    tool_id: TODO_r
+    in:
+      x: q
+    out:
+      - id: out
+  self:
+    tool_id: TODO_self
+    in:
+      x: self/out
+      y: seed
+    out:
+      - id: out
+  sub:
+    in:
+      seed: seed
+    run:
+      class: GalaxyWorkflowDraft
+      inputs:
+        seed:
+          type: data
+      outputs: {}
+      steps:
+        x:
+          tool_id: TODO_x
+          in:
+            i: Y/out
+            j: seed
+          out:
+            - id: out
+        Y:
+          tool_id: TODO_y
+          in:
+            i: x/out
+          out:
+            - id: out
