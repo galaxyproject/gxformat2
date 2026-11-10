@@ -38,6 +38,7 @@ class ImportOptions:
         self.deduplicate_subworkflows = False
         self.encode_tool_state_json = True
         self.state_encode_to_native: NativeStateEncoderFn = None
+        self.default_positions = True
 
 
 def yaml_to_workflow(has_yaml, galaxy_interface=None, workflow_directory=None, import_options=None):
@@ -65,6 +66,7 @@ def python_to_workflow(as_python, galaxy_interface=None, workflow_directory=None
         workflow_directory=workflow_directory,
         deduplicate_subworkflows=import_options.deduplicate_subworkflows,
         state_encode_to_native=import_options.state_encode_to_native,
+        default_positions=import_options.default_positions,
     )
     result = to_native(as_python, options)
     data = result.to_dict()
