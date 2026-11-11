@@ -12,8 +12,10 @@
 #            connections_in/connections_out/upstream/downstream: {added[], removed[]},
 #            plan_fields_before{}, plan_fields_after{} }
 # Steps match on their step key (dict key; list form: label, else id, else index id).
+# A dict-form step's inner id is only an alias for source refs.
 # Edges render as "<step>/<port> -> <step>/<port>", or "<input> -> <step>/<port>".
 # State paths join nested dict keys with "|"; lists are leaf values.
+# An absent state leaf differs from one set to null, "" or [] (unlike out actions).
 # _plan_* fields never count as changes.
 
 test_diff_identical_is_empty:
@@ -394,4 +396,86 @@ test_diff_explicit_false_and_empty_equal_absent:
     - path: [inputs, changed, $length]
       value: 0
     - path: [steps, changed, $length]
+      value: 0
+
+test_diff_unset_state_leaves_differ_from_absent:
+  fixture: synthetic-diff-explicit-false-bare.gxwf.yml
+  fixture_after: synthetic-diff-explicit-state.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [steps, changed, cat, state, $length]
+      value: 3
+    - path: [steps, changed, cat, state, min_length, kind]
+      value: added
+    - path: [steps, changed, cat, state, min_length, after]
+      value: null
+    - path: [steps, changed, cat, state, comment, kind]
+      value: added
+    - path: [steps, changed, cat, state, comment, after]
+      value: ""
+    - path: [steps, changed, cat, state, inclusive_filter, kind]
+      value: added
+    - path: [steps, changed, cat, state, inclusive_filter, after]
+      value: []
+
+test_diff_step_input_default_alone_is_a_change:
+  fixture: synthetic-diff-explicit-false-bare.gxwf.yml
+  fixture_after: synthetic-diff-in-default.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [steps, changed, cat, in_defaults, $length]
+      value: 1
+    - path: [steps, changed, cat, in_defaults, label, before]
+      value: null
+    - path: [steps, changed, cat, in_defaults, label, after]
+      value: unnamed
+    - path: [steps, changed, cat, fields, $length]
+      value: 0
+    - path: [steps, changed, cat, state, $length]
+      value: 0
+    - path: [steps, changed, cat, out_actions, $length]
+      value: 0
+    - path: [steps, changed, cat, connections_in, added, $length]
+      value: 0
+    - path: [steps, changed, cat, connections_in, removed, $length]
+      value: 0
+
+test_diff_output_action_alone_is_a_change:
+  fixture: synthetic-diff-explicit-false-bare.gxwf.yml
+  fixture_after: synthetic-diff-out-action.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [steps, changed, cat, out_actions, $length]
+      value: 1
+    - path: [steps, changed, cat, out_actions, out_file1, before]
+      value: null
+    - path: [steps, changed, cat, out_actions, out_file1, after]
+      value: {rename: concatenated}
+    - path: [steps, changed, cat, fields, $length]
+      value: 0
+    - path: [steps, changed, cat, state, $length]
+      value: 0
+    - path: [steps, changed, cat, in_defaults, $length]
+      value: 0
+    - path: [steps, changed, cat, connections_out, added, $length]
+      value: 0
+    - path: [steps, changed, cat, connections_out, removed, $length]
+      value: 0
+
+test_diff_dict_step_inner_id_is_not_its_identity:
+  fixture: synthetic-diff-inner-id.gxwf.yml
+  fixture_after: synthetic-diff-inner-id-renamed.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: false
+    - path: [steps, changed, $length]
+      value: 0
+    - path: [outputs, changed, $length]
       value: 0

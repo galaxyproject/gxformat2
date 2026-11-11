@@ -1342,3 +1342,33 @@
   format: format2
   tests:
     - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-explicit-state.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-in-default.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-out-action.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-inner-id.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-inner-id-renamed.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
