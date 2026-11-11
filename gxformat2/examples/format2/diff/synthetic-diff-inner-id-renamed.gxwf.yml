@@ -1,5 +1,5 @@
 class: GalaxyWorkflow
-label: synthetic-diff-inner-id with a new inner id, consumed via that id
+label: synthetic-diff-inner-id with a new inner id
 inputs:
   reads: data
 outputs:
@@ -14,4 +14,4 @@ steps:
   sort:
     tool_id: sort1
     in:
-      input: cat_b/out_file1
+      input: cat/out_file1

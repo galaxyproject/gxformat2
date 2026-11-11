@@ -12,7 +12,7 @@
 #            connections_in/connections_out/upstream/downstream: {added[], removed[]},
 #            plan_fields_before{}, plan_fields_after{} }
 # Steps match on their step key (dict key; list form: label, else id, else index id).
-# A dict-form step's inner id is only an alias for source refs.
+# A dict-form step's inner id is not its identity; changing it is no change.
 # Edges render as "<step>/<port> -> <step>/<port>", or "<input> -> <step>/<port>".
 # State paths join nested dict keys with "|"; lists are leaf values.
 # An absent state leaf differs from one set to null, "" or [] (unlike out actions).

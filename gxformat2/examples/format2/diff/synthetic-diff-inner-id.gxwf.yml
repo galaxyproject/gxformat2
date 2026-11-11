@@ -1,5 +1,5 @@
 class: GalaxyWorkflow
-label: a dict-form step whose inner id differs from its key, consumed via the key
+label: a dict-form step whose inner id differs from its key
 inputs:
   reads: data
 outputs:
