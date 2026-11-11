@@ -314,7 +314,7 @@ def _step_out_ports(step: dict) -> set[str]:
 
 
 def present_plan_fields(doc: Mapping[str, Any]) -> list[str]:
-    """Names of the non-empty ``_plan_*`` fields on *doc*, in ``PLAN_FIELDS`` order."""
+    """Return the non-empty ``_plan_*`` field names on *doc*, in ``PLAN_FIELDS`` order."""
     return [f for f in PLAN_FIELDS if isinstance(doc.get(f), str) and doc[f]]
 
 

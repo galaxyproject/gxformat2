@@ -15,12 +15,11 @@ import json
 import os
 import sys
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import BaseModel, computed_field
 
-from gxformat2.draft import iterate_steps, present_plan_fields, draft_as_workflow, is_draft_workflow
+from gxformat2.draft import draft_as_workflow, is_draft_workflow, iterate_steps, present_plan_fields
 from gxformat2.normalized import (
     normalized_format2,
     NormalizedFormat2,
@@ -28,6 +27,7 @@ from gxformat2.normalized import (
     resolve_source_reference,
 )
 from gxformat2.normalized._format2 import ImportReference
+from gxformat2.schema.gxformat2 import BaseInputParameter
 from gxformat2.yaml import ordered_load_path
 
 INPUT_FIELDS: tuple[str, ...] = ("type", "collection_type", "optional", "format", "default")
@@ -35,7 +35,7 @@ STEP_FIELDS: tuple[str, ...] = ("label", "type", "tool_id", "tool_version", "whe
 STATE_SEPARATOR = "|"
 INPUT_PORT_SUFFIX = "/output"
 
-WorkflowSource = dict[str, Any] | str | Path | os.PathLike[str]
+WorkflowSource = dict[str, Any] | str | os.PathLike[str]
 
 
 # --- Result models ----------------------------------------------------------
@@ -187,7 +187,7 @@ class _Side:
 
 
 def _load(workflow: WorkflowSource) -> dict[str, Any]:
-    if isinstance(workflow, (str, Path, os.PathLike)):
+    if isinstance(workflow, (str, os.PathLike)):
         workflow = ordered_load_path(str(workflow))
     if not isinstance(workflow, dict):
         raise TypeError("expected a Format2 workflow mapping")
@@ -258,7 +258,7 @@ def _side(raw: dict[str, Any]) -> _Side:
     )
 
 
-def _input_fields(inp: Any) -> dict[str, Any]:
+def _input_fields(inp: BaseInputParameter) -> dict[str, Any]:
     dumped = inp.model_dump(by_alias=True, mode="json")
     fields = {field: dumped.get(field) for field in INPUT_FIELDS}
     if fields["optional"] is None:
@@ -296,7 +296,7 @@ def _step_field(step: NormalizedWorkflowStep, field: str) -> Any:
 
 
 def _run_reference(run: Any) -> str | dict[str, str] | None:
-    """A linked run's URL or path, or its ``@import``; ``None`` for inline runs."""
+    """Return a linked run's URL or path, or its ``@import``; ``None`` for inline runs."""
     if isinstance(run, str):
         return run
     if isinstance(run, ImportReference):
