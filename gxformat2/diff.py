@@ -20,7 +20,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, computed_field
 
-from gxformat2.draft import _iterate_steps, _present_plan_fields, draft_as_workflow, is_draft_workflow
+from gxformat2.draft import iterate_steps, present_plan_fields, draft_as_workflow, is_draft_workflow
 from gxformat2.normalized import (
     normalized_format2,
     NormalizedFormat2,
@@ -190,7 +190,7 @@ def _load(workflow: WorkflowSource) -> dict[str, Any]:
 def _side(raw: dict[str, Any]) -> _Side:
     is_draft = is_draft_workflow(raw)
     nf2: NormalizedFormat2 = normalized_format2(draft_as_workflow(raw) if is_draft else raw)
-    raw_steps = list(_iterate_steps(raw))
+    raw_steps = list(iterate_steps(raw))
     if len(raw_steps) != len(nf2.steps):
         raise ValueError("could not align raw steps with normalized steps")
 
@@ -201,7 +201,7 @@ def _side(raw: dict[str, Any]) -> _Side:
     for (key, raw_step), step in zip(raw_steps, nf2.steps):
         steps[key] = step
         if isinstance(raw_step, dict):
-            plan_fields[key] = {field: raw_step[field] for field in _present_plan_fields(raw_step)}
+            plan_fields[key] = {field: raw_step[field] for field in present_plan_fields(raw_step)}
             if list_form and not any(isinstance(raw_step.get(f), str) and raw_step[f] for f in ("label", "id")):
                 unlabeled.append(key)
 
