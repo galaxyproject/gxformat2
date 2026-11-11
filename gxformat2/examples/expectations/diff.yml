@@ -149,6 +149,10 @@ test_diff_changed_tool_version_state_label_when_and_input:
       value: toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.74+galaxy1
     - path: [steps, changed, qc, state, $length]
       value: 0
+    - path: [steps, changed, qc, connections_in, added, $length]
+      value: 0
+    - path: [steps, changed, qc, connections_in, removed, $length]
+      value: 0
     - path: [steps, changed, trim, fields, label, before]
       value: trim reads
     - path: [steps, changed, trim, fields, label, after]

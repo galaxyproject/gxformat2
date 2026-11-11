@@ -1,5 +1,5 @@
 class: GalaxyWorkflow
-label: diff base with bumped fastqc, edited trim state, relabelled trim, a when guard and a new default
+label: diff base with an explicit reads/output port, bumped fastqc, edited trim state, relabelled trim, a when guard and a new default
 inputs:
   reads:
     type: data
@@ -17,7 +17,7 @@ steps:
     tool_id: toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.74+galaxy1
     tool_version: "0.74+galaxy1"
     in:
-      input_file: reads
+      input_file: reads/output
     out:
       - html_report
   trim:

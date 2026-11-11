@@ -33,6 +33,7 @@ from gxformat2.yaml import ordered_load_path
 INPUT_FIELDS: tuple[str, ...] = ("type", "collection_type", "optional", "format", "default")
 STEP_FIELDS: tuple[str, ...] = ("label", "type", "tool_id", "tool_version", "when", "run")
 STATE_SEPARATOR = "|"
+INPUT_PORT_SUFFIX = "/output"
 
 WorkflowSource = dict[str, Any] | str | Path | os.PathLike[str]
 
@@ -223,6 +224,9 @@ def _side(raw: dict[str, Any]) -> _Side:
     def resolve(source: str) -> _Ref:
         if source in input_ids:
             return source, None
+        # An input's only port is ``output``; ``<input>/output`` means ``<input>``.
+        if source.endswith(INPUT_PORT_SUFFIX) and source[: -len(INPUT_PORT_SUFFIX)] in input_ids:
+            return source[: -len(INPUT_PORT_SUFFIX)], None
         step_label, port = resolve_source_reference(source, aliases.keys())
         return aliases.get(step_label, step_label), port
 
