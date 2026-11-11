@@ -30,7 +30,21 @@ from gxformat2.normalized._format2 import ImportReference
 from gxformat2.schema.gxformat2 import BaseInputParameter
 from gxformat2.yaml import ordered_load_path
 
-INPUT_FIELDS: tuple[str, ...] = ("type", "collection_type", "optional", "format", "default")
+INPUT_FIELDS: tuple[str, ...] = (
+    "type",
+    "collection_type",
+    "optional",
+    "format",
+    "default",
+    "min",
+    "max",
+    "restrictions",
+    "suggestions",
+    "restrictOnConnections",
+    "validators",
+    "fields",
+    "column_definitions",
+)
 STEP_FIELDS: tuple[str, ...] = ("label", "type", "tool_id", "tool_version", "when", "run")
 STATE_SEPARATOR = "|"
 INPUT_PORT = "output"

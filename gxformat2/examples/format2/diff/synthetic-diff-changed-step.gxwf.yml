@@ -1,5 +1,5 @@
 class: GalaxyWorkflow
-label: diff base with an explicit reads/output port, bumped fastqc, edited trim state, relabelled trim, a when guard, a new step input default and a new input default
+label: diff base with an explicit reads/output port, bumped fastqc, edited trim state, relabelled trim, a when guard, a new step input default, and a new default and bounds on an input
 inputs:
   reads:
     type: data
@@ -7,6 +7,8 @@ inputs:
   min_quality:
     type: int
     default: 25
+    min: 0
+    max: 60
 outputs:
   report:
     outputSource: qc/html_report

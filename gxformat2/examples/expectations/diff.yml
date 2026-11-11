@@ -190,6 +190,14 @@ test_diff_changed_tool_version_state_label_when_and_input:
       value: 20
     - path: [inputs, changed, min_quality, default, after]
       value: 25
+    - path: [inputs, changed, min_quality, min, before]
+      value: null
+    - path: [inputs, changed, min_quality, min, after]
+      value: 0
+    - path: [inputs, changed, min_quality, max, after]
+      value: 60
+    - path: [inputs, changed, min_quality, $length]
+      value: 3
     - path: [unwired_inputs, $length]
       value: 0
 
