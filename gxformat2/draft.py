@@ -354,6 +354,58 @@ def _path_key(path: StepPath) -> str:
     return "/".join(path)
 
 
+# --- Step graph -------------------------------------------------------------
+
+
+def _source_labels(workflow: dict) -> set[str]:
+    """Labels a source ref resolves against: steps and workflow inputs."""
+    labels = {label for label, _ in _iterate_steps(workflow)}
+    labels.update(label for label, _ in _iterate_labeled(workflow.get("inputs")))
+    return labels
+
+
+def _step_dependencies(workflow: dict) -> dict[str, set[str]]:
+    """Map step label -> labels of the steps its inputs source from, itself included."""
+    step_labels = {label for label, _ in _iterate_steps(workflow)}
+    known_labels = _source_labels(workflow)
+    deps: dict[str, set[str]] = {}
+    for label, step in _iterate_steps(workflow):
+        step_deps: set[str] = set()
+        if isinstance(step, dict):
+            for _, in_value in _iterate_step_input_entries(step.get("in")):
+                for ref in _extract_source_refs(in_value):
+                    dep_label, _ = resolve_source_reference(ref, known_labels)
+                    if dep_label in step_labels:
+                        step_deps.add(dep_label)
+        deps[label] = step_deps
+    return deps
+
+
+def _step_cycles(deps: dict[str, set[str]]) -> list[list[str]]:
+    """Group steps on cycles by mutual reachability; sorted label lists ordered by first label."""
+    reachable = {label: _reachable_from(label, deps) for label in deps}
+    cycles: list[list[str]] = []
+    placed: set[str] = set()
+    for label in sorted(deps):
+        if label in placed or label not in reachable[label]:
+            continue
+        members = sorted(other for other in reachable[label] if label in reachable[other])
+        placed.update(members)
+        cycles.append(members)
+    return cycles
+
+
+def _reachable_from(start: str, deps: dict[str, set[str]]) -> set[str]:
+    seen: set[str] = set()
+    pending = list(deps[start])
+    while pending:
+        label = pending.pop()
+        if label not in seen:
+            seen.add(label)
+            pending.extend(deps[label])
+    return seen
+
+
 # --- detect_draft -----------------------------------------------------------
 
 
@@ -406,7 +458,8 @@ def validate_draft(workflow: Any) -> DraftValidationResult:
     - ``structure_errors``: draft schema validation failures.
     - ``topology_errors``: TODO sentinels where topology must be concrete (input,
       output and step labels, input and step types), edge refs that don't resolve
-      to a declared step + port, and TODO input ports with no source or default.
+      to a declared step + port, TODO input ports with no source or default, and
+      step dependency cycles.
     - ``semantic_errors``: shared input/step cross-field violations, malformed
       TODO-shaped strings, and ``_plan_*`` left on a resolved tool step.
     - ``warnings``: bare ``TODO`` in port position; ``_plan_*`` on a draft root.
@@ -510,6 +563,19 @@ def _check_label(
         _check_todo_like(label, path, f'{what} label "{label}"', semantic_errors)
 
 
+def _cycle_diagnostics(workflow: dict, prefix: StepPath) -> list[DraftValidationDiagnostic]:
+    """Return one topology error per group of steps that depend on each other."""
+    diagnostics: list[DraftValidationDiagnostic] = []
+    for members in _step_cycles(_step_dependencies(workflow)):
+        if len(members) == 1:
+            message = f'step "{members[0]}" sources its own output'
+        else:
+            labels = ", ".join(f'"{member}"' for member in members)
+            message = f"steps {labels} depend on each other through a cycle"
+        diagnostics.append(DraftValidationDiagnostic(path=prefix, message=message))
+    return diagnostics
+
+
 def _walk_draft_validation(
     workflow: dict,
     prefix: StepPath,
@@ -571,6 +637,8 @@ def _walk_draft_validation(
         ref = _read_output_source(output)
         if ref is not None:
             check_edge_ref(ref, prefix, f'workflow output "{label}"')
+
+    topology_errors.extend(_cycle_diagnostics(workflow, prefix))
 
     for label, step in _iterate_steps(workflow):
         if not isinstance(step, dict):
@@ -657,26 +725,15 @@ def _next_draft_step_in(workflow: dict, prefix: StepPath) -> NextStepResult:
 
 def _topo_ordered_steps(workflow: dict) -> list[tuple[str, Any]]:
     """Topological order of steps; ties and cycles resolved alphabetically by label."""
-    entries = list(_iterate_steps(workflow))
-    by_label = dict(entries)
-    deps: dict[str, set[str]] = {}
-    for label, step in entries:
-        step_deps: set[str] = set()
-        if isinstance(step, dict):
-            for _, in_value in _iterate_step_input_entries(step.get("in")):
-                for ref in _extract_source_refs(in_value):
-                    dep_label, port = _split_source_ref(ref, by_label)
-                    if port is not None and dep_label != label and dep_label in by_label:
-                        step_deps.add(dep_label)
-        deps[label] = step_deps
+    by_label = dict(_iterate_steps(workflow))
+    deps = {label: step_deps - {label} for label, step_deps in _step_dependencies(workflow).items()}
 
     ordered: list[tuple[str, Any]] = []
     remaining = set(by_label)
     while remaining:
         ready = sorted(label for label in remaining if not deps[label])
         if not ready:
-            # Cycle or unresolvable refs: drain alphabetically so this stays
-            # total; validate_draft reports the underlying problem.
+            # A cycle: drain alphabetically so this stays total; validate_draft reports it.
             ordered.extend((label, by_label[label]) for label in sorted(remaining))
             break
         for label in ready:
@@ -694,8 +751,7 @@ class _PortEdges(BaseModel):
 
 def _collect_port_edges(workflow: dict) -> dict[str, dict[str, _PortEdges]]:
     """Map label -> port -> what references it, resolving refs against the labels validation uses."""
-    known_labels = {label for label, _ in _iterate_steps(workflow)}
-    known_labels.update(label for label, _ in _iterate_labeled(workflow.get("inputs")))
+    known_labels = _source_labels(workflow)
     index: dict[str, dict[str, _PortEdges]] = {}
 
     def edges_at(ref: str) -> _PortEdges:

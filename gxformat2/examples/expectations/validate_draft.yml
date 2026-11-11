@@ -406,3 +406,78 @@ test_validate_draft_rejects_unwired_todo_port:
       value: [sub, inner]
     - path: [topology_errors, 5, message]
       value_contains: '"TODO_inner"'
+
+test_validate_draft_rejects_step_cycles:
+  fixture: synthetic-draft-bad-cycles.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [semantic_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 9
+    - path: [topology_errors, 0, path]
+      value: []
+    - path: [topology_errors, 0, message]
+      value: 'steps "a", "b" depend on each other through a cycle'
+    - path: [topology_errors, 1, path]
+      value: []
+    - path: [topology_errors, 1, message]
+      value: 'steps "m1", "m2", "m3" depend on each other through a cycle'
+    - path: [topology_errors, 2, path]
+      value: []
+    - path: [topology_errors, 2, message]
+      value: 'steps "p", "q", "r" depend on each other through a cycle'
+    - path: [topology_errors, 3, path]
+      value: []
+    - path: [topology_errors, 3, message]
+      value: 'steps "s", "s/b" depend on each other through a cycle'
+    - path: [topology_errors, 4, path]
+      value: []
+    - path: [topology_errors, 4, message]
+      value: 'step "self" sources its own output'
+    - path: [topology_errors, 5, path]
+      value: []
+    - path: [topology_errors, 5, message]
+      value: 'steps "sub", "t" depend on each other through a cycle'
+    - path: [topology_errors, 6, path]
+      value: []
+    - path: [topology_errors, 6, message]
+      value: 'steps "u1", "u2" depend on each other through a cycle'
+    - path: [topology_errors, 7, path]
+      value: [sub]
+    - path: [topology_errors, 7, message]
+      value: 'steps "Y", "x" depend on each other through a cycle'
+    - path: [topology_errors, 8, path]
+      value: [u1]
+    - path: [topology_errors, 8, message]
+      value: 'step input "x" source "u2/missing" references unknown port "missing" on step "u2"'
+
+test_validate_draft_rejects_list_form_step_cycle:
+  fixture: synthetic-draft-bad-cycles-list-form.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: false
+    - path: [structure_errors, $length]
+      value: 0
+    - path: [semantic_errors, $length]
+      value: 0
+    - path: [topology_errors, $length]
+      value: 1
+    - path: [topology_errors, 0, path]
+      value: []
+    - path: [topology_errors, 0, message]
+      value: 'steps "2", "first" depend on each other through a cycle'
+
+test_validate_draft_input_label_shadowing_step_ref_is_not_a_cycle:
+  fixture: synthetic-draft-shadowed-step-ref.gxwf.yml
+  operation: validate_draft
+  assertions:
+    - path: [ok]
+      value: true
+    - path: [topology_errors, $length]
+      value: 0

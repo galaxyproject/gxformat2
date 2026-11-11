@@ -1,0 +1,130 @@
+class: GalaxyWorkflowDraft
+label: Step cycles (two sharing a step, one via an undeclared port), a self-loop, a cycle through a subworkflow step, and one inside it
+inputs:
+  seed:
+    type: data
+outputs: {}
+steps:
+  a:
+    tool_id: TODO_a
+    in:
+      x: b/out
+      y: seed
+    out:
+      - id: out
+  b:
+    tool_id: TODO_b
+    in:
+      x: a/out
+    out:
+      - id: out
+  downstream:
+    tool_id: TODO_downstream
+    in:
+      x: b/out
+    out:
+      - id: out
+  m1:
+    tool_id: TODO_m1
+    in:
+      x: m2/out
+    out:
+      - id: out
+  m2:
+    tool_id: TODO_m2
+    in:
+      x: m1/out
+      y: m3/out
+    out:
+      - id: out
+  m3:
+    tool_id: TODO_m3
+    in:
+      x: m2/out
+    out:
+      - id: out
+  p:
+    tool_id: TODO_p
+    in:
+      x:
+        - seed
+        - r/out
+    out:
+      - id: out
+  q:
+    tool_id: TODO_q
+    in:
+      x:
+        source: p/out
+    out:
+      - id: output
+  r:
+    tool_id: TODO_r
+    in:
+      x: q
+    out:
+      - id: out
+  s:
+    tool_id: TODO_s
+    in:
+      x: s/b/out
+    out:
+      - id: out
+  s/b:
+    tool_id: TODO_s_b
+    in:
+      x: s/out
+    out:
+      - id: out
+  self:
+    tool_id: TODO_self
+    in:
+      x: self/out
+      y: seed
+    out:
+      - id: out
+  t:
+    tool_id: TODO_t
+    in:
+      x: sub/o
+    out:
+      - id: out
+  sub:
+    in:
+      seed: t/out
+    out:
+      - id: o
+    run:
+      class: GalaxyWorkflowDraft
+      inputs:
+        seed:
+          type: data
+      outputs:
+        o:
+          outputSource: x/out
+      steps:
+        x:
+          tool_id: TODO_x
+          in:
+            i: Y/out
+            j: seed
+          out:
+            - id: out
+        Y:
+          tool_id: TODO_y
+          in:
+            i: x/out
+          out:
+            - id: out
+  u1:
+    tool_id: TODO_u1
+    in:
+      x: u2/missing
+    out:
+      - id: out
+  u2:
+    tool_id: TODO_u2
+    in:
+      x: u1/out
+    out:
+      - id: out
