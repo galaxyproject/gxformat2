@@ -138,6 +138,17 @@ class WorkflowDiff(BaseModel):
 # --- Workflow view ------------------------------------------------------------
 
 
+# (step key or input id, port); inputs have no port.
+_Ref = tuple[str, str | None]
+
+
+def _ref_text(ref: _Ref | None) -> str | None:
+    if ref is None:
+        return None
+    node, port = ref
+    return node if port is None else f"{node}/{port}"
+
+
 @dataclass(frozen=True)
 class _Edge:
     source: str
@@ -147,8 +158,7 @@ class _Edge:
 
     @property
     def text(self) -> str:
-        source = self.source if self.source_port is None else f"{self.source}/{self.source_port}"
-        return f"{source} -> {self.target}/{self.target_port}"
+        return f"{_ref_text((self.source, self.source_port))} -> {self.target}/{self.target_port}"
 
 
 @dataclass
@@ -157,7 +167,7 @@ class _Side:
 
     is_draft: bool
     inputs: dict[str, Any]
-    outputs: dict[str, str | None]
+    outputs: dict[str, _Ref | None]
     steps: dict[str, NormalizedWorkflowStep]
     plan_fields: dict[str, dict[str, str]]
     edges: list[_Edge]
@@ -170,11 +180,7 @@ class _Side:
         return [edge for edge in self.edges if edge.source == key and edge.source_port is not None]
 
     def outputs_from(self, key: str) -> list[str]:
-        return [label for label, source in self.outputs.items() if source is not None and _source_step(source) == key]
-
-
-def _source_step(source: str) -> str:
-    return source.split("/", 1)[0]
+        return [label for label, ref in self.outputs.items() if ref is not None and ref[0] == key]
 
 
 def _load(workflow: WorkflowSource) -> dict[str, Any]:
@@ -213,7 +219,7 @@ def _side(raw: dict[str, Any]) -> _Side:
             aliases.setdefault(step.label, key)
         aliases[key] = key
 
-    def resolve(source: str) -> tuple[str, str | None]:
+    def resolve(source: str) -> _Ref:
         if source in input_ids:
             return source, None
         step_label, port = resolve_source_reference(source, aliases.keys())
@@ -229,15 +235,11 @@ def _side(raw: dict[str, Any]) -> _Side:
                 node, port = resolve(source)
                 edges.append(_Edge(source=node, source_port=port, target=key, target_port=step_input.id))
 
-    outputs: dict[str, str | None] = {}
-    for output in nf2.outputs:
-        if output.id is None:
-            continue
-        if output.outputSource is None:
-            outputs[output.id] = None
-            continue
-        node, port = resolve(output.outputSource)
-        outputs[output.id] = node if port is None else f"{node}/{port}"
+    outputs = {
+        output.id: None if output.outputSource is None else resolve(output.outputSource)
+        for output in nf2.outputs
+        if output.id is not None
+    }
 
     return _Side(
         is_draft=is_draft,
@@ -370,9 +372,9 @@ def diff_workflows(before: WorkflowSource, after: WorkflowSource) -> WorkflowDif
         added=[o for o in a_side.outputs if o not in b_side.outputs],
         removed=[o for o in b_side.outputs if o not in a_side.outputs],
         changed={
-            label: ValueChange(before=source, after=a_side.outputs[label])
-            for label, source in b_side.outputs.items()
-            if label in a_side.outputs and source != a_side.outputs[label]
+            label: ValueChange(before=_ref_text(ref), after=_ref_text(a_side.outputs[label]))
+            for label, ref in b_side.outputs.items()
+            if label in a_side.outputs and ref != a_side.outputs[label]
         },
     )
 

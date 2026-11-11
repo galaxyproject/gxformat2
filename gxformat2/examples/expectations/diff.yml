@@ -320,3 +320,15 @@ test_diff_added_output:
       value: 0
     - path: [has_changes]
       value: true
+
+test_diff_removed_slash_keyed_step_lists_its_workflow_outputs:
+  fixture: synthetic-diff-relinked-slash-key.gxwf.yml
+  fixture_after: synthetic-url-run-yml.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [outputs, removed]
+      value: [qc_report]
+    - path: [steps, removed, align/qc, workflow_outputs]
+      value: [qc_report]
+    - path: [steps, removed, align/qc, connections]
+      value: ["x -> align/qc/input_file"]

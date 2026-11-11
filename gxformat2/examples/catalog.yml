@@ -1318,3 +1318,9 @@
   format: format2
   tests:
     - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-relinked-slash-key.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
