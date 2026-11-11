@@ -251,3 +251,72 @@ test_diff_unlabeled_list_steps_match_by_position:
         - "AFTER has unlabeled steps matched by position: 1, 2"
     - path: [steps, changed, $length]
       value: 0
+
+test_diff_added_step_reports_its_edges:
+  fixture: synthetic-diff-removed-step.gxwf.yml
+  fixture_after: synthetic-diff-base.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [steps, removed, $length]
+      value: 0
+    - path: [steps, added, $length]
+      value: 1
+    - path: [steps, added, trim, label]
+      value: trim reads
+    - path: [steps, added, trim, upstream]
+      value: [min_quality, reads]
+    - path: [steps, added, trim, downstream]
+      value: [filter]
+    - path: [steps, added, trim, workflow_outputs, $length]
+      value: 0
+    - path: [steps, added, trim, connections]
+      value_set:
+        - "min_quality -> trim/min_q"
+        - "reads -> trim/input1"
+        - "trim/out_file1 -> filter/input"
+    - path: [steps, changed, filter, connections_in, added]
+      value: ["trim/out_file1 -> filter/input"]
+    - path: [steps, changed, filter, connections_in, removed]
+      value: ["reads -> filter/input"]
+    - path: [unwired_inputs, $length]
+      value: 0
+
+test_diff_removed_leaf_step_and_output_change_upstream_downstream:
+  fixture: synthetic-diff-base.gxwf.yml
+  fixture_after: synthetic-diff-removed-leaf-step.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [outputs, removed]
+      value: [filtered]
+    - path: [steps, removed, filter, workflow_outputs]
+      value: [filtered]
+    - path: [steps, removed, filter, upstream]
+      value: [trim]
+    - path: [steps, removed, filter, downstream, $length]
+      value: 0
+    - path: [steps, changed, $length]
+      value: 1
+    - path: [steps, changed, trim, fields, $length]
+      value: 0
+    - path: [steps, changed, trim, state, $length]
+      value: 0
+    - path: [steps, changed, trim, connections_in, removed, $length]
+      value: 0
+    - path: [steps, changed, trim, connections_out, removed]
+      value: ["trim/out_file1 -> filter/input"]
+    - path: [steps, changed, trim, connections_out, added, $length]
+      value: 0
+    - path: [steps, changed, trim, downstream, removed]
+      value: [filter]
+
+test_diff_added_output:
+  fixture: synthetic-diff-removed-output.gxwf.yml
+  fixture_after: synthetic-diff-base.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [outputs, added]
+      value: [report]
+    - path: [outputs, removed, $length]
+      value: 0
+    - path: [has_changes]
+      value: true
