@@ -1,5 +1,5 @@
 class: GalaxyWorkflow
-label: diff base with an explicit reads/output port, bumped fastqc, edited trim state, relabelled trim, a when guard and a new default
+label: diff base with an explicit reads/output port, bumped fastqc, edited trim state, relabelled trim, a when guard, a new step input default and a new input default
 inputs:
   reads:
     type: data
@@ -40,6 +40,8 @@ steps:
     when: $(inputs.input != null)
     in:
       input: trim/out_file1
+      header_lines:
+        default: 1
     out:
       - out_file1
     state:

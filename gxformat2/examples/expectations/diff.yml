@@ -8,6 +8,7 @@
 # summary: { label, type, tool_id, tool_version, plan_fields{field: text},
 #            upstream[node], downstream[step], workflow_outputs[id], connections[edge] }
 # change:  { label, fields{field: {before, after}}, state{path: {kind, before, after}},
+#            in_defaults{port: {before, after}},
 #            connections_in/connections_out/upstream/downstream: {added[], removed[]},
 #            plan_fields_before{}, plan_fields_after{} }
 # Steps match on their step key (dict key; list form: label, else id, else index id).
@@ -177,6 +178,14 @@ test_diff_changed_tool_version_state_label_when_and_input:
       value: 0
     - path: [steps, changed, filter, fields, when, after]
       value: $(inputs.input != null)
+    - path: [steps, changed, filter, in_defaults, header_lines, before]
+      value: null
+    - path: [steps, changed, filter, in_defaults, header_lines, after]
+      value: 1
+    - path: [steps, changed, filter, connections_in, added, $length]
+      value: 0
+    - path: [steps, changed, trim, in_defaults, $length]
+      value: 0
     - path: [inputs, changed, min_quality, default, before]
       value: 20
     - path: [inputs, changed, min_quality, default, after]

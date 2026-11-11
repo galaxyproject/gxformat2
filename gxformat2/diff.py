@@ -97,11 +97,12 @@ class StepSummary(BaseModel):
 
 
 class StepChange(BaseModel):
-    """A step present on both sides whose fields, state or edges differ."""
+    """A step present on both sides whose fields, state, step input defaults or edges differ."""
 
     label: str | None = None
     fields: dict[str, ValueChange] = {}
     state: dict[str, StateChange] = {}
+    in_defaults: dict[str, ValueChange] = {}
     connections_in: SetChange = SetChange()
     connections_out: SetChange = SetChange()
     upstream: SetChange = SetChange()
@@ -303,6 +304,10 @@ def _run_reference(run: Any) -> str | dict[str, str] | None:
     return None
 
 
+def _in_defaults(step: NormalizedWorkflowStep) -> dict[str, Any]:
+    return {inp.id: inp.default for inp in step.in_ if inp.id is not None and inp.default is not None}
+
+
 def _set_change(before: set[str], after: set[str]) -> SetChange:
     return SetChange(added=sorted(after - before), removed=sorted(before - after))
 
@@ -342,12 +347,20 @@ def _step_change(before: _Side, after: _Side, key: str) -> StepChange | None:
         elif _canonical(b_state[path]) != _canonical(a_state[path]):
             state[path] = StateChange(kind="changed", before=b_state[path], after=a_state[path])
 
+    b_defaults, a_defaults = _in_defaults(b_step), _in_defaults(a_step)
+    in_defaults = {
+        port: ValueChange(before=b_defaults.get(port), after=a_defaults.get(port))
+        for port in [*b_defaults, *(p for p in a_defaults if p not in b_defaults)]
+        if _canonical(b_defaults.get(port)) != _canonical(a_defaults.get(port))
+    }
+
     b_in, a_in = before.edges_into(key), after.edges_into(key)
     b_out, a_out = before.edges_out_of(key), after.edges_out_of(key)
     change = StepChange(
         label=a_step.label,
         fields=fields,
         state=state,
+        in_defaults=in_defaults,
         connections_in=_set_change({e.text for e in b_in}, {e.text for e in a_in}),
         connections_out=_set_change({e.text for e in b_out}, {e.text for e in a_out}),
         upstream=_set_change({e.source for e in b_in}, {e.source for e in a_in}),
@@ -356,7 +369,7 @@ def _step_change(before: _Side, after: _Side, key: str) -> StepChange | None:
         plan_fields_after=after.plan_fields.get(key, {}),
     )
     edge_sets = (change.connections_in, change.connections_out)
-    if not fields and not state and all(edge_set.is_empty for edge_set in edge_sets):
+    if not fields and not state and not in_defaults and all(edge_set.is_empty for edge_set in edge_sets):
         return None
     return change
 
@@ -461,6 +474,9 @@ def _step_change_lines(key: str, change: StepChange) -> list[str]:
     lines = [f"Step changed: {_step_heading(key, change.label)}"]
     lines.extend(f"    {field}: {_value(v.before)} -> {_value(v.after)}" for field, v in change.fields.items())
     lines.extend(_state_line(path, state_change) for path, state_change in change.state.items())
+    lines.extend(
+        f"    in {port} default: {_value(v.before)} -> {_value(v.after)}" for port, v in change.in_defaults.items()
+    )
     lines.extend(f"    - {edge}" for edge in change.connections_in.removed + change.connections_out.removed)
     lines.extend(f"    + {edge}" for edge in change.connections_in.added + change.connections_out.added)
     return lines
@@ -496,7 +512,8 @@ def render_text(diff: WorkflowDiff) -> str:
 SCRIPT_DESCRIPTION = """
 Compare two Format 2 Galaxy workflows (either may be a GalaxyWorkflowDraft) and
 report added and removed inputs, outputs and steps, per-step changes to tool,
-state, when and connections, and AFTER inputs that feed no step.
+run, state, when, step input defaults and connections, and AFTER inputs that
+feed no step.
 """
 
 
