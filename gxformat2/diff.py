@@ -14,6 +14,7 @@ import argparse
 import json
 import os
 import sys
+from collections.abc import Callable, Container, Iterable
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -45,7 +46,8 @@ INPUT_FIELDS: tuple[str, ...] = (
     "fields",
     "column_definitions",
 )
-STEP_FIELDS: tuple[str, ...] = ("label", "type", "tool_id", "tool_version", "when", "run")
+# A missing value for these input fields means this value.
+INPUT_FIELD_ABSENT_VALUES: dict[str, Any] = {"optional": False, "restrictOnConnections": False}
 STATE_SEPARATOR = "|"
 INPUT_PORT = "output"
 
@@ -175,8 +177,33 @@ class _Edge:
     target_port: str
 
     @property
+    def from_input(self) -> bool:
+        return self.source_port is None
+
+    @property
     def text(self) -> str:
         return f"{_ref_text((self.source, self.source_port))} -> {self.target}/{self.target_port}"
+
+
+@dataclass(frozen=True)
+class _Neighborhood:
+    """A step's port-level edges and the nodes at their other ends."""
+
+    connections_in: set[str]
+    connections_out: set[str]
+    upstream: set[str]
+    downstream: set[str]
+
+
+@dataclass(frozen=True)
+class _StepView:
+    """One step reduced to the values the diff compares."""
+
+    fields: dict[str, Any]
+    state: dict[str, Any]
+    in_defaults: dict[str, Any]
+    out_actions: dict[str, dict[str, Any]]
+    plan_fields: dict[str, str]
 
 
 @dataclass
@@ -184,18 +211,21 @@ class _Side:
     """One workflow reduced to what the diff compares."""
 
     is_draft: bool
-    inputs: dict[str, Any]
+    inputs: dict[str, dict[str, Any]]
     outputs: dict[str, _Ref | None]
-    steps: dict[str, NormalizedWorkflowStep]
-    plan_fields: dict[str, dict[str, str]]
+    steps: dict[str, _StepView]
     edges: list[_Edge]
     unlabeled_steps: list[str]
 
-    def edges_into(self, key: str) -> list[_Edge]:
-        return [edge for edge in self.edges if edge.target == key]
-
-    def edges_out_of(self, key: str) -> list[_Edge]:
-        return [edge for edge in self.edges if edge.source == key and edge.source_port is not None]
+    def neighborhood(self, key: str) -> _Neighborhood:
+        edges_in = [edge for edge in self.edges if edge.target == key]
+        edges_out = [edge for edge in self.edges if edge.source == key and not edge.from_input]
+        return _Neighborhood(
+            connections_in={edge.text for edge in edges_in},
+            connections_out={edge.text for edge in edges_out},
+            upstream={edge.source for edge in edges_in},
+            downstream={edge.target for edge in edges_out},
+        )
 
     def outputs_from(self, key: str) -> list[str]:
         return [label for label, ref in self.outputs.items() if ref is not None and ref[0] == key]
@@ -217,36 +247,8 @@ def _side(raw: dict[str, Any]) -> _Side:
     raw_steps = list(iterate_steps(raw))
     if len(raw_steps) != len(nf2.steps):
         raise ValueError("could not align raw steps with normalized steps")
-
-    steps: dict[str, NormalizedWorkflowStep] = {}
-    plan_fields: dict[str, dict[str, str]] = {}
-    unlabeled: list[str] = []
-    list_form = isinstance(raw.get("steps"), list)
-    for (key, raw_step), step in zip(raw_steps, nf2.steps):
-        steps[key] = step
-        if isinstance(raw_step, dict):
-            plan_fields[key] = {field: raw_step[field] for field in present_plan_fields(raw_step)}
-            if list_form and not any(isinstance(raw_step.get(f), str) and raw_step[f] for f in ("label", "id")):
-                unlabeled.append(key)
-
-    input_ids = [inp.id for inp in nf2.inputs if inp.id]
-    aliases: dict[str, str] = {}
-    for key, step in steps.items():
-        aliases.setdefault(step.id, key)
-        if step.label:
-            aliases.setdefault(step.label, key)
-        aliases[key] = key
-
-    known_labels = aliases.keys() | set(input_ids)
-
-    def resolve(source: str) -> _Ref:
-        if source in input_ids:
-            return source, None
-        label, port = resolve_source_reference(source, known_labels)
-        # An input's only port is ``output``; ``<input>/output`` means ``<input>``.
-        if label in input_ids and port == INPUT_PORT:
-            return label, None
-        return aliases.get(label, label), port
+    steps = {key: step for (key, _), step in zip(raw_steps, nf2.steps)}
+    resolve = _source_resolver(steps, {inp.id for inp in nf2.inputs if inp.id})
 
     edges: list[_Edge] = []
     for key, step in steps.items():
@@ -255,35 +257,74 @@ def _side(raw: dict[str, Any]) -> _Side:
             if sources is None or step_input.id is None:
                 continue
             for source in [sources] if isinstance(sources, str) else sources:
-                node, port = resolve(source)
-                edges.append(_Edge(source=node, source_port=port, target=key, target_port=step_input.id))
-
-    outputs = {
-        output.id: None if output.outputSource is None else resolve(output.outputSource)
-        for output in nf2.outputs
-        if output.id is not None
-    }
-
+                edges.append(_Edge(*resolve(source), target=key, target_port=step_input.id))
+    list_form = isinstance(raw.get("steps"), list)
     return _Side(
         is_draft=is_draft,
         inputs={inp.id: _input_fields(inp) for inp in nf2.inputs if inp.id},
-        outputs=outputs,
-        steps=steps,
-        plan_fields=plan_fields,
+        outputs={
+            output.id: None if output.outputSource is None else resolve(output.outputSource)
+            for output in nf2.outputs
+            if output.id is not None
+        },
+        steps={key: _step_view(step, raw_step) for (key, raw_step), step in zip(raw_steps, nf2.steps)},
         edges=edges,
-        unlabeled_steps=unlabeled,
+        unlabeled_steps=[key for key, raw_step in raw_steps if list_form and not _has_identity(raw_step)],
     )
+
+
+def _has_identity(raw_step: dict[str, Any]) -> bool:
+    return any(isinstance(raw_step.get(field), str) and raw_step[field] for field in ("label", "id"))
+
+
+def _source_resolver(steps: dict[str, NormalizedWorkflowStep], input_ids: set[str]) -> Callable[[str], _Ref]:
+    """Resolve a source to ``(step key, port)`` or ``(input id, None)``, longest label first."""
+    aliases: dict[str, str] = {}
+    for key, step in steps.items():
+        aliases.setdefault(step.id, key)
+        if step.label:
+            aliases.setdefault(step.label, key)
+        aliases[key] = key
+    known_labels = aliases.keys() | input_ids
+
+    def resolve(source: str) -> _Ref:
+        label, port = resolve_source_reference(source, known_labels)
+        # An input's only port is ``output``; ``<input>/output`` means ``<input>``.
+        if label in input_ids and port == INPUT_PORT:
+            return label, None
+        return aliases.get(label, label), port
+
+    return resolve
 
 
 def _input_fields(inp: BaseInputParameter) -> dict[str, Any]:
     dumped = inp.model_dump(by_alias=True, mode="json")
     fields = {field: dumped.get(field) for field in INPUT_FIELDS}
-    for flag in ("optional", "restrictOnConnections"):
-        if fields[flag] is None:
-            fields[flag] = False
+    for field, absent in INPUT_FIELD_ABSENT_VALUES.items():
+        if fields[field] is None:
+            fields[field] = absent
     if isinstance(fields["format"], str):
         fields["format"] = [fields["format"]]
     return fields
+
+
+def _step_view(step: NormalizedWorkflowStep, raw_step: Any) -> _StepView:
+    fields = {
+        "label": step.label,
+        "type": step.type_.value,
+        "tool_id": step.tool_id,
+        "tool_version": step.tool_version,
+        "when": step.when,
+        "run": _run_reference(step.run),
+    }
+    raw = raw_step if isinstance(raw_step, dict) else {}
+    return _StepView(
+        fields=fields,
+        state=_flatten_state((step.state if step.state is not None else step.tool_state) or {}),
+        in_defaults={inp.id: inp.default for inp in step.in_ if inp.id is not None and inp.default is not None},
+        out_actions=_out_actions(step),
+        plan_fields={field: raw[field] for field in present_plan_fields(raw)},
+    )
 
 
 def _flatten_state(value: Any, prefix: str = "") -> dict[str, Any]:
@@ -296,23 +337,6 @@ def _flatten_state(value: Any, prefix: str = "") -> dict[str, Any]:
     return {prefix: value} if prefix else {}
 
 
-def _canonical(value: Any) -> str:
-    return json.dumps(value, sort_keys=True, default=str)
-
-
-def _step_state(step: NormalizedWorkflowStep) -> dict[str, Any]:
-    state = step.state if step.state is not None else step.tool_state
-    return _flatten_state(state or {})
-
-
-def _step_field(step: NormalizedWorkflowStep, field: str) -> Any:
-    if field == "type":
-        return step.type_.value
-    if field == "run":
-        return _run_reference(step.run)
-    return getattr(step, field)
-
-
 def _run_reference(run: Any) -> str | dict[str, str] | None:
     """Return a linked run's URL or path, or its ``@import``; ``None`` for inline runs."""
     if isinstance(run, str):
@@ -320,10 +344,6 @@ def _run_reference(run: Any) -> str | dict[str, str] | None:
     if isinstance(run, ImportReference):
         return {"@import": run.import_path}
     return None
-
-
-def _in_defaults(step: NormalizedWorkflowStep) -> dict[str, Any]:
-    return {inp.id: inp.default for inp in step.in_ if inp.id is not None and inp.default is not None}
 
 
 def _out_actions(step: NormalizedWorkflowStep) -> dict[str, dict[str, Any]]:
@@ -340,12 +360,35 @@ def _out_actions(step: NormalizedWorkflowStep) -> dict[str, dict[str, Any]]:
     return actions
 
 
-def _port_changes(before: dict[str, Any], after: dict[str, Any]) -> dict[str, ValueChange]:
-    """Per-port value changes, BEFORE ports first; the side without the port is ``None``."""
+# --- Comparison ---------------------------------------------------------------
+
+
+def _canonical(value: Any) -> str:
+    return json.dumps(value, sort_keys=True, default=str)
+
+
+def _differing_keys(before: dict[str, Any], after: dict[str, Any]) -> list[str]:
+    """Keys one side lacks or whose values differ, BEFORE keys first."""
+    return [
+        key
+        for key in [*before, *(k for k in after if k not in before)]
+        if key not in before or key not in after or _canonical(before[key]) != _canonical(after[key])
+    ]
+
+
+def _value_changes(before: dict[str, Any], after: dict[str, Any]) -> dict[str, ValueChange]:
+    """Differing values by key; the side lacking a key is ``None``."""
+    return {key: ValueChange(before=before.get(key), after=after.get(key)) for key in _differing_keys(before, after)}
+
+
+def _state_changes(before: dict[str, Any], after: dict[str, Any]) -> dict[str, StateChange]:
     return {
-        port: ValueChange(before=before.get(port), after=after.get(port))
-        for port in [*before, *(p for p in after if p not in before)]
-        if _canonical(before.get(port)) != _canonical(after.get(port))
+        path: StateChange(
+            kind="added" if path not in before else "removed" if path not in after else "changed",
+            before=before.get(path),
+            after=after.get(path),
+        )
+        for path in _differing_keys(before, after)
     }
 
 
@@ -353,61 +396,44 @@ def _set_change(before: set[str], after: set[str]) -> SetChange:
     return SetChange(added=sorted(after - before), removed=sorted(before - after))
 
 
+def _only_in(keys: Iterable[str], other: Container[str]) -> list[str]:
+    return [key for key in keys if key not in other]
+
+
 def _summary(side: _Side, key: str) -> StepSummary:
-    step = side.steps[key]
-    edges_in = side.edges_into(key)
-    edges_out = side.edges_out_of(key)
+    view, edges = side.steps[key], side.neighborhood(key)
     return StepSummary(
-        label=step.label,
-        type=step.type_.value,
-        tool_id=step.tool_id,
-        tool_version=step.tool_version,
-        plan_fields=side.plan_fields.get(key, {}),
-        upstream=sorted({edge.source for edge in edges_in}),
-        downstream=sorted({edge.target for edge in edges_out}),
+        label=view.fields["label"],
+        type=view.fields["type"],
+        tool_id=view.fields["tool_id"],
+        tool_version=view.fields["tool_version"],
+        plan_fields=view.plan_fields,
+        upstream=sorted(edges.upstream),
+        downstream=sorted(edges.downstream),
         workflow_outputs=side.outputs_from(key),
-        connections=sorted({edge.text for edge in edges_in + edges_out}),
+        connections=sorted(edges.connections_in | edges.connections_out),
     )
 
 
 def _step_change(before: _Side, after: _Side, key: str) -> StepChange | None:
-    b_step, a_step = before.steps[key], after.steps[key]
-    fields = {}
-    for field in STEP_FIELDS:
-        b_value, a_value = _step_field(b_step, field), _step_field(a_step, field)
-        if _canonical(b_value) != _canonical(a_value):
-            fields[field] = ValueChange(before=b_value, after=a_value)
-
-    b_state, a_state = _step_state(b_step), _step_state(a_step)
-    state: dict[str, StateChange] = {}
-    for path in [*b_state, *(p for p in a_state if p not in b_state)]:
-        if path not in a_state:
-            state[path] = StateChange(kind="removed", before=b_state[path])
-        elif path not in b_state:
-            state[path] = StateChange(kind="added", after=a_state[path])
-        elif _canonical(b_state[path]) != _canonical(a_state[path]):
-            state[path] = StateChange(kind="changed", before=b_state[path], after=a_state[path])
-
-    in_defaults = _port_changes(_in_defaults(b_step), _in_defaults(a_step))
-    out_actions = _port_changes(_out_actions(b_step), _out_actions(a_step))
-
-    b_in, a_in = before.edges_into(key), after.edges_into(key)
-    b_out, a_out = before.edges_out_of(key), after.edges_out_of(key)
+    b_view, a_view = before.steps[key], after.steps[key]
+    b_edges, a_edges = before.neighborhood(key), after.neighborhood(key)
     change = StepChange(
-        label=a_step.label,
-        fields=fields,
-        state=state,
-        in_defaults=in_defaults,
-        out_actions=out_actions,
-        connections_in=_set_change({e.text for e in b_in}, {e.text for e in a_in}),
-        connections_out=_set_change({e.text for e in b_out}, {e.text for e in a_out}),
-        upstream=_set_change({e.source for e in b_in}, {e.source for e in a_in}),
-        downstream=_set_change({e.target for e in b_out}, {e.target for e in a_out}),
-        plan_fields_before=before.plan_fields.get(key, {}),
-        plan_fields_after=after.plan_fields.get(key, {}),
+        label=a_view.fields["label"],
+        fields=_value_changes(b_view.fields, a_view.fields),
+        state=_state_changes(b_view.state, a_view.state),
+        in_defaults=_value_changes(b_view.in_defaults, a_view.in_defaults),
+        out_actions=_value_changes(b_view.out_actions, a_view.out_actions),
+        connections_in=_set_change(b_edges.connections_in, a_edges.connections_in),
+        connections_out=_set_change(b_edges.connections_out, a_edges.connections_out),
+        upstream=_set_change(b_edges.upstream, a_edges.upstream),
+        downstream=_set_change(b_edges.downstream, a_edges.downstream),
+        plan_fields_before=b_view.plan_fields,
+        plan_fields_after=a_view.plan_fields,
     )
-    edge_sets = (change.connections_in, change.connections_out)
-    if not (fields or state or in_defaults or out_actions) and all(edge_set.is_empty for edge_set in edge_sets):
+    # upstream/downstream are node-level views of the port-level edges, so they never decide membership.
+    differs = change.fields or change.state or change.in_defaults or change.out_actions
+    if not differs and change.connections_in.is_empty and change.connections_out.is_empty:
         return None
     return change
 
@@ -420,24 +446,19 @@ def diff_workflows(before: WorkflowSource, after: WorkflowSource) -> WorkflowDif
     b_side, a_side = _side(_load(before)), _side(_load(after))
 
     inputs = InputsDiff(
-        added=[i for i in a_side.inputs if i not in b_side.inputs],
-        removed=[i for i in b_side.inputs if i not in a_side.inputs],
+        added=_only_in(a_side.inputs, b_side.inputs),
+        removed=_only_in(b_side.inputs, a_side.inputs),
     )
     for input_id, b_fields in b_side.inputs.items():
-        a_fields = a_side.inputs.get(input_id)
-        if a_fields is None:
-            continue
-        changed = {
-            field: ValueChange(before=b_fields[field], after=a_fields[field])
-            for field in INPUT_FIELDS
-            if _canonical(b_fields[field]) != _canonical(a_fields[field])
-        }
-        if changed:
-            inputs.changed[input_id] = changed
+        if input_id in a_side.inputs:
+            changed = _value_changes(b_fields, a_side.inputs[input_id])
+            if changed:
+                inputs.changed[input_id] = changed
 
     outputs = OutputsDiff(
-        added=[o for o in a_side.outputs if o not in b_side.outputs],
-        removed=[o for o in b_side.outputs if o not in a_side.outputs],
+        added=_only_in(a_side.outputs, b_side.outputs),
+        removed=_only_in(b_side.outputs, a_side.outputs),
+        # Refs compare as tuples: step ``a/b`` and port ``b`` of step ``a`` render alike.
         changed={
             label: ValueChange(before=_ref_text(ref), after=_ref_text(a_side.outputs[label]))
             for label, ref in b_side.outputs.items()
@@ -446,8 +467,8 @@ def diff_workflows(before: WorkflowSource, after: WorkflowSource) -> WorkflowDif
     )
 
     steps = StepsDiff(
-        added={key: _summary(a_side, key) for key in a_side.steps if key not in b_side.steps},
-        removed={key: _summary(b_side, key) for key in b_side.steps if key not in a_side.steps},
+        added={key: _summary(a_side, key) for key in _only_in(a_side.steps, b_side.steps)},
+        removed={key: _summary(b_side, key) for key in _only_in(b_side.steps, a_side.steps)},
     )
     for key in a_side.steps:
         if key in b_side.steps:
@@ -455,7 +476,7 @@ def diff_workflows(before: WorkflowSource, after: WorkflowSource) -> WorkflowDif
             if change is not None:
                 steps.changed[key] = change
 
-    fed = {edge.source for edge in a_side.edges if edge.source_port is None}
+    fed = {edge.source for edge in a_side.edges if edge.from_input}
     warnings = [
         f"{side} has unlabeled steps matched by position: {', '.join(unlabeled)}"
         for side, unlabeled in (("BEFORE", b_side.unlabeled_steps), ("AFTER", a_side.unlabeled_steps))
@@ -467,7 +488,7 @@ def diff_workflows(before: WorkflowSource, after: WorkflowSource) -> WorkflowDif
         inputs=inputs,
         outputs=outputs,
         steps=steps,
-        unwired_inputs=[i for i in a_side.inputs if i not in fed],
+        unwired_inputs=_only_in(a_side.inputs, fed),
         warnings=warnings,
     )
 
