@@ -16,6 +16,7 @@
 # Edges render as "<step>/<port> -> <step>/<port>", or "<input> -> <step>/<port>".
 # State paths join nested dict keys with "|"; lists are leaf values.
 # An absent state leaf differs from one set to null, "" or [] (unlike out actions).
+# out_actions cover only declared out fields; undeclared keys on an out entry are ignored.
 # _plan_* fields never count as changes.
 
 test_diff_identical_is_empty:
@@ -479,3 +480,41 @@ test_diff_dict_step_inner_id_is_not_its_identity:
       value: 0
     - path: [outputs, changed, $length]
       value: 0
+
+test_diff_undeclared_out_key_is_not_an_action:
+  fixture: synthetic-diff-explicit-false-bare.gxwf.yml
+  fixture_after: synthetic-diff-out-extra-key.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: false
+    - path: [steps, changed, $length]
+      value: 0
+
+test_diff_untyped_step_with_run_is_a_subworkflow:
+  fixture: synthetic-diff-untyped-subworkflow.gxwf.yml
+  fixture_after: synthetic-diff-explicit-false-bare.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [steps, removed, $length]
+      value: 1
+    - path: [steps, removed, nested, type]
+      value: subworkflow
+    - path: [steps, removed, nested, tool_id]
+      value: null
+    - path: [steps, removed, nested, connections]
+      value: ["reads -> nested/inner"]
+
+test_diff_removed_self_loop_lists_edge_once:
+  fixture: synthetic-diff-self-loop.gxwf.yml
+  fixture_after: synthetic-diff-explicit-false-bare.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [steps, removed, $length]
+      value: 1
+    - path: [steps, removed, loop, upstream]
+      value: [loop, reads]
+    - path: [steps, removed, loop, downstream]
+      value: [loop]
+    - path: [steps, removed, loop, connections]
+      value: ["loop/out_file1 -> loop/queries_0|input2", "reads -> loop/input1"]

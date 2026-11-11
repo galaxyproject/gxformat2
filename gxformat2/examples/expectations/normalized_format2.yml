@@ -188,6 +188,8 @@ test_list_form_inputs_outputs_steps_normalized:
       value: 1
     - path: [inputs, 0, id]
       value: the_input
+    - path: [inputs, 0, type_]
+      value: data
     - path: [outputs, $length]
       value: 1
     - path: [outputs, 0, id]

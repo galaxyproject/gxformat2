@@ -28,7 +28,7 @@ from gxformat2.normalized import (
     resolve_source_reference,
 )
 from gxformat2.normalized._format2 import ImportReference
-from gxformat2.schema.gxformat2 import BaseInputParameter
+from gxformat2.schema.gxformat2 import BaseInputParameter, WorkflowStepOutput
 from gxformat2.yaml import ordered_load_path
 
 INPUT_FIELDS: tuple[str, ...] = (
@@ -50,6 +50,8 @@ INPUT_FIELDS: tuple[str, ...] = (
 INPUT_FIELD_ABSENT_VALUES: dict[str, Any] = {"optional": False, "restrictOnConnections": False}
 STATE_SEPARATOR = "|"
 INPUT_PORT = "output"
+# Declared ``out`` entry fields; undeclared extra keys are not actions.
+OUT_ACTION_FIELDS: set[str] = set(WorkflowStepOutput.model_fields) - {"id"}
 
 WorkflowSource = dict[str, Any] | str | os.PathLike[str]
 
@@ -353,8 +355,8 @@ def _out_actions(step: NormalizedWorkflowStep) -> dict[str, dict[str, Any]]:
     """
     actions: dict[str, dict[str, Any]] = {}
     for out in step.out:
-        dumped = out.model_dump(by_alias=True, mode="json")
-        set_actions = {action: value for action, value in dumped.items() if action != "id" and value}
+        dumped = out.model_dump(by_alias=True, mode="json", include=OUT_ACTION_FIELDS)
+        set_actions = {action: value for action, value in dumped.items() if value}
         if out.id is not None and set_actions:
             actions[out.id] = set_actions
     return actions
