@@ -502,6 +502,11 @@ def _value(value: Any) -> str:
     return value if isinstance(value, str) else json.dumps(value)
 
 
+def _state_value(value: Any) -> str:
+    """Like :func:`_value`, but a leaf that is present shows ``null`` and ``""`` as such."""
+    return json.dumps(value) if value is None or value == "" else _value(value)
+
+
 def _step_heading(key: str, label: str | None) -> str:
     return key if not label or label == key else f"{key} ({label})"
 
@@ -523,10 +528,10 @@ def _summary_lines(verb: str, key: str, summary: StepSummary) -> list[str]:
 
 def _state_line(path: str, change: StateChange) -> str:
     if change.kind == "added":
-        return f"    state {path}: added {_value(change.after)}"
+        return f"    state {path}: added {_state_value(change.after)}"
     if change.kind == "removed":
-        return f"    state {path}: removed (was {_value(change.before)})"
-    return f"    state {path}: {_value(change.before)} -> {_value(change.after)}"
+        return f"    state {path}: removed (was {_state_value(change.before)})"
+    return f"    state {path}: {_state_value(change.before)} -> {_state_value(change.after)}"
 
 
 def _step_change_lines(key: str, change: StepChange) -> list[str]:

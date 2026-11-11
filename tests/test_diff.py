@@ -51,6 +51,14 @@ def test_render_text_lists_plan_fields_of_removed_draft_step():
     assert "    has _plan_state\n    has _plan_context" in text
 
 
+def test_render_text_spells_out_unset_state_values():
+    bare = get_path("synthetic-diff-explicit-false-bare.gxwf.yml")
+    text = render_text(diff_workflows(bare, get_path("synthetic-diff-explicit-state.gxwf.yml")))
+    assert "    state min_length: added null\n" in text
+    assert '    state comment: added ""\n' in text
+    assert "    state inclusive_filter: added []" in text
+
+
 def test_native_workflow_rejected():
     with pytest.raises(ValueError, match="native"):
         diff_workflows(get_path("real-unicycler-assembly.ga"), BASE)
