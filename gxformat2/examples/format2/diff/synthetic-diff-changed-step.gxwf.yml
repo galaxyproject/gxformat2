@@ -1,5 +1,5 @@
 class: GalaxyWorkflow
-label: diff base with an explicit reads/output port, bumped fastqc, edited trim state, relabelled trim, a when guard, a new step input default, and a new default and bounds on an input
+label: diff base with an explicit reads/output port, bumped fastqc with a renamed report, edited trim state, relabelled trim, a when guard, a new step input default, and a new default and bounds on an input
 inputs:
   reads:
     type: data
@@ -21,7 +21,8 @@ steps:
     in:
       input_file: reads/output
     out:
-      - html_report
+      - id: html_report
+        rename: QC report
   trim:
     tool_id: trimmer
     tool_version: "1.0"

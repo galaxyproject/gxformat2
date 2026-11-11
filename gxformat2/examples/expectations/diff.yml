@@ -8,7 +8,7 @@
 # summary: { label, type, tool_id, tool_version, plan_fields{field: text},
 #            upstream[node], downstream[step], workflow_outputs[id], connections[edge] }
 # change:  { label, fields{field: {before, after}}, state{path: {kind, before, after}},
-#            in_defaults{port: {before, after}},
+#            in_defaults{port: {before, after}}, out_actions{port: {before, after}},
 #            connections_in/connections_out/upstream/downstream: {added[], removed[]},
 #            plan_fields_before{}, plan_fields_after{} }
 # Steps match on their step key (dict key; list form: label, else id, else index id).
@@ -149,6 +149,12 @@ test_diff_changed_tool_version_state_label_when_and_input:
     - path: [steps, changed, qc, fields, tool_id, after]
       value: toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.74+galaxy1
     - path: [steps, changed, qc, state, $length]
+      value: 0
+    - path: [steps, changed, qc, out_actions, html_report, before]
+      value: null
+    - path: [steps, changed, qc, out_actions, html_report, after]
+      value: {rename: QC report}
+    - path: [steps, changed, trim, out_actions, $length]
       value: 0
     - path: [steps, changed, qc, connections_in, added, $length]
       value: 0
