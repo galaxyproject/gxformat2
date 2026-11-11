@@ -1,0 +1,19 @@
+class: GalaxyWorkflow
+label: nested validator, record field and sample-sheet column types left to their defaults
+inputs:
+  pattern:
+    type: text
+    validators:
+      - expression: "^x$"
+  pair:
+    type: collection
+    collection_type: record
+    fields:
+      - name: a
+  sheet:
+    type: collection
+    collection_type: sample_sheet
+    column_definitions:
+      - name: c
+        optional: false
+steps: {}

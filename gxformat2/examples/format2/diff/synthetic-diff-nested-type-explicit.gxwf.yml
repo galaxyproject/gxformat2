@@ -1,0 +1,22 @@
+class: GalaxyWorkflow
+label: synthetic-diff-nested-type-omitted with each nested default type spelled out
+inputs:
+  pattern:
+    type: text
+    validators:
+      - type: regex
+        expression: "^x$"
+  pair:
+    type: collection
+    collection_type: record
+    fields:
+      - name: a
+        type: File
+  sheet:
+    type: collection
+    collection_type: sample_sheet
+    column_definitions:
+      - name: c
+        type: string
+        optional: false
+steps: {}

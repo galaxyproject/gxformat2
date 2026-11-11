@@ -1390,3 +1390,15 @@
   format: format2
   tests:
     - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-nested-type-omitted.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-nested-type-explicit.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py

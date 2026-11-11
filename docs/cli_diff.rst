@@ -18,7 +18,8 @@ as changes. They are reported on each added, removed and changed step, so a
 step can be traced back to its source. Only the top level is compared.
 
 ``--json`` prints the ``gxformat2.diff.WorkflowDiff`` model. The declarative
-cases in ``gxformat2/examples/expectations/diff.yml`` pin its shape. The exit
+cases in ``gxformat2/examples/expectations/diff.yml`` pin its shape; key order
+within its objects is not part of that shape. The exit
 status is 0 unless ``--exit-code`` is given, in which case it is 1 when the
 workflows differ.
 

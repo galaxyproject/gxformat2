@@ -11,6 +11,7 @@
 #            in_defaults{port: {before, after}}, out_actions{port: {before, after}},
 #            connections_in/connections_out/upstream/downstream: {added[], removed[]},
 #            plan_fields_before{}, plan_fields_after{} }
+# Object key order in the result is not part of the contract.
 # Steps match on their step key (dict key; list form: label, else id, else index id).
 # A dict-form step's inner id is not its identity; changing it is no change.
 # Edges render as "<step>/<port> -> <step>/<port>", or "<input> -> <step>/<port>".
@@ -18,6 +19,7 @@
 # An absent state leaf differs from one set to null, "" or [] (unlike out actions).
 # out_actions cover only declared out fields; undeclared keys on an out entry are ignored.
 # _plan_* fields never count as changes.
+# Omitted nested input types (validator, record field, sample-sheet column) equal their defaults.
 
 test_diff_identical_is_empty:
   fixture: synthetic-diff-base.gxwf.yml
@@ -518,3 +520,13 @@ test_diff_removed_self_loop_lists_edge_once:
       value: [loop]
     - path: [steps, removed, loop, connections]
       value: ["loop/out_file1 -> loop/queries_0|input2", "reads -> loop/input1"]
+
+test_diff_omitted_nested_type_equals_its_default:
+  fixture: synthetic-diff-nested-type-omitted.gxwf.yml
+  fixture_after: synthetic-diff-nested-type-explicit.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: false
+    - path: [inputs, changed, $length]
+      value: 0
