@@ -10,6 +10,7 @@ from collections.abc import Callable
 from typing import Any
 
 from gxformat2.cytoscape import cytoscape_elements as _cytoscape_impl
+from gxformat2.diff import diff_workflows
 from gxformat2.draft import detect_draft, extract_draft_subset, next_draft_step, validate_draft
 from gxformat2.examples import EXAMPLES_DIR, load
 from gxformat2.layout import apply_layout as _apply_layout_impl
@@ -192,6 +193,7 @@ OPERATIONS: dict[str, Callable[..., Any]] = {
     "validate_draft": validate_draft,
     "next_draft_step": next_draft_step,
     "extract_draft_subset": extract_draft_subset,
+    "diff_workflows": diff_workflows,
 }
 
 suite = DeclarativeTestSuite(

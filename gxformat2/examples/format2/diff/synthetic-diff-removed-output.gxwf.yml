@@ -1,0 +1,42 @@
+class: GalaxyWorkflow
+label: diff base without the report output
+inputs:
+  reads:
+    type: data
+    format: fastqsanger
+  min_quality:
+    type: int
+    default: 20
+outputs:
+  filtered:
+    outputSource: filter/out_file1
+steps:
+  qc:
+    tool_id: toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.74+galaxy0
+    tool_version: "0.74+galaxy0"
+    in:
+      input_file: reads
+    out:
+      - html_report
+  trim:
+    tool_id: trimmer
+    tool_version: "1.0"
+    label: trim reads
+    in:
+      input1: reads
+      min_q: min_quality
+    out:
+      - out_file1
+    state:
+      mode: strict
+      advanced:
+        window: 4
+  filter:
+    tool_id: Filter1
+    tool_version: "1.1.0"
+    in:
+      input: trim/out_file1
+    out:
+      - out_file1
+    state:
+      cond: "c1>0"

@@ -1,0 +1,46 @@
+class: GalaxyWorkflow
+label: diff base with bumped fastqc, edited trim state, relabelled trim, a when guard and a new default
+inputs:
+  reads:
+    type: data
+    format: fastqsanger
+  min_quality:
+    type: int
+    default: 25
+outputs:
+  report:
+    outputSource: qc/html_report
+  filtered:
+    outputSource: filter/out_file1
+steps:
+  qc:
+    tool_id: toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.74+galaxy1
+    tool_version: "0.74+galaxy1"
+    in:
+      input_file: reads
+    out:
+      - html_report
+  trim:
+    tool_id: trimmer
+    tool_version: "1.0"
+    label: quality trim
+    in:
+      input1: reads
+      min_q: min_quality
+    out:
+      - out_file1
+    state:
+      mode: lenient
+      advanced:
+        window: 5
+        min_len: 30
+  filter:
+    tool_id: Filter1
+    tool_version: "1.1.0"
+    when: $(inputs.input != null)
+    in:
+      input: trim/out_file1
+    out:
+      - out_file1
+    state:
+      cond: "c1>0"

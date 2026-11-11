@@ -1,0 +1,253 @@
+# diff_workflows compares a BEFORE workflow (fixture) with an AFTER one (fixture_after).
+# Either side may be a draft. Result shape:
+#   { before_is_draft, after_is_draft, has_changes,
+#     inputs:  { added[id], removed[id], changed{id: {field: {before, after}}} },
+#     outputs: { added[id], removed[id], changed{id: {before, after}} },
+#     steps:   { added{key: summary}, removed{key: summary}, changed{key: change} },
+#     unwired_inputs[id], warnings[str] }
+# summary: { label, type, tool_id, tool_version, plan_fields{field: text},
+#            upstream[node], downstream[step], workflow_outputs[id], connections[edge] }
+# change:  { label, fields{field: {before, after}}, state{path: {kind, before, after}},
+#            connections_in/connections_out/upstream/downstream: {added[], removed[]},
+#            plan_fields_before{}, plan_fields_after{} }
+# Steps match on their step key (dict key; list form: label, else id, else index id).
+# Edges render as "<step>/<port> -> <step>/<port>", or "<input> -> <step>/<port>".
+# State paths join nested dict keys with "|"; lists are leaf values.
+# _plan_* fields never count as changes.
+
+test_diff_identical_is_empty:
+  fixture: synthetic-diff-base.gxwf.yml
+  fixture_after: synthetic-diff-base.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: false
+    - path: [before_is_draft]
+      value: false
+    - path: [inputs, added, $length]
+      value: 0
+    - path: [inputs, removed, $length]
+      value: 0
+    - path: [inputs, changed, $length]
+      value: 0
+    - path: [outputs, added, $length]
+      value: 0
+    - path: [outputs, removed, $length]
+      value: 0
+    - path: [outputs, changed, $length]
+      value: 0
+    - path: [steps, added, $length]
+      value: 0
+    - path: [steps, removed, $length]
+      value: 0
+    - path: [steps, changed, $length]
+      value: 0
+    - path: [unwired_inputs, $length]
+      value: 0
+    - path: [warnings, $length]
+      value: 0
+
+test_diff_removed_step_reports_downstream_and_rewire:
+  fixture: synthetic-diff-base.gxwf.yml
+  fixture_after: synthetic-diff-removed-step.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [steps, removed, $length]
+      value: 1
+    - path: [steps, removed, trim, label]
+      value: trim reads
+    - path: [steps, removed, trim, tool_id]
+      value: trimmer
+    - path: [steps, removed, trim, upstream]
+      value: [min_quality, reads]
+    - path: [steps, removed, trim, downstream]
+      value: [filter]
+    - path: [steps, removed, trim, connections]
+      value_set:
+        - "min_quality -> trim/min_q"
+        - "reads -> trim/input1"
+        - "trim/out_file1 -> filter/input"
+    - path: [steps, added, $length]
+      value: 0
+    - path: [steps, changed, $length]
+      value: 1
+    - path: [steps, changed, filter, connections_in, removed]
+      value: ["trim/out_file1 -> filter/input"]
+    - path: [steps, changed, filter, connections_in, added]
+      value: ["reads -> filter/input"]
+    - path: [steps, changed, filter, upstream, removed]
+      value: [trim]
+    - path: [steps, changed, filter, upstream, added]
+      value: [reads]
+    - path: [steps, changed, filter, fields, $length]
+      value: 0
+    - path: [steps, changed, filter, state, $length]
+      value: 0
+    - path: [unwired_inputs]
+      value: [min_quality]
+
+test_diff_removed_output:
+  fixture: synthetic-diff-base.gxwf.yml
+  fixture_after: synthetic-diff-removed-output.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [outputs, removed]
+      value: [report]
+    - path: [outputs, added, $length]
+      value: 0
+    - path: [steps, changed, $length]
+      value: 0
+    - path: [steps, removed, $length]
+      value: 0
+
+test_diff_unwired_input_in_after:
+  fixture: synthetic-diff-base.gxwf.yml
+  fixture_after: synthetic-diff-unwired-input.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [inputs, added]
+      value: [chr]
+    - path: [unwired_inputs]
+      value: [chr]
+    - path: [steps, changed, $length]
+      value: 0
+
+test_diff_unwired_input_alone_is_not_a_change:
+  fixture: synthetic-diff-unwired-input.gxwf.yml
+  fixture_after: synthetic-diff-unwired-input.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: false
+    - path: [unwired_inputs]
+      value: [chr]
+
+test_diff_changed_tool_version_state_label_when_and_input:
+  fixture: synthetic-diff-base.gxwf.yml
+  fixture_after: synthetic-diff-changed-step.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [steps, added, $length]
+      value: 0
+    - path: [steps, removed, $length]
+      value: 0
+    - path: [steps, changed, $length]
+      value: 3
+    - path: [steps, changed, qc, fields, tool_version, before]
+      value: "0.74+galaxy0"
+    - path: [steps, changed, qc, fields, tool_version, after]
+      value: "0.74+galaxy1"
+    - path: [steps, changed, qc, fields, tool_id, after]
+      value: toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.74+galaxy1
+    - path: [steps, changed, qc, state, $length]
+      value: 0
+    - path: [steps, changed, trim, fields, label, before]
+      value: trim reads
+    - path: [steps, changed, trim, fields, label, after]
+      value: quality trim
+    - path: [steps, changed, trim, fields, tool_version]
+      value_absent: true
+    - path: [steps, changed, trim, state, $length]
+      value: 3
+    - path: [steps, changed, trim, state, mode, kind]
+      value: changed
+    - path: [steps, changed, trim, state, mode, before]
+      value: strict
+    - path: [steps, changed, trim, state, mode, after]
+      value: lenient
+    - path: [steps, changed, trim, state, "advanced|window", after]
+      value: 5
+    - path: [steps, changed, trim, state, "advanced|min_len", kind]
+      value: added
+    - path: [steps, changed, trim, state, "advanced|min_len", after]
+      value: 30
+    - path: [steps, changed, trim, connections_in, added, $length]
+      value: 0
+    - path: [steps, changed, filter, fields, when, after]
+      value: $(inputs.input != null)
+    - path: [inputs, changed, min_quality, default, before]
+      value: 20
+    - path: [inputs, changed, min_quality, default, after]
+      value: 25
+    - path: [unwired_inputs, $length]
+      value: 0
+
+test_diff_draft_before_final_after:
+  fixture: synthetic-diff-draft-before.gxwf.yml
+  fixture_after: synthetic-diff-draft-after.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [before_is_draft]
+      value: true
+    - path: [after_is_draft]
+      value: false
+    - path: [steps, removed, $length]
+      value: 1
+    - path: [steps, removed, chr_filter, label]
+      value: keep only requested chromosomes
+    - path: [steps, removed, chr_filter, tool_id]
+      value: TODO
+    - path: [steps, removed, chr_filter, plan_fields, _plan_state]
+      value_contains: contigs named by chr
+    - path: [steps, removed, chr_filter, plan_fields, _plan_context]
+      value_contains: SAMTOOLS_VIEW
+    - path: [steps, removed, chr_filter, upstream]
+      value: [chr, reads]
+    - path: [steps, removed, chr_filter, downstream]
+      value: [to_fastq]
+    - path: [steps, changed, $length]
+      value: 1
+    - path: [steps, changed, to_fastq, fields, tool_id, before]
+      value: TODO
+    - path: [steps, changed, to_fastq, fields, tool_version, after]
+      value: "1.15.1+galaxy2"
+    - path: [steps, changed, to_fastq, plan_fields_before, _plan_context]
+      value_contains: SAMTOOLS_FASTQ
+    - path: [steps, changed, to_fastq, plan_fields_after, $length]
+      value: 0
+    - path: [steps, changed, to_fastq, upstream, removed]
+      value: [chr_filter]
+    - path: [steps, changed, to_fastq, upstream, added]
+      value: [reads]
+    - path: [steps, changed, to_fastq, state, output_fmt, kind]
+      value: added
+    - path: [outputs, changed, fastq, before]
+      value: to_fastq/TODO_fastq
+    - path: [outputs, changed, fastq, after]
+      value: to_fastq/output
+    - path: [unwired_inputs]
+      value: [chr]
+
+test_diff_draft_plan_field_edits_are_not_changes:
+  fixture: synthetic-diff-draft-before.gxwf.yml
+  fixture_after: synthetic-diff-draft-replanned.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: false
+    - path: [after_is_draft]
+      value: true
+    - path: [steps, changed, $length]
+      value: 0
+
+test_diff_unlabeled_list_steps_match_by_position:
+  fixture: synthetic-draft-unlabeled-list-steps.gxwf.yml
+  fixture_after: synthetic-draft-unlabeled-list-steps.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: false
+    - path: [warnings]
+      value:
+        - "BEFORE has unlabeled steps matched by position: 1, 2"
+        - "AFTER has unlabeled steps matched by position: 1, 2"
+    - path: [steps, changed, $length]
+      value: 0
