@@ -383,3 +383,15 @@ test_diff_step_keyed_like_input_port_is_the_step:
       value: false
     - path: [unwired_inputs]
       value: [a]
+
+test_diff_explicit_false_and_empty_equal_absent:
+  fixture: synthetic-diff-explicit-false.gxwf.yml
+  fixture_after: synthetic-diff-explicit-false-bare.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: false
+    - path: [inputs, changed, $length]
+      value: 0
+    - path: [steps, changed, $length]
+      value: 0

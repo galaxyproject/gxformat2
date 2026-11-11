@@ -278,8 +278,9 @@ def _side(raw: dict[str, Any]) -> _Side:
 def _input_fields(inp: BaseInputParameter) -> dict[str, Any]:
     dumped = inp.model_dump(by_alias=True, mode="json")
     fields = {field: dumped.get(field) for field in INPUT_FIELDS}
-    if fields["optional"] is None:
-        fields["optional"] = False
+    for flag in ("optional", "restrictOnConnections"):
+        if fields[flag] is None:
+            fields[flag] = False
     if isinstance(fields["format"], str):
         fields["format"] = [fields["format"]]
     return fields
@@ -326,13 +327,16 @@ def _in_defaults(step: NormalizedWorkflowStep) -> dict[str, Any]:
 
 
 def _out_actions(step: NormalizedWorkflowStep) -> dict[str, dict[str, Any]]:
-    """Set output actions (``rename``, ``hide``, ...) per declared ``out`` port; bare ports are skipped."""
+    """Set output actions (``rename``, ``hide``, ...) per declared ``out`` port; bare ports are skipped.
+
+    ``false`` and empty values mean no action, the same as an absent one.
+    """
     actions: dict[str, dict[str, Any]] = {}
     for out in step.out:
-        dumped = out.model_dump(by_alias=True, mode="json", exclude_none=True)
-        dumped.pop("id", None)
-        if out.id is not None and dumped:
-            actions[out.id] = dumped
+        dumped = out.model_dump(by_alias=True, mode="json")
+        set_actions = {action: value for action, value in dumped.items() if action != "id" and value}
+        if out.id is not None and set_actions:
+            actions[out.id] = set_actions
     return actions
 
 

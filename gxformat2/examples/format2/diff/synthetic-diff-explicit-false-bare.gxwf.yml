@@ -1,0 +1,14 @@
+class: GalaxyWorkflow
+label: synthetic-diff-explicit-false with the explicit defaults left out
+inputs:
+  sample:
+    type: text
+  reads: data
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: reads
+      label: sample
+    out:
+      - out_file1

@@ -1,0 +1,19 @@
+class: GalaxyWorkflow
+label: a text input and an out port spelling defaults explicitly (false, empty)
+inputs:
+  sample:
+    type: text
+    restrictOnConnections: false
+  reads: data
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: reads
+      label: sample
+    out:
+      - id: out_file1
+        hide: false
+        delete_intermediate_datasets: false
+        rename: ""
+        add_tags: []
