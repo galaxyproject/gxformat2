@@ -1,0 +1,16 @@
+class: GalaxyWorkflow
+label: a step keyed like an input's output port (a/output), read by a consumer
+inputs:
+  a: data
+  b: data
+steps:
+  a/output:
+    tool_id: cat1
+    in:
+      input1: b
+    out:
+      - out_file1
+  consumer:
+    tool_id: cat1
+    in:
+      input1: a/output
