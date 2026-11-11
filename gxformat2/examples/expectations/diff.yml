@@ -332,3 +332,17 @@ test_diff_removed_slash_keyed_step_lists_its_workflow_outputs:
       value: [qc_report]
     - path: [steps, removed, align/qc, connections]
       value: ["x -> align/qc/input_file"]
+
+test_diff_relinked_subworkflow_run_is_a_field_change:
+  fixture: synthetic-diff-relinked-slash-key.gxwf.yml
+  fixture_after: synthetic-url-run-yml.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [steps, changed, $length]
+      value: 1
+    - path: [steps, changed, nested, fields, run, before]
+      value: https://example.com/wf-v2.yml
+    - path: [steps, changed, nested, fields, run, after]
+      value: https://example.com/wf.yml
+    - path: [steps, changed, nested, fields, $length]
+      value: 1

@@ -27,10 +27,11 @@ from gxformat2.normalized import (
     NormalizedWorkflowStep,
     resolve_source_reference,
 )
+from gxformat2.normalized._format2 import ImportReference
 from gxformat2.yaml import ordered_load_path
 
 INPUT_FIELDS: tuple[str, ...] = ("type", "collection_type", "optional", "format", "default")
-STEP_FIELDS: tuple[str, ...] = ("label", "type", "tool_id", "tool_version", "when")
+STEP_FIELDS: tuple[str, ...] = ("label", "type", "tool_id", "tool_version", "when", "run")
 STATE_SEPARATOR = "|"
 
 WorkflowSource = dict[str, Any] | str | Path | os.PathLike[str]
@@ -284,7 +285,18 @@ def _step_state(step: NormalizedWorkflowStep) -> dict[str, Any]:
 def _step_field(step: NormalizedWorkflowStep, field: str) -> Any:
     if field == "type":
         return step.type_.value
+    if field == "run":
+        return _run_reference(step.run)
     return getattr(step, field)
+
+
+def _run_reference(run: Any) -> str | dict[str, str] | None:
+    """A linked run's URL or path, or its ``@import``; ``None`` for inline runs."""
+    if isinstance(run, str):
+        return run
+    if isinstance(run, ImportReference):
+        return {"@import": run.import_path}
+    return None
 
 
 def _set_change(before: set[str], after: set[str]) -> SetChange:

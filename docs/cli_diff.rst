@@ -7,7 +7,7 @@ be a draft (``class: GalaxyWorkflowDraft``). It reports:
 - workflow inputs, outputs and steps that were added or removed
 - input field changes and output ``outputSource`` changes
 - per-step changes to ``label``, ``type``, ``tool_id``, ``tool_version``,
-  ``when``, ``state`` and connections
+  ``when``, a linked ``run`` reference, ``state`` and connections
 - AFTER inputs that feed no step
 
 Steps are matched by step key. That is the dict key, or for list-form steps the
