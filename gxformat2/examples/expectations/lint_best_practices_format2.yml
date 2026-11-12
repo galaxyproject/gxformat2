@@ -1,5 +1,5 @@
 # Format2 best practices linting
-# lint_best_practices_format2 returns {errors: [...], warnings: [...], error_count: N, warn_count: N}
+# lint_best_practices_format2 returns {errors: [...], warnings: [...], infos: [...], error_count: N, warn_count: N, info_count: N}
 
 test_bp_format2_clean:
   fixture: synthetic-basic.gxwf.yml

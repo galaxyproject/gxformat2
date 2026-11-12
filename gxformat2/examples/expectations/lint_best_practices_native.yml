@@ -1,5 +1,5 @@
 # Native best practices linting
-# lint_best_practices_native returns {errors: [...], warnings: [...], error_count: N, warn_count: N}
+# lint_best_practices_native returns {errors: [...], warnings: [...], infos: [...], error_count: N, warn_count: N, info_count: N}
 
 test_bp_native_no_annotation:
   fixture: synthetic-minimal-tool.ga

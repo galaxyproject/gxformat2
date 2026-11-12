@@ -18,7 +18,7 @@ from gxformat2.lint_rules import (
     NativeStepKeyNotInteger,
     StepLabelNotUnique,
 )
-from gxformat2.linting import LintContext
+from gxformat2.linting import LintContext, LintLevel
 from gxformat2.markdown_parse import validate_galaxy_markdown
 from gxformat2.normalized import (
     ensure_format2,
@@ -653,7 +653,7 @@ def main(argv=None):
 
     workflow_class = workflow_dict.get("class")
     is_format2 = workflow_class == "GalaxyWorkflow"
-    lint_context = LintContext(training_topic=args.training_topic)
+    lint_context = LintContext(level=args.level, training_topic=args.training_topic)
 
     # Build normalized models — fail fast if invalid
     nf2 = None
@@ -707,6 +707,12 @@ def _parser():
         action="store_true",
         default=False,
         help="Skip best practice checks (annotation, creator, license, step metadata).",
+    )
+    parser.add_argument(
+        "--level",
+        choices=[level.name.lower() for level in LintLevel],
+        default=LintLevel.WARN.name.lower(),
+        help="Report messages at this level and above; info messages (suggestions) never fail linting.",
     )
     parser.add_argument("path", metavar="PATH", type=str, help="workflow path")
     return parser
