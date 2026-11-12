@@ -135,6 +135,7 @@ version = {attr = "gxformat2.__version__"}
 dependencies = {file = "requirements.txt"}
 
 [tool.setuptools.package-data]
+"gxformat2" = ["lint_profiles.yml", "schema_rules.yml"]
 "gxformat2.examples" = ["**/*.yml", "**/*.ga"]
 
 [tool.setuptools.packages.find]
