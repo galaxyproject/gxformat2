@@ -26,6 +26,7 @@ best-practices:
     - WorkflowMissingAnnotation
     - WorkflowMissingCreator
     - WorkflowMissingLicense
+    - CreatorMissingIdentifier
     - CreatorIdentifierNotURI
     - CreatorIdentifierNotCanonical
     - CreatorIdentifierInvalid

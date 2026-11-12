@@ -21,6 +21,7 @@ from gxformat2.lint_rules import (
     CreatorIdentifierNotCanonical,
     CreatorIdentifierNotURI,
     CreatorIdentifierTypeMismatch,
+    CreatorMissingIdentifier,
     FrameIsEmpty,
     FrameReferenceNotFound,
     NativeStepKeyNotInteger,
@@ -66,6 +67,7 @@ UNTYPED_PARAMETER_PATTERN = re.compile(r"\$\{(.+?)\}")
 RENAME_ACTION = "RenameDatasetAction"
 DATA_INPUT_STEP_TYPES = {NativeStepType.data_input, NativeStepType.data_collection_input}
 EXAMPLE_ORCID_URI = "https://orcid.org/0000-0002-1825-0097"
+EXAMPLE_ROR_URI = "https://ror.org/05gq02987"
 ID_ARTICLES: dict[IdentifierScheme, str] = {"ORCID": "an", "ROR": "a"}
 ID_FORMATS: dict[IdentifierScheme, str] = {
     "ORCID": "four groups of four digits separated by hyphens, the last character a digit or X",
@@ -444,6 +446,14 @@ def _lint_creator_identifier(lint_context, creator: CreatorPerson | CreatorOrgan
     description = f'{"Person" if is_person else "Organization"} creator "{creator.name or index}"'
     identifier = creator.identifier
     if not identifier:
+        suggestion = (
+            f'an ORCID iD, for example "{EXAMPLE_ORCID_URI}"'
+            if is_person
+            else f'a ROR iD, for example "{EXAMPLE_ROR_URI}", if the organisation is in ROR'
+        )
+        lint_context.info(
+            f"{description} has no identifier; consider adding {suggestion}.", linter=CreatorMissingIdentifier
+        )
         return
     parsed = parse_identifier(identifier)
     if parsed is None:

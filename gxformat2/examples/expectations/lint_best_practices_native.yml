@@ -76,8 +76,7 @@ test_bp_native_untyped_params:
       value_any_contains: "untyped parameter in the post-job actions. ${Haplotype} in TagDatasetAction of output out_file1"
 
 # One creator per identifier case; the valid ORCID and ROR URIs and the
-# organisation's non-URI identifier lint clean, as do creators without an
-# identifier.
+# organisation's non-URI identifier lint clean.
 test_bp_native_creator_identifiers:
   fixture: synthetic-bp-creator-identifiers.ga
   operation: lint_best_practices_native
@@ -87,7 +86,11 @@ test_bp_native_creator_identifiers:
     - path: [warn_count]
       value: 9
     - path: [info_count]
-      value: 0
+      value: 2
+    - path: [infos]
+      value_any_contains: 'Person creator "No identifier" has no identifier; consider adding an ORCID iD'
+    - path: [infos]
+      value_any_contains: 'Organization creator "No organisation identifier" has no identifier; consider adding a ROR iD'
     - path: [warnings]
       value_any_contains: 'Creator identifier "0000-0002-1825-0097" should be a fully qualified URI: "https://orcid.org/0000-0002-1825-0097".'
     - path: [warnings]

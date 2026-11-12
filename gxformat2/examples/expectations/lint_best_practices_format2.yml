@@ -78,8 +78,7 @@ test_bp_format2_frames_not_empty:
       value_absent: true
 
 # One creator per identifier case; the valid ORCID and ROR URIs and the
-# organisation's non-URI identifier lint clean, as do creators without an
-# identifier.
+# organisation's non-URI identifier lint clean.
 test_bp_format2_creator_identifiers:
   fixture: synthetic-bp-creator-identifiers.gxwf.yml
   operation: lint_best_practices_format2
@@ -89,7 +88,11 @@ test_bp_format2_creator_identifiers:
     - path: [warn_count]
       value: 9
     - path: [info_count]
-      value: 0
+      value: 2
+    - path: [infos]
+      value_any_contains: 'Person creator "No identifier" has no identifier; consider adding an ORCID iD'
+    - path: [infos]
+      value_any_contains: 'Organization creator "No organisation identifier" has no identifier; consider adding a ROR iD'
     - path: [warnings]
       value_any_contains: 'Creator identifier "0000-0002-1825-0097" should be a fully qualified URI: "https://orcid.org/0000-0002-1825-0097".'
     - path: [warnings]

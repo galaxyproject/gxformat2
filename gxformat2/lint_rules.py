@@ -40,6 +40,14 @@ class FrameIsEmpty(Linter):
     profile = "best-practices"
 
 
+class CreatorMissingIdentifier(Linter):
+    """Creators should have a persistent identifier: an ORCID iD for a person, a ROR iD for an organisation in ROR."""
+
+    severity = "info"
+    applies_to = ("format2", "native")
+    profile = "best-practices"
+
+
 class CreatorIdentifierNotURI(Linter):
     """Creator identifiers should be fully qualified URIs, e.g. ``https://orcid.org/<iD>`` rather than a bare ORCID iD."""
 

@@ -322,6 +322,17 @@ def test_lint_ecoli_comparison():
     assert main(["lint", SKIP_BP, example_path("real-ecoli-comparison.ga")]) == 1  # no outputs
 
 
+@pytest.mark.parametrize("level, printed", [("warn", False), ("info", True)])
+def test_lint_info_messages_never_fail(tmp_path, capsys, level, printed):
+    workflow = ordered_load(BASIC_WORKFLOW)
+    workflow["license"] = "MIT"
+    workflow["creator"] = [{"class": "Person", "name": "Josiah Carberry"}]
+    path = tmp_path / "workflow.gxwf.yml"
+    path.write_text(ordered_dump(workflow))
+    assert main(["lint", "--level", level, str(path)]) == 0
+    assert ('.. INFO: Person creator "Josiah Carberry" has no identifier' in capsys.readouterr().out) is printed
+
+
 def test_lint_examples():
     for file_name in os.listdir(TEST_LINT_EXAMPLES):
         file_path = os.path.join(TEST_LINT_EXAMPLES, file_name)
