@@ -1,0 +1,42 @@
+class: GalaxyWorkflow
+inputs:
+  input1:
+    type: data
+outputs:
+  out1:
+    outputSource: cat_step/out_file1
+steps:
+  cat_step:
+    tool_id: cat1
+    in:
+      input1: input1
+  cat_again:
+    tool_id: cat1
+    in:
+      input1: cat_step/out_file1
+comments:
+  - label: note
+    type: text
+    position: [0, 0]
+    size: [100, 50]
+    text: A note
+  - type: frame
+    title: Labels and indices
+    color: none
+    position: [0, 0]
+    size: [260, 180]
+    contains_steps: [input1, cat_step, 2]
+    contains_comments: [note]
+  - type: frame
+    title: Digit string and comment index
+    color: none
+    position: [300, 0]
+    size: [260, 180]
+    contains_steps: ["2"]
+    contains_comments: [0]
+  - type: frame
+    title: Comments only
+    color: none
+    position: [600, 0]
+    size: [260, 180]
+    contains_comments: [note]

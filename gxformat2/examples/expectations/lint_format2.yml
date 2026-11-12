@@ -251,3 +251,53 @@ test_lint_format2_bad_color_directory_uri_defaults:
       value: "Input default is of invalid type. Input highlight is color; its default must be a string."
     - path: [errors, 1]
       value: "Input default is of invalid type. Input output_dir is directory_uri; its default must be a string."
+
+test_lint_frame_references_clean:
+  fixture: synthetic-frame-references.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
+test_lint_frame_unknown_step:
+  fixture: synthetic-frame-unknown-step.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Frame 'Typo' references unknown step or input label 'cat_stepp' in contains_steps"
+    - path: [errors, 0, linter]
+      value: FrameReferenceNotFound
+    - path: [errors, 0, json_pointer]
+      value: "/comments/0/contains_steps/0"
+
+test_lint_frame_unknown_comment:
+  fixture: synthetic-frame-unknown-comment.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Frame 'group' references unknown comment label 'nope' in contains_comments"
+    - path: [errors, 0, linter]
+      value: FrameReferenceNotFound
+    - path: [errors, 0, json_pointer]
+      value: "/comments/1/contains_comments/0"
+
+# Conversion resolves steps by label when one is set, so the id no longer names the step.
+test_lint_frame_step_id_shadowed_by_label:
+  fixture: synthetic-frame-step-id-shadowed-by-label.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 1
+    - path: [errors, 0]
+      value: "Frame 'By id' references unknown step or input label 'cat_step' in contains_steps"
+
+test_lint_frame_empty_not_an_error:
+  fixture: synthetic-frame-empty.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0

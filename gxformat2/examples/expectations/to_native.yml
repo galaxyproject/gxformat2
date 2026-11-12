@@ -311,3 +311,31 @@ test_to_native_color_directory_uri_inputs:
     - path: [steps, "1", tool_state, validators]
       value:
         - {type: regex, expression: "^s3://", message: must be an S3 URI, negate: false}
+
+test_to_native_frame_references:
+  fixture: synthetic-frame-references.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [comments, 1, child_steps]
+      value: [0, 1, 2]
+    - path: [comments, 1, child_comments]
+      value: [0]
+    - path: [comments, 2, child_steps]
+      value: [2]
+    - path: [comments, 3, child_comments]
+      value: [0]
+
+test_to_native_frame_unknown_step:
+  fixture: synthetic-frame-unknown-step.gxwf.yml
+  operation: to_native
+  expect_error: true
+
+test_to_native_frame_unknown_comment:
+  fixture: synthetic-frame-unknown-comment.gxwf.yml
+  operation: to_native
+  expect_error: true
+
+test_to_native_frame_step_id_shadowed_by_label:
+  fixture: synthetic-frame-step-id-shadowed-by-label.gxwf.yml
+  operation: to_native
+  expect_error: true

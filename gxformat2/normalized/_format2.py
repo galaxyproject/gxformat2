@@ -11,7 +11,7 @@ from __future__ import annotations
 import copy
 import json
 import os
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, TypeAlias
@@ -92,6 +92,28 @@ def resolve_source_reference(value: str, known_labels: Iterable[str]) -> SourceR
         parts = value.split("/", 1)
         return SourceReference(parts[0], parts[1])
     return SourceReference(value, "output")
+
+
+FrameField: TypeAlias = Literal["contains_steps", "contains_comments"]
+
+
+class UnresolvedFrameReference(NamedTuple):
+    """A frame ``contains_steps`` / ``contains_comments`` entry naming nothing in its workflow."""
+
+    comment_index: int
+    field: FrameField
+    entry_index: int
+    message: str
+
+
+def frame_description(frame: FrameComment, comment_index: int) -> str:
+    """Name a frame in messages by its title, then label, then comment index."""
+    name = frame.title or frame.label
+    return f"Frame '{name}'" if name else f"Frame {comment_index}"
+
+
+def _is_index_string(value: str) -> bool:
+    return value.isascii() and value.isdigit()
 
 
 class _DictMixin:
@@ -229,6 +251,34 @@ class NormalizedFormat2(_DictMixin, BaseModel):
     def resolve_source(self, source: str) -> SourceReference:
         """Parse a source reference string (e.g. ``step/output``) against this workflow's labels."""
         return resolve_source_reference(source, self.known_labels)
+
+    def _is_step_reference(self, ref: str) -> bool:
+        return ref in self.known_labels or _is_index_string(ref)
+
+    @cached_property
+    def unresolved_frame_references(self) -> list[UnresolvedFrameReference]:
+        """Frame string entries matching no step/input label (or comment label) at this level.
+
+        Integer entries and all-digit ``contains_steps`` strings are indices and pass through.
+        """
+        comment_labels = {c.label for c in self.comments if c.label}
+        unresolved: list[UnresolvedFrameReference] = []
+        for comment_index, comment in enumerate(self.comments):
+            if not isinstance(comment, FrameComment):
+                continue
+            checks: tuple[tuple[FrameField, str, list | None, Callable[[str], bool]], ...] = (
+                ("contains_steps", "step or input", comment.contains_steps, self._is_step_reference),
+                ("contains_comments", "comment", comment.contains_comments, comment_labels.__contains__),
+            )
+            for field, kind, refs, resolves in checks:
+                for entry_index, ref in enumerate(refs or []):
+                    if isinstance(ref, str) and not resolves(ref):
+                        message = (
+                            f"{frame_description(comment, comment_index)} references unknown {kind} "
+                            f"label '{ref}' in {field}"
+                        )
+                        unresolved.append(UnresolvedFrameReference(comment_index, field, entry_index, message))
+        return unresolved
 
     @cached_property
     def _render_identity_by_key(self) -> dict[str, str]:

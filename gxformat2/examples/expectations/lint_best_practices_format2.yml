@@ -60,3 +60,19 @@ test_bp_format2_untyped_params:
       value_any_contains: "untyped parameter in the post-job actions. ${reads} in rename of output out_file2 names a data input, but Galaxy fills ${...} only from parameter inputs; use #{input1} "
     - path: [warnings]
       value_any_contains: "untyped parameter in the post-job actions. ${Haplotype} in add_tags of output out_file1"
+
+test_bp_format2_frame_empty:
+  fixture: synthetic-frame-empty.gxwf.yml
+  operation: lint_best_practices_format2
+  assertions:
+    - path: [warnings, {linter: FrameIsEmpty}]
+      value: "Frame 'Empty' contains no steps or comments."
+    - path: [warnings, {linter: FrameIsEmpty}, json_pointer]
+      value: "/comments/0"
+
+test_bp_format2_frames_not_empty:
+  fixture: synthetic-frame-references.gxwf.yml
+  operation: lint_best_practices_format2
+  assertions:
+    - path: [warnings, {linter: FrameIsEmpty}]
+      value_absent: true

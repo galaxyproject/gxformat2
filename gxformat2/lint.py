@@ -12,7 +12,12 @@ from urllib.parse import urlparse
 
 from pydantic import ValidationError
 
-from gxformat2.lint_rules import NativeStepKeyNotInteger, StepLabelNotUnique
+from gxformat2.lint_rules import (
+    FrameIsEmpty,
+    FrameReferenceNotFound,
+    NativeStepKeyNotInteger,
+    StepLabelNotUnique,
+)
 from gxformat2.linting import LintContext
 from gxformat2.markdown_parse import validate_galaxy_markdown
 from gxformat2.normalized import (
@@ -28,12 +33,13 @@ from gxformat2.normalized._conversion import (
     native_input_to_format2_type,
     native_step_label,
 )
+from gxformat2.normalized._format2 import frame_description
 from gxformat2.normalized._native import (
     NativeStepType,
     NormalizedNativeStep,
     NormalizedNativeWorkflow,
 )
-from gxformat2.schema.gxformat2 import CreatorPerson, GalaxyType
+from gxformat2.schema.gxformat2 import CreatorPerson, FrameComment, GalaxyType
 from gxformat2.schema.gxformat2 import GalaxyWorkflow as Format2LaxModel
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as Format2StrictModel
 from gxformat2.schema.native import NativeGalaxyWorkflow as NativeLaxModel
@@ -185,6 +191,7 @@ def lint_format2(lint_context, nf2, raw_dict: dict | None = None, path=None):
                 lint_format2(lint_context, step.run)
 
     _validate_output_sources(lint_context, nf2)
+    _validate_frame_references(lint_context, nf2)
     _validate_input_types(lint_context, nf2)
     _validate_report(lint_context, nf2.report)
     _lint_training(lint_context, nf2.tags, nf2.doc)
@@ -205,6 +212,24 @@ def _validate_output_sources(lint_context, nf2: NormalizedFormat2):
                 f"Output '{output_id}' references step '{step_ref}' via outputSource "
                 f"'{output_source}', but no step or input with that label exists"
             )
+
+
+def _validate_frame_references(lint_context, nf2: NormalizedFormat2):
+    for ref in nf2.unresolved_frame_references:
+        field_context = _child_context(_comment_context(lint_context, ref.comment_index), ref.field)
+        _child_context(field_context, str(ref.entry_index)).error(ref.message, linter=FrameReferenceNotFound)
+
+
+def _lint_empty_frames(lint_context, nf2: NormalizedFormat2):
+    for index, comment in enumerate(nf2.comments):
+        if isinstance(comment, FrameComment) and not comment.contains_steps and not comment.contains_comments:
+            _comment_context(lint_context, index).warn(
+                f"{frame_description(comment, index)} contains no steps or comments.", linter=FrameIsEmpty
+            )
+
+
+def _comment_context(lint_context: LintContext, comment_index: int) -> LintContext:
+    return _child_context(_child_context(lint_context, "comments"), str(comment_index))
 
 
 def _native_step_context(lint_context: LintContext, step_key: str) -> LintContext:
@@ -408,6 +433,7 @@ def _lint_workflow_top_level(lint_context, nf2: NormalizedFormat2):
 def lint_best_practices(lint_context, nf2: NormalizedFormat2):
     """Lint best practices for a Format2 workflow (top-level + format2 step-level)."""
     _lint_workflow_top_level(lint_context, nf2)
+    _lint_empty_frames(lint_context, nf2)
     input_types = {inp.id: format2_input_step_type(inp) for inp in nf2.inputs if inp.id}
     scope = _ReplacementScope(
         parameter_labels={label for label, t in input_types.items() if t == NativeStepType.parameter_input},

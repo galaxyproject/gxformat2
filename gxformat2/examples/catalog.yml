@@ -513,6 +513,42 @@
   tests:
     - tests/test_interop_tests.py
 
+- file: format2/synthetic-frame-references.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Frames referencing an input id, step labels, step indices, a digit string and comments — lints clean and converts.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-frame-unknown-step.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Frame `contains_steps` names a step that does not exist (typo) — lint error, conversion fails.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_comments.py
+
+- file: format2/synthetic-frame-unknown-comment.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Frame `contains_comments` names a comment that does not exist — lint error, conversion fails.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-frame-step-id-shadowed-by-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Frame references a step by `id` when the step has a different `label` — conversion only knows the label.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-frame-empty.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Frame with an empty `contains_steps` — best-practice warning.
+  tests:
+    - tests/test_interop_tests.py
+
 # --- normalization gap coverage fixtures ---
 
 - file: format2/synthetic-doc-array.gxwf.yml

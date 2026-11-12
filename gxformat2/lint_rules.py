@@ -22,3 +22,19 @@ class StepLabelNotUnique(Linter):
     severity = "error"
     applies_to = ("format2", "native")
     profile = "structural"
+
+
+class FrameReferenceNotFound(Linter):
+    """Frame ``contains_steps`` / ``contains_comments`` entries must name a step, input or comment of the workflow."""
+
+    severity = "error"
+    applies_to = ("format2",)
+    profile = "structural"
+
+
+class FrameIsEmpty(Linter):
+    """Frames should contain at least one step or comment; Galaxy draws an empty one as a bare box."""
+
+    severity = "warning"
+    applies_to = ("format2",)
+    profile = "best-practices"
