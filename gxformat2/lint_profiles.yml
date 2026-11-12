@@ -27,6 +27,9 @@ best-practices:
     - WorkflowMissingCreator
     - WorkflowMissingLicense
     - CreatorIdentifierNotURI
+    - CreatorIdentifierNotCanonical
+    - CreatorIdentifierInvalid
+    - CreatorIdentifierTypeMismatch
     - StepMissingLabel
     - StepMissingAnnotation
     - StepInputDisconnected

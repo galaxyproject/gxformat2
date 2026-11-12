@@ -12,7 +12,15 @@ from urllib.parse import urlparse
 
 from pydantic import ValidationError
 
+from gxformat2._identifiers import (
+    IdentifierScheme,
+    parse_identifier,
+)
 from gxformat2.lint_rules import (
+    CreatorIdentifierInvalid,
+    CreatorIdentifierNotCanonical,
+    CreatorIdentifierNotURI,
+    CreatorIdentifierTypeMismatch,
     FrameIsEmpty,
     FrameReferenceNotFound,
     NativeStepKeyNotInteger,
@@ -39,7 +47,7 @@ from gxformat2.normalized._native import (
     NormalizedNativeStep,
     NormalizedNativeWorkflow,
 )
-from gxformat2.schema.gxformat2 import CreatorPerson, FrameComment, GalaxyType
+from gxformat2.schema.gxformat2 import CreatorOrganization, CreatorPerson, FrameComment, GalaxyType
 from gxformat2.schema.gxformat2 import GalaxyWorkflow as Format2LaxModel
 from gxformat2.schema.gxformat2_strict import GalaxyWorkflow as Format2StrictModel
 from gxformat2.schema.native import NativeGalaxyWorkflow as NativeLaxModel
@@ -57,6 +65,12 @@ LINT_FAILED_OUTPUT_NO_LABEL = "Workflow contained output without a label"
 UNTYPED_PARAMETER_PATTERN = re.compile(r"\$\{(.+?)\}")
 RENAME_ACTION = "RenameDatasetAction"
 DATA_INPUT_STEP_TYPES = {NativeStepType.data_input, NativeStepType.data_collection_input}
+EXAMPLE_ORCID_URI = "https://orcid.org/0000-0002-1825-0097"
+ID_ARTICLES: dict[IdentifierScheme, str] = {"ORCID": "an", "ROR": "a"}
+ID_FORMATS: dict[IdentifierScheme, str] = {
+    "ORCID": "four groups of four digits separated by hyphens, the last character a digit or X",
+    "ROR": "a 0, six Crockford base32 characters and two check digits",
+}
 
 
 class _ReplacementScope(NamedTuple):
@@ -417,17 +431,58 @@ def _lint_workflow_top_level(lint_context, nf2: NormalizedFormat2):
     if not creators:
         lint_context.warn("Workflow does not specify a creator.")
     else:
-        for creator in creators:
-            if isinstance(creator, CreatorPerson) and creator.identifier:
-                parsed_url = urlparse(creator.identifier)
-                if not parsed_url.scheme:
-                    lint_context.warn(
-                        f'Creator identifier "{creator.identifier}" should be a fully qualified URI, '
-                        f'for example "https://orcid.org/0000-0002-1825-0097".'
-                    )
+        creator_context = _child_context(lint_context, "creator")
+        for index, creator in enumerate(creators):
+            _lint_creator_identifier(_child_context(creator_context, str(index)), creator, index)
 
     if not nf2.license:
         lint_context.warn("Workflow does not specify a license.")
+
+
+def _lint_creator_identifier(lint_context, creator: CreatorPerson | CreatorOrganization, index: int):
+    is_person = isinstance(creator, CreatorPerson)
+    description = f'{"Person" if is_person else "Organization"} creator "{creator.name or index}"'
+    identifier = creator.identifier
+    if not identifier:
+        return
+    parsed = parse_identifier(identifier)
+    if parsed is None:
+        # Schema.org identifiers may be any text; only a person's is expected to be a URI (an ORCID).
+        if is_person and not urlparse(identifier).scheme:
+            lint_context.warn(
+                f'Creator identifier "{identifier}" should be a fully qualified URI, '
+                f'for example "{EXAMPLE_ORCID_URI}".',
+                linter=CreatorIdentifierNotURI,
+            )
+        return
+    if parsed.scheme == ("ROR" if is_person else "ORCID"):
+        identifies = "organisations" if is_person else "people"
+        lint_context.warn(
+            f"{description} has {ID_ARTICLES[parsed.scheme]} {parsed.scheme} iD as identifier, "
+            f"but {parsed.scheme} identifies {identifies}; "
+            f'the creator class should probably be {"Organization" if is_person else "Person"}.',
+            linter=CreatorIdentifierTypeMismatch,
+        )
+    if not parsed.well_formed:
+        lint_context.warn(
+            f'Creator identifier "{identifier}" is not a valid {parsed.scheme} iD ({ID_FORMATS[parsed.scheme]}).',
+            linter=CreatorIdentifierInvalid,
+        )
+    elif not parsed.checksum_valid:
+        lint_context.warn(
+            f'Creator identifier "{identifier}" is not a valid {parsed.scheme} iD: its check digits do not match.',
+            linter=CreatorIdentifierInvalid,
+        )
+    elif not parsed.is_uri:
+        lint_context.warn(
+            f'Creator identifier "{identifier}" should be a fully qualified URI: "{parsed.canonical}".',
+            linter=CreatorIdentifierNotURI,
+        )
+    elif identifier != parsed.canonical:
+        lint_context.warn(
+            f'Creator identifier "{identifier}" should use the canonical form "{parsed.canonical}".',
+            linter=CreatorIdentifierNotCanonical,
+        )
 
 
 def lint_best_practices(lint_context, nf2: NormalizedFormat2):

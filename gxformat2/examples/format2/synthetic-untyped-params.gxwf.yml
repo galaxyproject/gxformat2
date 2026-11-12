@@ -3,8 +3,8 @@ label: untyped params
 doc: Untyped parameter references in tool state and post-job actions.
 creator:
   - class: Person
-    identifier: https://orcid.org/0000-0000-0000-0000
-    name: Test Person
+    identifier: https://orcid.org/0000-0002-1825-0097
+    name: Josiah Carberry
 license: MIT
 inputs:
   reads:

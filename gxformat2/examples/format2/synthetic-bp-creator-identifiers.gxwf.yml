@@ -1,0 +1,48 @@
+class: GalaxyWorkflow
+label: Creator identifiers
+doc: One creator per identifier case of the creator identifier lints.
+license: MIT
+creator:
+  - class: Person
+    name: Josiah Carberry
+    identifier: https://orcid.org/0000-0002-1825-0097
+  - class: Person
+    name: No identifier
+  - class: Person
+    name: Bare ORCID
+    identifier: 0000-0002-1825-0097
+  - class: Person
+    name: Non-canonical ORCID URI
+    identifier: http://www.orcid.org/0000-0002-1825-0097
+  - class: Person
+    name: Wrong ORCID check digit
+    identifier: https://orcid.org/0000-0002-1825-0098
+  - class: Person
+    name: Truncated ORCID
+    identifier: https://orcid.org/0000-0002-1825
+  - class: Person
+    name: ROR as person
+    identifier: https://ror.org/05gq02987
+  - class: Person
+    name: Not a URI
+    identifier: josiah
+  - class: Organization
+    name: Brown University
+    identifier: https://ror.org/05gq02987
+  - class: Organization
+    name: No organisation identifier
+  - class: Organization
+    name: Bare ROR
+    identifier: 05gq02987
+  - class: Organization
+    name: Wrong ROR check digits
+    identifier: https://ror.org/05gq02988
+  - class: Organization
+    name: ORCID as organisation
+    identifier: https://orcid.org/0000-0002-1825-0097
+  - class: Organization
+    name: Other organisation identifier
+    identifier: acme
+inputs: {}
+outputs: {}
+steps: {}

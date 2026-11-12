@@ -202,7 +202,7 @@ Thing properties common to both Person and Organization."""
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
     name: None | str = Field(default=None, description="Full name of the person or organization.")
-    identifier: None | str = Field(default=None, description="Persistent identifier, typically an ORCID URL (e.g. ``https://orcid.org/0000-0001-2345-6789``) or bare ORCID.")
+    identifier: None | str = Field(default=None, description="Persistent identifier, as a URI: typically an ORCID iD for a ``Person`` (e.g. ``https://orcid.org/0000-0002-1825-0097``) and a ROR iD for an ``Organization`` (e.g. ``https://ror.org/05gq02987``).")
     url: None | str = Field(default=None, description="Website or profile URL.")
     email: None | str = Field(default=None, description="Email address. May include a ``mailto:`` prefix.")
     image: None | str = Field(default=None, description="URL to an image or avatar.")

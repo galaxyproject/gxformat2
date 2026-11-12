@@ -38,3 +38,35 @@ class FrameIsEmpty(Linter):
     severity = "warning"
     applies_to = ("format2",)
     profile = "best-practices"
+
+
+class CreatorIdentifierNotURI(Linter):
+    """Creator identifiers should be fully qualified URIs, e.g. ``https://orcid.org/<iD>`` rather than a bare ORCID iD."""
+
+    severity = "warning"
+    applies_to = ("format2", "native")
+    profile = "best-practices"
+
+
+class CreatorIdentifierNotCanonical(Linter):
+    """ORCID and ROR URIs should use the canonical ``https://orcid.org/`` or ``https://ror.org/`` form."""
+
+    severity = "warning"
+    applies_to = ("format2", "native")
+    profile = "best-practices"
+
+
+class CreatorIdentifierInvalid(Linter):
+    """ORCID and ROR iDs must be well formed and their check digits must match."""
+
+    severity = "warning"
+    applies_to = ("format2", "native")
+    profile = "best-practices"
+
+
+class CreatorIdentifierTypeMismatch(Linter):
+    """An ``Organization`` with an ORCID iD, or a ``Person`` with a ROR iD, is probably misclassified."""
+
+    severity = "warning"
+    applies_to = ("format2", "native")
+    profile = "best-practices"
