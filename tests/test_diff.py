@@ -79,3 +79,19 @@ def test_nested_key_colliding_with_slash_keyed_step_rejected():
     before["steps"]["nested/first"] = {"tool_id": "cat1", "in": {"input1": "reads"}}
     with pytest.raises(ValueError, match="nested/first"):
         diff_workflows(before, get_path("synthetic-diff-inline-subworkflow-removed-step.gxwf.yml"))
+
+
+def test_nested_key_colliding_with_unchanged_slash_keyed_step_rejected():
+    before = load("synthetic-diff-inline-subworkflow.gxwf.yml")
+    after = load("synthetic-diff-inline-subworkflow-removed-step.gxwf.yml")
+    for workflow in (before, after):
+        workflow["steps"]["nested/first"] = {"tool_id": "cat1", "in": {"input1": "reads"}}
+    with pytest.raises(ValueError, match="nested/first"):
+        diff_workflows(before, after)
+
+
+def test_nested_input_colliding_with_slash_keyed_input_rejected():
+    before = load("synthetic-diff-inline-subworkflow.gxwf.yml")
+    before["inputs"]["nested/inner_reads"] = "data"
+    with pytest.raises(ValueError, match="nested/inner_reads"):
+        diff_workflows(before, before)

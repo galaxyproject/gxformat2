@@ -513,16 +513,23 @@ def _unique_ids(side: _Side) -> dict[str, str]:
     return {step_id: keys[0] for step_id, keys in keys_by_id.items() if len(keys) == 1}
 
 
-def _merge(target: dict[str, Any], entries: dict[str, Any]) -> None:
-    for key, value in entries.items():
-        if key in target:
-            raise ValueError(f"diff key {key!r} names both a step and a step in an inline subworkflow")
-        target[key] = value
+def _claim_keys(taken: dict[str, set[str]], b_side: _Side, a_side: _Side) -> None:
+    """Record one level's step keys and input and output ids; raise on one another level already holds."""
+    for kind, keys in (
+        ("step", b_side.steps.keys() | a_side.steps.keys()),
+        ("input", b_side.inputs.keys() | a_side.inputs.keys()),
+        ("output", b_side.outputs.keys() | a_side.outputs.keys()),
+    ):
+        seen = taken.setdefault(kind, set())
+        if clash := seen & keys:
+            raise ValueError(f"diff key {min(clash)!r} names both a {kind} and a {kind} in an inline subworkflow")
+        seen |= keys
 
 
-def _diff_level(diff: WorkflowDiff, b_side: _Side, a_side: _Side) -> None:
+def _diff_level(diff: WorkflowDiff, b_side: _Side, a_side: _Side, taken: dict[str, set[str]]) -> None:
     """Add one level's differences to *diff*, then recurse into inline subworkflows on both sides."""
     b_side = b_side.renamed(_id_renames(b_side, a_side))
+    _claim_keys(taken, b_side, a_side)
 
     diff.inputs.added.extend(_only_in(a_side.inputs, b_side.inputs))
     diff.inputs.removed.extend(_only_in(b_side.inputs, a_side.inputs))
@@ -531,25 +538,24 @@ def _diff_level(diff: WorkflowDiff, b_side: _Side, a_side: _Side) -> None:
         for input_id, b_fields in b_side.inputs.items()
         if input_id in a_side.inputs
     }
-    _merge(diff.inputs.changed, {input_id: changed for input_id, changed in inputs_changed.items() if changed})
+    diff.inputs.changed.update({input_id: changed for input_id, changed in inputs_changed.items() if changed})
 
     diff.outputs.added.extend(_only_in(a_side.outputs, b_side.outputs))
     diff.outputs.removed.extend(_only_in(b_side.outputs, a_side.outputs))
     # Refs compare as tuples: step ``a/b`` and port ``b`` of step ``a`` render alike.
-    _merge(
-        diff.outputs.changed,
+    diff.outputs.changed.update(
         {
             label: ValueChange(before=_ref_text(ref), after=_ref_text(a_side.outputs[label]))
             for label, ref in b_side.outputs.items()
             if label in a_side.outputs and ref != a_side.outputs[label]
-        },
+        }
     )
 
-    _merge(diff.steps.added, {key: _summary(a_side, key) for key in _only_in(a_side.steps, b_side.steps)})
-    _merge(diff.steps.removed, {key: _summary(b_side, key) for key in _only_in(b_side.steps, a_side.steps)})
+    diff.steps.added.update({key: _summary(a_side, key) for key in _only_in(a_side.steps, b_side.steps)})
+    diff.steps.removed.update({key: _summary(b_side, key) for key in _only_in(b_side.steps, a_side.steps)})
     matched = [key for key in a_side.steps if key in b_side.steps]
     changes = {key: _step_change(b_side, a_side, key) for key in matched}
-    _merge(diff.steps.changed, {key: change for key, change in changes.items() if change is not None})
+    diff.steps.changed.update({key: change for key, change in changes.items() if change is not None})
 
     diff.warnings.extend(
         f"{name} has unlabeled steps matched by position: {', '.join(unlabeled)}"
@@ -560,7 +566,7 @@ def _diff_level(diff: WorkflowDiff, b_side: _Side, a_side: _Side) -> None:
     for key in matched:
         b_run, a_run = b_side.steps[key].inline_run, a_side.steps[key].inline_run
         if b_run is not None and a_run is not None:
-            _diff_level(diff, _side(*b_run, prefix=f"{key}/"), _side(*a_run, prefix=f"{key}/"))
+            _diff_level(diff, _side(*b_run, prefix=f"{key}/"), _side(*a_run, prefix=f"{key}/"), taken)
 
 
 def diff_workflows(before: WorkflowSource, after: WorkflowSource) -> WorkflowDiff:
@@ -569,7 +575,7 @@ def diff_workflows(before: WorkflowSource, after: WorkflowSource) -> WorkflowDif
     (b_is_draft, b_nf2), (a_is_draft, a_nf2) = _normalize(b_raw), _normalize(a_raw)
     b_side, a_side = _side(b_raw, b_nf2), _side(a_raw, a_nf2)
     diff = WorkflowDiff(before_is_draft=b_is_draft, after_is_draft=a_is_draft)
-    _diff_level(diff, b_side, a_side)
+    _diff_level(diff, b_side, a_side, {})
     fed = {edge.source for edge in a_side.edges if edge.from_input}
     diff.unwired_inputs = _only_in(a_side.inputs, fed)
     return diff
