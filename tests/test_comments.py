@@ -481,6 +481,16 @@ def test_format2_to_native_frame_index_out_of_range():
         to_native(load_contents("synthetic-frame-index-out-of-range.gxwf.yml"))
 
 
+def test_format2_to_native_frame_huge_digit_index():
+    """A digit string past Python's int conversion limit reports out-of-range, not a crash."""
+    workflow = load("synthetic-frame-index-out-of-range.gxwf.yml")
+    huge = "9" * 5000
+    workflow["comments"][0]["contains_steps"] = [huge]
+    workflow["comments"][0]["contains_comments"] = []
+    with pytest.raises(ValueError, match=r"out-of-range step index '9+' in contains_steps$"):
+        to_native(workflow)
+
+
 def test_format2_to_native_frame_digit_label():
     """An all-digit step label resolves as a label even past the index range."""
     native = to_native(load_contents("synthetic-frame-digit-label.gxwf.yml"))

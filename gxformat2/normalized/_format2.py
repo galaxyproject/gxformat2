@@ -128,6 +128,13 @@ def _is_index_string(value: str) -> bool:
     return value.isascii() and value.isdigit()
 
 
+def _index_in_range(ref: int | str, count: int) -> bool:
+    """Bounds-check an int or digit-string index; long strings skip ``int()``'s digit limit."""
+    if isinstance(ref, str) and len(ref.lstrip("0")) > len(str(count)):
+        return False
+    return 0 <= int(ref) < count
+
+
 class _DictMixin:
     """Shared serialization for normalized models.
 
@@ -304,7 +311,7 @@ class NormalizedFormat2(_DictMixin, BaseModel):
                     elif isinstance(ref, str) and not (check.digit_strings_are_indices and _is_index_string(ref)):
                         problem = f"unknown {check.label_kind} label '{ref}'"
                     elif isinstance(ref, (int, str)) and not isinstance(ref, bool):
-                        if not 0 <= int(ref) < check.index_count:
+                        if not _index_in_range(ref, check.index_count):
                             problem = f"out-of-range {check.index_noun} index '{ref}'"
                     if problem:
                         message = f"{frame_description(comment, comment_index)} references {problem} in {check.field}"
