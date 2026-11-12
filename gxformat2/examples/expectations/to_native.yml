@@ -330,6 +330,11 @@ test_to_native_frame_unknown_step:
   operation: to_native
   expect_error: true
 
+test_to_native_frame_index_out_of_range:
+  fixture: synthetic-frame-index-out-of-range.gxwf.yml
+  operation: to_native
+  expect_error: true
+
 test_to_native_frame_unknown_comment:
   fixture: synthetic-frame-unknown-comment.gxwf.yml
   operation: to_native

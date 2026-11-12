@@ -11,7 +11,7 @@ from __future__ import annotations
 import copy
 import json
 import os
-from collections.abc import Callable, Iterable
+from collections.abc import Iterable
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, TypeAlias
@@ -252,31 +252,34 @@ class NormalizedFormat2(_DictMixin, BaseModel):
         """Parse a source reference string (e.g. ``step/output``) against this workflow's labels."""
         return resolve_source_reference(source, self.known_labels)
 
-    def _is_step_reference(self, ref: str) -> bool:
-        return ref in self.known_labels or _is_index_string(ref)
-
     @cached_property
     def unresolved_frame_references(self) -> list[UnresolvedFrameReference]:
-        """Frame string entries matching no step/input label (or comment label) at this level.
+        """Frame entries matching no label, or indexing past the steps/inputs (or comments) at this level.
 
-        Integer entries and all-digit ``contains_steps`` strings are indices and pass through.
+        ``contains_steps`` indices are native step ids: inputs first, then steps.
         """
         comment_labels = {c.label for c in self.comments if c.label}
+        step_count = len(self.inputs) + len(self.steps)
         unresolved: list[UnresolvedFrameReference] = []
         for comment_index, comment in enumerate(self.comments):
             if not isinstance(comment, FrameComment):
                 continue
-            checks: tuple[tuple[FrameField, str, list | None, Callable[[str], bool]], ...] = (
-                ("contains_steps", "step or input", comment.contains_steps, self._is_step_reference),
-                ("contains_comments", "comment", comment.contains_comments, comment_labels.__contains__),
+            # (field, label kind, entries, known labels, index count, digit strings are indices)
+            checks: tuple[tuple[FrameField, str, list | None, set[str], int, bool], ...] = (
+                ("contains_steps", "step or input", comment.contains_steps, self.known_labels, step_count, True),
+                ("contains_comments", "comment", comment.contains_comments, comment_labels, len(self.comments), False),
             )
-            for field, kind, refs, resolves in checks:
+            for field, kind, refs, labels, count, digits_index in checks:
                 for entry_index, ref in enumerate(refs or []):
-                    if isinstance(ref, str) and not resolves(ref):
-                        message = (
-                            f"{frame_description(comment, comment_index)} references unknown {kind} "
-                            f"label '{ref}' in {field}"
-                        )
+                    problem = None
+                    if isinstance(ref, str) and not (digits_index and _is_index_string(ref)):
+                        if ref not in labels:
+                            problem = f"unknown {kind} label '{ref}'"
+                    elif isinstance(ref, (int, str)) and not isinstance(ref, bool):
+                        if not 0 <= int(ref) < count:
+                            problem = f"out-of-range {kind.split()[0]} index '{ref}'"
+                    if problem:
+                        message = f"{frame_description(comment, comment_index)} references {problem} in {field}"
                         unresolved.append(UnresolvedFrameReference(comment_index, field, entry_index, message))
         return unresolved
 

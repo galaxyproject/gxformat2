@@ -472,6 +472,15 @@ def test_format2_to_native_bad_step_label():
         to_native(load_contents("synthetic-frame-unknown-step.gxwf.yml"))
 
 
+def test_format2_to_native_frame_index_out_of_range():
+    """Out-of-range contains_steps index raises an error naming the frame and index."""
+    with pytest.raises(
+        ValueError,
+        match=r"^Frame 'Range' references out-of-range step index '2' in contains_steps$",
+    ):
+        to_native(load_contents("synthetic-frame-index-out-of-range.gxwf.yml"))
+
+
 def test_format2_to_native_bad_step_label_in_subworkflow():
     """Frames inside a subworkflow resolve against that subworkflow's labels."""
     parent = {

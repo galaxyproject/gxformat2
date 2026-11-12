@@ -528,6 +528,14 @@
     - tests/test_interop_tests.py
     - tests/test_comments.py
 
+- file: format2/synthetic-frame-index-out-of-range.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Frame `contains_steps` / `contains_comments` indices (ints and digit strings) beyond the workflow — lint errors, conversion fails.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_comments.py
+
 - file: format2/synthetic-frame-unknown-comment.gxwf.yml
   origin: synthetic
   format: format2

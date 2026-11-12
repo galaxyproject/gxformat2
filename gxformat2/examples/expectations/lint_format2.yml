@@ -272,6 +272,37 @@ test_lint_frame_unknown_step:
     - path: [errors, 0, json_pointer]
       value: "/comments/0/contains_steps/0"
 
+test_lint_frame_index_out_of_range:
+  fixture: synthetic-frame-index-out-of-range.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 4
+    - path: [errors, 0]
+      value: "Frame 'Range' references out-of-range step index '2' in contains_steps"
+    - path: [errors, 0, linter]
+      value: FrameReferenceNotFound
+    - path: [errors, 0, json_pointer]
+      value: "/comments/0/contains_steps/1"
+    - path: [errors, 1]
+      value: "Frame 'Range' references out-of-range step index '999' in contains_steps"
+    - path: [errors, 1, linter]
+      value: FrameReferenceNotFound
+    - path: [errors, 1, json_pointer]
+      value: "/comments/0/contains_steps/2"
+    - path: [errors, 2]
+      value: "Frame 'Range' references out-of-range step index '-1' in contains_steps"
+    - path: [errors, 2, linter]
+      value: FrameReferenceNotFound
+    - path: [errors, 2, json_pointer]
+      value: "/comments/0/contains_steps/3"
+    - path: [errors, 3]
+      value: "Frame 'Range' references out-of-range comment index '1' in contains_comments"
+    - path: [errors, 3, linter]
+      value: FrameReferenceNotFound
+    - path: [errors, 3, json_pointer]
+      value: "/comments/0/contains_comments/0"
+
 test_lint_frame_unknown_comment:
   fixture: synthetic-frame-unknown-comment.gxwf.yml
   operation: lint_format2
