@@ -239,7 +239,7 @@ class _Side:
         return [label for label, ref in self.outputs.items() if ref is not None and ref[0] == key]
 
     def renamed(self, keys: dict[str, str]) -> _Side:
-        """This side with step keys renamed per *keys*; input ids are left alone."""
+        """Return this side with step keys renamed per *keys*; input ids are left alone."""
         if not keys:
             return self
 
@@ -590,7 +590,7 @@ def _state_value(value: Any) -> str:
 
 
 def _step_heading(key: str, label: str | None) -> str:
-    """The key, plus the label when it isn't the key or, for a nested step, its last segment."""
+    """Return the key, plus the label when it isn't the key or, for a nested step, its last segment."""
     return key if not label or label in (key, key.rsplit("/", 1)[-1]) else f"{key} ({label})"
 
 
