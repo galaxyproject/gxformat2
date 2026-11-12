@@ -62,3 +62,20 @@ def test_render_text_spells_out_unset_state_values():
 def test_native_workflow_rejected():
     with pytest.raises(ValueError, match="native"):
         diff_workflows(get_path("real-unicycler-assembly.ga"), BASE)
+
+
+def test_render_text_names_nested_step_by_its_path():
+    text = render_text(
+        diff_workflows(
+            get_path("synthetic-diff-inline-subworkflow.gxwf.yml"),
+            get_path("synthetic-diff-inline-subworkflow-removed-step.gxwf.yml"),
+        )
+    )
+    assert "Step removed: nested/first [cat1]\n    upstream: nested/inner_reads\n" in text
+
+
+def test_nested_key_colliding_with_slash_keyed_step_rejected():
+    before = load("synthetic-diff-inline-subworkflow.gxwf.yml")
+    before["steps"]["nested/first"] = {"tool_id": "cat1", "in": {"input1": "reads"}}
+    with pytest.raises(ValueError, match="nested/first"):
+        diff_workflows(before, get_path("synthetic-diff-inline-subworkflow-removed-step.gxwf.yml"))

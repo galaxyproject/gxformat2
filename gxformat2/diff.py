@@ -1,11 +1,13 @@
 """Structural diff of two Format2 workflows (either may be a ``GalaxyWorkflowDraft``).
 
-Steps match on their step key, the identity source references and
+Steps are reported under their step key, the identity source references and
 :func:`gxformat2.draft.detect_draft` use: the dict key, or for list-form steps
-the label, else the id, else the index id normalization assigns. ``_plan_*``
-fields never count as changes; they are reported per step so consumers can
-map a step back to its source. Only the top level is compared; subworkflow
-contents and workflow metadata (label, doc, tags, comments, report) are not.
+the label, else the id, else the index id normalization assigns. List-form steps
+with the same ``id`` on both sides match first, so a relabel is a label change.
+Inline subworkflows are diffed too, with their ids prefixed by the parent step
+key and ``/``. ``_plan_*`` fields never count as changes; they are reported per
+step so consumers can map a step back to its source. Workflow metadata (label,
+doc, tags, comments, report) is not compared.
 """
 
 from __future__ import annotations
@@ -104,6 +106,7 @@ class StepSummary(BaseModel):
     """An added or removed step, with its edges on the side it exists on."""
 
     label: str | None = None
+    id: str | None = None
     type: str
     tool_id: str | None = None
     tool_version: str | None = None
@@ -206,13 +209,16 @@ class _StepView:
     in_defaults: dict[str, Any]
     out_actions: dict[str, dict[str, Any]]
     plan_fields: dict[str, str]
+    raw_id: str | None
+    # (raw, normalized) run of an inline subworkflow step.
+    inline_run: tuple[dict[str, Any], NormalizedFormat2] | None
 
 
 @dataclass
 class _Side:
-    """One workflow reduced to what the diff compares."""
+    """One workflow (or inline subworkflow, ids prefixed) reduced to what the diff compares."""
 
-    is_draft: bool
+    list_form: bool
     inputs: dict[str, dict[str, Any]]
     outputs: dict[str, _Ref | None]
     steps: dict[str, _StepView]
@@ -232,6 +238,34 @@ class _Side:
     def outputs_from(self, key: str) -> list[str]:
         return [label for label, ref in self.outputs.items() if ref is not None and ref[0] == key]
 
+    def renamed(self, keys: dict[str, str]) -> _Side:
+        """This side with step keys renamed per *keys*; input ids are left alone."""
+        if not keys:
+            return self
+
+        def step(key: str) -> str:
+            return keys.get(key, key)
+
+        return _Side(
+            list_form=self.list_form,
+            inputs=self.inputs,
+            outputs={
+                label: ref if ref is None or ref[1] is None else (step(ref[0]), ref[1])
+                for label, ref in self.outputs.items()
+            },
+            steps={step(key): view for key, view in self.steps.items()},
+            edges=[
+                _Edge(
+                    edge.source if edge.from_input else step(edge.source),
+                    edge.source_port,
+                    step(edge.target),
+                    edge.target_port,
+                )
+                for edge in self.edges
+            ],
+            unlabeled_steps=self.unlabeled_steps,
+        )
+
 
 def _load(workflow: WorkflowSource) -> dict[str, Any]:
     if isinstance(workflow, (str, os.PathLike)):
@@ -243,35 +277,39 @@ def _load(workflow: WorkflowSource) -> dict[str, Any]:
     return workflow
 
 
-def _side(raw: dict[str, Any]) -> _Side:
+def _normalize(raw: dict[str, Any]) -> tuple[bool, NormalizedFormat2]:
     is_draft = is_draft_workflow(raw)
-    nf2: NormalizedFormat2 = normalized_format2(draft_as_workflow(raw) if is_draft else raw)
+    return is_draft, normalized_format2(draft_as_workflow(raw) if is_draft else raw)
+
+
+def _side(raw: dict[str, Any], nf2: NormalizedFormat2, prefix: str = "") -> _Side:
+    """Reduce a workflow to a :class:`_Side`, every step key and input id prefixed with *prefix*."""
     raw_steps = list(iterate_steps(raw))
     if len(raw_steps) != len(nf2.steps):
         raise ValueError("could not align raw steps with normalized steps")
-    steps = {key: step for (key, _), step in zip(raw_steps, nf2.steps)}
-    resolve = _source_resolver(steps, {inp.id for inp in nf2.inputs if inp.id})
+    input_ids = {inp.id for inp in nf2.inputs if inp.id}
+    resolve = _source_resolver({key: step for (key, _), step in zip(raw_steps, nf2.steps)}, input_ids, prefix)
 
     edges: list[_Edge] = []
-    for key, step in steps.items():
+    for (key, _), step in zip(raw_steps, nf2.steps):
         for step_input in step.in_:
             sources = step_input.source
             if sources is None or step_input.id is None:
                 continue
             for source in [sources] if isinstance(sources, str) else sources:
-                edges.append(_Edge(*resolve(source), target=key, target_port=step_input.id))
+                edges.append(_Edge(*resolve(source), target=prefix + key, target_port=step_input.id))
     list_form = isinstance(raw.get("steps"), list)
     return _Side(
-        is_draft=is_draft,
-        inputs={inp.id: _input_fields(inp) for inp in nf2.inputs if inp.id},
+        list_form=list_form,
+        inputs={prefix + inp.id: _input_fields(inp) for inp in nf2.inputs if inp.id},
         outputs={
-            output.id: None if output.outputSource is None else resolve(output.outputSource)
+            prefix + output.id: None if output.outputSource is None else resolve(output.outputSource)
             for output in nf2.outputs
             if output.id is not None
         },
-        steps={key: _step_view(step, raw_step) for (key, raw_step), step in zip(raw_steps, nf2.steps)},
+        steps={prefix + key: _step_view(step, raw_step) for (key, raw_step), step in zip(raw_steps, nf2.steps)},
         edges=edges,
-        unlabeled_steps=[key for key, raw_step in raw_steps if list_form and not _has_identity(raw_step)],
+        unlabeled_steps=[prefix + key for key, raw_step in raw_steps if list_form and not _has_identity(raw_step)],
     )
 
 
@@ -279,8 +317,10 @@ def _has_identity(raw_step: dict[str, Any]) -> bool:
     return any(isinstance(raw_step.get(field), str) and raw_step[field] for field in ("label", "id"))
 
 
-def _source_resolver(steps: dict[str, NormalizedWorkflowStep], input_ids: set[str]) -> Callable[[str], _Ref]:
-    """Resolve a source to ``(step key, port)`` or ``(input id, None)``, longest label first."""
+def _source_resolver(
+    steps: dict[str, NormalizedWorkflowStep], input_ids: set[str], prefix: str
+) -> Callable[[str], _Ref]:
+    """Resolve a source to ``(step key, port)`` or ``(input id, None)``, longest label first, then prefix it."""
     aliases: dict[str, str] = {}
     for key, step in steps.items():
         aliases.setdefault(step.id, key)
@@ -293,8 +333,8 @@ def _source_resolver(steps: dict[str, NormalizedWorkflowStep], input_ids: set[st
         label, port = resolve_source_reference(source, known_labels)
         # An input's only port is ``output``; ``<input>/output`` means ``<input>``.
         if label in input_ids and port == INPUT_PORT:
-            return label, None
-        return aliases.get(label, label), port
+            return prefix + label, None
+        return prefix + aliases.get(label, label), port
 
     return resolve
 
@@ -320,12 +360,18 @@ def _step_view(step: NormalizedWorkflowStep, raw_step: Any) -> _StepView:
         "run": _run_reference(step.run),
     }
     raw = raw_step if isinstance(raw_step, dict) else {}
+    raw_run = raw.get("run")
+    raw_id = raw.get("id")
     return _StepView(
         fields=fields,
         state=_flatten_state((step.state if step.state is not None else step.tool_state) or {}),
         in_defaults={inp.id: inp.default for inp in step.in_ if inp.id is not None and inp.default is not None},
         out_actions=_out_actions(step),
         plan_fields={field: raw[field] for field in present_plan_fields(raw)},
+        raw_id=raw_id if isinstance(raw_id, str) else None,
+        inline_run=(
+            (raw_run, step.run) if isinstance(step.run, NormalizedFormat2) and isinstance(raw_run, dict) else None
+        ),
     )
 
 
@@ -406,6 +452,7 @@ def _summary(side: _Side, key: str) -> StepSummary:
     view, edges = side.steps[key], side.neighborhood(key)
     return StepSummary(
         label=view.fields["label"],
+        id=view.raw_id,
         type=view.fields["type"],
         tool_id=view.fields["tool_id"],
         tool_version=view.fields["tool_version"],
@@ -443,56 +490,89 @@ def _step_change(before: _Side, after: _Side, key: str) -> StepChange | None:
 # --- Diff -------------------------------------------------------------------
 
 
-def diff_workflows(before: WorkflowSource, after: WorkflowSource) -> WorkflowDiff:
-    """Compare two Format2 workflows (dicts or paths); either may be a draft."""
-    b_side, a_side = _side(_load(before)), _side(_load(after))
+def _id_renames(before: _Side, after: _Side) -> dict[str, str]:
+    """BEFORE -> AFTER keys of list-form steps paired by an ``id`` unique on each side.
 
-    inputs = InputsDiff(
-        added=_only_in(a_side.inputs, b_side.inputs),
-        removed=_only_in(b_side.inputs, a_side.inputs),
-    )
-    for input_id, b_fields in b_side.inputs.items():
-        if input_id in a_side.inputs:
-            changed = _value_changes(b_fields, a_side.inputs[input_id])
-            if changed:
-                inputs.changed[input_id] = changed
+    A pair whose AFTER key is still another BEFORE step's key is dropped, leaving both to key matching.
+    """
+    if not (before.list_form and after.list_form):
+        return {}
+    b_ids, a_ids = _unique_ids(before), _unique_ids(after)
+    renames = {b_ids[i]: a_ids[i] for i in b_ids if i in a_ids and b_ids[i] != a_ids[i]}
+    while blocked := [b for b, a in renames.items() if a in before.steps and a not in renames]:
+        for b in blocked:
+            del renames[b]
+    return renames
 
-    outputs = OutputsDiff(
-        added=_only_in(a_side.outputs, b_side.outputs),
-        removed=_only_in(b_side.outputs, a_side.outputs),
-        # Refs compare as tuples: step ``a/b`` and port ``b`` of step ``a`` render alike.
-        changed={
+
+def _unique_ids(side: _Side) -> dict[str, str]:
+    keys_by_id: dict[str, list[str]] = {}
+    for key, view in side.steps.items():
+        if view.raw_id:
+            keys_by_id.setdefault(view.raw_id, []).append(key)
+    return {step_id: keys[0] for step_id, keys in keys_by_id.items() if len(keys) == 1}
+
+
+def _merge(target: dict[str, Any], entries: dict[str, Any]) -> None:
+    for key, value in entries.items():
+        if key in target:
+            raise ValueError(f"diff key {key!r} names both a step and a step in an inline subworkflow")
+        target[key] = value
+
+
+def _diff_level(diff: WorkflowDiff, b_side: _Side, a_side: _Side) -> None:
+    """Add one level's differences to *diff*, then recurse into inline subworkflows on both sides."""
+    b_side = b_side.renamed(_id_renames(b_side, a_side))
+
+    diff.inputs.added.extend(_only_in(a_side.inputs, b_side.inputs))
+    diff.inputs.removed.extend(_only_in(b_side.inputs, a_side.inputs))
+    inputs_changed = {
+        input_id: _value_changes(b_fields, a_side.inputs[input_id])
+        for input_id, b_fields in b_side.inputs.items()
+        if input_id in a_side.inputs
+    }
+    _merge(diff.inputs.changed, {input_id: changed for input_id, changed in inputs_changed.items() if changed})
+
+    diff.outputs.added.extend(_only_in(a_side.outputs, b_side.outputs))
+    diff.outputs.removed.extend(_only_in(b_side.outputs, a_side.outputs))
+    # Refs compare as tuples: step ``a/b`` and port ``b`` of step ``a`` render alike.
+    _merge(
+        diff.outputs.changed,
+        {
             label: ValueChange(before=_ref_text(ref), after=_ref_text(a_side.outputs[label]))
             for label, ref in b_side.outputs.items()
             if label in a_side.outputs and ref != a_side.outputs[label]
         },
     )
 
-    steps = StepsDiff(
-        added={key: _summary(a_side, key) for key in _only_in(a_side.steps, b_side.steps)},
-        removed={key: _summary(b_side, key) for key in _only_in(b_side.steps, a_side.steps)},
-    )
-    for key in a_side.steps:
-        if key in b_side.steps:
-            change = _step_change(b_side, a_side, key)
-            if change is not None:
-                steps.changed[key] = change
+    _merge(diff.steps.added, {key: _summary(a_side, key) for key in _only_in(a_side.steps, b_side.steps)})
+    _merge(diff.steps.removed, {key: _summary(b_side, key) for key in _only_in(b_side.steps, a_side.steps)})
+    matched = [key for key in a_side.steps if key in b_side.steps]
+    changes = {key: _step_change(b_side, a_side, key) for key in matched}
+    _merge(diff.steps.changed, {key: change for key, change in changes.items() if change is not None})
 
-    fed = {edge.source for edge in a_side.edges if edge.from_input}
-    warnings = [
-        f"{side} has unlabeled steps matched by position: {', '.join(unlabeled)}"
-        for side, unlabeled in (("BEFORE", b_side.unlabeled_steps), ("AFTER", a_side.unlabeled_steps))
+    diff.warnings.extend(
+        f"{name} has unlabeled steps matched by position: {', '.join(unlabeled)}"
+        for name, unlabeled in (("BEFORE", b_side.unlabeled_steps), ("AFTER", a_side.unlabeled_steps))
         if unlabeled
-    ]
-    return WorkflowDiff(
-        before_is_draft=b_side.is_draft,
-        after_is_draft=a_side.is_draft,
-        inputs=inputs,
-        outputs=outputs,
-        steps=steps,
-        unwired_inputs=_only_in(a_side.inputs, fed),
-        warnings=warnings,
     )
+
+    for key in matched:
+        b_run, a_run = b_side.steps[key].inline_run, a_side.steps[key].inline_run
+        if b_run is not None and a_run is not None:
+            _diff_level(diff, _side(*b_run, prefix=f"{key}/"), _side(*a_run, prefix=f"{key}/"))
+
+
+def diff_workflows(before: WorkflowSource, after: WorkflowSource) -> WorkflowDiff:
+    """Compare two Format2 workflows (dicts or paths); either may be a draft."""
+    b_raw, a_raw = _load(before), _load(after)
+    (b_is_draft, b_nf2), (a_is_draft, a_nf2) = _normalize(b_raw), _normalize(a_raw)
+    b_side, a_side = _side(b_raw, b_nf2), _side(a_raw, a_nf2)
+    diff = WorkflowDiff(before_is_draft=b_is_draft, after_is_draft=a_is_draft)
+    _diff_level(diff, b_side, a_side)
+    fed = {edge.source for edge in a_side.edges if edge.from_input}
+    diff.unwired_inputs = _only_in(a_side.inputs, fed)
+    return diff
 
 
 # --- Rendering --------------------------------------------------------------
@@ -510,7 +590,8 @@ def _state_value(value: Any) -> str:
 
 
 def _step_heading(key: str, label: str | None) -> str:
-    return key if not label or label == key else f"{key} ({label})"
+    """The key, plus the label when it isn't the key or, for a nested step, its last segment."""
+    return key if not label or label in (key, key.rsplit("/", 1)[-1]) else f"{key} ({label})"
 
 
 def _summary_lines(verb: str, key: str, summary: StepSummary) -> list[str]:
@@ -582,7 +663,8 @@ SCRIPT_DESCRIPTION = """
 Compare two Format 2 Galaxy workflows (either may be a GalaxyWorkflowDraft) and
 report added and removed inputs, outputs and steps, per-step changes to tool,
 run, state, when, step input defaults, output actions and connections, and
-AFTER inputs that feed no step.
+AFTER inputs that feed no step. Inline subworkflows are compared too, their
+step keys prefixed with the parent step key and "/".
 """
 
 

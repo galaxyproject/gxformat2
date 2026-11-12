@@ -1,0 +1,18 @@
+class: GalaxyWorkflow
+label: list-form steps, one with only an id and one with an id and a label
+inputs:
+  - id: reads
+    type: data
+outputs:
+  - id: out
+    outputSource: second cat/out_file1
+steps:
+  - id: first
+    tool_id: cat1
+    in:
+      input1: reads
+  - id: second
+    label: second cat
+    tool_id: cat1
+    in:
+      input1: first/out_file1

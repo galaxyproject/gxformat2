@@ -1402,3 +1402,33 @@
   format: format2
   tests:
     - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-inline-subworkflow.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-inline-subworkflow-removed-step.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-inline-subworkflow-interface.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-list-steps.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/diff/synthetic-diff-list-steps-relabeled.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
