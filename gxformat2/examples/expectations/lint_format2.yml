@@ -326,6 +326,13 @@ test_lint_frame_step_id_shadowed_by_label:
     - path: [errors, 0]
       value: "Frame 'By id' references unknown step or input label 'cat_step' in contains_steps"
 
+test_lint_frame_digit_label:
+  fixture: synthetic-frame-digit-label.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+
 test_lint_frame_empty_not_an_error:
   fixture: synthetic-frame-empty.gxwf.yml
   operation: lint_format2

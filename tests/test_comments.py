@@ -481,6 +481,12 @@ def test_format2_to_native_frame_index_out_of_range():
         to_native(load_contents("synthetic-frame-index-out-of-range.gxwf.yml"))
 
 
+def test_format2_to_native_frame_digit_label():
+    """An all-digit step label resolves as a label even past the index range."""
+    native = to_native(load_contents("synthetic-frame-digit-label.gxwf.yml"))
+    assert native["comments"][0]["child_steps"] == [1, 0]
+
+
 def test_format2_to_native_bad_step_label_in_subworkflow():
     """Frames inside a subworkflow resolve against that subworkflow's labels."""
     parent = {

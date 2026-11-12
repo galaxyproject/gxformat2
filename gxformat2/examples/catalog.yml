@@ -536,6 +536,14 @@
     - tests/test_interop_tests.py
     - tests/test_comments.py
 
+- file: format2/synthetic-frame-digit-label.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: Frame `contains_steps` names a step by an all-digit label beyond the index range — the label wins.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_comments.py
+
 - file: format2/synthetic-frame-unknown-comment.gxwf.yml
   origin: synthetic
   format: format2

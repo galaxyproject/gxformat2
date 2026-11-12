@@ -1,0 +1,20 @@
+class: GalaxyWorkflow
+inputs:
+  - id: input1
+    type: data
+outputs:
+  - id: out1
+    outputSource: "7/out_file1"
+steps:
+  - id: cat_step
+    label: "7"
+    tool_id: cat1
+    in:
+      input1: input1
+comments:
+  - type: frame
+    title: Digit label
+    color: none
+    position: [0, 0]
+    size: [260, 180]
+    contains_steps: ["7", 0]

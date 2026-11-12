@@ -106,6 +106,18 @@ class UnresolvedFrameReference(NamedTuple):
     message: str
 
 
+class _FrameRefCheck(NamedTuple):
+    """How one frame membership field resolves its entries."""
+
+    field: FrameField
+    label_kind: str
+    index_noun: str
+    refs: list | None
+    labels: set[str]
+    index_count: int
+    digit_strings_are_indices: bool
+
+
 def frame_description(frame: FrameComment, comment_index: int) -> str:
     """Name a frame in messages by its title, then label, then comment index."""
     name = frame.title or frame.label
@@ -264,23 +276,39 @@ class NormalizedFormat2(_DictMixin, BaseModel):
         for comment_index, comment in enumerate(self.comments):
             if not isinstance(comment, FrameComment):
                 continue
-            # (field, label kind, entries, known labels, index count, digit strings are indices)
-            checks: tuple[tuple[FrameField, str, list | None, set[str], int, bool], ...] = (
-                ("contains_steps", "step or input", comment.contains_steps, self.known_labels, step_count, True),
-                ("contains_comments", "comment", comment.contains_comments, comment_labels, len(self.comments), False),
+            checks = (
+                _FrameRefCheck(
+                    "contains_steps",
+                    "step or input",
+                    "step",
+                    comment.contains_steps,
+                    self.known_labels,
+                    step_count,
+                    True,
+                ),
+                _FrameRefCheck(
+                    "contains_comments",
+                    "comment",
+                    "comment",
+                    comment.contains_comments,
+                    comment_labels,
+                    len(self.comments),
+                    False,
+                ),
             )
-            for field, kind, refs, labels, count, digits_index in checks:
-                for entry_index, ref in enumerate(refs or []):
+            for check in checks:
+                for entry_index, ref in enumerate(check.refs or []):
                     problem = None
-                    if isinstance(ref, str) and not (digits_index and _is_index_string(ref)):
-                        if ref not in labels:
-                            problem = f"unknown {kind} label '{ref}'"
+                    if isinstance(ref, str) and ref in check.labels:
+                        pass
+                    elif isinstance(ref, str) and not (check.digit_strings_are_indices and _is_index_string(ref)):
+                        problem = f"unknown {check.label_kind} label '{ref}'"
                     elif isinstance(ref, (int, str)) and not isinstance(ref, bool):
-                        if not 0 <= int(ref) < count:
-                            problem = f"out-of-range {kind.split()[0]} index '{ref}'"
+                        if not 0 <= int(ref) < check.index_count:
+                            problem = f"out-of-range {check.index_noun} index '{ref}'"
                     if problem:
-                        message = f"{frame_description(comment, comment_index)} references {problem} in {field}"
-                        unresolved.append(UnresolvedFrameReference(comment_index, field, entry_index, message))
+                        message = f"{frame_description(comment, comment_index)} references {problem} in {check.field}"
+                        unresolved.append(UnresolvedFrameReference(comment_index, check.field, entry_index, message))
         return unresolved
 
     @cached_property
