@@ -15,19 +15,20 @@ Steps are reported under their step key. That is the dict key, or for
 list-form steps the label, then the id, then the index id. List-form steps with
 the same ``id`` on both sides (unique on each side) are matched first and
 reported under the AFTER key, so adding or changing a label is a ``label``
-change, not a removed and an added step. The remaining steps match on step key.
+change, not a removed and an added step. A pair whose AFTER key is still another
+unpaired BEFORE step's key is dropped. The remaining steps match on step key.
 Unlabeled list-form steps with no ``id`` are matched by position, and the diff
 warns when it does this. Each added or removed step carries its raw ``id``.
 
 Inline subworkflows (an inline ``run`` on both sides of a matched step) are
 diffed as well. Their steps, inputs and outputs appear in the same maps, with
-every step key, input and output id and edge node prefixed by the parent step
-key and ``/``: a step ``first`` removed inside step ``nested`` is
+every step key, input and output id and edge node prefixed by the parent's
+AFTER step key and ``/``: a step ``first`` removed inside step ``nested`` is
 ``steps.removed["nested/first"]``. An added or removed subworkflow step is
 reported as that one step, not its contents. ``unwired_inputs`` lists top-level
 inputs only. A linked ``run`` (URL, path or ``@import``) is compared by
-reference. A prefixed key that collides with a slash-keyed step raises
-``ValueError``.
+reference. A prefixed step key, input or output id that a slash-keyed one at
+another level also uses raises ``ValueError``, changed or not.
 
 ``_plan_*`` fields never count as changes. They are reported on each added,
 removed and changed step, so a step can be traced back to its source.

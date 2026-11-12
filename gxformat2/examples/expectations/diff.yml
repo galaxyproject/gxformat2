@@ -15,10 +15,12 @@
 # Object key order in the result is not part of the contract.
 # Steps are reported under their step key (dict key; list form: label, else id, else index id).
 # List-form steps on both sides with the same id (unique per side) match first, under the
-# AFTER key, so a relabel is a fields.label change; the rest match on step key.
+# AFTER key, so a relabel is a fields.label change; the rest match on step key. A pair whose
+# AFTER key is another unpaired BEFORE step's key is dropped. A list-form id change on a
+# step matched by key is no change.
 # A dict-form step's inner id is not its identity; changing it is no change.
 # Inline subworkflows (run on both sides) are diffed too; their step keys, input and output
-# ids and edge nodes are prefixed with the parent step key and "/" (e.g. nested/first) in
+# ids and edge nodes are prefixed with the parent's AFTER step key and "/" (e.g. nested/first) in
 # the same maps. An added or removed subworkflow step lists only itself. unwired_inputs
 # stays top-level. Linked runs compare by reference (fields.run).
 # Edges render as "<step>/<port> -> <step>/<port>", or "<input> -> <step>/<port>".
@@ -663,3 +665,87 @@ test_diff_removed_list_step_summary_carries_its_id:
       value: second
     - path: [steps, removed, second cat, label]
       value: second cat
+
+test_diff_list_step_id_not_unique_falls_back_to_key:
+  fixture: synthetic-diff-list-steps.gxwf.yml
+  fixture_after: synthetic-diff-list-steps-duplicate-id.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [steps, removed, $length]
+      value: 1
+    - path: [steps, removed, first, id]
+      value: first
+    - path: [steps, removed, first, label]
+      value: null
+    - path: [steps, added, $length]
+      value: 1
+    - path: [steps, added, first cat, id]
+      value: first
+    - path: [steps, changed, $length]
+      value: 1
+    - path: [steps, changed, second cat, fields, $length]
+      value: 0
+    - path: [steps, changed, second cat, connections_in, removed]
+      value: ["first/out_file1 -> second cat/input1"]
+    - path: [steps, changed, second cat, connections_in, added]
+      value: ["first cat/out_file1 -> second cat/input1"]
+    - path: [outputs, changed, $length]
+      value: 0
+
+test_diff_list_step_id_pair_onto_unpaired_key_falls_back_to_key:
+  fixture: synthetic-diff-list-steps.gxwf.yml
+  fixture_after: synthetic-diff-list-steps-id-on-other-label.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [steps, removed, $length]
+      value: 1
+    - path: [steps, removed, first, id]
+      value: first
+    - path: [steps, added, $length]
+      value: 0
+    - path: [steps, changed, $length]
+      value: 1
+    - path: [steps, changed, second cat, fields, $length]
+      value: 0
+    - path: [steps, changed, second cat, connections_in, removed]
+      value: ["first/out_file1 -> second cat/input1"]
+    - path: [steps, changed, second cat, connections_in, added]
+      value: ["reads -> second cat/input1"]
+    - path: [outputs, changed, $length]
+      value: 0
+
+test_diff_relabeled_list_step_prefixes_nested_levels_with_after_key:
+  fixture: synthetic-diff-list-steps-two-level-inline.gxwf.yml
+  fixture_after: synthetic-diff-list-steps-two-level-inline-relabeled.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [steps, added, $length]
+      value: 0
+    - path: [steps, removed, $length]
+      value: 1
+    - path: [steps, removed, new/deep/x, tool_id]
+      value: cat1
+    - path: [steps, removed, new/deep/x, upstream]
+      value: [new/deep/deep_reads]
+    - path: [steps, removed, new/deep/x, downstream]
+      value: [new/deep/y]
+    - path: [steps, changed, $length]
+      value: 2
+    - path: [steps, changed, new, fields, $length]
+      value: 1
+    - path: [steps, changed, new, fields, label, before]
+      value: old
+    - path: [steps, changed, new, fields, label, after]
+      value: new
+    - path: [steps, changed, new/deep/y, connections_in, removed]
+      value: ["new/deep/x/out_file1 -> new/deep/y/input1"]
+    - path: [steps, changed, new/deep/y, connections_in, added]
+      value: ["new/deep/deep_reads -> new/deep/y/input1"]
+    - path: [inputs, changed, $length]
+      value: 0
