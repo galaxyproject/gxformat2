@@ -1,5 +1,5 @@
 # Native best practices linting
-# lint_best_practices_native returns {errors: [...], warnings: [...], error_count: N, warn_count: N}
+# lint_best_practices_native returns {errors: [...], warnings: [...], infos: [...], error_count: N, warn_count: N, info_count: N}
 
 test_bp_native_no_annotation:
   fixture: synthetic-minimal-tool.ga
@@ -74,3 +74,38 @@ test_bp_native_untyped_params:
       value_any_contains: "untyped parameter in the post-job actions. ${reads} in rename of output out_file2 names a data input, but Galaxy fills ${...} only from parameter inputs; use #{input1} "
     - path: [warnings]
       value_any_contains: "untyped parameter in the post-job actions. ${Haplotype} in TagDatasetAction of output out_file1"
+
+# One creator per identifier case; the valid ORCID and ROR URIs and the
+# organisation's non-URI identifier lint clean.
+test_bp_native_creator_identifiers:
+  fixture: synthetic-bp-creator-identifiers.ga
+  operation: lint_best_practices_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 9
+    - path: [info_count]
+      value: 2
+    - path: [infos]
+      value_any_contains: 'Person creator "No identifier" has no identifier; consider adding an ORCID iD'
+    - path: [infos]
+      value_any_contains: 'Organization creator "No organisation identifier" has no identifier; consider adding a ROR iD'
+    - path: [warnings]
+      value_any_contains: 'Creator identifier "0000-0002-1825-0097" should be a fully qualified URI: "https://orcid.org/0000-0002-1825-0097".'
+    - path: [warnings]
+      value_any_contains: 'Creator identifier "http://www.orcid.org/0000-0002-1825-0097" should use the canonical form "https://orcid.org/0000-0002-1825-0097".'
+    - path: [warnings]
+      value_any_contains: 'Creator identifier "https://orcid.org/0000-0002-1825-0098" is not a valid ORCID iD: its check digits do not match.'
+    - path: [warnings]
+      value_any_contains: 'Creator identifier "https://orcid.org/0000-0002-1825" is not a valid ORCID iD ('
+    - path: [warnings]
+      value_any_contains: 'Person creator "ROR as person" has a ROR iD as identifier, but ROR identifies organisations'
+    - path: [warnings]
+      value_any_contains: 'Creator identifier "josiah" should be a fully qualified URI, for example'
+    - path: [warnings]
+      value_any_contains: 'Creator identifier "05gq02987" should be a fully qualified URI: "https://ror.org/05gq02987".'
+    - path: [warnings]
+      value_any_contains: 'Creator identifier "https://ror.org/05gq02988" is not a valid ROR iD: its check digits do not match.'
+    - path: [warnings]
+      value_any_contains: 'Organization creator "ORCID as organisation" has an ORCID iD as identifier, but ORCID identifies people'
