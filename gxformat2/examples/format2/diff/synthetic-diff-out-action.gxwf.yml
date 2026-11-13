@@ -1,0 +1,15 @@
+class: GalaxyWorkflow
+label: synthetic-diff-explicit-false-bare with a rename on its out port
+inputs:
+  sample:
+    type: text
+  reads: data
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: reads
+      label: sample
+    out:
+      - id: out_file1
+        rename: concatenated

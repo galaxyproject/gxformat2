@@ -219,7 +219,8 @@ def _inputs_offset(workflow: dict) -> int:
     return len(inputs) if isinstance(inputs, (list, dict)) else 0
 
 
-def _iterate_steps(workflow: dict) -> Iterator[tuple[str, Any]]:
+def iterate_steps(workflow: dict) -> Iterator[tuple[str, Any]]:
+    """Yield (step key, step) for dict- or list-form steps; the key is what source refs name."""
     steps = workflow.get("steps")
     if isinstance(steps, list):
         offset = _inputs_offset(workflow)
@@ -312,7 +313,8 @@ def _step_out_ports(step: dict) -> set[str]:
     return ports
 
 
-def _present_plan_fields(doc: Mapping[str, Any]) -> list[str]:
+def present_plan_fields(doc: Mapping[str, Any]) -> list[str]:
+    """Return the non-empty ``_plan_*`` field names on *doc*, in ``PLAN_FIELDS`` order."""
     return [f for f in PLAN_FIELDS if isinstance(doc.get(f), str) and doc[f]]
 
 
@@ -359,17 +361,17 @@ def _path_key(path: StepPath) -> str:
 
 def _source_labels(workflow: dict) -> set[str]:
     """Labels a source ref resolves against: steps and workflow inputs."""
-    labels = {label for label, _ in _iterate_steps(workflow)}
+    labels = {label for label, _ in iterate_steps(workflow)}
     labels.update(label for label, _ in _iterate_labeled(workflow.get("inputs")))
     return labels
 
 
 def _step_dependencies(workflow: dict) -> dict[str, set[str]]:
     """Map step label -> labels of the steps its inputs source from, itself included."""
-    step_labels = {label for label, _ in _iterate_steps(workflow)}
+    step_labels = {label for label, _ in iterate_steps(workflow)}
     known_labels = _source_labels(workflow)
     deps: dict[str, set[str]] = {}
-    for label, step in _iterate_steps(workflow):
+    for label, step in iterate_steps(workflow):
         step_deps: set[str] = set()
         if isinstance(step, dict):
             for _, in_value in _iterate_step_input_entries(step.get("in")):
@@ -425,19 +427,19 @@ def detect_draft(workflow: Any) -> DraftSurvey:
 
 
 def _walk_draft_steps(workflow: dict, prefix: StepPath, todos: list[TodoHit], plan_fields: list[PlanHit]) -> None:
-    for label, step in _iterate_steps(workflow):
+    for label, step in iterate_steps(workflow):
         if not isinstance(step, dict):
             continue
         path = [*prefix, label]
         for location in _step_todo_locations(step):
             todos.append(TodoHit(path=path, location=location, sentinel=_location_sentinel(step, location)))
-        for field in _present_plan_fields(step):
+        for field in present_plan_fields(step):
             plan_fields.append(PlanHit(path=path, field=field, value=step[field]))
         if is_draft_workflow(step.get("run")):
             _walk_draft_steps(step["run"], path, todos, plan_fields)
 
     # Inner draft outputs collect at the outer step's path; top-level ones at [].
-    step_labels = {label for label, _ in _iterate_steps(workflow)}
+    step_labels = {label for label, _ in iterate_steps(workflow)}
     for label, output in _iterate_labeled(workflow.get("outputs")):
         ref = _read_output_source(output)
         if ref is None:
@@ -516,7 +518,7 @@ def _walk_workflow_semantics(workflow: dict, prefix: StepPath, errors: list[Draf
                 validate_input_parameter(workflow_input)
             except ValueError as exc:
                 errors.append(DraftValidationDiagnostic(path=prefix, message=str(exc)))
-    for label, step in _iterate_steps(workflow):
+    for label, step in iterate_steps(workflow):
         if not isinstance(step, dict):
             continue
         path = [*prefix, label]
@@ -583,7 +585,7 @@ def _walk_draft_validation(
     semantic_errors: list[DraftValidationDiagnostic],
     warnings: list[DraftValidationDiagnostic],
 ) -> None:
-    for field in _present_plan_fields(workflow):
+    for field in present_plan_fields(workflow):
         warnings.append(
             DraftValidationDiagnostic(
                 path=prefix,
@@ -606,9 +608,7 @@ def _walk_draft_validation(
                 )
             )
 
-    step_out_ports = {
-        label: _step_out_ports(step) for label, step in _iterate_steps(workflow) if isinstance(step, dict)
-    }
+    step_out_ports = {label: _step_out_ports(step) for label, step in iterate_steps(workflow) if isinstance(step, dict)}
     known_labels = input_labels | step_out_ports.keys()
 
     def check_edge_ref(ref: str, path: StepPath, context: str) -> None:
@@ -640,7 +640,7 @@ def _walk_draft_validation(
 
     topology_errors.extend(_cycle_diagnostics(workflow, prefix))
 
-    for label, step in _iterate_steps(workflow):
+    for label, step in iterate_steps(workflow):
         if not isinstance(step, dict):
             continue
         _check_label(label, prefix, "step", topology_errors, semantic_errors)
@@ -675,7 +675,7 @@ def _walk_draft_validation(
         # Planning context must be stripped once a tool step is resolved. Non-tool
         # steps (subworkflow, pause, pick_value) may keep it for now.
         if _is_tool_step(step) and not _step_todo_locations(step):
-            present = _present_plan_fields(step)
+            present = present_plan_fields(step)
             if present:
                 semantic_errors.append(
                     DraftValidationDiagnostic(
@@ -725,7 +725,7 @@ def _next_draft_step_in(workflow: dict, prefix: StepPath) -> NextStepResult:
 
 def _topo_ordered_steps(workflow: dict) -> list[tuple[str, Any]]:
     """Topological order of steps; ties and cycles resolved alphabetically by label."""
-    by_label = dict(_iterate_steps(workflow))
+    by_label = dict(iterate_steps(workflow))
     deps = {label: step_deps - {label} for label, step_deps in _step_dependencies(workflow).items()}
 
     ordered: list[tuple[str, Any]] = []
@@ -762,7 +762,7 @@ def _collect_port_edges(workflow: dict) -> dict[str, dict[str, _PortEdges]]:
         ref = _read_output_source(output)
         if ref is not None:
             edges_at(ref).workflow_outputs.add(label)
-    for consumer, step in _iterate_steps(workflow):
+    for consumer, step in iterate_steps(workflow):
         if not isinstance(step, dict):
             continue
         for in_key, in_value in _iterate_step_input_entries(step.get("in")):
@@ -819,7 +819,7 @@ def _step_work_items(step: dict, port_edges: dict[str, _PortEdges]) -> list[str]
             edges = _out_port_edges(port_edges.get(out_id, _PortEdges()))
             work.append(_port_work_item("out", "output", out_id, edges))
 
-    for field in _present_plan_fields(step):
+    for field in present_plan_fields(step):
         work.append(f"{field}: {step[field].strip()}")
     return work
 
@@ -867,7 +867,7 @@ def extract_draft_subset(workflow: Any) -> ExtractResult:
 
 
 def _extract_level(workflow: dict, prefix: StepPath) -> _LevelResult:
-    step_entries = [(label, step) for label, step in _iterate_steps(workflow) if isinstance(step, dict)]
+    step_entries = [(label, step) for label, step in iterate_steps(workflow) if isinstance(step, dict)]
     step_labels = {label for label, _ in step_entries}
 
     drops: dict[str, _Drop] = {}
@@ -936,7 +936,7 @@ def _direct_drop_reason(step: dict) -> StepHasTodoReason | StepHasPlanFieldReaso
     locations = _step_todo_locations(step)
     if locations:
         return StepHasTodoReason(locations=locations)
-    fields = _present_plan_fields(step)
+    fields = present_plan_fields(step)
     if fields:
         return StepHasPlanFieldReason(fields=fields)
     return None
@@ -1185,7 +1185,7 @@ def resolve_draft_overlay(workflow: Any) -> DraftOverlay | None:
     survey = detect_draft(workflow)
     if not survey.is_draft:
         return None
-    identity_by_key = {key: raw_step_render_identity(step, key) for key, step in _iterate_steps(workflow)}
+    identity_by_key = {key: raw_step_render_identity(step, key) for key, step in iterate_steps(workflow)}
     overlay = DraftOverlay()
 
     def reason_for(path: StepPath) -> DraftPlannedReason | None:

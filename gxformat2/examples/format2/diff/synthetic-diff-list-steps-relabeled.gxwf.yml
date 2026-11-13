@@ -1,0 +1,19 @@
+class: GalaxyWorkflow
+label: synthetic-diff-list-steps with a label added to first and second's label changed
+inputs:
+  - id: reads
+    type: data
+outputs:
+  - id: out
+    outputSource: concatenate again/out_file1
+steps:
+  - id: first
+    label: first cat
+    tool_id: cat1
+    in:
+      input1: reads
+  - id: second
+    label: concatenate again
+    tool_id: cat1
+    in:
+      input1: first cat/out_file1

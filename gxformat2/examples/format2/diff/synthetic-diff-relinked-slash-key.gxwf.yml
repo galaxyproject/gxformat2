@@ -1,0 +1,18 @@
+class: GalaxyWorkflow
+label: synthetic-url-run-yml with a relinked run and a slash-keyed step feeding an output
+inputs:
+  x: data
+outputs:
+  qc_report:
+    outputSource: align/qc/report
+steps:
+  nested:
+    run: https://example.com/wf-v2.yml
+    in:
+      x: x
+  align/qc:
+    tool_id: fastqc
+    in:
+      input_file: x
+    out:
+      - report

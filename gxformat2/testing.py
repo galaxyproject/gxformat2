@@ -86,6 +86,8 @@ class TestCase(BaseModel):
     """A single declarative test case."""
 
     fixture: str
+    # Second fixture for two-workflow operations (e.g. diff); passed as the second argument.
+    fixture_after: str | None = None
     operation: str
     expect_error: bool = False
     assertions: list[Assertion] = []
@@ -243,7 +245,7 @@ def run_declarative_case(
     """Execute one declarative test case.
 
     Args:
-        case: TestCase with fixture, operation, and optionally assertions /
+        case: TestCase with fixture, operation, and optionally fixture_after / assertions /
             graph_properties / expect_error
         operations: mapping of operation name to callable
         load_fixture: callable that takes a fixture name and returns the loaded workflow dict
@@ -252,15 +254,16 @@ def run_declarative_case(
             case lists ``graph_properties``.
     """
     operation = operations[case.operation]
+    fixture_names = [case.fixture] if case.fixture_after is None else [case.fixture, case.fixture_after]
 
     if case.expect_error:
         try:
-            operation(load_fixture(case.fixture))
+            operation(*[load_fixture(name) for name in fixture_names])
         except Exception:
             return
         raise AssertionError(f"Expected operation {case.operation!r} to raise an exception")
 
-    result = operation(load_fixture(case.fixture))
+    result = operation(*[load_fixture(name) for name in fixture_names])
     for assertion in case.assertions:
         run_assertion(result, assertion)
     checkers = graph_property_checkers or {}

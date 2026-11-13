@@ -33,6 +33,14 @@ gxformat2.converter module
    :show-inheritance:
    :undoc-members:
 
+gxformat2.diff module
+---------------------
+
+.. automodule:: gxformat2.diff
+   :members:
+   :show-inheritance:
+   :undoc-members:
+
 gxformat2.draft module
 ----------------------
 

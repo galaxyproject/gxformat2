@@ -1,0 +1,22 @@
+class: GalaxyWorkflow
+label: final workflow after the test loop dropped chr_filter
+inputs:
+  reads:
+    type: data
+  chr:
+    type: text
+    optional: true
+outputs:
+  fastq:
+    outputSource: to_fastq/output
+steps:
+  to_fastq:
+    tool_id: toolshed.g2.bx.psu.edu/repos/iuc/samtools_fastx/samtools_fastx/1.15.1+galaxy2
+    tool_version: "1.15.1+galaxy2"
+    label: convert BAM to FASTQ
+    in:
+      input: reads
+    out:
+      - output
+    state:
+      output_fmt: fastqsanger

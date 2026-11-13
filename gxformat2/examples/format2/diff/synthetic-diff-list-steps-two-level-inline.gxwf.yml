@@ -1,0 +1,34 @@
+class: GalaxyWorkflow
+label: a list-form inline subworkflow step holding another inline subworkflow
+inputs:
+  - id: reads
+    type: data
+outputs: []
+steps:
+  - id: sub
+    label: old
+    in:
+      inner_reads: reads
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner_reads: data
+      outputs: {}
+      steps:
+        deep:
+          in:
+            deep_reads: inner_reads
+          run:
+            class: GalaxyWorkflow
+            inputs:
+              deep_reads: data
+            outputs: {}
+            steps:
+              x:
+                tool_id: cat1
+                in:
+                  input1: deep_reads
+              y:
+                tool_id: cat1
+                in:
+                  input1: x/out_file1

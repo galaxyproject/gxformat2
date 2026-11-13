@@ -1,0 +1,51 @@
+class: GalaxyWorkflow
+label: diff base with an explicit reads/output port, bumped fastqc with a renamed report, edited trim state, relabelled trim, a when guard, a new step input default, and a new default and bounds on an input
+inputs:
+  reads:
+    type: data
+    format: fastqsanger
+  min_quality:
+    type: int
+    default: 25
+    min: 0
+    max: 60
+outputs:
+  report:
+    outputSource: qc/html_report
+  filtered:
+    outputSource: filter/out_file1
+steps:
+  qc:
+    tool_id: toolshed.g2.bx.psu.edu/repos/devteam/fastqc/fastqc/0.74+galaxy1
+    tool_version: "0.74+galaxy1"
+    in:
+      input_file: reads/output
+    out:
+      - id: html_report
+        rename: QC report
+  trim:
+    tool_id: trimmer
+    tool_version: "1.0"
+    label: quality trim
+    in:
+      input1: reads
+      min_q: min_quality
+    out:
+      - out_file1
+    state:
+      mode: lenient
+      advanced:
+        window: 5
+        min_len: 30
+  filter:
+    tool_id: Filter1
+    tool_version: "1.1.0"
+    when: $(inputs.input != null)
+    in:
+      input: trim/out_file1
+      header_lines:
+        default: 1
+    out:
+      - out_file1
+    state:
+      cond: "c1>0"

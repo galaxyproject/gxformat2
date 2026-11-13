@@ -1,0 +1,19 @@
+class: GalaxyWorkflow
+label: synthetic-diff-list-steps with first labeled and both steps sharing the id first
+inputs:
+  - id: reads
+    type: data
+outputs:
+  - id: out
+    outputSource: second cat/out_file1
+steps:
+  - id: first
+    label: first cat
+    tool_id: cat1
+    in:
+      input1: reads
+  - id: first
+    label: second cat
+    tool_id: cat1
+    in:
+      input1: first cat/out_file1

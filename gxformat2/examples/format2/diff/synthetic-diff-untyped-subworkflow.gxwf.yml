@@ -1,0 +1,29 @@
+class: GalaxyWorkflow
+label: synthetic-diff-explicit-false-bare plus an inline subworkflow step with no type
+inputs:
+  sample:
+    type: text
+  reads: data
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: reads
+      label: sample
+    out:
+      - out_file1
+  nested:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner: data
+      outputs:
+        inner_out:
+          outputSource: inner_cat/out_file1
+      steps:
+        inner_cat:
+          tool_id: cat1
+          in:
+            input1: inner
+    in:
+      inner: reads

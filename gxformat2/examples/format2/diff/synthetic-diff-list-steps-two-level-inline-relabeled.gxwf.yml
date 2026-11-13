@@ -1,0 +1,30 @@
+class: GalaxyWorkflow
+label: synthetic-diff-list-steps-two-level-inline with sub relabeled new and deep step x removed
+inputs:
+  - id: reads
+    type: data
+outputs: []
+steps:
+  - id: sub
+    label: new
+    in:
+      inner_reads: reads
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner_reads: data
+      outputs: {}
+      steps:
+        deep:
+          in:
+            deep_reads: inner_reads
+          run:
+            class: GalaxyWorkflow
+            inputs:
+              deep_reads: data
+            outputs: {}
+            steps:
+              y:
+                tool_id: cat1
+                in:
+                  input1: deep_reads

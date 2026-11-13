@@ -1,0 +1,35 @@
+class: GalaxyWorkflowDraft
+label: draft snapshot with reworded plan fields only
+inputs:
+  reads:
+    type: data
+  chr:
+    type: text
+    optional: true
+outputs:
+  fastq:
+    outputSource: to_fastq/TODO_fastq
+steps:
+  chr_filter:
+    tool_id: TODO
+    tool_version: TODO
+    label: keep only requested chromosomes
+    in:
+      TODO_input: reads
+      TODO_regions: chr
+    out:
+      - id: TODO_filtered
+    _plan_state: |
+      Filter to the chr contigs; reworded plan text.
+    _plan_context: |
+      Upstream process SAMTOOLS_VIEW with --chr.
+  to_fastq:
+    tool_id: TODO
+    tool_version: TODO
+    label: convert BAM to FASTQ
+    in:
+      TODO_input: chr_filter/TODO_filtered
+    out:
+      - id: TODO_fastq
+    _plan_context: |
+      nf-core SAMTOOLS_FASTQ module.

@@ -1,0 +1,21 @@
+class: GalaxyWorkflow
+label: synthetic-diff-explicit-false-bare plus a step that feeds itself
+inputs:
+  sample:
+    type: text
+  reads: data
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: reads
+      label: sample
+    out:
+      - out_file1
+  loop:
+    tool_id: cat1
+    in:
+      input1: reads
+      queries_0|input2: loop/out_file1
+    out:
+      - out_file1

@@ -11,4 +11,5 @@ gxformat2 provides several command line utilities for working with Galaxy workfl
    cli_lint
    cli_viz
    cli_layout
+   cli_diff
    cli_abstract_export

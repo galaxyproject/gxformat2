@@ -141,11 +141,13 @@ test_name:
 - Validation: `validate_format2`, `validate_format2_strict`, `validate_native`, `validate_native_strict`
 - Linting: `lint_format2`, `lint_native` — return `{errors: [...], warnings: [...], error_count: N, warn_count: N}`
 - Best practices: `lint_best_practices_format2`, `lint_best_practices_native` — same return shape
+- Workflow diff: `diff_workflows` — two fixtures per case (`fixture` is BEFORE, `fixture_after` is AFTER); see `expectations/diff.yml` for the result shape
 - URL resolution: `linked_subworkflow_descriptor_urls` — `{step_label: trs_descriptor_url(content_id)}` for linked subworkflow steps (`null` for non-TRS URLs)
 
 ### Special keys
 - `assertions` may be omitted or empty — the operation succeeding is the test
 - `expect_error: true` — the operation must raise an exception (test passes on error, fails on success)
+- `fixture_after` — a second fixture, passed as the operation's second argument (two-workflow operations such as `diff_workflows`)
 
 ```yaml
 # Positive validation: operation succeeds, no assertions needed

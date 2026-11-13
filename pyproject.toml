@@ -45,6 +45,7 @@ gxwf-viz = "gxformat2.cytoscape:main"
 gxwf-abstract-export = "gxformat2.abstract:main"
 gxwf-mermaid = "gxformat2.mermaid:main"
 gxwf-layout = "gxformat2.layout:main"
+gxwf-diff = "gxformat2.diff:main"
 
 [project.urls]
 Homepage = "https://github.com/galaxyproject/gxformat2"

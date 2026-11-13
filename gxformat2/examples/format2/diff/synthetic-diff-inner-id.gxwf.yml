@@ -1,0 +1,17 @@
+class: GalaxyWorkflow
+label: a dict-form step whose inner id differs from its key
+inputs:
+  reads: data
+outputs:
+  sorted:
+    outputSource: sort/out_file1
+steps:
+  cat:
+    id: cat_a
+    tool_id: cat1
+    in:
+      input1: reads
+  sort:
+    tool_id: sort1
+    in:
+      input: cat/out_file1

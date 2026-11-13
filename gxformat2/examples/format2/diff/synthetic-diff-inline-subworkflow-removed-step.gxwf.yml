@@ -1,0 +1,23 @@
+class: GalaxyWorkflow
+label: synthetic-diff-inline-subworkflow with inner step first removed and second rewired
+inputs:
+  reads: data
+outputs:
+  out:
+    outputSource: nested/out
+steps:
+  nested:
+    in:
+      inner_reads: reads
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner_reads: data
+      outputs:
+        out:
+          outputSource: second/out_file1
+      steps:
+        second:
+          tool_id: cat1
+          in:
+            input1: inner_reads

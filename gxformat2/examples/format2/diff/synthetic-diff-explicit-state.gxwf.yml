@@ -1,0 +1,18 @@
+class: GalaxyWorkflow
+label: synthetic-diff-explicit-false-bare with unset state leaves spelled out (null, "", [])
+inputs:
+  sample:
+    type: text
+  reads: data
+steps:
+  cat:
+    tool_id: cat1
+    in:
+      input1: reads
+      label: sample
+    out:
+      - out_file1
+    state:
+      min_length: null
+      comment: ""
+      inclusive_filter: []
