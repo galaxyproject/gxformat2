@@ -111,6 +111,7 @@ nf2.label          # str | None
 nf2.doc            # str | None (joined if originally a list)
 nf2.tags           # list[str] | None
 nf2.creator        # list[CreatorPerson | CreatorOrganization] | None
+nf2.is_based_on    # list[BasedOnWork] | None (upstream works, schema.org isBasedOn)
 nf2.license        # str | None
 
 # Inputs — always a list, shorthands expanded
@@ -442,6 +443,7 @@ from gxformat2.schema.gxformat2 import (
     WorkflowStepOutput,      # Step output (id)
     CreatorPerson,           # Creator with name, identifier, ...
     CreatorOrganization,     # Organization creator
+    BasedOnWork,             # Upstream work (is_based_on entry)
     Report,                  # Invocation report template
 )
 

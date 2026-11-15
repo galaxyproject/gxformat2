@@ -20,6 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, SerializeAsA
 
 from gxformat2.schema._input_parameter import input_parameter_class
 from gxformat2.schema.gxformat2 import (
+    BasedOnWork,
     BaseInputParameter,
     CreatorOrganization,
     CreatorPerson,
@@ -237,6 +238,7 @@ class NormalizedFormat2(_DictMixin, BaseModel):
     report: Report | None = Field(default=None)
     tags: list[str] = Field(default_factory=list)
     creator: list[CreatorPerson | CreatorOrganization] | None = Field(default=None)
+    is_based_on: list[BasedOnWork] | None = Field(default=None)
     license: str | None = Field(default=None)
     release: str | None = Field(default=None)
     uuid: str | None = Field(default=None)
@@ -392,6 +394,7 @@ def _normalize_workflow(wf: GalaxyWorkflow, strict_structure: bool = False) -> N
         report=wf.report,
         tags=wf.tags or [],
         creator=wf.creator,
+        is_based_on=wf.is_based_on,
         license=wf.license,
         release=wf.release,
         uuid=wf.uuid,

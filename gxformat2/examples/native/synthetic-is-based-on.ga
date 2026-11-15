@@ -1,0 +1,70 @@
+{
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "name": "nf-core demo port",
+    "annotation": "A Galaxy port of nf-core/demo.",
+    "license": "MIT",
+    "creator": [
+        {
+            "class": "Person",
+            "name": "Galaxy Porter"
+        }
+    ],
+    "is_based_on": [
+        {
+            "class": "SoftwareSourceCode",
+            "name": "nf-core/demo",
+            "url": "https://github.com/nf-core/demo",
+            "version": "1.2.0",
+            "identifier": "https://doi.org/10.5281/zenodo.12192442",
+            "license": "MIT",
+            "creator": [
+                {
+                    "class": "Person",
+                    "name": "Christopher Hakkaart",
+                    "identifier": "https://orcid.org/0000-0001-5007-2684"
+                },
+                {
+                    "class": "Organization",
+                    "name": "nf-core"
+                }
+            ]
+        },
+        {
+            "class": "ComputationalWorkflow",
+            "name": "Upstream CWL workflow",
+            "alternateName": "upstream-cwl",
+            "description": "A second upstream work with a non-default schema.org class.",
+            "url": "https://example.org/workflows/upstream"
+        }
+    ],
+    "steps": {
+        "0": {
+            "id": 0,
+            "type": "data_input",
+            "label": "reads",
+            "tool_state": "{}",
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
+        },
+        "1": {
+            "id": 1,
+            "type": "tool",
+            "label": "cat",
+            "tool_id": "cat1",
+            "tool_version": "1.0",
+            "tool_state": "{\"input1\": {\"__class__\": \"ConnectedValue\"}}",
+            "input_connections": {
+                "input1": {
+                    "id": 0,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": []
+        }
+    }
+}

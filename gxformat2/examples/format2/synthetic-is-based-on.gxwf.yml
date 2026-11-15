@@ -1,0 +1,37 @@
+class: GalaxyWorkflow
+label: nf-core demo port
+doc: A Galaxy port of nf-core/demo.
+license: MIT
+creator:
+  - class: Person
+    name: Galaxy Porter
+is_based_on:
+  - class: SoftwareSourceCode
+    name: nf-core/demo
+    url: https://github.com/nf-core/demo
+    version: 1.2.0
+    identifier: https://doi.org/10.5281/zenodo.12192442
+    license: MIT
+    creator:
+      - class: Person
+        name: Christopher Hakkaart
+        identifier: https://orcid.org/0000-0001-5007-2684
+      - class: Organization
+        name: nf-core
+  - class: ComputationalWorkflow
+    name: Upstream CWL workflow
+    alternateName: upstream-cwl
+    description: A second upstream work with a non-default schema.org class.
+    url: https://example.org/workflows/upstream
+inputs:
+  reads:
+    type: data
+outputs:
+  out_file1:
+    outputSource: cat/out_file1
+steps:
+  cat:
+    tool_id: cat1
+    tool_version: "1.0"
+    in:
+      input1: reads

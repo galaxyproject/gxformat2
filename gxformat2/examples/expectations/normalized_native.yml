@@ -54,3 +54,24 @@ test_extra_position_fields_stripped:
       value_absent: true
     - path: [steps, "1", position, right]
       value_absent: true
+
+test_normalized_native_is_based_on:
+  fixture: synthetic-is-based-on.ga
+  operation: normalized_native
+  assertions:
+    - path: [is_based_on, $length]
+      value: 2
+    - path: [is_based_on, 0, class_]
+      value: SoftwareSourceCode
+    - path: [is_based_on, 0, name]
+      value: nf-core/demo
+    - path: [is_based_on, 0, version]
+      value: "1.2.0"
+    - path: [is_based_on, 0, creator, $length]
+      value: 2
+    - path: [is_based_on, 0, creator, 1, class_]
+      value: Organization
+    - path: [is_based_on, 1, class_]
+      value: ComputationalWorkflow
+    - path: [creator, $length]
+      value: 1
