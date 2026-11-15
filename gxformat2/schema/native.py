@@ -232,6 +232,28 @@ Corresponds to a `schema.org Organization <https://schema.org/Organization>`_.""
 
     class_: Literal["Organization"] = Field(default="Organization", alias="class", description="Creator type discriminator (``Organization``).")
 
+class BasedOnWork(BaseModel):
+    """An upstream work this workflow was derived or adapted from, for instance
+an nf-core pipeline ported to Galaxy. Corresponds to the target of a
+`schema.org isBasedOn <https://schema.org/isBasedOn>`_ relation.
+
+The authors of the upstream work belong in this record's ``creator``,
+not in the workflow-level ``creator``, which credits the people who
+wrote the Galaxy workflow."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    name: None | str = Field(default=None, description="Name of the upstream work (e.g. ``nf-core/demo``).")
+    class_: None | str = Field(default=None, alias="class", description="The `schema.org <https://schema.org/>`_ class of the upstream work, e.g. ``SoftwareSourceCode`` or ``ComputationalWorkflow``. Galaxy treats a missing value as ``SoftwareSourceCode``.")
+    alternateName: None | str = Field(default=None, description="An alternate name or alias of the upstream work.")
+    description: None | str = Field(default=None, description="A short description of the upstream work.")
+    identifier: None | str = Field(default=None, description="Persistent identifier of the upstream work, typically a DOI URL (e.g. ``https://doi.org/10.5281/zenodo.12192442``).")
+    image: None | str = Field(default=None, description="HTTP(S) URL of an image or logo for the upstream work.")
+    url: None | str = Field(default=None, description="HTTP(S) URL of the upstream work, such as its source repository.")
+    version: None | str = Field(default=None, description="Version of the upstream work the workflow was derived from (e.g. ``1.2.0``).")
+    license: None | str = Field(default=None, description="SPDX license identifier of the upstream work (e.g. ``MIT``).")
+    creator: list[CreatorPerson | CreatorOrganization] | None = Field(default=None, description="Creator(s) of the upstream work. An array of schema.org CreatorPerson or CreatorOrganization objects, distinguished by the ``class`` field (``Person`` or ``Organization``).")
+
 class NativeStepInput(BaseModel):
     """Describes an input parameter on a step. This is metadata about the input,
 not the connection wiring (which is in ``input_connections``)."""
@@ -450,6 +472,7 @@ added without version bumps."""
     release: None | str = Field(default=None, description="Semantic version for published workflows.")
     # Discriminated union on 'class'
     creator: list[Annotated[Annotated[CreatorPerson, Tag("CreatorPerson")] | Annotated[CreatorOrganization, Tag("CreatorOrganization")], Discriminator(_discriminate_creator)]] | None = None
+    is_based_on: list[BasedOnWork] | None = Field(default=None, description="Upstream works this workflow was derived or adapted from (`schema.org isBasedOn <https://schema.org/isBasedOn>`_), e.g. an nf-core pipeline ported to Galaxy. An array of BasedOnWork objects. Galaxy...")
     report: None | NativeReport = Field(default=None, description="Workflow invocation report template.")
     readme: None | str = Field(default=None, description="Detailed workflow description in Markdown.")
     help: None | str = Field(default=None, description="Help text in Markdown.")
@@ -480,6 +503,7 @@ ToolShedRepository.model_rebuild()
 BaseCreator.model_rebuild()
 CreatorPerson.model_rebuild()
 CreatorOrganization.model_rebuild()
+BasedOnWork.model_rebuild()
 NativeStepInput.model_rebuild()
 NativeStepOutput.model_rebuild()
 NativeWorkflowOutput.model_rebuild()

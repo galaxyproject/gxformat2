@@ -625,6 +625,18 @@ $graph:
     A workflow creator, either a person or organization. Dispatched via
     the ``class`` field (``Person`` or ``Organization``).
 
+# Like NativeCreator: ``is_based_on`` is typed ``Any``, so this union only
+# exists to render the shared BasedOnWork record under NativeGalaxyWorkflow.
+- name: NativeBasedOnWork
+  type: union
+  names:
+    - gxformat2common:BasedOnWork
+  docParent: "#NativeGalaxyWorkflow"
+  docChild:
+    - gxformat2common:BasedOnWork
+  doc: |
+    An upstream work the workflow was derived from (schema.org ``isBasedOn``).
+
 - name: NativeSourceMetadata
   type: record
   docParent: "#NativeGalaxyWorkflow"
@@ -726,6 +738,7 @@ $graph:
         Internal revision counter.
     - name: license
       type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/license"
       doc: |
         SPDX license identifier (e.g. ``"MIT"``, ``"CC-BY-4.0"``).
     - name: release
@@ -737,13 +750,22 @@ $graph:
       pydantic:type: "list[CreatorPerson | CreatorOrganization] | None"
       pydantic:discriminator_field: "class"
       pydantic:discriminator_map: '{"Person": "CreatorPerson", "Organization": "CreatorOrganization"}'
-      jsonldPredicate:
-        _id: "gxnative:NativeGalaxyWorkflow/creator"
-        noLinkCheck: true
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/creator"
       doc: |
         Creator(s) of this workflow. An array of schema.org
         CreatorPerson or CreatorOrganization objects,
         dispatched via the ``class`` field (``Person`` or ``Organization``).
+    - name: is_based_on
+      type: Any?
+      pydantic:type: "list[BasedOnWork] | None"
+      jsonldPredicate:
+        _id: "gxnative:NativeGalaxyWorkflow/is_based_on"
+        noLinkCheck: true
+      doc: |
+        Upstream works this workflow was derived or adapted from
+        (`schema.org isBasedOn <https://schema.org/isBasedOn>`_), e.g. an
+        nf-core pipeline ported to Galaxy. An array of BasedOnWork objects.
+        Galaxy writes this key only when the list is non-empty.
     - name: report
       type: NativeReport?
       doc: |

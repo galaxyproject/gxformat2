@@ -111,6 +111,13 @@ $graph:
       doc: |
         Workflow creators. Can be schema.org Person
         (https://schema.org/Person) or Organization entities.
+    - name: is_based_on
+      type: Any?
+      pydantic:type: "list[BasedOnWork] | None"
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/is_based_on"
+      doc: |
+        Upstream works this workflow was derived or adapted from
+        (schema.org isBasedOn, https://schema.org/isBasedOn).
     - name: license
       type: string?
       jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/license"

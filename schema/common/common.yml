@@ -392,3 +392,83 @@ $graph:
         "_type": "@vocab"
       doc: |
         Creator type discriminator (``Organization``).
+
+# --- Upstream works (schema.org isBasedOn) ---
+# Fields reuse the predicates other records already bind to the same short
+# names (``name``, ``url``, ``license``, ``creator``...), since a JSON-LD
+# context maps each term to a single IRI.
+
+- name: BasedOnWork
+  type: record
+  doc: |
+    An upstream work this workflow was derived or adapted from, for instance
+    an nf-core pipeline ported to Galaxy. Corresponds to the target of a
+    `schema.org isBasedOn <https://schema.org/isBasedOn>`_ relation.
+
+    The authors of the upstream work belong in this record's ``creator``,
+    not in the workflow-level ``creator``, which credits the people who
+    wrote the Galaxy workflow.
+  fields:
+    - name: class
+      type: string?
+      jsonldPredicate:
+        "_id": "@type"
+        "_type": "@vocab"
+      doc: |
+        The `schema.org <https://schema.org/>`_ class of the upstream work,
+        e.g. ``SoftwareSourceCode`` or ``ComputationalWorkflow``. Galaxy
+        treats a missing value as ``SoftwareSourceCode``.
+    - name: name
+      type: string?
+      jsonldPredicate: "@id"
+      doc: |
+        Name of the upstream work (e.g. ``nf-core/demo``).
+    - name: alternateName
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:Creator/alternateName"
+      doc: |
+        An alternate name or alias of the upstream work.
+    - name: description
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepInput/description"
+      doc: |
+        A short description of the upstream work.
+    - name: identifier
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/gxformat2common#BaseCreator/identifier"
+      doc: |
+        Persistent identifier of the upstream work, typically a DOI URL
+        (e.g. ``https://doi.org/10.5281/zenodo.12192442``).
+    - name: image
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:Creator/image"
+      doc: |
+        HTTP(S) URL of an image or logo for the upstream work.
+    - name: url
+      type: string?
+      jsonldPredicate:
+        _id: "gxformat2common:Creator/url"
+      doc: |
+        HTTP(S) URL of the upstream work, such as its source repository.
+    - name: version
+      type: string?
+      jsonldPredicate:
+        _id: "https://galaxyproject.org/gxformat2/native_v0_1#NativeGalaxyWorkflow/version"
+      doc: |
+        Version of the upstream work the workflow was derived from
+        (e.g. ``1.2.0``).
+    - name: license
+      type: string?
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/license"
+      doc: |
+        SPDX license identifier of the upstream work (e.g. ``MIT``).
+    - name: creator
+      type: Any?
+      pydantic:type: "list[CreatorPerson | CreatorOrganization] | None"
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/creator"
+      doc: |
+        Creator(s) of the upstream work. An array of schema.org
+        CreatorPerson or CreatorOrganization objects, distinguished by the
+        ``class`` field (``Person`` or ``Organization``).

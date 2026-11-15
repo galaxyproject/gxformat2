@@ -290,6 +290,28 @@ Corresponds to a `schema.org Organization <https://schema.org/Organization>`_.""
 
     class_: Literal["Organization"] = Field(default="Organization", alias="class", description="Creator type discriminator (``Organization``).")
 
+class BasedOnWork(BaseModel):
+    """An upstream work this workflow was derived or adapted from, for instance
+an nf-core pipeline ported to Galaxy. Corresponds to the target of a
+`schema.org isBasedOn <https://schema.org/isBasedOn>`_ relation.
+
+The authors of the upstream work belong in this record's ``creator``,
+not in the workflow-level ``creator``, which credits the people who
+wrote the Galaxy workflow."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    name: None | str = Field(default=None, description="Name of the upstream work (e.g. ``nf-core/demo``).")
+    class_: None | str = Field(default=None, alias="class", description="The `schema.org <https://schema.org/>`_ class of the upstream work, e.g. ``SoftwareSourceCode`` or ``ComputationalWorkflow``. Galaxy treats a missing value as ``SoftwareSourceCode``.")
+    alternateName: None | str = Field(default=None, description="An alternate name or alias of the upstream work.")
+    description: None | str = Field(default=None, description="A short description of the upstream work.")
+    identifier: None | str = Field(default=None, description="Persistent identifier of the upstream work, typically a DOI URL (e.g. ``https://doi.org/10.5281/zenodo.12192442``).")
+    image: None | str = Field(default=None, description="HTTP(S) URL of an image or logo for the upstream work.")
+    url: None | str = Field(default=None, description="HTTP(S) URL of the upstream work, such as its source repository.")
+    version: None | str = Field(default=None, description="Version of the upstream work the workflow was derived from (e.g. ``1.2.0``).")
+    license: None | str = Field(default=None, description="SPDX license identifier of the upstream work (e.g. ``MIT``).")
+    creator: list[CreatorPerson | CreatorOrganization] | None = Field(default=None, description="Creator(s) of the upstream work. An array of schema.org CreatorPerson or CreatorOrganization objects, distinguished by the ``class`` field (``Person`` or ``Organization``).")
+
 class BaseInputParameter(InputParameter, HasStepPosition):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
@@ -607,6 +629,7 @@ workflow definition schema the attribute should be called `label`."""
     tags: list[str] | None = Field(default=None, description="Tags for the workflow.")
     comments: list[TextComment | MarkdownComment | FrameComment | FreehandComment] | dict[str, TextComment | MarkdownComment | FrameComment | FreehandComment] | None = Field(default=None, description="Visual annotations for the workflow editor canvas. Comments are non-functional and do not affect workflow execution. May be specified as a list or as a mapping keyed by label.")
     creator: list[CreatorPerson | CreatorOrganization] | None = Field(default=None, description="Workflow creators. Can be schema.org Person (https://schema.org/Person) or Organization (https://schema.org/Organization) entities.")
+    is_based_on: list[BasedOnWork] | None = Field(default=None, description="Upstream works this workflow was derived or adapted from (schema.org isBasedOn, https://schema.org/isBasedOn), e.g. an nf-core pipeline ported to Galaxy. Each entry has an optional schema.org ``cla...")
     license: None | str = Field(default=None, description="Must be a valid license listed at https://spdx.org/licenses/")
     release: None | str = Field(default=None, description="If listed should correspond to the release of the workflow in its source reposiory.")
 
@@ -649,6 +672,7 @@ all TODO sentinels and planning fields have been resolved and stripped."""
     tags: list[str] | None = Field(default=None, description="Tags for the workflow.")
     comments: list[TextComment | MarkdownComment | FrameComment | FreehandComment] | dict[str, TextComment | MarkdownComment | FrameComment | FreehandComment] | None = Field(default=None, description="Visual annotations for the workflow editor canvas. Comments are non-functional and do not affect workflow execution. May be specified as a list or as a mapping keyed by label.")
     creator: list[CreatorPerson | CreatorOrganization] | None = Field(default=None, description="Workflow creators. Can be schema.org Person (https://schema.org/Person) or Organization entities.")
+    is_based_on: list[BasedOnWork] | None = Field(default=None, description="Upstream works this workflow was derived or adapted from (schema.org isBasedOn, https://schema.org/isBasedOn).")
     license: None | str = Field(default=None, description="Must be a valid license listed at https://spdx.org/licenses/")
     release: None | str = Field(default=None, description="If listed should correspond to the release of the workflow in its source reposiory.")
 
@@ -677,6 +701,7 @@ ToolShedRepository.model_rebuild()
 BaseCreator.model_rebuild()
 CreatorPerson.model_rebuild()
 CreatorOrganization.model_rebuild()
+BasedOnWork.model_rebuild()
 BaseInputParameter.model_rebuild()
 BaseDataParameter.model_rebuild()
 WorkflowDataParameter.model_rebuild()

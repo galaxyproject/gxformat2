@@ -961,6 +961,18 @@ $graph:
       doc: |
         Workflow creators. Can be schema.org Person (https://schema.org/Person)
         or Organization (https://schema.org/Organization) entities.
+    - name: is_based_on
+      type: Any?
+      pydantic:type: "list[BasedOnWork] | None"
+      doc: |
+        Upstream works this workflow was derived or adapted from
+        (schema.org isBasedOn, https://schema.org/isBasedOn), e.g. an nf-core
+        pipeline ported to Galaxy. Each entry has an optional schema.org
+        ``class`` (default ``SoftwareSourceCode``), ``name``, ``alternateName``,
+        ``description``, ``identifier``, ``image``, ``url``, ``version``,
+        ``license`` (SPDX) and ``creator`` (a list of Person or Organization
+        entities, as for the workflow-level ``creator``). Credit upstream
+        authors here rather than in the workflow-level ``creator``.
     - name: license
       type: string?
       doc: Must be a valid license listed at https://spdx.org/licenses/
