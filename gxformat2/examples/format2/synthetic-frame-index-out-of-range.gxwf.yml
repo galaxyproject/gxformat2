@@ -1,0 +1,20 @@
+class: GalaxyWorkflow
+inputs:
+  input1:
+    type: data
+outputs:
+  out1:
+    outputSource: cat_step/out_file1
+steps:
+  cat_step:
+    tool_id: cat1
+    in:
+      input1: input1
+comments:
+  - type: frame
+    title: Range
+    color: none
+    position: [300, 0]
+    size: [260, 180]
+    contains_steps: [1, "2", 999, -1]
+    contains_comments: [1]
