@@ -10,9 +10,9 @@ from urllib.parse import urlparse
 
 IdentifierScheme = Literal["ORCID", "ROR"]
 
-_ORCID_PATTERN = re.compile(r"\d{4}-\d{4}-\d{4}-\d{3}[\dX]")
+_ORCID_PATTERN = re.compile(r"[0-9]{4}-[0-9]{4}-[0-9]{4}-[0-9]{3}[0-9X]")
 _CROCKFORD_BASE32 = "0123456789abcdefghjkmnpqrstvwxyz"
-_ROR_PATTERN = re.compile(rf"0[{_CROCKFORD_BASE32}]{{6}}\d{{2}}")
+_ROR_PATTERN = re.compile(rf"0[{_CROCKFORD_BASE32}]{{6}}[0-9]{{2}}")
 
 
 def orcid_checksum_valid(orcid: str) -> bool:
@@ -40,11 +40,13 @@ class _Scheme:
     pattern: re.Pattern[str]
     normalize: Callable[[str], str]
     checksum_valid: Callable[[str], bool]
+    # Whether a bare iD is only recognised if its check digits match, as its format alone is not distinctive.
+    bare_needs_checksum: bool
 
 
 _SCHEMES = (
-    _Scheme("ORCID", "orcid.org", _ORCID_PATTERN, str.upper, orcid_checksum_valid),
-    _Scheme("ROR", "ror.org", _ROR_PATTERN, str.lower, ror_checksum_valid),
+    _Scheme("ORCID", "orcid.org", _ORCID_PATTERN, str.upper, orcid_checksum_valid, False),
+    _Scheme("ROR", "ror.org", _ROR_PATTERN, str.lower, ror_checksum_valid, True),
 )
 
 
@@ -71,10 +73,15 @@ def parse_identifier(identifier: str) -> ParsedIdentifier | None:
     """Recognise an ORCID or ROR iD; return ``None`` for any other identifier."""
     identifier = identifier.strip()
     for scheme in _SCHEMES:
-        bare = scheme.normalize(identifier)
-        if scheme.pattern.fullmatch(bare):
-            return ParsedIdentifier(scheme.name, bare, False, True, scheme.checksum_valid(bare))
-    parsed_url = urlparse(identifier if "://" in identifier else f"https://{identifier}")
+        bare_id = scheme.normalize(identifier)
+        if scheme.pattern.fullmatch(bare_id):
+            checksum_valid = scheme.checksum_valid(bare_id)
+            if checksum_valid or not scheme.bare_needs_checksum:
+                return ParsedIdentifier(scheme.name, bare_id, False, True, checksum_valid)
+    try:
+        parsed_url = urlparse(identifier if "://" in identifier else f"https://{identifier}")
+    except ValueError:  # e.g. "Invalid IPv6 URL"
+        return None
     host = parsed_url.netloc.lower().removeprefix("www.")
     for scheme in _SCHEMES:
         if host == scheme.host:

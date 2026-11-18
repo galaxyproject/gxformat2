@@ -130,6 +130,7 @@ def test_default_context_level_is_warn():
     ],
 )
 def test_print_messages_reports_messages_at_or_above_level(capsys, level, printed):
+    # found_errors and found_warns do not depend on the reporting level.
     ctx = LintContext(level=level)
     ctx.error("an error")
     ctx.warn("a warning")
@@ -138,4 +139,4 @@ def test_print_messages_reports_messages_at_or_above_level(capsys, level, printe
     out = capsys.readouterr().out
     assert {label for label in ("ERROR", "WARNING", "INFO") if f".. {label}: " in out} == printed
     assert ctx.found_errors
-    assert ctx.found_warns is (level <= LintLevel.WARN)
+    assert ctx.found_warns

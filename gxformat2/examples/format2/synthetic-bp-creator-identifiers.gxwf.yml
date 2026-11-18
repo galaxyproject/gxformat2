@@ -26,6 +26,9 @@ creator:
   - class: Person
     name: Not a URI
     identifier: josiah
+  - class: Person
+    name: Malformed URL
+    identifier: "https://[orcid.org/x"
   - class: Organization
     name: Brown University
     identifier: https://ror.org/05gq02987
@@ -43,6 +46,12 @@ creator:
   - class: Organization
     name: Other organisation identifier
     identifier: acme
+  - class: Organization
+    name: Registry number
+    identifier: "012345678"
+  - class: Organization
+    name: Malformed organisation URL
+    identifier: "https://[ror.org/x"
 inputs: {}
 outputs: {}
 steps: {}

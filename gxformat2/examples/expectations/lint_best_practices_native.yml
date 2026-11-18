@@ -76,7 +76,8 @@ test_bp_native_untyped_params:
       value_any_contains: "untyped parameter in the post-job actions. ${Haplotype} in TagDatasetAction of output out_file1"
 
 # One creator per identifier case; the valid ORCID and ROR URIs and the
-# organisation's non-URI identifier lint clean.
+# organisations' unrecognised identifiers (including a malformed URL) lint clean.
+# The {linter: ...} lookups pin the rule of each message, using its first creator.
 test_bp_native_creator_identifiers:
   fixture: synthetic-bp-creator-identifiers.ga
   operation: lint_best_practices_native
@@ -84,25 +85,27 @@ test_bp_native_creator_identifiers:
     - path: [error_count]
       value: 0
     - path: [warn_count]
-      value: 9
+      value: 10
     - path: [info_count]
       value: 2
-    - path: [infos]
-      value_any_contains: 'Person creator "No identifier" has no identifier; consider adding an ORCID iD'
+    - path: [infos, {linter: CreatorMissingIdentifier}]
+      value_contains: 'Person creator "No identifier" has no identifier; consider adding an ORCID iD'
     - path: [infos]
       value_any_contains: 'Organization creator "No organisation identifier" has no identifier; consider adding a ROR iD'
-    - path: [warnings]
-      value_any_contains: 'Creator identifier "0000-0002-1825-0097" should be a fully qualified URI: "https://orcid.org/0000-0002-1825-0097".'
-    - path: [warnings]
-      value_any_contains: 'Creator identifier "http://www.orcid.org/0000-0002-1825-0097" should use the canonical form "https://orcid.org/0000-0002-1825-0097".'
-    - path: [warnings]
-      value_any_contains: 'Creator identifier "https://orcid.org/0000-0002-1825-0098" is not a valid ORCID iD: its check digits do not match.'
+    - path: [warnings, {linter: CreatorIdentifierNotURI}]
+      value_contains: 'Creator identifier "0000-0002-1825-0097" should be a fully qualified URI: "https://orcid.org/0000-0002-1825-0097".'
+    - path: [warnings, {linter: CreatorIdentifierNotCanonical}]
+      value_contains: 'Creator identifier "http://www.orcid.org/0000-0002-1825-0097" should use the canonical form "https://orcid.org/0000-0002-1825-0097".'
+    - path: [warnings, {linter: CreatorIdentifierInvalid}]
+      value_contains: 'Creator identifier "https://orcid.org/0000-0002-1825-0098" is not a valid ORCID iD: its check digits do not match.'
     - path: [warnings]
       value_any_contains: 'Creator identifier "https://orcid.org/0000-0002-1825" is not a valid ORCID iD ('
-    - path: [warnings]
-      value_any_contains: 'Person creator "ROR as person" has a ROR iD as identifier, but ROR identifies organisations'
+    - path: [warnings, {linter: CreatorIdentifierTypeMismatch}]
+      value_contains: 'Person creator "ROR as person" has a ROR iD as identifier, but ROR identifies organisations'
     - path: [warnings]
       value_any_contains: 'Creator identifier "josiah" should be a fully qualified URI, for example'
+    - path: [warnings]
+      value_any_contains: 'Creator identifier "https://[orcid.org/x" should be a fully qualified URI, for example'
     - path: [warnings]
       value_any_contains: 'Creator identifier "05gq02987" should be a fully qualified URI: "https://ror.org/05gq02987".'
     - path: [warnings]

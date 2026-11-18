@@ -333,6 +333,14 @@ def test_lint_info_messages_never_fail(tmp_path, capsys, level, printed):
     assert ('.. INFO: Person creator "Josiah Carberry" has no identifier' in capsys.readouterr().out) is printed
 
 
+@pytest.mark.parametrize("level", ["warn", "error"])
+def test_lint_warnings_fail_at_any_level(tmp_path, capsys, level):
+    path = tmp_path / "workflow.gxwf.yml"
+    path.write_text(BASIC_WORKFLOW)  # no license
+    assert main(["lint", "--level", level, str(path)]) == 1
+    assert (".. WARNING: Workflow does not specify a license." in capsys.readouterr().out) is (level == "warn")
+
+
 def test_lint_examples():
     for file_name in os.listdir(TEST_LINT_EXAMPLES):
         file_path = os.path.join(TEST_LINT_EXAMPLES, file_name)

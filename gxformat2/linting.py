@@ -149,14 +149,17 @@ class LintContext:
         message_list.append(LintMessage(message, level=level, linter=linter_name, json_pointer=pointer))
 
     def print_messages(self) -> None:
-        """Print error messages and update state at the end of linting."""
+        """Print the messages at or above ``level`` and update state at the end of linting.
+
+        ``found_errors`` and ``found_warns`` reflect all messages, whatever ``level`` is.
+        """
+        self.found_errors = bool(self.error_messages)
+        self.found_warns = bool(self.warn_messages)
         for message in self.error_messages:
-            self.found_errors = True
             print(f".. ERROR: {message}")
 
         if self.level <= LintLevel.WARN:
             for message in self.warn_messages:
-                self.found_warns = True
                 print(f".. WARNING: {message}")
 
         if self.level <= LintLevel.INFO:

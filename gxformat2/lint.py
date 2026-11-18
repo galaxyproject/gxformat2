@@ -458,7 +458,7 @@ def _lint_creator_identifier(lint_context, creator: CreatorPerson | CreatorOrgan
     parsed = parse_identifier(identifier)
     if parsed is None:
         # Schema.org identifiers may be any text; only a person's is expected to be a URI (an ORCID).
-        if is_person and not urlparse(identifier).scheme:
+        if is_person and not _has_uri_scheme(identifier):
             lint_context.warn(
                 f'Creator identifier "{identifier}" should be a fully qualified URI, '
                 f'for example "{EXAMPLE_ORCID_URI}".',
@@ -493,6 +493,13 @@ def _lint_creator_identifier(lint_context, creator: CreatorPerson | CreatorOrgan
             f'Creator identifier "{identifier}" should use the canonical form "{parsed.canonical}".',
             linter=CreatorIdentifierNotCanonical,
         )
+
+
+def _has_uri_scheme(identifier: str) -> bool:
+    try:
+        return bool(urlparse(identifier).scheme)
+    except ValueError:  # e.g. "Invalid IPv6 URL"
+        return False
 
 
 def lint_best_practices(lint_context, nf2: NormalizedFormat2):
@@ -777,7 +784,11 @@ def _parser():
         "--level",
         choices=[level.name.lower() for level in LintLevel],
         default=LintLevel.WARN.name.lower(),
-        help="Report messages at this level and above; info messages (suggestions) never fail linting.",
+        help=(
+            "Report messages at this level and above. "
+            "The exit code does not depend on it: warnings always fail linting, "
+            "info messages (suggestions) never do."
+        ),
     )
     parser.add_argument("path", metavar="PATH", type=str, help="workflow path")
     return parser
