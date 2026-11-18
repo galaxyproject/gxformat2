@@ -1193,7 +1193,7 @@ def _build_native_workflow(
         license=wf.license,
         release=wf.release,
         creator=_convert_creators_to_native(wf.creator) if wf.creator else None,
-        is_based_on=_convert_based_on_to_native(wf.is_based_on) if wf.is_based_on else None,
+        is_based_on=_convert_based_on_to_native(wf.is_based_on),
         report=NativeReport(markdown=wf.report.markdown) if wf.report else None,
         steps=native_steps,
         comments=comments,
@@ -1795,7 +1795,9 @@ def _convert_creators_to_native(
     return result
 
 
-def _convert_based_on_to_native(works: list[BasedOnWork]) -> list[NativeBasedOnWork]:
+def _convert_based_on_to_native(works: list[BasedOnWork] | None) -> list[NativeBasedOnWork] | None:
+    if not works:
+        return None
     return [NativeBasedOnWork.model_validate(w.model_dump(by_alias=True, exclude_none=True)) for w in works]
 
 
