@@ -4,8 +4,8 @@
     "creator": [
         {
             "class": "Person",
-            "identifier": "https://orcid.org/0000-0000-0000-0000",
-            "name": "Test Person"
+            "identifier": "https://orcid.org/0000-0002-1825-0097",
+            "name": "Josiah Carberry"
         }
     ],
     "format-version": "0.1",

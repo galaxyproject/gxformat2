@@ -324,6 +324,13 @@
     - tests/test_lint_best_practices.py
     - tests/test_interop_tests.py
 
+- file: native/synthetic-bp-creator-identifiers.ga
+  origin: synthetic
+  format: native
+  description: One creator per case of the creator identifier lints (ORCID and ROR iDs).
+  tests:
+    - tests/test_interop_tests.py
+
 - file: native/synthetic-untyped-params.ga
   origin: synthetic
   format: native
@@ -1093,6 +1100,13 @@
     - tests/test_schema_rules_catalog.py
 
 # --- best practices lint fixture files ---
+
+- file: format2/synthetic-bp-creator-identifiers.gxwf.yml
+  origin: synthetic
+  format: format2
+  description: One creator per case of the creator identifier lints (ORCID and ROR iDs).
+  tests:
+    - tests/test_interop_tests.py
 
 - file: format2/synthetic-bp-no-annotation.gxwf.yml
   origin: synthetic

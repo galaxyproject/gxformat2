@@ -1,5 +1,5 @@
 # Native workflow linting
-# lint operations return {errors: [...], warnings: [...], error_count: N, warn_count: N}
+# lint operations return {errors: [...], warnings: [...], infos: [...], error_count: N, warn_count: N, info_count: N}
 
 test_lint_native_unicycler_clean:
   fixture: real-unicycler-assembly.ga

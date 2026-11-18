@@ -292,8 +292,9 @@ $graph:
     - name: identifier
       type: string?
       doc: |
-        Persistent identifier, typically an ORCID URL
-        (e.g. ``https://orcid.org/0000-0001-2345-6789``) or bare ORCID.
+        Persistent identifier, as a URI: typically an ORCID iD for a
+        ``Person`` (e.g. ``https://orcid.org/0000-0002-1825-0097``) and a ROR iD
+        for an ``Organization`` (e.g. ``https://ror.org/05gq02987``).
     - name: url
       type: string?
       jsonldPredicate:
