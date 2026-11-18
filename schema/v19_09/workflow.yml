@@ -964,6 +964,9 @@ $graph:
     - name: is_based_on
       type: Any?
       pydantic:type: "list[BasedOnWork] | None"
+      jsonldPredicate:
+        _id: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/is_based_on"
+        noLinkCheck: true
       doc: |
         Upstream works this workflow was derived or adapted from
         (schema.org isBasedOn, https://schema.org/isBasedOn), e.g. an nf-core

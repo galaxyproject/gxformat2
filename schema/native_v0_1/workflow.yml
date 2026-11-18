@@ -759,7 +759,7 @@ $graph:
       type: Any?
       pydantic:type: "list[BasedOnWork] | None"
       jsonldPredicate:
-        _id: "gxnative:NativeGalaxyWorkflow/is_based_on"
+        _id: "https://galaxyproject.org/gxformat2/v19_09#GalaxyWorkflow/is_based_on"
         noLinkCheck: true
       doc: |
         Upstream works this workflow was derived or adapted from
