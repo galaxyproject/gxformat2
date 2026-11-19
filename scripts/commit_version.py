@@ -17,7 +17,7 @@ def main(argv):
         history_path = os.path.join(PROJECT_DIRECTORY, "HISTORY.rst")
         with open(history_path) as f:
             history = f.read()
-        today = datetime.datetime.now(tz=datetime.timezone.utc)
+        today = datetime.datetime.now(tz=datetime.UTC)
         today_str = today.strftime("%Y-%m-%d")
         history = history.replace(".dev0", f" ({today_str})")
         with open(history_path, "w") as f:
