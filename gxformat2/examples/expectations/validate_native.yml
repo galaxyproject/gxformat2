@@ -227,3 +227,22 @@ test_bad_format_version_rejected_native_strict:
   fixture: synthetic-lint-bad-format-version.ga
   operation: validate_native_strict
   expect_error: true
+
+# --- is_based_on (schema.org isBasedOn upstream works) ---
+
+test_is_based_on_valid_native:
+  fixture: synthetic-is-based-on.ga
+  operation: validate_native
+
+test_is_based_on_valid_native_strict:
+  fixture: synthetic-is-based-on.ga
+  operation: validate_native_strict
+
+test_is_based_on_extra_field_valid_native_lax:
+  fixture: synthetic-is-based-on-extra-field.ga
+  operation: validate_native
+
+test_is_based_on_extra_field_rejected_native_strict:
+  fixture: synthetic-is-based-on-extra-field.ga
+  operation: validate_native_strict
+  expect_error: true

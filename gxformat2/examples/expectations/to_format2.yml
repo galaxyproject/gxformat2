@@ -203,3 +203,60 @@ test_to_format2_multiple_text_validators:
       value: [string]
     - path: [inputs, 0, validators, 0, expression]
       value: "^S[0-9]+$"
+
+test_to_format2_is_based_on:
+  fixture: synthetic-is-based-on.ga
+  operation: to_format2
+  assertions:
+    - path: [is_based_on, $length]
+      value: 2
+    - path: [is_based_on, 0, class_]
+      value: SoftwareSourceCode
+    - path: [is_based_on, 0, name]
+      value: nf-core/demo
+    - path: [is_based_on, 0, version]
+      value: "1.2.0"
+    - path: [is_based_on, 0, identifier]
+      value: https://doi.org/10.5281/zenodo.12192442
+    - path: [is_based_on, 0, url]
+      value: https://github.com/nf-core/demo
+    - path: [is_based_on, 0, license]
+      value: MIT
+    - path: [is_based_on, 0, creator, $length]
+      value: 2
+    - path: [is_based_on, 0, creator, 0, class_]
+      value: Person
+    - path: [is_based_on, 0, creator, 0, identifier]
+      value: https://orcid.org/0000-0001-5007-2684
+    - path: [is_based_on, 0, creator, 1, class_]
+      value: Organization
+    - path: [is_based_on, 0, creator, 1, name]
+      value: nf-core
+    - path: [is_based_on, 1, class_]
+      value: ComputationalWorkflow
+    - path: [is_based_on, 1, description]
+      value_contains: non-default schema.org class
+    # Upstream authors stay out of the workflow-level creator.
+    - path: [creator, $length]
+      value: 1
+    - path: [creator, 0, name]
+      value: Galaxy Porter
+
+test_to_format2_via_native_is_based_on:
+  fixture: synthetic-is-based-on.gxwf.yml
+  operation: to_format2_via_native
+  assertions:
+    - path: [is_based_on, $length]
+      value: 2
+    - path: [is_based_on, 0, name]
+      value: nf-core/demo
+    - path: [is_based_on, 0, version]
+      value: "1.2.0"
+    - path: [is_based_on, 0, creator, $length]
+      value: 2
+    - path: [is_based_on, 0, creator, 1, class_]
+      value: Organization
+    - path: [is_based_on, 1, class_]
+      value: ComputationalWorkflow
+    - path: [is_based_on, 1, alternateName]
+      value: upstream-cwl

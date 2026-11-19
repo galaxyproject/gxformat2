@@ -44,6 +44,7 @@ from ..schema._input_parameter import (
     input_types_declaring,
 )
 from ..schema.gxformat2 import (
+    BasedOnWork,
     BaseInputParameter,
     CreatorOrganization,
     CreatorPerson,
@@ -68,6 +69,7 @@ from ..schema.gxformat2 import (
     WorkflowStepType,
 )
 from ..schema.gxformat2_strict import GalaxyWorkflow as StrictGalaxyWorkflow
+from ..schema.native import BasedOnWork as NativeBasedOnWork
 from ..schema.native import CreatorOrganization as NativeCreatorOrganization
 from ..schema.native import CreatorPerson as NativeCreatorPerson
 from ..schema.native import (
@@ -517,6 +519,7 @@ def _build_format2_workflow(
         report=Report(markdown=wf.report.markdown) if wf.report else None,
         tags=wf.tags,
         creator=_convert_creators(wf.creator),
+        is_based_on=_convert_based_on(wf.is_based_on),
         license=wf.license,
         release=wf.release,
         uuid=wf.uuid,
@@ -953,6 +956,13 @@ def _convert_creators(
     return result
 
 
+def _convert_based_on(native_works: list[NativeBasedOnWork] | None) -> list[BasedOnWork] | None:
+    # Nested creators re-validate into the Format2 creator classes via their ``class``.
+    if not native_works:
+        return None
+    return [BasedOnWork.model_validate(w.model_dump(by_alias=True, exclude_none=True)) for w in native_works]
+
+
 _COMMENT_TYPE_MAP: dict[str, type[TextComment | MarkdownComment | FrameComment | FreehandComment]] = {
     "text": TextComment,
     "markdown": MarkdownComment,
@@ -1183,6 +1193,7 @@ def _build_native_workflow(
         license=wf.license,
         release=wf.release,
         creator=_convert_creators_to_native(wf.creator) if wf.creator else None,
+        is_based_on=_convert_based_on_to_native(wf.is_based_on),
         report=NativeReport(markdown=wf.report.markdown) if wf.report else None,
         steps=native_steps,
         comments=comments,
@@ -1782,6 +1793,12 @@ def _convert_creators_to_native(
         cls = _NATIVE_CREATOR_MAP.get(d.get("class", ""), NativeCreatorPerson)
         result.append(cls.model_validate(d))
     return result
+
+
+def _convert_based_on_to_native(works: list[BasedOnWork] | None) -> list[NativeBasedOnWork] | None:
+    if not works:
+        return None
+    return [NativeBasedOnWork.model_validate(w.model_dump(by_alias=True, exclude_none=True)) for w in works]
 
 
 def _join_doc(doc: str | list[str] | None) -> str | None:

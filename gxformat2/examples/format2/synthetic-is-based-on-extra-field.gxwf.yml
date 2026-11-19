@@ -1,0 +1,11 @@
+class: GalaxyWorkflow
+label: nf-core demo port
+is_based_on:
+  - class: SoftwareSourceCode
+    name: nf-core/demo
+    homepage: https://github.com/nf-core/demo
+inputs:
+  reads:
+    type: data
+outputs: {}
+steps: {}

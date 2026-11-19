@@ -539,3 +539,22 @@ test_multiple_directory_uri_rejected_format2_strict:
   fixture: synthetic-bad-multiple-directory-uri.gxwf.yml
   operation: validate_format2_strict
   expect_error: true
+
+# --- is_based_on (schema.org isBasedOn upstream works) ---
+
+test_is_based_on_valid_format2:
+  fixture: synthetic-is-based-on.gxwf.yml
+  operation: validate_format2
+
+test_is_based_on_valid_format2_strict:
+  fixture: synthetic-is-based-on.gxwf.yml
+  operation: validate_format2_strict
+
+test_is_based_on_extra_field_valid_format2_lax:
+  fixture: synthetic-is-based-on-extra-field.gxwf.yml
+  operation: validate_format2
+
+test_is_based_on_extra_field_rejected_format2_strict:
+  fixture: synthetic-is-based-on-extra-field.gxwf.yml
+  operation: validate_format2_strict
+  expect_error: true

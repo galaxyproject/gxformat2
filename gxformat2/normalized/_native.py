@@ -18,6 +18,7 @@ from pydantic import BaseModel, ConfigDict, Discriminator, Field, field_validato
 from gxformat2.schema.native import (
     _discriminate_comments,
     _discriminate_creator,
+    BasedOnWork,
     CreatorOrganization,
     CreatorPerson,
     NativeFrameComment,
@@ -173,6 +174,7 @@ class NormalizedNativeWorkflow(_DictMixin, BaseModel):
     release: str | None = Field(default=None)
     uuid: str | None = Field(default=None)
     creator: list[NativeCreator] | None = Field(default=None)
+    is_based_on: list[BasedOnWork] | None = Field(default=None)
     report: NativeReport | None = Field(default=None)
     readme: str | None = Field(default=None)
     help: str | None = Field(default=None)
@@ -318,6 +320,7 @@ def _normalize_workflow(wf: NativeGalaxyWorkflow) -> NormalizedNativeWorkflow:
         release=wf.release,
         uuid=wf.uuid,
         creator=wf.creator,
+        is_based_on=wf.is_based_on,
         report=wf.report,
         readme=wf.readme,
         help=wf.help,

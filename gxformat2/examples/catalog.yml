@@ -1486,3 +1486,27 @@
   format: format2
   tests:
     - tests/test_interop_tests.py
+
+- file: native/synthetic-is-based-on.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/synthetic-is-based-on-extra-field.ga
+  origin: synthetic
+  format: native
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-is-based-on.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-is-based-on-extra-field.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
