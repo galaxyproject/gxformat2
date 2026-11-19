@@ -209,6 +209,16 @@ dispatched via the <code>class</code> field (<code>Person</code> or <code>Organi
 </div>
 </div>
 <div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>is_based_on</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[<a href="#BasedOnWork">BasedOnWork</a>] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Upstream works this workflow was derived or adapted from
+(<code>schema.org isBasedOn &lt;https://schema.org/isBasedOn&gt;</code>_), e.g. an
+nf-core pipeline ported to Galaxy. An array of BasedOnWork objects.
+Galaxy writes this key only when the list is non-empty.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>report</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#NativeReport">NativeReport</a></div>
@@ -1209,7 +1219,97 @@ for an <code>Organization</code> (e.g. <code>https://ror.org/05gq02987</code>).<
 <div class="col-xs-12 col-lg-6 description-col"><p>Fax number.</p>
 </div>
 </div></div><h3 id="CreatorOrganizationType" class="section">CreatorOrganizationType <a href="#CreatorOrganizationType">&sect;</a></h3><p>Discriminator for schema.org Organization creators.</p>
-<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Organization</code></td><td></td></tr></table><h2 id="NativeSourceMetadata" class="section">NativeSourceMetadata <a href="#NativeSourceMetadata">&sect;</a></h2><p>Provenance tracking for workflows imported from external sources.
+<h3>Symbols</h3><table class="table table-striped"><tr><th>symbol</th><th>description</th></tr><tr><td><code>Organization</code></td><td></td></tr></table><h2 id="NativeBasedOnWork" class="section">NativeBasedOnWork <a href="#NativeBasedOnWork">&sect;</a></h2><p>An upstream work the workflow was derived from (schema.org <code>isBasedOn</code>).</p>
+<h2 id="BasedOnWork" class="section">BasedOnWork <a href="#BasedOnWork">&sect;</a></h2><p>An upstream work this workflow was derived or adapted from, for instance
+an nf-core pipeline ported to Galaxy. Corresponds to the target of a
+<code>schema.org isBasedOn &lt;https://schema.org/isBasedOn&gt;</code>_ relation.</p>
+<p>The authors of the upstream work belong in this record's <code>creator</code>,
+not in the workflow-level <code>creator</code>, which credits the people who
+wrote the Galaxy workflow.</p>
+<h3>Fields</h3>
+<div class="responsive-table">
+<div class="row responsive-table-header">
+<div class="col-xs-3 col-lg-2">field</div>
+<div class="col-xs-2 col-lg-1">required</div>
+<div class="col-xs-7 col-lg-3">type</div>
+<div class="col-xs-12 col-lg-6 description-header">description</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>class</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>The <code>schema.org &lt;https://schema.org/&gt;</code>_ class of the upstream work,
+e.g. <code>SoftwareSourceCode</code> or <code>ComputationalWorkflow</code>. Galaxy
+treats a missing value as <code>SoftwareSourceCode</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>name</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Name of the upstream work (e.g. <code>nf-core/demo</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>alternateName</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>An alternate name or alias of the upstream work.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>description</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>A short description of the upstream work.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>identifier</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Persistent identifier of the upstream work, typically a DOI URL
+(e.g. <code>https://doi.org/10.5281/zenodo.12192442</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>image</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>HTTP(S) URL of an image or logo for the upstream work.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>url</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>HTTP(S) URL of the upstream work, such as its source repository.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>version</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Version of the upstream work the workflow was derived from
+(e.g. <code>1.2.0</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>license</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>SPDX license identifier of the upstream work (e.g. <code>MIT</code>).</p>
+</div>
+</div>
+<div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>creator</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><code>list[<a href="#CreatorPerson">CreatorPerson</a> | <a href="#CreatorOrganization">CreatorOrganization</a>] | None</code></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Creator(s) of the upstream work. An array of schema.org
+CreatorPerson or CreatorOrganization objects, distinguished by the
+<code>class</code> field (<code>Person</code> or <code>Organization</code>).</p>
+</div>
+</div></div><h2 id="NativeSourceMetadata" class="section">NativeSourceMetadata <a href="#NativeSourceMetadata">&sect;</a></h2><p>Provenance tracking for workflows imported from external sources.
 Contains either a direct URL or TRS (Tool Registry Service) metadata,
 depending on how the workflow was imported.</p>
 <p>For URL imports, only <code>url</code> is set. For TRS imports (Dockstore,

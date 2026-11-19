@@ -236,6 +236,20 @@ or Organization (<a href="https://schema.org/Organization">https://schema.org/Or
 </div>
 </div>
 <div class="row responsive-table-row">
+<div class="col-xs-3 col-lg-2"><code>is_based_on</code></div>
+<div class="col-xs-2 col-lg-1">optional</div>
+<div class="col-xs-7 col-lg-3"><a href="#Any">Any</a></div>
+<div class="col-xs-12 col-lg-6 description-col"><p>Upstream works this workflow was derived or adapted from
+(schema.org isBasedOn, <a href="https://schema.org/isBasedOn">https://schema.org/isBasedOn</a>), e.g. an nf-core
+pipeline ported to Galaxy. Each entry has an optional schema.org
+<code>class</code> (default <code>SoftwareSourceCode</code>), <code>name</code>, <code>alternateName</code>,
+<code>description</code>, <code>identifier</code>, <code>image</code>, <code>url</code>, <code>version</code>,
+<code>license</code> (SPDX) and <code>creator</code> (a list of Person or Organization
+entities, as for the workflow-level <code>creator</code>). Credit upstream
+authors here rather than in the workflow-level <code>creator</code>.</p>
+</div>
+</div>
+<div class="row responsive-table-row">
 <div class="col-xs-3 col-lg-2"><code>license</code></div>
 <div class="col-xs-2 col-lg-1">optional</div>
 <div class="col-xs-7 col-lg-3"><a href="#PrimitiveType">string</a></div>
