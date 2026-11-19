@@ -1,7 +1,7 @@
 # Default tests run with make test and make quick-tests
 NOSE_TESTS?=tests gxformat2
 # Default environment for make tox
-ENV?=py310
+ENV?=py311
 # Extra arguments supplied to tox command
 ARGS?=
 # Location of virtualenv used for development.
@@ -45,7 +45,7 @@ clean-test: ## remove test and coverage artifacts
 	rm -f .coverage
 	rm -fr htmlcov/
 
-setup-venv: ## setup a development virutalenv in current directory
+setup-venv: ## setup a development virtualenv in current directory
 	if command -v uv > /dev/null 2>&1; then \
 		uv sync; \
 	else \
