@@ -81,6 +81,35 @@ pick_value: Select the first non-null value from multiple inputs. Used to merge 
     pick_value = "pick_value"
 
 
+class LoopOutputMethod(str, Enum):
+    """The outputs of a step with a ``loop``, as CWL v1.3 ``LoopOutputMethod``.
+last_iteration: each output is that output of the last iteration that ran. If no iteration ran, the outputs are those of a skipped step.
+all_iterations: each output is a list of that output in every iteration, in iteration order; the list is empty if no iteration ran. In Galaxy, a list collection whose element identifiers are the iteration numbers."""
+
+    last_iteration = "last_iteration"
+    all_iterations = "all_iterations"
+
+
+class PickValueMethod(str, Enum):
+    """How one value is picked from the values of several sources, as CWL v1.3 ``PickValueMethod``.
+first_non_null: the first value that is not null; fails if every value is null.
+the_only_non_null: the only value that is not null; fails if every value is null or more than one is not.
+all_non_null: the list of the values that are not null. Not supported by Galaxy."""
+
+    first_non_null = "first_non_null"
+    the_only_non_null = "the_only_non_null"
+    all_non_null = "all_non_null"
+
+
+class LinkMergeMethod(str, Enum):
+    """How the values of several sources are merged into a list, as CWL v1.3 ``LinkMergeMethod``.
+merge_nested: a list with one element per source, the default.
+merge_flattened: the values of the sources concatenated into one list. Not supported by Galaxy."""
+
+    merge_nested = "merge_nested"
+    merge_flattened = "merge_flattened"
+
+
 def _discriminate_inputs(v: Any) -> str:
     disc_map: dict[str, str] = {"data": "WorkflowDataParameter", "File": "WorkflowDataParameter", "data_input": "WorkflowDataParameter", "collection": "WorkflowCollectionParameter", "data_collection": "WorkflowCollectionParameter", "data_collection_input": "WorkflowCollectionParameter", "integer": "WorkflowIntegerParameter", "int": "WorkflowIntegerParameter", "text": "WorkflowTextParameter", "string": "WorkflowTextParameter", "float": "WorkflowFloatParameter", "boolean": "WorkflowBooleanParameter", "color": "WorkflowColorParameter", "directory_uri": "WorkflowDirectoryUriParameter"}
     if isinstance(v, dict):
@@ -514,7 +543,9 @@ to representing `state` this way is defining inputs with default values."""
     type_: None | WorkflowStepType = Field(default=None, alias="type", description="Workflow step module's type (defaults to 'tool').")
     run: GalaxyWorkflow | str | dict[str, Any] | None = Field(default=None, description="Specifies a subworkflow to run. May be an inline workflow definition, a URL string, or an @import reference dict.")
     runtime_inputs: None | list[str] = Field(default=None)
-    when: None | str = Field(default=None, description="If defined, only run the step when the expression evaluates to `true`.  If `false` the step is skipped.  A skipped step produces a `null` on each output.  Expression should be an ecma5.1 expression.")
+    when: None | str = Field(default=None, description="If defined, only run the step when the expression evaluates to `true`.  If `false` the step is skipped.  A skipped step produces a `null` on each output.  On a step with a `loop`, `when` is require...")
+    loop: list[LoopInput] | dict[str, LoopInput | str | list[str]] | None = Field(default=None, description="Run the subworkflow of this step repeatedly, as the `loop` of a `LoopWorkflowStep` in CWL v1.3 (a draft at the time of writing).  Only a step that runs a subworkflow may have a `loop`, and it must ...")
+    outputMethod: None | LoopOutputMethod = Field(default=None, description="What the outputs of a step with a `loop` are: those of the last iteration (`last_iteration`, used when not specified) or a list of each output over all iterations (`all_iterations`).  Only valid on...")
 
 class Sink(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
@@ -527,6 +558,25 @@ class WorkflowStepInput(Identified, Sink, Labeled):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
     default: None | Any = Field(default=None, description="The default value for this parameter to use if either there is no `source` field, or the value produced by the `source` is `null`.  The default must be applied prior to scattering or evaluating `va...")
+
+class LoopInput(Identified):
+    """Where one input of a step with a `loop` takes its value from in the next
+iteration, as CWL v1.3 `LoopInput`.  The `id` is the id of the step input
+(in `in`), which is the label of a subworkflow input.
+
+The value is computed after each iteration, in this order: the value of
+`outputSource` (null without one); with a list `outputSource`, the value
+`pickValue` picks; `default` if that value is null or the output was
+skipped; then `valueFrom`.  At least one of `outputSource`, `default` and
+`valueFrom` is required."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    outputSource: None | str | list[str] = Field(default=None, description="The label of the subworkflow output whose value of the iteration that just ran this input takes, or a list of two or more labels with a `pickValue`.  Labels name outputs of the subworkflow this ste...")
+    linkMerge: None | LinkMergeMethod = Field(default=None, description="How the values of a list `outputSource` are merged before `pickValue` picks one; only `merge_nested` (the default) is supported by Galaxy.")
+    pickValue: None | PickValueMethod = Field(default=None, description="How one value is picked from the values of a list `outputSource`, which needs `first_non_null` or `the_only_non_null` in Galaxy.")
+    default: None | Any = Field(default=None, description="The value used if there is no `outputSource`, or if its value is null or the output was skipped.  Applied before `valueFrom`.  Galaxy accepts a default only for a parameter input of the subworkflow.")
+    valueFrom: None | str = Field(default=None, description="An expression that computes the value for the next iteration.  `self` is the value computed so far and `inputs` the inputs of the iteration that just ran.")
 
 class Report(BaseModel):
     """Definition of an invocation report for this workflow. Currently the only
@@ -675,6 +725,7 @@ WorkflowOutputParameter.model_rebuild()
 WorkflowStep.model_rebuild()
 Sink.model_rebuild()
 WorkflowStepInput.model_rebuild()
+LoopInput.model_rebuild()
 Report.model_rebuild()
 WorkflowStepOutput.model_rebuild()
 BaseComment.model_rebuild()

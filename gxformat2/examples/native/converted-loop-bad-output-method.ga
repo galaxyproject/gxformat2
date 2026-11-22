@@ -1,0 +1,134 @@
+{
+    "name": "Bad loop output_method",
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "annotation": "An output_method outside Galaxy's LoopOutputMethod values.",
+    "tags": [],
+    "uuid": "88cea2fd-ccf9-4f1a-95cb-e71bad37a7cb",
+    "comments": [],
+    "steps": {
+        "0": {
+            "id": 0,
+            "name": "start",
+            "type": "parameter_input",
+            "label": "start",
+            "annotation": "",
+            "tool_state": "{\"name\": \"start\", \"parameter_type\": \"integer\"}",
+            "position": {
+                "top": 0,
+                "left": 0
+            },
+            "input_connections": {},
+            "inputs": [
+                {
+                    "name": "start",
+                    "description": ""
+                }
+            ],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {}
+        },
+        "1": {
+            "id": 1,
+            "type": "subworkflow",
+            "label": "count",
+            "annotation": "",
+            "when": "$(inputs.i1 < 10)",
+            "tool_state": "{}",
+            "position": {
+                "top": 10,
+                "left": 10
+            },
+            "input_connections": {
+                "i1": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [
+                {
+                    "label": "count",
+                    "output_name": "o1"
+                }
+            ],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "df37d262-9bb0-457c-aeff-575f286b853e",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "i1",
+                        "type": "parameter_input",
+                        "label": "i1",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"i1\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "i1",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "add_one",
+                        "type": "tool",
+                        "label": "add_one",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "add_one",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "input": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            },
+            "loop": {
+                "inputs": {
+                    "i1": {
+                        "output_source": "o1"
+                    }
+                },
+                "output_method": "every_iteration"
+            }
+        }
+    }
+}

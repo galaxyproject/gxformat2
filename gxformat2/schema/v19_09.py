@@ -13555,6 +13555,8 @@ class WorkflowStep(
         run: Any | None = None,
         runtime_inputs: Any | None = None,
         when: Any | None = None,
+        loop: Any | None = None,
+        outputMethod: Any | None = None,
         extension_fields: MutableMapping[str, Any] | None = None,
         loadingOptions: LoadingOptions | None = None,
     ) -> None:
@@ -13584,6 +13586,8 @@ class WorkflowStep(
         self.run = run
         self.runtime_inputs = runtime_inputs
         self.when = when
+        self.loop = loop
+        self.outputMethod = outputMethod
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, WorkflowStep):
@@ -13606,6 +13610,8 @@ class WorkflowStep(
                 and self.run == other.run
                 and self.runtime_inputs == other.runtime_inputs
                 and self.when == other.when
+                and self.loop == other.loop
+                and self.outputMethod == other.outputMethod
             )
         return False
 
@@ -13630,6 +13636,8 @@ class WorkflowStep(
                 self.run,
                 self.runtime_inputs,
                 self.when,
+                self.loop,
+                self.outputMethod,
             )
         )
 
@@ -14504,6 +14512,100 @@ class WorkflowStep(
                                 "is not valid because:",
                             )
                         )
+        loop = None
+        if "loop" in _doc:
+            try:
+                loop = _load_field(
+                    _doc.get("loop"),
+                    idmap_loop_union_of_None_type_or_array_of_LoopInputLoader,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("loop")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `loop`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("loop")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `loop` field is not valid because:",
+                                SourceLine(_doc, "loop", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `loop` field is not valid because:",
+                                SourceLine(_doc, "loop", str),
+                                [e],
+                                detailed_message=f"the `loop` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        outputMethod = None
+        if "outputMethod" in _doc:
+            try:
+                outputMethod = _load_field(
+                    _doc.get("outputMethod"),
+                    uri_union_of_None_type_or_LoopOutputMethodLoader_False_True_None_None,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("outputMethod")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `outputMethod`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("outputMethod")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `outputMethod` field is not valid because:",
+                                SourceLine(_doc, "outputMethod", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `outputMethod` field is not valid because:",
+                                SourceLine(_doc, "outputMethod", str),
+                                [e],
+                                detailed_message=f"the `outputMethod` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
         extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
@@ -14519,7 +14621,7 @@ class WorkflowStep(
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `{}`, expected one of: `id`, `label`, `doc`, `position`, `tool_id`, `tool_shed_repository`, `tool_version`, `errors`, `uuid`, `in`, `out`, `state`, `tool_state`, `post_job_actions`, `type`, `run`, `runtime_inputs`, `when`".format(
+                            "invalid field `{}`, expected one of: `id`, `label`, `doc`, `position`, `tool_id`, `tool_shed_repository`, `tool_version`, `errors`, `uuid`, `in`, `out`, `state`, `tool_state`, `post_job_actions`, `type`, `run`, `runtime_inputs`, `when`, `loop`, `outputMethod`".format(
                                 k
                             ),
                             SourceLine(_doc, k, str),
@@ -14547,6 +14649,8 @@ class WorkflowStep(
             run=run,
             runtime_inputs=runtime_inputs,
             when=when,
+            loop=loop,
+            outputMethod=outputMethod,
             extension_fields=extension_fields,
             loadingOptions=loadingOptions,
         )
@@ -14649,6 +14753,15 @@ class WorkflowStep(
             r["when"] = save(
                 self.when, top=False, base_url=self.id, relative_uris=relative_uris
             )
+        if self.loop is not None:
+            r["loop"] = save(
+                self.loop, top=False, base_url=self.id, relative_uris=relative_uris
+            )
+        if self.outputMethod is not None:
+            u = save_relative_uri(
+                self.outputMethod, self.id, False, None, relative_uris
+            )
+            r["outputMethod"] = u
 
         # top refers to the directory level
         if top:
@@ -14678,6 +14791,8 @@ class WorkflowStep(
             "run",
             "runtime_inputs",
             "when",
+            "loop",
+            "outputMethod",
         ]
     )
 
@@ -15010,6 +15125,459 @@ class WorkflowStepInput(Identified, Sink, Labeled):
         return r
 
     attrs: ClassVar[Collection[str]] = frozenset(["id", "source", "label", "default"])
+
+
+class LoopInput(Identified):
+    """
+    Where one input of a step with a ``loop`` takes its value from in the next iteration, as CWL v1.3 ``LoopInput``.  The ``id`` is the id of the step input (in ``in``), which is the label of a subworkflow input.
+
+    The value is computed after each iteration, in this order: the value of ``outputSource`` (null without one); with a list ``outputSource``, the value ``pickValue`` picks; ``default`` if that value is null or the output was skipped; then ``valueFrom``.  At least one of ``outputSource``, ``default`` and ``valueFrom`` is required.
+
+    """
+
+    id: str
+
+    def __init__(
+        self,
+        id: Any | None = None,
+        outputSource: Any | None = None,
+        linkMerge: Any | None = None,
+        pickValue: Any | None = None,
+        default: Any | None = None,
+        valueFrom: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
+    ) -> None:
+        if extension_fields:
+            self.extension_fields = extension_fields
+        else:
+            self.extension_fields = CommentedMap()
+        if loadingOptions:
+            self.loadingOptions = loadingOptions
+        else:
+            self.loadingOptions = LoadingOptions()
+        self.id = id if id is not None else "_:" + str(_uuid__.uuid4())
+        self.outputSource = outputSource
+        self.linkMerge = linkMerge
+        self.pickValue = pickValue
+        self.default = default
+        self.valueFrom = valueFrom
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, LoopInput):
+            return bool(
+                self.id == other.id
+                and self.outputSource == other.outputSource
+                and self.linkMerge == other.linkMerge
+                and self.pickValue == other.pickValue
+                and self.default == other.default
+                and self.valueFrom == other.valueFrom
+            )
+        return False
+
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.id,
+                self.outputSource,
+                self.linkMerge,
+                self.pickValue,
+                self.default,
+                self.valueFrom,
+            )
+        )
+
+    @classmethod
+    def fromDoc(
+        cls,
+        doc: Any,
+        baseuri: str,
+        loadingOptions: LoadingOptions,
+        docRoot: str | None = None,
+    ) -> Self:
+        _doc = copy.copy(doc)
+
+        if hasattr(doc, "lc"):
+            _doc.lc.data = doc.lc.data
+            _doc.lc.filename = doc.lc.filename
+        _errors__ = []
+        id = None
+        if "id" in _doc:
+            try:
+                id = _load_field(
+                    _doc.get("id"),
+                    uri_union_of_None_type_or_strtype_True_False_None_None,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("id")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `id`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("id")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `id` field is not valid because:",
+                                SourceLine(_doc, "id", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `id` field is not valid because:",
+                                SourceLine(_doc, "id", str),
+                                [e],
+                                detailed_message=f"the `id` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+
+        __original_id_is_none = id is None
+        if id is None:
+            if docRoot is not None:
+                id = docRoot
+            else:
+                id = "_:" + str(_uuid__.uuid4())
+        if not __original_id_is_none:
+            baseuri = cast(str, id)
+        outputSource = None
+        if "outputSource" in _doc:
+            try:
+                outputSource = _load_field(
+                    _doc.get("outputSource"),
+                    union_of_None_type_or_strtype_or_array_of_strtype,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("outputSource")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `outputSource`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("outputSource")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `outputSource` field is not valid because:",
+                                SourceLine(_doc, "outputSource", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `outputSource` field is not valid because:",
+                                SourceLine(_doc, "outputSource", str),
+                                [e],
+                                detailed_message=f"the `outputSource` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        linkMerge = None
+        if "linkMerge" in _doc:
+            try:
+                linkMerge = _load_field(
+                    _doc.get("linkMerge"),
+                    union_of_None_type_or_LinkMergeMethodLoader,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("linkMerge")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `linkMerge`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("linkMerge")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `linkMerge` field is not valid because:",
+                                SourceLine(_doc, "linkMerge", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `linkMerge` field is not valid because:",
+                                SourceLine(_doc, "linkMerge", str),
+                                [e],
+                                detailed_message=f"the `linkMerge` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        pickValue = None
+        if "pickValue" in _doc:
+            try:
+                pickValue = _load_field(
+                    _doc.get("pickValue"),
+                    union_of_None_type_or_PickValueMethodLoader,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("pickValue")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `pickValue`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("pickValue")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `pickValue` field is not valid because:",
+                                SourceLine(_doc, "pickValue", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `pickValue` field is not valid because:",
+                                SourceLine(_doc, "pickValue", str),
+                                [e],
+                                detailed_message=f"the `pickValue` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        default = None
+        if "default" in _doc:
+            try:
+                default = _load_field(
+                    _doc.get("default"),
+                    union_of_None_type_or_Any_type,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("default")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `default`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("default")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `default` field is not valid because:",
+                                SourceLine(_doc, "default", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `default` field is not valid because:",
+                                SourceLine(_doc, "default", str),
+                                [e],
+                                detailed_message=f"the `default` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        valueFrom = None
+        if "valueFrom" in _doc:
+            try:
+                valueFrom = _load_field(
+                    _doc.get("valueFrom"),
+                    union_of_None_type_or_strtype,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("valueFrom")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `valueFrom`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("valueFrom")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `valueFrom` field is not valid because:",
+                                SourceLine(_doc, "valueFrom", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `valueFrom` field is not valid because:",
+                                SourceLine(_doc, "valueFrom", str),
+                                [e],
+                                detailed_message=f"the `valueFrom` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        extension_fields: MutableMapping[str, Any] = {}
+        for k in _doc.keys():
+            if k not in cls.attrs:
+                if not k:
+                    _errors__.append(
+                        ValidationException("mapping with implicit null key")
+                    )
+                elif ":" in k:
+                    ex = _expand_url(
+                        k, "", loadingOptions, scoped_id=False, vocab_term=False
+                    )
+                    extension_fields[ex] = _doc[k]
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "invalid field `{}`, expected one of: `id`, `outputSource`, `linkMerge`, `pickValue`, `default`, `valueFrom`".format(
+                                k
+                            ),
+                            SourceLine(_doc, k, str),
+                        )
+                    )
+
+        if _errors__:
+            raise ValidationException("", None, _errors__, "*")
+        _constructed = cls(
+            id=id,
+            outputSource=outputSource,
+            linkMerge=linkMerge,
+            pickValue=pickValue,
+            default=default,
+            valueFrom=valueFrom,
+            extension_fields=extension_fields,
+            loadingOptions=loadingOptions,
+        )
+        loadingOptions.idx[cast(str, id)] = (_constructed, loadingOptions)
+        return _constructed
+
+    def save(
+        self, top: bool = False, base_url: str = "", relative_uris: bool = True
+    ) -> dict[str, Any]:
+        r: dict[str, Any] = {}
+
+        if relative_uris:
+            for ef in self.extension_fields:
+                r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+        else:
+            for ef in self.extension_fields:
+                r[ef] = self.extension_fields[ef]
+        if self.id is not None:
+            u = save_relative_uri(self.id, base_url, True, None, relative_uris)
+            r["id"] = u
+        if self.outputSource is not None:
+            r["outputSource"] = save(
+                self.outputSource,
+                top=False,
+                base_url=self.id,
+                relative_uris=relative_uris,
+            )
+        if self.linkMerge is not None:
+            r["linkMerge"] = save(
+                self.linkMerge, top=False, base_url=self.id, relative_uris=relative_uris
+            )
+        if self.pickValue is not None:
+            r["pickValue"] = save(
+                self.pickValue, top=False, base_url=self.id, relative_uris=relative_uris
+            )
+        if self.default is not None:
+            r["default"] = save(
+                self.default, top=False, base_url=self.id, relative_uris=relative_uris
+            )
+        if self.valueFrom is not None:
+            r["valueFrom"] = save(
+                self.valueFrom, top=False, base_url=self.id, relative_uris=relative_uris
+            )
+
+        # top refers to the directory level
+        if top:
+            if self.loadingOptions.namespaces:
+                r["$namespaces"] = self.loadingOptions.namespaces
+            if self.loadingOptions.schemas:
+                r["$schemas"] = self.loadingOptions.schemas
+        return r
+
+    attrs: ClassVar[Collection[str]] = frozenset(
+        ["id", "outputSource", "linkMerge", "pickValue", "default", "valueFrom"]
+    )
 
 
 class Report(Saveable):
@@ -18845,12 +19413,16 @@ _vocab.update({
     "Identified": "https://w3id.org/cwl/cwl#Identified",
     "InputParameter": "https://w3id.org/cwl/cwl#InputParameter",
     "Labeled": "https://w3id.org/cwl/cwl#Labeled",
+    "LinkMergeMethod": "https://galaxyproject.org/gxformat2/v19_09#LinkMergeMethod",
+    "LoopInput": "https://galaxyproject.org/gxformat2/v19_09#LoopInput",
+    "LoopOutputMethod": "https://galaxyproject.org/gxformat2/v19_09#LoopOutputMethod",
     "MarkdownComment": "https://galaxyproject.org/gxformat2/v19_09#MarkdownComment",
     "MinMax": "https://galaxyproject.org/gxformat2/v19_09#MinMax",
     "Organization": "https://galaxyproject.org/gxformat2/gxformat2common#CreatorOrganizationType/Organization",
     "OutputParameter": "https://w3id.org/cwl/cwl#OutputParameter",
     "Parameter": "https://w3id.org/cwl/cwl#Parameter",
     "Person": "https://galaxyproject.org/gxformat2/gxformat2common#CreatorPersonType/Person",
+    "PickValueMethod": "https://galaxyproject.org/gxformat2/v19_09#PickValueMethod",
     "PrimitiveType": "https://w3id.org/cwl/salad#PrimitiveType",
     "Process": "https://w3id.org/cwl/cwl#Process",
     "RecordField": "https://w3id.org/cwl/salad#RecordField",
@@ -18880,6 +19452,8 @@ _vocab.update({
     "WorkflowTextOption": "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextOption",
     "WorkflowTextParameter": "https://galaxyproject.org/gxformat2/v19_09#WorkflowTextParameter",
     "WorkflowTextValidator": "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextValidator",
+    "all_iterations": "https://galaxyproject.org/gxformat2/v19_09#LoopOutputMethod/all_iterations",
+    "all_non_null": "https://galaxyproject.org/gxformat2/v19_09#PickValueMethod/all_non_null",
     "array": "https://w3id.org/cwl/salad#array",
     "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
     "collection": "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/collection",
@@ -18888,10 +19462,14 @@ _vocab.update({
     "directory_uri": "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/directory_uri",
     "double": "http://www.w3.org/2001/XMLSchema#double",
     "enum": "https://w3id.org/cwl/salad#enum",
+    "first_non_null": "https://galaxyproject.org/gxformat2/v19_09#PickValueMethod/first_non_null",
     "float": "http://www.w3.org/2001/XMLSchema#float",
     "int": "http://www.w3.org/2001/XMLSchema#int",
     "integer": "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/integer",
+    "last_iteration": "https://galaxyproject.org/gxformat2/v19_09#LoopOutputMethod/last_iteration",
     "long": "http://www.w3.org/2001/XMLSchema#long",
+    "merge_flattened": "https://galaxyproject.org/gxformat2/v19_09#LinkMergeMethod/merge_flattened",
+    "merge_nested": "https://galaxyproject.org/gxformat2/v19_09#LinkMergeMethod/merge_nested",
     "null": "https://w3id.org/cwl/salad#null",
     "pause": "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/pause",
     "pick_value": "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/pick_value",
@@ -18899,6 +19477,7 @@ _vocab.update({
     "string": "http://www.w3.org/2001/XMLSchema#string",
     "subworkflow": "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/subworkflow",
     "text": "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/text",
+    "the_only_non_null": "https://galaxyproject.org/gxformat2/v19_09#PickValueMethod/the_only_non_null",
     "tool": "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/tool",
 })
 _rvocab.update({
@@ -18926,12 +19505,16 @@ _rvocab.update({
     "https://w3id.org/cwl/cwl#Identified": "Identified",
     "https://w3id.org/cwl/cwl#InputParameter": "InputParameter",
     "https://w3id.org/cwl/cwl#Labeled": "Labeled",
+    "https://galaxyproject.org/gxformat2/v19_09#LinkMergeMethod": "LinkMergeMethod",
+    "https://galaxyproject.org/gxformat2/v19_09#LoopInput": "LoopInput",
+    "https://galaxyproject.org/gxformat2/v19_09#LoopOutputMethod": "LoopOutputMethod",
     "https://galaxyproject.org/gxformat2/v19_09#MarkdownComment": "MarkdownComment",
     "https://galaxyproject.org/gxformat2/v19_09#MinMax": "MinMax",
     "https://galaxyproject.org/gxformat2/gxformat2common#CreatorOrganizationType/Organization": "Organization",
     "https://w3id.org/cwl/cwl#OutputParameter": "OutputParameter",
     "https://w3id.org/cwl/cwl#Parameter": "Parameter",
     "https://galaxyproject.org/gxformat2/gxformat2common#CreatorPersonType/Person": "Person",
+    "https://galaxyproject.org/gxformat2/v19_09#PickValueMethod": "PickValueMethod",
     "https://w3id.org/cwl/salad#PrimitiveType": "PrimitiveType",
     "https://w3id.org/cwl/cwl#Process": "Process",
     "https://w3id.org/cwl/salad#RecordField": "RecordField",
@@ -18961,6 +19544,8 @@ _rvocab.update({
     "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextOption": "WorkflowTextOption",
     "https://galaxyproject.org/gxformat2/v19_09#WorkflowTextParameter": "WorkflowTextParameter",
     "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextValidator": "WorkflowTextValidator",
+    "https://galaxyproject.org/gxformat2/v19_09#LoopOutputMethod/all_iterations": "all_iterations",
+    "https://galaxyproject.org/gxformat2/v19_09#PickValueMethod/all_non_null": "all_non_null",
     "https://w3id.org/cwl/salad#array": "array",
     "http://www.w3.org/2001/XMLSchema#boolean": "boolean",
     "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/collection": "collection",
@@ -18969,10 +19554,14 @@ _rvocab.update({
     "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/directory_uri": "directory_uri",
     "http://www.w3.org/2001/XMLSchema#double": "double",
     "https://w3id.org/cwl/salad#enum": "enum",
+    "https://galaxyproject.org/gxformat2/v19_09#PickValueMethod/first_non_null": "first_non_null",
     "http://www.w3.org/2001/XMLSchema#float": "float",
     "http://www.w3.org/2001/XMLSchema#int": "int",
     "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/integer": "integer",
+    "https://galaxyproject.org/gxformat2/v19_09#LoopOutputMethod/last_iteration": "last_iteration",
     "http://www.w3.org/2001/XMLSchema#long": "long",
+    "https://galaxyproject.org/gxformat2/v19_09#LinkMergeMethod/merge_flattened": "merge_flattened",
+    "https://galaxyproject.org/gxformat2/v19_09#LinkMergeMethod/merge_nested": "merge_nested",
     "https://w3id.org/cwl/salad#null": "null",
     "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/pause": "pause",
     "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/pick_value": "pick_value",
@@ -18980,6 +19569,7 @@ _rvocab.update({
     "http://www.w3.org/2001/XMLSchema#string": "string",
     "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/subworkflow": "subworkflow",
     "https://galaxyproject.org/gxformat2/v19_09#GalaxyType/text": "text",
+    "https://galaxyproject.org/gxformat2/v19_09#PickValueMethod/the_only_non_null": "the_only_non_null",
     "https://galaxyproject.org/gxformat2/v19_09#WorkflowStepType/tool": "tool",
 })
 
@@ -19147,6 +19737,52 @@ WorkflowOutputParameterLoader: Final = _RecordLoader(
 WorkflowStepLoader: Final = _RecordLoader(WorkflowStep, None, None)
 SinkProxyLoader: Final = _ProxyLoader("SinkLoader")
 WorkflowStepInputLoader: Final = _RecordLoader(WorkflowStepInput, None, None)
+LoopOutputMethodLoader: Final = _EnumLoader(
+    (
+        "last_iteration",
+        "all_iterations",
+    ),
+    "LoopOutputMethod",
+)
+"""
+The outputs of a step with a ``loop``, as CWL v1.3 ``LoopOutputMethod``.
+
+last_iteration: each output is that output of the last iteration that ran. If no iteration ran, the outputs are those of a skipped step.
+
+all_iterations: each output is a list of that output in every iteration, in iteration order; the list is empty if no iteration ran. In Galaxy, a list collection whose element identifiers are the iteration numbers.
+"""
+PickValueMethodLoader: Final = _EnumLoader(
+    (
+        "first_non_null",
+        "the_only_non_null",
+        "all_non_null",
+    ),
+    "PickValueMethod",
+)
+"""
+How one value is picked from the values of several sources, as CWL v1.3 ``PickValueMethod``.
+
+first_non_null: the first value that is not null; fails if every value is null.
+
+the_only_non_null: the only value that is not null; fails if every value is null or more than one is not.
+
+all_non_null: the list of the values that are not null. Not supported by Galaxy.
+"""
+LinkMergeMethodLoader: Final = _EnumLoader(
+    (
+        "merge_nested",
+        "merge_flattened",
+    ),
+    "LinkMergeMethod",
+)
+"""
+How the values of several sources are merged into a list, as CWL v1.3 ``LinkMergeMethod``.
+
+merge_nested: a list with one element per source, the default.
+
+merge_flattened: the values of the sources concatenated into one list. Not supported by Galaxy.
+"""
+LoopInputLoader: Final = _RecordLoader(LoopInput, None, None)
 ReportLoader: Final = _RecordLoader(Report, None, None)
 WorkflowStepOutputLoader: Final = _RecordLoader(WorkflowStepOutput, None, None)
 BaseCommentProxyLoader: Final = _ProxyLoader("BaseCommentLoader")
@@ -19487,8 +20123,39 @@ typedsl_union_of_None_type_or_WorkflowStepTypeLoader_2: Final = _TypeDSLLoader(
 uri_union_of_None_type_or_Any_type_False_False_None_None: Final = _URILoader(
     union_of_None_type_or_Any_type, False, False, None, None
 )
+array_of_LoopInputLoader: Final = _ArrayLoader(LoopInputLoader)
+union_of_None_type_or_array_of_LoopInputLoader: Final = _UnionLoader(
+    (
+        None_type,
+        array_of_LoopInputLoader,
+    )
+)
+idmap_loop_union_of_None_type_or_array_of_LoopInputLoader: Final = _IdMapLoader(
+    union_of_None_type_or_array_of_LoopInputLoader, "id", "outputSource"
+)
+union_of_None_type_or_LoopOutputMethodLoader: Final = _UnionLoader(
+    (
+        None_type,
+        LoopOutputMethodLoader,
+    )
+)
+uri_union_of_None_type_or_LoopOutputMethodLoader_False_True_None_None: Final = (
+    _URILoader(union_of_None_type_or_LoopOutputMethodLoader, False, True, None, None)
+)
 uri_union_of_None_type_or_strtype_or_array_of_strtype_False_False_2_None: Final = (
     _URILoader(union_of_None_type_or_strtype_or_array_of_strtype, False, False, 2, None)
+)
+union_of_None_type_or_LinkMergeMethodLoader: Final = _UnionLoader(
+    (
+        None_type,
+        LinkMergeMethodLoader,
+    )
+)
+union_of_None_type_or_PickValueMethodLoader: Final = _UnionLoader(
+    (
+        None_type,
+        PickValueMethodLoader,
+    )
 )
 union_of_None_type_or_floattype_or_inttype: Final = _UnionLoader(
     (

@@ -1,0 +1,158 @@
+class: GalaxyWorkflow
+doc: |
+  One loop step for each Format2 loop field: two looped inputs; default and
+  valueFrom; several outputs with pickValue; outputMethod all_iterations; and
+  a loop inside the subworkflow of another loop.
+inputs:
+  start: int
+  limit: int
+outputs:
+  two_variables:
+    outputSource: two_variables/o1
+  value_from_default:
+    outputSource: value_from_default/o1
+  multi_source:
+    outputSource: multi_source/o1
+  all_iterations:
+    outputSource: all_iterations/o1
+  nested:
+    outputSource: nested/o1
+steps:
+  two_variables:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        i1: int
+        i2: int
+      outputs:
+        o1:
+          outputSource: add/output
+        o2:
+          outputSource: add/carry
+      steps:
+        add:
+          tool_id: add_one
+          in:
+            input: i1
+            carry: i2
+    in:
+      i1: start
+      i2: limit
+    when: $(inputs.i1 < inputs.i2)
+    loop:
+      i1: o1
+      i2: o2
+  value_from_default:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        i1: int
+      outputs:
+        o1:
+          outputSource: add_one/output
+      steps:
+        add_one:
+          tool_id: add_one
+          in:
+            input: i1
+    in:
+      i1: start
+    when: $(inputs.i1 < 10)
+    loop:
+      i1:
+        outputSource: o1
+        default: 5
+        valueFrom: $(self + 1)
+  multi_source:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        i1: int
+      outputs:
+        o1:
+          outputSource: pick/output
+        small:
+          outputSource: add_one/output
+        large:
+          outputSource: add_three/output
+      steps:
+        add_one:
+          tool_id: add_one
+          in:
+            input: i1
+          when: $(inputs.input < 5)
+        add_three:
+          tool_id: add_three
+          in:
+            input: i1
+          when: $(inputs.input >= 5)
+        pick:
+          type: pick_value
+          in:
+            small: add_one/output
+            large: add_three/output
+    in:
+      i1: start
+    when: $(inputs.i1 < 20)
+    loop:
+      i1:
+        outputSource: [small, large]
+        pickValue: the_only_non_null
+  all_iterations:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        i1: int
+      outputs:
+        o1:
+          outputSource: add_one/output
+      steps:
+        add_one:
+          tool_id: add_one
+          in:
+            input: i1
+    in:
+      i1: start
+    when: $(inputs.i1 < 10)
+    loop:
+      i1: o1
+    outputMethod: all_iterations
+  nested:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        i1: int
+        i2: int
+      outputs:
+        o1:
+          outputSource: inner/o1
+      steps:
+        inner:
+          run:
+            class: GalaxyWorkflow
+            inputs:
+              i1: int
+              i2: int
+            outputs:
+              o1:
+                outputSource: add/output
+            steps:
+              add:
+                tool_id: add_one
+                in:
+                  input: i1
+                  carry: i2
+          in:
+            i1: i1
+            i2: i2
+          when: $(inputs.i1 < inputs.i2)
+          loop:
+            i1: o1
+    in:
+      i1: start
+      i2: limit
+    when: $(inputs.i2 < 4)
+    loop:
+      i2:
+        valueFrom: $(inputs.i2 + 1)
+    outputMethod: all_iterations

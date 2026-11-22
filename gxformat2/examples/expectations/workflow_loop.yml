@@ -1,0 +1,27 @@
+# Workflow loops: Format2 step `loop` / `outputMethod` (CWL v1.3) <-> native step `loop`.
+
+# --- Schema validation ---
+
+test_loop_single_variable_valid_format2:
+  fixture: synthetic-loop-single-variable.gxwf.yml
+  operation: validate_format2
+
+test_loop_single_variable_valid_format2_strict:
+  fixture: synthetic-loop-single-variable.gxwf.yml
+  operation: validate_format2_strict
+
+test_loop_cases_valid_format2:
+  fixture: synthetic-loop-cases.gxwf.yml
+  operation: validate_format2
+
+test_loop_cases_valid_format2_strict:
+  fixture: synthetic-loop-cases.gxwf.yml
+  operation: validate_format2_strict
+
+test_loop_cases_valid_native:
+  fixture: converted-loop-cases.ga
+  operation: validate_native
+
+test_loop_cases_valid_native_strict:
+  fixture: converted-loop-cases.ga
+  operation: validate_native_strict

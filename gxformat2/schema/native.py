@@ -56,6 +56,35 @@ pick_value: Select the first non-null value from multiple inputs."""
     pick_value = "pick_value"
 
 
+class NativeLoopOutputMethod(str, Enum):
+    """The outputs of a loop step.
+last_iteration: the outputs of the last iteration that ran.
+all_iterations: each output as a list collection over all iterations, in iteration order."""
+
+    last_iteration = "last_iteration"
+    all_iterations = "all_iterations"
+
+
+class NativeLoopPickValue(str, Enum):
+    """How one value is picked from the values of a list ``output_source``.
+first_non_null: the first value that is not null.
+the_only_non_null: the only value that is not null.
+all_non_null: the list of the values that are not null. Galaxy refuses it when saving a workflow."""
+
+    first_non_null = "first_non_null"
+    the_only_non_null = "the_only_non_null"
+    all_non_null = "all_non_null"
+
+
+class NativeLoopLinkMerge(str, Enum):
+    """How the values of a list ``output_source`` are merged.
+merge_nested: a list with one element per output, the default.
+merge_flattened: the values concatenated into one list. Galaxy refuses it when saving a workflow."""
+
+    merge_nested = "merge_nested"
+    merge_flattened = "merge_flattened"
+
+
 def _discriminate_creator(v: Any) -> str:
     disc_map: dict[str, str] = {"Person": "CreatorPerson", "Organization": "CreatorOrganization"}
     if isinstance(v, dict):
@@ -423,6 +452,32 @@ unencoded tool state is used. Connected parameters are represented as
     subworkflow: NativeGalaxyWorkflow | None = Field(default=None, description="Embedded subworkflow definition. A complete native workflow document (with ``a_galaxy_workflow``, ``format-version``, ``steps``, etc.) nested inside this step.")
     tool_representation: dict[str, Any] | None = Field(default=None, description="Embedded tool definition for user-defined (dynamic) tools. Present when the step uses a ``GalaxyUserTool`` instead of a registered tool. Contains the full tool definition including ``class: GalaxyU...")
     in_: dict[str, Any] | None = Field(default=None, alias="in", description="Default values for step inputs. Keys are parameter names, values are objects with a ``default`` key.")
+    loop: None | NativeLoop = Field(default=None, description="Run the subworkflow of this step repeatedly, until ``when`` is false. Only valid on a ``subworkflow`` step that also has a ``when``. Written by Galaxy for workflow loops (a beta feature); the Forma...")
+
+class NativeLoopInput(BaseModel):
+    """How one input of a loop step gets its value for the next iteration: the
+value of ``output_source`` (null without one), picked by ``pick_value``
+for a list of outputs, then ``default`` if that value is null or skipped,
+then ``value_from``. At least one of ``output_source``, ``default`` and
+``value_from`` is required."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    output_source: None | str | list[str] = Field(default=None, description="Label of the subworkflow output fed back into this input, or a list of two or more labels with a ``pick_value``.")
+    link_merge: None | NativeLoopLinkMerge = Field(default=None, description="How the values of a list ``output_source`` are merged.")
+    pick_value: None | NativeLoopPickValue = Field(default=None, description="How one value is picked from the values of a list ``output_source``.")
+    default: None | Any = Field(default=None, description="Value used when the fed-back value is null or skipped.")
+    value_from: None | str = Field(default=None, description="Expression that computes the value for the next iteration.")
+
+class NativeLoop(BaseModel):
+    """The loop of a subworkflow step. Each entry of ``inputs`` is keyed by a
+subworkflow input label; inputs without an entry keep the value they had
+in the first iteration."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    inputs: dict[str, NativeLoopInput] = Field(description="Loop rules keyed by subworkflow input label.")
+    output_method: None | NativeLoopOutputMethod = Field(default=None, description="``last_iteration`` (the default) or ``all_iterations``.")
 
 class NativeReport(BaseModel):
     """Workflow invocation report template."""
@@ -519,6 +574,8 @@ NativeMarkdownComment.model_rebuild()
 NativeFrameComment.model_rebuild()
 NativeFreehandComment.model_rebuild()
 NativeStep.model_rebuild()
+NativeLoopInput.model_rebuild()
+NativeLoop.model_rebuild()
 NativeReport.model_rebuild()
 NativeSourceMetadata.model_rebuild()
 NativeGalaxyWorkflow.model_rebuild()

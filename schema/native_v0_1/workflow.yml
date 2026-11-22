@@ -595,6 +595,113 @@ $graph:
       doc: |
         Default values for step inputs. Keys are parameter names, values
         are objects with a ``default`` key.
+    - name: loop
+      type: NativeLoop?
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/loop"
+        noLinkCheck: true
+      doc: |
+        Run the subworkflow of this step repeatedly, until ``when`` is false.
+        Only valid on a ``subworkflow`` step that also has a ``when``. Written
+        by Galaxy for workflow loops (a beta feature); the Format 2 ``loop``
+        and ``outputMethod`` step fields convert to this.
+
+- name: NativeLoopOutputMethod
+  type: enum
+  docParent: "#NativeLoop"
+  symbols:
+    - last_iteration
+    - all_iterations
+  doc:
+    - "The outputs of a loop step."
+    - "last_iteration: the outputs of the last iteration that ran."
+    - "all_iterations: each output as a list collection over all iterations, in iteration order."
+
+- name: NativeLoopPickValue
+  type: enum
+  docParent: "#NativeLoopInput"
+  symbols:
+    - first_non_null
+    - the_only_non_null
+    - all_non_null
+  doc:
+    - "How one value is picked from the values of a list ``output_source``."
+    - "first_non_null: the first value that is not null."
+    - "the_only_non_null: the only value that is not null."
+    - "all_non_null: the list of the values that are not null. Galaxy refuses it when saving a workflow."
+
+- name: NativeLoopLinkMerge
+  type: enum
+  docParent: "#NativeLoopInput"
+  symbols:
+    - merge_nested
+    - merge_flattened
+  doc:
+    - "How the values of a list ``output_source`` are merged."
+    - "merge_nested: a list with one element per output, the default."
+    - "merge_flattened: the values concatenated into one list. Galaxy refuses it when saving a workflow."
+
+- name: NativeLoopInput
+  type: record
+  docParent: "#NativeLoop"
+  doc: |
+    How one input of a loop step gets its value for the next iteration: the
+    value of ``output_source`` (null without one), picked by ``pick_value``
+    for a list of outputs, then ``default`` if that value is null or skipped,
+    then ``value_from``. At least one of ``output_source``, ``default`` and
+    ``value_from`` is required.
+  fields:
+    - name: output_source
+      type:
+        - string?
+        - string[]?
+      doc: |
+        Label of the subworkflow output fed back into this input, or a list
+        of two or more labels with a ``pick_value``.
+    - name: link_merge
+      type: NativeLoopLinkMerge?
+      doc: |
+        How the values of a list ``output_source`` are merged.
+    - name: pick_value
+      type: NativeLoopPickValue?
+      # The field name is also a NativeStepType symbol; share its term, as
+      # NativeStep.subworkflow does, to avoid a JSON-LD predicate collision.
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/pick_value"
+      doc: |
+        How one value is picked from the values of a list ``output_source``.
+    - name: default
+      type: Any?
+      jsonldPredicate:
+        _id: "gxnative:NativeLoopInput/default"
+        noLinkCheck: true
+      doc: |
+        Value used when the fed-back value is null or skipped.
+    - name: value_from
+      type: string?
+      doc: |
+        Expression that computes the value for the next iteration.
+
+- name: NativeLoop
+  type: record
+  docParent: "#NativeStep"
+  doc: |
+    The loop of a subworkflow step. Each entry of ``inputs`` is keyed by a
+    subworkflow input label; inputs without an entry keep the value they had
+    in the first iteration.
+  fields:
+    - name: inputs
+      type: Any
+      pydantic:type: "dict[str, NativeLoopInput]"
+      # One JSON-LD term per field name: share NativeStep.inputs' predicate.
+      jsonldPredicate:
+        _id: "gxnative:NativeStep/inputs"
+        noLinkCheck: true
+      doc: |
+        Loop rules keyed by subworkflow input label.
+    - name: output_method
+      type: NativeLoopOutputMethod?
+      doc: |
+        ``last_iteration`` (the default) or ``all_iterations``.
 
 - name: NativeReport
   type: record

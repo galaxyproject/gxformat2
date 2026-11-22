@@ -10,6 +10,7 @@ import tempfile
 import pytest
 from schema_salad.exceptions import SchemaSaladException
 
+from gxformat2.examples import load_contents
 from gxformat2.schema.v19_09 import load_document
 from gxformat2.yaml import ordered_dump, ordered_load
 
@@ -190,3 +191,24 @@ class TestCommentsSchema:
             },
         ]
         _load_format2_dict(wf)
+
+
+class TestLoopSchema:
+
+    def test_loop_single_variable_validates(self):
+        doc = _load_format2(load_contents("synthetic-loop-single-variable.gxwf.yml"))
+        (loop_input,) = doc.steps[0].loop
+        assert loop_input.id.endswith("#count/i1")
+        assert loop_input.outputSource == "o1"
+
+    def test_loop_cases_validate(self):
+        doc = _load_format2(load_contents("synthetic-loop-cases.gxwf.yml"))
+        steps = {step.id.rsplit("#", 1)[1]: step for step in doc.steps}
+        assert steps["multi_source"].loop[0].outputSource == ["small", "large"]
+        assert steps["multi_source"].loop[0].pickValue == "the_only_non_null"
+        assert steps["value_from_default"].loop[0].default == 5
+        assert steps["all_iterations"].outputMethod == "all_iterations"
+
+    def test_invalid_output_method_rejected(self):
+        with pytest.raises(SchemaSaladException):
+            _load_format2(load_contents("synthetic-loop-bad-output-method.gxwf.yml"))
