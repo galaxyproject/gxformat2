@@ -286,3 +286,37 @@ test_lint_loop_invalid_native:
       value: LoopReferenceNotFound
     - path: [errors, 10, json_pointer]
       value: "/steps/10/loop"
+
+# --- Real Galaxy export (saved in the workflow editor of Galaxy's workflow-loop branch) ---
+
+test_loop_real_export_valid_native_strict:
+  fixture: real-workflow-loop.ga
+  operation: validate_native_strict
+
+test_loop_real_export_to_format2:
+  fixture: real-workflow-loop.ga
+  operation: to_format2
+  assertions:
+    - path: [steps, {label: loop}, when]
+      value: "$(inputs.i1 < 3)"
+    - path: [steps, {label: loop}, loop, 0, id]
+      value: i1
+    - path: [steps, {label: loop}, loop, 0, default]
+      value: 1
+    - path: [steps, {label: loop}, loop, 0, valueFrom]
+      value: "$(self + 1)"
+    - path: [steps, {label: loop}, loop, 1, outputSource]
+      value: [o1, o2]
+    - path: [steps, {label: loop}, loop, 1, pickValue]
+      value: first_non_null
+    - path: [steps, {label: loop}, loop, 2, outputSource]
+      value: o1
+    - path: [steps, {label: loop}, outputMethod]
+      value: all_iterations
+
+test_lint_loop_real_export_native:
+  fixture: real-workflow-loop.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0

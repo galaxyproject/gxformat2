@@ -44,6 +44,7 @@ from gxformat2.normalized import (
     resolve_source_reference,
 )
 from gxformat2.normalized._conversion import (
+    _resolve_step_type,
     format2_input_step_type,
     native_input_label,
     native_input_to_format2_type,
@@ -260,7 +261,9 @@ def _lint_format2_loop(lint_context: LintContext, step: NormalizedWorkflowStep) 
     _lint_loop(
         lint_context,
         step_name,
-        is_subworkflow_step=step.is_subworkflow_step,
+        # As conversion decides: a workflow ``run`` makes a subworkflow step whatever its
+        # ``type``, and Format2 exports write ``type: tool`` on subworkflow steps.
+        is_subworkflow_step=_resolve_step_type(step) == NativeStepType.subworkflow,
         when=step.when,
         rules=[(rule.id, rule) for rule in step.loop],
         fields=FORMAT2_LOOP_FIELDS,

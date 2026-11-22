@@ -14,7 +14,9 @@ import pytest
 from gxformat2.converter import python_to_workflow
 from gxformat2.examples import load
 from gxformat2.export import from_galaxy_native
-from gxformat2.normalized import normalized_format2, NormalizedFormat2
+from gxformat2.lint import lint_format2
+from gxformat2.linting import LintContext
+from gxformat2.normalized import ensure_format2, normalized_format2, NormalizedFormat2
 
 FORMAT2_LOOP_FIXTURES = ["synthetic-loop-single-variable.gxwf.yml", "synthetic-loop-cases.gxwf.yml"]
 
@@ -80,6 +82,26 @@ def test_native_loop_round_trip():
     # Equal up to the default output_method, which Galaxy writes and export leaves out.
     assert "output_method" not in round_tripped["steps"]["2"]["loop"]
     assert _native_loops(round_tripped) == _without_default_output_method(expected)
+
+
+def test_real_galaxy_export_round_trip():
+    native = load("real-workflow-loop.ga")
+    expected = _native_loops(native)
+    assert expected["loop"]["loop"]["output_method"] == "all_iterations"
+
+    round_tripped = python_to_workflow(from_galaxy_native(native))
+
+    assert _native_loops(round_tripped) == _without_default_output_method(expected)
+
+
+def test_real_galaxy_export_lints_clean_as_format2():
+    # Format2 export writes ``type: tool`` on subworkflow steps; lint must still see one.
+    exported = from_galaxy_native(load("real-workflow-loop.ga"))
+    lint_context = LintContext()
+
+    lint_format2(lint_context, ensure_format2(exported, expand=True), raw_dict=exported)
+
+    assert lint_context.error_messages == []
 
 
 def test_exported_loop_is_an_id_map():

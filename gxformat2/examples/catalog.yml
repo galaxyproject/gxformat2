@@ -1585,3 +1585,15 @@
   format: format2
   tests:
     - tests/test_interop_tests.py
+
+- file: native/real-workflow-loop.ga
+  origin: real
+  format: native
+  description: >
+    Unedited Galaxy export (editor save, json-download) from Galaxy's beta
+    workflow-loop branch: a loop step with a default plus value_from rule, a
+    two-output rule with pick_value, a single-output rule, all_iterations and
+    ``when: $(inputs.i1 < 3)``.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_workflow_loop.py
