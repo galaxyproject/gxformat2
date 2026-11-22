@@ -1573,3 +1573,15 @@
     ``output_method``.
   tests:
     - tests/test_schema_rules_catalog.py
+
+- file: format2/synthetic-diff-loop-changed.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-diff-loop-full-form.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py

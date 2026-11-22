@@ -749,3 +749,27 @@ test_diff_relabeled_list_step_prefixes_nested_levels_with_after_key:
       value: ["new/deep/deep_reads -> new/deep/y/input1"]
     - path: [inputs, changed, $length]
       value: 0
+
+test_diff_changed_loop:
+  fixture: synthetic-loop-single-variable.gxwf.yml
+  fixture_after: synthetic-diff-loop-changed.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [steps, changed, count, fields, loop, before]
+      value: {i1: {outputSource: o1}}
+    - path: [steps, changed, count, fields, loop, after]
+      value: {i1: {outputSource: o1, valueFrom: "$(self + 1)"}}
+    - path: [steps, changed, count, fields, outputMethod, before]
+      value: last_iteration
+    - path: [steps, changed, count, fields, outputMethod, after]
+      value: all_iterations
+
+test_diff_loop_shorthand_and_default_output_method_unchanged:
+  fixture: synthetic-loop-single-variable.gxwf.yml
+  fixture_after: synthetic-diff-loop-full-form.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: false

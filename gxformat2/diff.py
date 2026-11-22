@@ -350,6 +350,20 @@ def _input_fields(inp: BaseInputParameter) -> dict[str, Any]:
     return fields
 
 
+def _loop_view(step: NormalizedWorkflowStep) -> dict[str | None, Any] | None:
+    """Loop rules keyed by input id, so the shorthand and full forms compare equal."""
+    if step.loop is None:
+        return None
+    return {rule.id: rule.model_dump(mode="json", exclude={"id"}, exclude_none=True) for rule in step.loop}
+
+
+def _output_method_view(step: NormalizedWorkflowStep) -> str | None:
+    """Return the ``outputMethod`` value; on a loop step a missing one means ``last_iteration``."""
+    if step.outputMethod is not None:
+        return step.outputMethod.value
+    return "last_iteration" if step.loop is not None else None
+
+
 def _step_view(step: NormalizedWorkflowStep, raw_step: Any) -> _StepView:
     fields = {
         "label": step.label,
@@ -357,6 +371,8 @@ def _step_view(step: NormalizedWorkflowStep, raw_step: Any) -> _StepView:
         "tool_id": step.tool_id,
         "tool_version": step.tool_version,
         "when": step.when,
+        "loop": _loop_view(step),
+        "outputMethod": _output_method_view(step),
         "run": _run_reference(step.run),
     }
     raw = raw_step if isinstance(raw_step, dict) else {}
@@ -668,7 +684,7 @@ def render_text(diff: WorkflowDiff) -> str:
 SCRIPT_DESCRIPTION = """
 Compare two Format 2 Galaxy workflows (either may be a GalaxyWorkflowDraft) and
 report added and removed inputs, outputs and steps, per-step changes to tool,
-run, state, when, step input defaults, output actions and connections, and
+run, state, when, loop, step input defaults, output actions and connections, and
 AFTER inputs that feed no step. Inline subworkflows are compared too, their
 step keys prefixed with the parent step key and "/".
 """
