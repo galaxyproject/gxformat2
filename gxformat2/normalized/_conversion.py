@@ -26,8 +26,9 @@ import logging
 import os
 import uuid as uuid_mod
 from collections.abc import Callable
+from enum import Enum
 from pathlib import Path
-from typing import Any, Literal, overload, TypedDict
+from typing import Any, Literal, overload, TypedDict, TypeVar
 
 from pydantic import Field
 
@@ -51,7 +52,11 @@ from ..schema.gxformat2 import (
     FrameComment,
     FreehandComment,
     GalaxyWorkflow,
+    LinkMergeMethod,
+    LoopInput,
+    LoopOutputMethod,
     MarkdownComment,
+    PickValueMethod,
     Report,
 )
 from ..schema.gxformat2 import StepPosition as Format2StepPosition
@@ -75,6 +80,11 @@ from ..schema.native import CreatorPerson as NativeCreatorPerson
 from ..schema.native import (
     NativeGalaxyWorkflow,
     NativeInputConnection,
+    NativeLoop,
+    NativeLoopInput,
+    NativeLoopLinkMerge,
+    NativeLoopOutputMethod,
+    NativeLoopPickValue,
     NativePostJobAction,
     NativeReport,
     NativeStepInput,
@@ -496,6 +506,10 @@ def _build_format2_workflow(
 
     for step in wf.steps.values():
         if step.type_ in INPUT_STEP_TYPES:
+            if step.loop is not None:
+                raise ValueError(
+                    f"Step {step.label or step.id}: a workflow input has a loop, which Format2 cannot hold"
+                )
             input_params.append(_build_input_param(step))
         else:
             fmt2_steps.append(_build_format2_step(step, label_map, options))
@@ -658,6 +672,7 @@ def _build_tool_format2_step(
         post_job_actions=remaining_pjas,
         position=_convert_position(step.position) if not options.compact else None,
         when=step.when,
+        **_loop_to_format2(step.loop),
         uuid=step.uuid,
         errors=step.errors,
     )
@@ -693,6 +708,7 @@ def _build_user_tool_format2_step(
         post_job_actions=remaining_pjas,
         position=_convert_position(step.position) if not compact else None,
         when=step.when,
+        **_loop_to_format2(step.loop),
         uuid=step.uuid,
         errors=step.errors,
     )
@@ -729,8 +745,43 @@ def _build_subworkflow_format2_step(
         post_job_actions=remaining_pjas,
         position=_convert_position(step.position) if not options.compact else None,
         when=step.when,
+        **_loop_to_format2(step.loop),
         uuid=step.uuid,
     )
+
+
+_EnumT = TypeVar("_EnumT", bound=Enum)
+
+
+def _convert_enum(target: type[_EnumT], value: Enum | None) -> _EnumT | None:
+    """Convert between the Format2 and native enums of a loop field, which share their values."""
+    return None if value is None else target(value.value)
+
+
+def _loop_to_format2(loop: NativeLoop | None) -> dict[str, Any]:
+    """Build the Format2 ``loop`` and ``outputMethod`` step fields of a native ``loop``.
+
+    ``outputMethod`` is left out for ``last_iteration``, the default, which Galaxy
+    stores explicitly; converting back then gives a loop without ``output_method``,
+    which Galaxy reads as ``last_iteration``.
+    """
+    if loop is None:
+        return {}
+    rules = [
+        LoopInput(
+            id=input_id,
+            outputSource=rule.output_source,
+            linkMerge=_convert_enum(LinkMergeMethod, rule.link_merge),
+            pickValue=_convert_enum(PickValueMethod, rule.pick_value),
+            default=rule.default,
+            valueFrom=rule.value_from,
+        )
+        for input_id, rule in loop.inputs.items()
+    ]
+    output_method = _convert_enum(LoopOutputMethod, loop.output_method)
+    if output_method == LoopOutputMethod.last_iteration:
+        output_method = None
+    return {"loop": rules, "outputMethod": output_method}
 
 
 def _build_pause_format2_step(
@@ -750,6 +801,7 @@ def _build_pause_format2_step(
         type_=WorkflowStepType.pause,
         in_=in_list,
         position=_convert_position(step.position) if not compact else None,
+        **_loop_to_format2(step.loop),
     )
 
 
@@ -781,6 +833,7 @@ def _build_pick_value_format2_step(
         out=out_list,
         post_job_actions=remaining_pjas,
         position=_convert_position(step.position) if not compact else None,
+        **_loop_to_format2(step.loop),
     )
 
 
@@ -1431,6 +1484,7 @@ def _build_tool_step(
         post_job_actions=post_job_actions,
         position=position,
         when=step.when,
+        loop=_loop_to_native(step),
         uuid=step.uuid,
         errors=step.errors,
         in_=_extract_step_in_defaults(step.in_),
@@ -1481,9 +1535,39 @@ def _build_subworkflow_step(
         post_job_actions=post_job_actions,
         position=position,
         when=step.when,
+        loop=_loop_to_native(step),
         uuid=step.uuid,
         in_=_extract_step_in_defaults(step.in_),
     )
+
+
+def _loop_to_native(step: NormalizedWorkflowStep) -> NativeLoop | None:
+    """Build the native ``loop`` of a Format2 step's ``loop`` and ``outputMethod``.
+
+    The loop is carried on any step type, so that Galaxy refuses a misplaced one.
+    Native workflows keep ``output_method`` inside ``loop``, so an ``outputMethod``
+    on a step without a ``loop`` cannot be converted.
+    """
+    step_name = step.label or step.id
+    if step.loop is None:
+        if step.outputMethod is not None:
+            raise ValueError(
+                f"Step {step_name}: outputMethod is only valid with a loop, and a native step has no field for it"
+            )
+        return None
+    inputs: dict[str, NativeLoopInput] = {}
+    for rule in step.loop:
+        if not rule.id or rule.id in inputs:
+            # Normalization refuses these; guard models built by hand.
+            raise ValueError(f"Step {step_name}: loop input ids must be set and unique, found {rule.id!r}")
+        inputs[rule.id] = NativeLoopInput(
+            output_source=rule.outputSource,
+            link_merge=_convert_enum(NativeLoopLinkMerge, rule.linkMerge),
+            pick_value=_convert_enum(NativeLoopPickValue, rule.pickValue),
+            default=rule.default,
+            value_from=rule.valueFrom,
+        )
+    return NativeLoop(inputs=inputs, output_method=_convert_enum(NativeLoopOutputMethod, step.outputMethod))
 
 
 def _build_pause_step(
@@ -1506,6 +1590,7 @@ def _build_pause_step(
         input_connections=input_connections,
         inputs=[NativeStepInput(name=name, description="")],
         position=position,
+        loop=_loop_to_native(step),
         uuid=step.uuid,
     )
 
@@ -1540,6 +1625,7 @@ def _build_pick_value_step(
         post_job_actions=post_job_actions,
         inputs=[NativeStepInput(name=name, description="")],
         position=position,
+        loop=_loop_to_native(step),
         uuid=step.uuid,
     )
 

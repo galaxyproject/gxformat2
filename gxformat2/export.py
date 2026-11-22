@@ -72,6 +72,7 @@ def from_galaxy_native(
         if isinstance(step, dict):
             _listify_to_idmap(step, "in")
             _listify_to_idmap(step, "out")
+            _listify_to_idmap(step, "loop")
             # Recurse into subworkflow run
             run = step.get("run")
             if isinstance(run, dict) and run.get("steps") is not None:
@@ -99,6 +100,7 @@ def _fixup_format2_dict(data: dict) -> None:
         if isinstance(step, dict):
             _listify_to_idmap(step, "in")
             _listify_to_idmap(step, "out")
+            _listify_to_idmap(step, "loop")
             run = step.get("run")
             if isinstance(run, dict) and run.get("steps") is not None:
                 _fixup_format2_dict(run)

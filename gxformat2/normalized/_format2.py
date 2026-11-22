@@ -27,6 +27,8 @@ from gxformat2.schema.gxformat2 import (
     FrameComment,
     FreehandComment,
     GalaxyWorkflow,
+    LoopInput,
+    LoopOutputMethod,
     MarkdownComment,
     Report,
     StepPosition,
@@ -185,6 +187,10 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
         default_factory=list, alias="in", description="Always a list, shorthands expanded."
     )
     out: list[WorkflowStepOutput] = Field(default_factory=list, description="Always a list, shorthands expanded.")
+    loop: list[LoopInput] | None = Field(
+        default=None, description="A list (empty for ``loop: {}``), shorthands expanded; ``None`` without a loop."
+    )
+    outputMethod: LoopOutputMethod | None = Field(default=None)
     post_job_actions: dict[str, NativePostJobAction] | None = Field(
         default=None,
         description="Explicit post-job actions keyed by ``{ActionType}{OutputName}`` compound strings.",
@@ -701,6 +707,8 @@ def _normalize_step(step: WorkflowStep, strict_structure: bool = False) -> Norma
         errors=step.errors,
         uuid=step.uuid,
         out=out_list,
+        loop=_normalize_loop(step.loop, step.label or step.id or "0"),
+        outputMethod=step.outputMethod,
         post_job_actions=_normalize_post_job_actions(step.post_job_actions),
         run=run,
     )
@@ -793,6 +801,47 @@ def _normalize_step_inputs(
             result.append(WorkflowStepInput.model_validate(value))
         else:
             result.append(WorkflowStepInput(id=key))
+    return result
+
+
+def _normalize_loop(
+    loop: list[LoopInput] | dict[str, LoopInput | str | list[str]] | None,
+    step_name: str,
+) -> list[LoopInput] | None:
+    if loop is None:
+        return None
+    if isinstance(loop, list):
+        rules = [rule if isinstance(rule, LoopInput) else LoopInput.model_validate(rule) for rule in loop]
+    else:
+        rules = _expand_loop_map(loop)
+    # Without an id a rule feeds no input, and a second rule for one input would replace
+    # the first: either way Galaxy would run a different loop than the one written.
+    seen: set[str] = set()
+    for index, rule in enumerate(rules):
+        if not rule.id:
+            raise ValueError(f"Step {step_name}: loop entry {index} has no id naming the input it feeds")
+        if rule.id in seen:
+            raise ValueError(f"Step {step_name}: loop input '{rule.id}' has more than one rule")
+        seen.add(rule.id)
+    return rules
+
+
+def _expand_loop_map(loop: dict[str, LoopInput | str | list[str]]) -> list[LoopInput]:
+    result = []
+    for key, value in loop.items():
+        if isinstance(value, (str, list)):
+            # Shorthand (mapPredicate: outputSource): input_id: output_label, or a list of labels.
+            result.append(LoopInput(id=key, outputSource=value))
+        elif isinstance(value, LoopInput):
+            if value.id is None:
+                value = value.model_copy(update={"id": key})
+            result.append(value)
+        elif isinstance(value, dict):
+            if "id" not in value:
+                value = {**value, "id": key}
+            result.append(LoopInput.model_validate(value))
+        else:
+            result.append(LoopInput(id=key))
     return result
 
 
