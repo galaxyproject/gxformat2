@@ -1,0 +1,1059 @@
+{
+    "name": "Loop lint errors",
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "annotation": "One loop mistake per step, each of which Galaxy refuses when it saves the\nworkflow: lint reports one error per step, two for unknown_references.\n",
+    "tags": [],
+    "uuid": "a4928979-fca9-4d52-bf9f-c265ee4a78ff",
+    "comments": [],
+    "steps": {
+        "0": {
+            "id": 0,
+            "name": "start",
+            "type": "parameter_input",
+            "label": "start",
+            "annotation": "",
+            "tool_state": "{\"name\": \"start\", \"parameter_type\": \"integer\"}",
+            "position": {
+                "top": 0,
+                "left": 0
+            },
+            "input_connections": {},
+            "inputs": [
+                {
+                    "name": "start",
+                    "description": ""
+                }
+            ],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {}
+        },
+        "1": {
+            "id": 1,
+            "name": "add_one",
+            "type": "tool",
+            "label": "tool_loop",
+            "annotation": "",
+            "when": "$(inputs.input < 10)",
+            "tool_state": "{\"__page__\": 0}",
+            "tool_id": "add_one",
+            "position": {
+                "top": 10,
+                "left": 10
+            },
+            "input_connections": {
+                "input": [
+                    {
+                        "id": 0,
+                        "output_name": "output"
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "loop": {
+                "inputs": {
+                    "input": {
+                        "output_source": "output"
+                    }
+                }
+            }
+        },
+        "2": {
+            "id": 2,
+            "type": "subworkflow",
+            "label": "no_when",
+            "annotation": "",
+            "tool_state": "{}",
+            "position": {
+                "top": 20,
+                "left": 20
+            },
+            "input_connections": {
+                "i1": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "af8a2cb1-6d15-448e-a405-0992c731d29c",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "i1",
+                        "type": "parameter_input",
+                        "label": "i1",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"i1\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "i1",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "add_one",
+                        "type": "tool",
+                        "label": "add_one",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "add_one",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "input": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "output"
+                            },
+                            {
+                                "label": "o2",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            },
+            "loop": {
+                "inputs": {
+                    "i1": {
+                        "output_source": "o1"
+                    }
+                }
+            }
+        },
+        "3": {
+            "id": 3,
+            "type": "subworkflow",
+            "label": "empty_loop",
+            "annotation": "",
+            "when": "$(inputs.i1 < 10)",
+            "tool_state": "{}",
+            "position": {
+                "top": 30,
+                "left": 30
+            },
+            "input_connections": {
+                "i1": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "7c1583af-19ae-4ea1-90f8-20037e812dce",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "i1",
+                        "type": "parameter_input",
+                        "label": "i1",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"i1\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "i1",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "add_one",
+                        "type": "tool",
+                        "label": "add_one",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "add_one",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "input": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "output"
+                            },
+                            {
+                                "label": "o2",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            },
+            "loop": {
+                "inputs": {}
+            }
+        },
+        "4": {
+            "id": 4,
+            "type": "subworkflow",
+            "label": "no_value",
+            "annotation": "",
+            "when": "$(inputs.i1 < 10)",
+            "tool_state": "{}",
+            "position": {
+                "top": 40,
+                "left": 40
+            },
+            "input_connections": {
+                "i1": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "3be0ba85-0319-47af-a41e-7e5054bcbf6a",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "i1",
+                        "type": "parameter_input",
+                        "label": "i1",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"i1\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "i1",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "add_one",
+                        "type": "tool",
+                        "label": "add_one",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "add_one",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "input": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "output"
+                            },
+                            {
+                                "label": "o2",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            },
+            "loop": {
+                "inputs": {
+                    "i1": {}
+                }
+            }
+        },
+        "5": {
+            "id": 5,
+            "type": "subworkflow",
+            "label": "one_source",
+            "annotation": "",
+            "when": "$(inputs.i1 < 10)",
+            "tool_state": "{}",
+            "position": {
+                "top": 50,
+                "left": 50
+            },
+            "input_connections": {
+                "i1": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "136fbc71-f1d8-4abd-bd34-1ab640faa48b",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "i1",
+                        "type": "parameter_input",
+                        "label": "i1",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"i1\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "i1",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "add_one",
+                        "type": "tool",
+                        "label": "add_one",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "add_one",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "input": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "output"
+                            },
+                            {
+                                "label": "o2",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            },
+            "loop": {
+                "inputs": {
+                    "i1": {
+                        "output_source": [
+                            "o1"
+                        ]
+                    }
+                }
+            }
+        },
+        "6": {
+            "id": 6,
+            "type": "subworkflow",
+            "label": "no_pick_value",
+            "annotation": "",
+            "when": "$(inputs.i1 < 10)",
+            "tool_state": "{}",
+            "position": {
+                "top": 60,
+                "left": 60
+            },
+            "input_connections": {
+                "i1": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "9490e30c-6b11-44fe-a6ad-18af533c746d",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "i1",
+                        "type": "parameter_input",
+                        "label": "i1",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"i1\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "i1",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "add_one",
+                        "type": "tool",
+                        "label": "add_one",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "add_one",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "input": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "output"
+                            },
+                            {
+                                "label": "o2",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            },
+            "loop": {
+                "inputs": {
+                    "i1": {
+                        "output_source": [
+                            "o1",
+                            "o2"
+                        ]
+                    }
+                }
+            }
+        },
+        "7": {
+            "id": 7,
+            "type": "subworkflow",
+            "label": "all_non_null",
+            "annotation": "",
+            "when": "$(inputs.i1 < 10)",
+            "tool_state": "{}",
+            "position": {
+                "top": 70,
+                "left": 70
+            },
+            "input_connections": {
+                "i1": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "956d4567-9e92-4487-8a78-02c64f438016",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "i1",
+                        "type": "parameter_input",
+                        "label": "i1",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"i1\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "i1",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "add_one",
+                        "type": "tool",
+                        "label": "add_one",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "add_one",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "input": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "output"
+                            },
+                            {
+                                "label": "o2",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            },
+            "loop": {
+                "inputs": {
+                    "i1": {
+                        "output_source": [
+                            "o1",
+                            "o2"
+                        ],
+                        "pick_value": "all_non_null"
+                    }
+                }
+            }
+        },
+        "8": {
+            "id": 8,
+            "type": "subworkflow",
+            "label": "merge_flattened",
+            "annotation": "",
+            "when": "$(inputs.i1 < 10)",
+            "tool_state": "{}",
+            "position": {
+                "top": 80,
+                "left": 80
+            },
+            "input_connections": {
+                "i1": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "148841df-9f4a-4f82-9426-6e19f0649ba3",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "i1",
+                        "type": "parameter_input",
+                        "label": "i1",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"i1\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "i1",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "add_one",
+                        "type": "tool",
+                        "label": "add_one",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "add_one",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "input": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "output"
+                            },
+                            {
+                                "label": "o2",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            },
+            "loop": {
+                "inputs": {
+                    "i1": {
+                        "output_source": [
+                            "o1",
+                            "o2"
+                        ],
+                        "link_merge": "merge_flattened",
+                        "pick_value": "first_non_null"
+                    }
+                }
+            }
+        },
+        "9": {
+            "id": 9,
+            "type": "subworkflow",
+            "label": "pick_value_single_source",
+            "annotation": "",
+            "when": "$(inputs.i1 < 10)",
+            "tool_state": "{}",
+            "position": {
+                "top": 90,
+                "left": 90
+            },
+            "input_connections": {
+                "i1": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "337b37a1-fa36-4e1b-a0e0-01f1ad29cd21",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "i1",
+                        "type": "parameter_input",
+                        "label": "i1",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"i1\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "i1",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "add_one",
+                        "type": "tool",
+                        "label": "add_one",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "add_one",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "input": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "output"
+                            },
+                            {
+                                "label": "o2",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            },
+            "loop": {
+                "inputs": {
+                    "i1": {
+                        "output_source": "o1",
+                        "pick_value": "first_non_null"
+                    }
+                }
+            }
+        },
+        "10": {
+            "id": 10,
+            "type": "subworkflow",
+            "label": "unknown_references",
+            "annotation": "",
+            "when": "$(inputs.i1 < 10)",
+            "tool_state": "{}",
+            "position": {
+                "top": 100,
+                "left": 100
+            },
+            "input_connections": {
+                "i1": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "8ec264fa-2bcc-4688-a494-6149b324bf81",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "i1",
+                        "type": "parameter_input",
+                        "label": "i1",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"i1\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "i1",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "add_one",
+                        "type": "tool",
+                        "label": "add_one",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "add_one",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "input": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "output"
+                            },
+                            {
+                                "label": "o2",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            },
+            "loop": {
+                "inputs": {
+                    "i1": {
+                        "output_source": "o3"
+                    },
+                    "i9": {
+                        "output_source": "o1"
+                    }
+                }
+            }
+        },
+        "11": {
+            "id": 11,
+            "type": "subworkflow",
+            "label": "output_method_without_loop",
+            "annotation": "",
+            "tool_state": "{}",
+            "position": {
+                "top": 110,
+                "left": 110
+            },
+            "input_connections": {
+                "i1": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "706dcd50-4af8-4232-87b2-3a0c4d74c7df",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "i1",
+                        "type": "parameter_input",
+                        "label": "i1",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"i1\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "i1",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "add_one",
+                        "type": "tool",
+                        "label": "add_one",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "add_one",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "input": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "output"
+                            },
+                            {
+                                "label": "o2",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            }
+        }
+    }
+}

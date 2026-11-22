@@ -1541,6 +1541,22 @@
     - tests/test_schema_rules_catalog.py
     - tests/test_workflow_loop.py
 
+- file: format2/synthetic-lint-loop-invalid.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/converted-lint-loop-invalid.ga
+  origin: converted
+  format: native
+  description: >
+    format2/synthetic-lint-loop-invalid.gxwf.yml converted by gxformat2, with a
+    name added by hand. The output_method_without_loop step has no
+    outputMethod, for which native workflows have no field.
+  tests:
+    - tests/test_interop_tests.py
+
 - file: format2/synthetic-loop-bad-output-method.gxwf.yml
   origin: synthetic
   format: format2

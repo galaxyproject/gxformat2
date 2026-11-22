@@ -26,6 +26,15 @@ test_loop_cases_valid_native_strict:
   fixture: converted-loop-cases.ga
   operation: validate_native_strict
 
+# Lint errors, not schema errors: the shape is valid, Galaxy refuses the content.
+test_loop_lint_invalid_valid_format2_strict:
+  fixture: synthetic-lint-loop-invalid.gxwf.yml
+  operation: validate_format2_strict
+
+test_loop_lint_invalid_valid_native_strict:
+  fixture: converted-lint-loop-invalid.ga
+  operation: validate_native_strict
+
 # --- Normalization ---
 
 test_loop_shorthand_normalized:
@@ -59,6 +68,15 @@ test_loop_full_form_normalized:
       value: all_iterations
     - path: [steps, {label: nested}, run, steps, {label: inner}, loop, 0, outputSource]
       value: o1
+
+test_loop_list_shorthand_normalized:
+  fixture: synthetic-lint-loop-invalid.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, {label: no_pick_value}, loop, 0, outputSource]
+      value: [o1, o2]
+    - path: [steps, {label: empty_loop}, loop]
+      value: []
 
 test_loop_normalized_native:
   fixture: converted-loop-cases.ga
@@ -110,6 +128,12 @@ test_loop_to_native_cases:
       value: o1
     - path: [steps, "6", subworkflow, steps, "2", when]
       value: "$(inputs.i1 < inputs.i2)"
+
+# The native step has no field for an outputMethod without a loop.
+test_loop_to_native_output_method_without_loop:
+  fixture: synthetic-lint-loop-invalid.gxwf.yml
+  operation: to_native
+  expect_error: true
 
 test_loop_to_native_no_loop:
   fixture: synthetic-nested-subworkflow.gxwf.yml
@@ -164,3 +188,101 @@ test_loop_to_format2_via_native:
       value: all_iterations
     - path: [steps, {label: nested}, run, steps, {label: inner}, loop, 0, id]
       value: i1
+
+# --- Lint ---
+
+test_lint_loop_cases_clean_format2:
+  fixture: synthetic-loop-cases.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_loop_cases_clean_native:
+  fixture: converted-loop-cases.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_loop_invalid_format2:
+  fixture: synthetic-lint-loop-invalid.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 12
+    - path: [errors, 0]
+      value: "Step tool_loop: a loop is only allowed on a step that runs a subworkflow."
+    - path: [errors, 0, linter]
+      value: LoopNotOnSubworkflowStep
+    - path: [errors, 1]
+      value: "Step no_when: a step with a loop needs a 'when' expression."
+    - path: [errors, 1, linter]
+      value: LoopMissingWhen
+    - path: [errors, 2]
+      value: "Step empty_loop: the loop names no inputs."
+    - path: [errors, 2, linter]
+      value: LoopHasNoInputs
+    - path: [errors, 3]
+      value: "Step no_value: loop input 'i1' needs outputSource, default or valueFrom."
+    - path: [errors, 3, linter]
+      value: LoopInputHasNoValue
+    - path: [errors, 4]
+      value: "Step one_source: loop input 'i1': a list outputSource needs two or more outputs; name a single output without a list."
+    - path: [errors, 4, linter]
+      value: LoopOutputSourceListInvalid
+    - path: [errors, 5]
+      value: "Step no_pick_value: loop input 'i1': a list outputSource needs pickValue 'first_non_null' or 'the_only_non_null'; Galaxy cannot feed a list of the outputs' values into one input."
+    - path: [errors, 6]
+      value_contains: "Step all_non_null: loop input 'i1': a list outputSource needs pickValue"
+    - path: [errors, 7]
+      value: "Step merge_flattened: loop input 'i1': linkMerge 'merge_flattened' is not supported."
+    - path: [errors, 8]
+      value: "Step pick_value_single_source: loop input 'i1': linkMerge and pickValue need a list outputSource."
+    - path: [errors, 8, linter]
+      value: LoopOutputSourceListInvalid
+    - path: [errors, 9]
+      value: "Step unknown_references: loop input 'i1': outputSource 'o3' is not an output of the subworkflow."
+    - path: [errors, 9, linter]
+      value: LoopReferenceNotFound
+    - path: [errors, 10]
+      value: "Step unknown_references: loop input 'i9' is not an input of the subworkflow."
+    - path: [errors, 11]
+      value: "Step output_method_without_loop: outputMethod is only valid with a loop."
+    - path: [errors, 11, linter]
+      value: OutputMethodWithoutLoop
+
+test_lint_loop_invalid_native:
+  fixture: converted-lint-loop-invalid.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 11
+    - path: [errors, 0, linter]
+      value: LoopNotOnSubworkflowStep
+    - path: [errors, 0, json_pointer]
+      value: "/steps/1/loop"
+    - path: [errors, 1, linter]
+      value: LoopMissingWhen
+    - path: [errors, 2, linter]
+      value: LoopHasNoInputs
+    - path: [errors, 3]
+      value: "Step no_value: loop input 'i1' needs output_source, default or value_from."
+    - path: [errors, 4]
+      value: "Step one_source: loop input 'i1': a list output_source needs two or more outputs; name a single output without a list."
+    - path: [errors, 6, linter]
+      value: LoopOutputSourceListInvalid
+    - path: [errors, 7]
+      value: "Step merge_flattened: loop input 'i1': link_merge 'merge_flattened' is not supported."
+    - path: [errors, 8]
+      value: "Step pick_value_single_source: loop input 'i1': link_merge and pick_value need a list output_source."
+    - path: [errors, 9]
+      value: "Step unknown_references: loop input 'i1': output_source 'o3' is not an output of the subworkflow."
+    - path: [errors, 10, linter]
+      value: LoopReferenceNotFound
+    - path: [errors, 10, json_pointer]
+      value: "/steps/10/loop"

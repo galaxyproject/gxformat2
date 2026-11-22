@@ -19,6 +19,13 @@ structural:
     - OutputSourceNotFound
     - InputDefaultTypeInvalid
     - ReportMarkdownInvalid
+    - LoopNotOnSubworkflowStep
+    - LoopMissingWhen
+    - LoopHasNoInputs
+    - LoopInputHasNoValue
+    - LoopOutputSourceListInvalid
+    - LoopReferenceNotFound
+    - OutputMethodWithoutLoop
 
 best-practices:
   description: "Deviations from recommended authoring practice."

@@ -1,0 +1,102 @@
+class: GalaxyWorkflow
+doc: |
+  One loop mistake per step, each of which Galaxy refuses when it saves the
+  workflow: lint reports one error per step, two for unknown_references.
+inputs:
+  start: int
+outputs: {}
+steps:
+  tool_loop:
+    tool_id: add_one
+    in:
+      input: start
+    when: $(inputs.input < 10)
+    loop:
+      input: output
+  no_when:
+    run: &body
+      class: GalaxyWorkflow
+      inputs:
+        i1: int
+      outputs:
+        o1:
+          outputSource: add_one/output
+        o2:
+          outputSource: add_one/output
+      steps:
+        add_one:
+          tool_id: add_one
+          in:
+            input: i1
+    in:
+      i1: start
+    loop:
+      i1: o1
+  empty_loop:
+    run: *body
+    in:
+      i1: start
+    when: $(inputs.i1 < 10)
+    loop: {}
+  no_value:
+    run: *body
+    in:
+      i1: start
+    when: $(inputs.i1 < 10)
+    loop:
+      i1: {}
+  one_source:
+    run: *body
+    in:
+      i1: start
+    when: $(inputs.i1 < 10)
+    loop:
+      i1: [o1]
+  no_pick_value:
+    run: *body
+    in:
+      i1: start
+    when: $(inputs.i1 < 10)
+    loop:
+      i1: [o1, o2]
+  all_non_null:
+    run: *body
+    in:
+      i1: start
+    when: $(inputs.i1 < 10)
+    loop:
+      i1:
+        outputSource: [o1, o2]
+        pickValue: all_non_null
+  merge_flattened:
+    run: *body
+    in:
+      i1: start
+    when: $(inputs.i1 < 10)
+    loop:
+      i1:
+        outputSource: [o1, o2]
+        linkMerge: merge_flattened
+        pickValue: first_non_null
+  pick_value_single_source:
+    run: *body
+    in:
+      i1: start
+    when: $(inputs.i1 < 10)
+    loop:
+      i1:
+        outputSource: o1
+        pickValue: first_non_null
+  unknown_references:
+    run: *body
+    in:
+      i1: start
+    when: $(inputs.i1 < 10)
+    loop:
+      i1: o3
+      i9: o1
+  output_method_without_loop:
+    run: *body
+    in:
+      i1: start
+    outputMethod: all_iterations

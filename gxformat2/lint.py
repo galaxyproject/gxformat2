@@ -24,7 +24,14 @@ from gxformat2.lint_rules import (
     CreatorMissingIdentifier,
     FrameIsEmpty,
     FrameReferenceNotFound,
+    LoopHasNoInputs,
+    LoopInputHasNoValue,
+    LoopMissingWhen,
+    LoopNotOnSubworkflowStep,
+    LoopOutputSourceListInvalid,
+    LoopReferenceNotFound,
     NativeStepKeyNotInteger,
+    OutputMethodWithoutLoop,
     StepLabelNotUnique,
 )
 from gxformat2.linting import LintContext, LintLevel
@@ -73,6 +80,20 @@ ID_FORMATS: dict[IdentifierScheme, str] = {
     "ORCID": "four groups of four digits separated by hyphens, the last character a digit or X",
     "ROR": "a 0, six Crockford base32 characters and two check digits",
 }
+
+
+class _LoopFields(NamedTuple):
+    """Spellings of the loop input fields in one workflow format, also their model attribute names."""
+
+    output_source: str
+    link_merge: str
+    pick_value: str
+    value_from: str
+
+
+FORMAT2_LOOP_FIELDS = _LoopFields("outputSource", "linkMerge", "pickValue", "valueFrom")
+NATIVE_LOOP_FIELDS = _LoopFields("output_source", "link_merge", "pick_value", "value_from")
+SUPPORTED_LOOP_PICK_VALUES = ("first_non_null", "the_only_non_null")
 
 
 class _ReplacementScope(NamedTuple):
@@ -134,6 +155,19 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
             found_outputs = True
             if not workflow_output.label:
                 found_output_without_label = True
+
+        if step.loop is not None:
+            subworkflow = step.subworkflow
+            _lint_loop(
+                _child_context(step_context, "loop"),
+                step.label or order_index_str,
+                is_subworkflow_step=step.type_ == NativeStepType.subworkflow,
+                when=step.when,
+                rules=list(step.loop.inputs.items()),
+                fields=NATIVE_LOOP_FIELDS,
+                subworkflow_inputs=_native_input_labels(subworkflow) if subworkflow else None,
+                subworkflow_outputs=_native_output_labels(subworkflow) if subworkflow else None,
+            )
 
         if step.type_ == NativeStepType.subworkflow and step.subworkflow is not None:
             if not step.subworkflow.steps:
@@ -200,6 +234,7 @@ def lint_format2(lint_context, nf2, raw_dict: dict | None = None, path=None):
     for step in nf2.steps:
         _lint_step_errors(lint_context, step.errors)
         _lint_tool_if_present(lint_context, step.tool_id)
+        _lint_format2_loop(lint_context, step)
         if isinstance(step.run, NormalizedFormat2):
             if not step.run.steps:
                 lint_context.error("subworkflow is missing steps or steps are empty")
@@ -211,6 +246,100 @@ def lint_format2(lint_context, nf2, raw_dict: dict | None = None, path=None):
     _validate_input_types(lint_context, nf2)
     _validate_report(lint_context, nf2.report)
     _lint_training(lint_context, nf2.tags, nf2.doc)
+
+
+def _lint_format2_loop(lint_context: LintContext, step: NormalizedWorkflowStep) -> None:
+    step_name = step.label or step.id
+    if step.loop is None:
+        if step.outputMethod is not None:
+            lint_context.error(
+                f"Step {step_name}: outputMethod is only valid with a loop.", linter=OutputMethodWithoutLoop
+            )
+        return
+    run = step.run if isinstance(step.run, NormalizedFormat2) else None
+    _lint_loop(
+        lint_context,
+        step_name,
+        is_subworkflow_step=step.is_subworkflow_step,
+        when=step.when,
+        rules=[(rule.id, rule) for rule in step.loop],
+        fields=FORMAT2_LOOP_FIELDS,
+        subworkflow_inputs={inp.id for inp in run.inputs if inp.id} if run else None,
+        subworkflow_outputs={out.id for out in run.outputs if out.id} if run else None,
+    )
+
+
+def _native_input_labels(workflow: NormalizedNativeWorkflow) -> set[str]:
+    return {step.label for step in workflow.steps.values() if step.is_input_step and step.label}
+
+
+def _native_output_labels(workflow: NormalizedNativeWorkflow) -> set[str]:
+    return {output.label for step in workflow.steps.values() for output in step.workflow_outputs if output.label}
+
+
+def _lint_loop(
+    lint_context: LintContext,
+    step_name: str,
+    *,
+    is_subworkflow_step: bool,
+    when: str | None,
+    rules: list[tuple[str | None, Any]],
+    fields: _LoopFields,
+    subworkflow_inputs: set[str] | None,
+    subworkflow_outputs: set[str] | None,
+) -> None:
+    """Check a step's loop against the rules Galaxy applies when it saves a workflow.
+
+    ``rules`` pairs each loop input id with its rule model, whose attributes are
+    named by ``fields``; subworkflow labels are ``None`` when the subworkflow isn't inline.
+    """
+    prefix = f"Step {step_name}"
+    if not is_subworkflow_step:
+        lint_context.error(
+            f"{prefix}: a loop is only allowed on a step that runs a subworkflow.", linter=LoopNotOnSubworkflowStep
+        )
+    if not when:
+        lint_context.error(f"{prefix}: a step with a loop needs a 'when' expression.", linter=LoopMissingWhen)
+    if not rules:
+        lint_context.error(f"{prefix}: the loop names no inputs.", linter=LoopHasNoInputs)
+    for input_id, rule in rules:
+        rule_prefix = f"{prefix}: loop input '{input_id}'"
+        output_source = getattr(rule, fields.output_source)
+        if output_source is None and rule.default is None and getattr(rule, fields.value_from) is None:
+            lint_context.error(
+                f"{rule_prefix} needs {fields.output_source}, default or {fields.value_from}.",
+                linter=LoopInputHasNoValue,
+            )
+        if problem := _loop_output_source_problem(
+            output_source, getattr(rule, fields.link_merge), getattr(rule, fields.pick_value), fields
+        ):
+            lint_context.error(f"{rule_prefix}: {problem}", linter=LoopOutputSourceListInvalid)
+        if subworkflow_inputs is not None and input_id not in subworkflow_inputs:
+            lint_context.error(f"{rule_prefix} is not an input of the subworkflow.", linter=LoopReferenceNotFound)
+        sources = output_source if isinstance(output_source, list) else [output_source]
+        for source in sources:
+            if subworkflow_outputs is not None and source is not None and source not in subworkflow_outputs:
+                lint_context.error(
+                    f"{rule_prefix}: {fields.output_source} '{source}' is not an output of the subworkflow.",
+                    linter=LoopReferenceNotFound,
+                )
+
+
+def _loop_output_source_problem(output_source, link_merge, pick_value, fields: _LoopFields) -> str | None:
+    if not isinstance(output_source, list):
+        if link_merge is not None or pick_value is not None:
+            return f"{fields.link_merge} and {fields.pick_value} need a list {fields.output_source}."
+        return None
+    if len(output_source) < 2:
+        return f"a list {fields.output_source} needs two or more outputs; name a single output without a list."
+    if link_merge == "merge_flattened":
+        return f"{fields.link_merge} 'merge_flattened' is not supported."
+    if pick_value not in SUPPORTED_LOOP_PICK_VALUES:
+        return (
+            f"a list {fields.output_source} needs {fields.pick_value} 'first_non_null' or 'the_only_non_null'; "
+            "Galaxy cannot feed a list of the outputs' values into one input."
+        )
+    return None
 
 
 def _validate_output_sources(lint_context, nf2: NormalizedFormat2):

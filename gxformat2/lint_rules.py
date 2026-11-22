@@ -78,3 +78,63 @@ class CreatorIdentifierTypeMismatch(Linter):
     severity = "warning"
     applies_to = ("format2", "native")
     profile = "best-practices"
+
+
+class LoopNotOnSubworkflowStep(Linter):
+    """Only a step that runs a subworkflow may have a ``loop``; Galaxy refuses a loop on any other step."""
+
+    severity = "error"
+    applies_to = ("format2", "native")
+    profile = "structural"
+
+
+class LoopMissingWhen(Linter):
+    """A step with a ``loop`` needs a ``when`` expression, which ends the loop, as in CWL v1.3."""
+
+    severity = "error"
+    applies_to = ("format2", "native")
+    profile = "structural"
+
+
+class LoopHasNoInputs(Linter):
+    """A ``loop`` must name at least one step input fed into the next iteration."""
+
+    severity = "error"
+    applies_to = ("format2", "native")
+    profile = "structural"
+
+
+class LoopInputHasNoValue(Linter):
+    """Each ``loop`` input needs at least one of ``outputSource``, ``default`` and ``valueFrom``."""
+
+    severity = "error"
+    applies_to = ("format2", "native")
+    profile = "structural"
+
+
+class LoopOutputSourceListInvalid(Linter):
+    """Several ``outputSource`` outputs need two or more labels and ``pickValue`` ``first_non_null`` or ``the_only_non_null``.
+
+    Also refused, as Galaxy does: ``linkMerge`` ``merge_flattened``, and ``linkMerge`` or
+    ``pickValue`` on a single ``outputSource``.
+    """
+
+    severity = "error"
+    applies_to = ("format2", "native")
+    profile = "structural"
+
+
+class LoopReferenceNotFound(Linter):
+    """``loop`` inputs must name inputs, and their ``outputSource`` outputs, of the subworkflow the step runs."""
+
+    severity = "error"
+    applies_to = ("format2", "native")
+    profile = "structural"
+
+
+class OutputMethodWithoutLoop(Linter):
+    """``outputMethod`` is only valid on a step with a ``loop``."""
+
+    severity = "error"
+    applies_to = ("format2",)
+    profile = "structural"
