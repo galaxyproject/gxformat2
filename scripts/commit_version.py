@@ -33,8 +33,7 @@ def main(argv):
 
 
 def shell(cmds, **kwds):
-    p = subprocess.Popen(cmds, **kwds)
-    return p.wait()
+    subprocess.run(cmds, check=True, **kwds)
 
 
 if __name__ == "__main__":
