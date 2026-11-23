@@ -672,12 +672,13 @@ $graph:
     - name: default
       type: Any?
       jsonldPredicate:
-        _id: "gxnative:NativeLoopInput/default"
+        _id: "gxnative:default"
         noLinkCheck: true
       doc: |
         Value used when the fed-back value is null or skipped.
     - name: value_from
       type: string?
+      jsonldPredicate: "gxnative:value_from"
       doc: |
         Expression that computes the value for the next iteration.
 
