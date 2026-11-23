@@ -1562,3 +1562,9 @@
   description: format2/synthetic-lint-step-input-value-from.gxwf.yml converted by gxwf-to-native, unedited.
   tests:
     - tests/test_interop_tests.py
+
+- file: format2/synthetic-diff-step-input-value-from-changed.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py

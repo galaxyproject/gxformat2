@@ -118,12 +118,13 @@ class StepSummary(BaseModel):
 
 
 class StepChange(BaseModel):
-    """A step present on both sides whose fields, state, input defaults, output actions or edges differ."""
+    """A step present on both sides whose fields, state, input defaults or valueFroms, output actions or edges differ."""
 
     label: str | None = None
     fields: dict[str, ValueChange] = {}
     state: dict[str, StateChange] = {}
     in_defaults: dict[str, ValueChange] = {}
+    in_value_froms: dict[str, ValueChange] = {}
     out_actions: dict[str, ValueChange] = {}
     connections_in: SetChange = SetChange()
     connections_out: SetChange = SetChange()
@@ -207,6 +208,7 @@ class _StepView:
     fields: dict[str, Any]
     state: dict[str, Any]
     in_defaults: dict[str, Any]
+    in_value_froms: dict[str, str]
     out_actions: dict[str, dict[str, Any]]
     plan_fields: dict[str, str]
     raw_id: str | None
@@ -366,6 +368,7 @@ def _step_view(step: NormalizedWorkflowStep, raw_step: Any) -> _StepView:
         fields=fields,
         state=_flatten_state((step.state if step.state is not None else step.tool_state) or {}),
         in_defaults={inp.id: inp.default for inp in step.in_ if inp.id is not None and inp.default is not None},
+        in_value_froms={inp.id: inp.valueFrom for inp in step.in_ if inp.id is not None and inp.valueFrom is not None},
         out_actions=_out_actions(step),
         plan_fields={field: raw[field] for field in present_plan_fields(raw)},
         raw_id=raw_id if isinstance(raw_id, str) else None,
@@ -472,6 +475,7 @@ def _step_change(before: _Side, after: _Side, key: str) -> StepChange | None:
         fields=_value_changes(b_view.fields, a_view.fields),
         state=_state_changes(b_view.state, a_view.state),
         in_defaults=_value_changes(b_view.in_defaults, a_view.in_defaults),
+        in_value_froms=_value_changes(b_view.in_value_froms, a_view.in_value_froms),
         out_actions=_value_changes(b_view.out_actions, a_view.out_actions),
         connections_in=_set_change(b_edges.connections_in, a_edges.connections_in),
         connections_out=_set_change(b_edges.connections_out, a_edges.connections_out),
@@ -481,7 +485,7 @@ def _step_change(before: _Side, after: _Side, key: str) -> StepChange | None:
         plan_fields_after=a_view.plan_fields,
     )
     # upstream/downstream are node-level views of the port-level edges, so they never decide membership.
-    differs = change.fields or change.state or change.in_defaults or change.out_actions
+    differs = change.fields or change.state or change.in_defaults or change.in_value_froms or change.out_actions
     if not differs and change.connections_in.is_empty and change.connections_out.is_empty:
         return None
     return change
@@ -631,6 +635,9 @@ def _step_change_lines(key: str, change: StepChange) -> list[str]:
         f"    in {port} default: {_value(v.before)} -> {_value(v.after)}" for port, v in change.in_defaults.items()
     )
     lines.extend(
+        f"    in {port} valueFrom: {_value(v.before)} -> {_value(v.after)}" for port, v in change.in_value_froms.items()
+    )
+    lines.extend(
         f"    out {port} actions: {_value(v.before)} -> {_value(v.after)}" for port, v in change.out_actions.items()
     )
     lines.extend(f"    - {edge}" for edge in change.connections_in.removed + change.connections_out.removed)
@@ -668,7 +675,7 @@ def render_text(diff: WorkflowDiff) -> str:
 SCRIPT_DESCRIPTION = """
 Compare two Format 2 Galaxy workflows (either may be a GalaxyWorkflowDraft) and
 report added and removed inputs, outputs and steps, per-step changes to tool,
-run, state, when, step input defaults, output actions and connections, and
+run, state, when, step input defaults and valueFroms, output actions and connections, and
 AFTER inputs that feed no step. Inline subworkflows are compared too, their
 step keys prefixed with the parent step key and "/".
 """

@@ -1,0 +1,49 @@
+class: GalaxyWorkflow
+doc: |
+  synthetic-step-input-value-from.gxwf.yml with on_default's valueFrom changed
+  and on_nothing's removed, for the workflow diff.
+inputs:
+  n: int
+outputs:
+  connected:
+    outputSource: on_connection/output
+  defaulted:
+    outputSource: on_default/output
+  subworkflow:
+    outputSource: subworkflow/inner_echoed
+steps:
+  on_connection:
+    tool_id: gx_int
+    in:
+      parameter:
+        source: n
+        valueFrom: $(self + 1)
+    when: $(inputs.parameter == 5)
+  on_default:
+    tool_id: gx_int
+    in:
+      parameter:
+        default: 4
+        valueFrom: $(self * 3)
+  on_nothing:
+    tool_id: gx_int
+    in:
+      parameter:
+        default: 7
+  subworkflow:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner_int: int
+      outputs:
+        inner_echoed:
+          outputSource: echo/output
+      steps:
+        echo:
+          tool_id: gx_int
+          in:
+            parameter: inner_int
+    in:
+      inner_int:
+        source: n
+        valueFrom: $(self + 1)
