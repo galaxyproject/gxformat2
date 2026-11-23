@@ -13,7 +13,9 @@ from pydantic import ValidationError
 from gxformat2.converter import python_to_workflow
 from gxformat2.examples import load
 from gxformat2.export import from_galaxy_native
-from gxformat2.normalized import normalized_format2, NormalizedFormat2
+from gxformat2.lint import lint_ga
+from gxformat2.linting import LintContext
+from gxformat2.normalized import ensure_native, normalized_format2, NormalizedFormat2
 
 
 def _format2_step_inputs(workflow: dict[str, Any] | NormalizedFormat2) -> dict[str, Any]:
@@ -126,3 +128,13 @@ def test_workflow_without_value_from_gains_no_value_from_keys(fixture):
         assert '"value_from"' not in text
         assert '"valueFrom"' not in text
 
+
+def test_native_null_value_from_is_not_linted():
+    # Conversion and Galaxy treat a null value_from as none.
+    native = load("converted-step-input-value-from.ga")
+    native["steps"]["2"]["in"]["parameter"]["value_from"] = None
+    lint_context = LintContext()
+
+    lint_ga(lint_context, ensure_native(native), raw_dict=native)
+
+    assert lint_context.error_messages == []

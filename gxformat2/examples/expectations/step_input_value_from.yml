@@ -90,3 +90,49 @@ test_step_input_value_from_to_format2:
       value: "$(7)"
     - path: [steps, {label: subworkflow}, in_, 0, valueFrom]
       value: "$(self + 1)"
+
+# --- Lint ---
+
+test_lint_step_input_value_from_clean_format2:
+  fixture: synthetic-step-input-value-from.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_step_input_value_from_clean_native:
+  fixture: converted-step-input-value-from.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_step_input_value_from_empty_format2:
+  fixture: synthetic-lint-step-input-value-from.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 2
+    - path: [errors, 0]
+      value: "Step empty: input 'parameter': valueFrom must be a non-empty expression string."
+    - path: [errors, 0, linter]
+      value: StepInputValueFromInvalid
+    - path: [errors, 1]
+      value: "Step blank: input 'parameter': valueFrom must be a non-empty expression string."
+
+test_lint_step_input_value_from_empty_native:
+  fixture: converted-lint-step-input-value-from.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 2
+    - path: [errors, 0]
+      value: "Step empty: input 'parameter': value_from must be a non-empty expression string."
+    - path: [errors, 0, json_pointer]
+      value: "/steps/1/in/parameter"
+    - path: [errors, 1, linter]
+      value: StepInputValueFromInvalid

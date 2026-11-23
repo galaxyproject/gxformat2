@@ -25,6 +25,7 @@ from gxformat2.lint_rules import (
     FrameIsEmpty,
     FrameReferenceNotFound,
     NativeStepKeyNotInteger,
+    StepInputValueFromInvalid,
     StepLabelNotUnique,
 )
 from gxformat2.linting import LintContext, LintLevel
@@ -143,6 +144,16 @@ def lint_ga(lint_context, nnw, raw_dict: dict | None = None, path=None):
 
         _lint_step_errors(lint_context, step.errors)
         _lint_tool_if_present(lint_context, step.tool_id)
+        for input_name, entry in (step.in_ or {}).items():
+            # A null value_from is no value_from, for conversion and Galaxy alike.
+            if isinstance(entry, dict) and entry.get("value_from") is not None:
+                _lint_value_from(
+                    _child_context(_child_context(step_context, "in"), input_name),
+                    step.label or order_index_str,
+                    input_name,
+                    entry["value_from"],
+                    "value_from",
+                )
 
     _lint_native_input_defaults(lint_context, nnw)
     _validate_report(lint_context, nnw.report)
@@ -200,6 +211,9 @@ def lint_format2(lint_context, nf2, raw_dict: dict | None = None, path=None):
     for step in nf2.steps:
         _lint_step_errors(lint_context, step.errors)
         _lint_tool_if_present(lint_context, step.tool_id)
+        for step_input in step.in_:
+            if step_input.valueFrom is not None:
+                _lint_value_from(lint_context, step.label or step.id, step_input.id, step_input.valueFrom, "valueFrom")
         if isinstance(step.run, NormalizedFormat2):
             if not step.run.steps:
                 lint_context.error("subworkflow is missing steps or steps are empty")
@@ -211,6 +225,20 @@ def lint_format2(lint_context, nf2, raw_dict: dict | None = None, path=None):
     _validate_input_types(lint_context, nf2)
     _validate_report(lint_context, nf2.report)
     _lint_training(lint_context, nf2.tags, nf2.doc)
+
+
+def _lint_value_from(
+    lint_context: LintContext, step_name: str, input_name: str | None, value_from: str, field: str
+) -> None:
+    """Report an empty or blank step input expression; Galaxy checks the rest when it saves the workflow.
+
+    The schema already refuses one that is not a string.
+    """
+    if not value_from.strip():
+        lint_context.error(
+            f"Step {step_name}: input '{input_name}': {field} must be a non-empty expression string.",
+            linter=StepInputValueFromInvalid,
+        )
 
 
 def _validate_output_sources(lint_context, nf2: NormalizedFormat2):

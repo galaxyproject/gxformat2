@@ -1549,3 +1549,16 @@
   tests:
     - tests/test_interop_tests.py
     - tests/test_step_input_value_from.py
+
+- file: format2/synthetic-lint-step-input-value-from.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/converted-lint-step-input-value-from.ga
+  origin: converted
+  format: native
+  description: format2/synthetic-lint-step-input-value-from.gxwf.yml converted by gxwf-to-native, unedited.
+  tests:
+    - tests/test_interop_tests.py

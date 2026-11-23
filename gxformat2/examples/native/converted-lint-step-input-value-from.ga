@@ -1,0 +1,92 @@
+{
+    "name": "Workflow",
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "annotation": "Step input valueFrom expressions that are empty or blank; lint reports each.",
+    "tags": [],
+    "uuid": "df40a58c-d956-4748-a4b5-5df0dab5cf6f",
+    "comments": [],
+    "steps": {
+        "0": {
+            "id": 0,
+            "name": "n",
+            "type": "parameter_input",
+            "label": "n",
+            "annotation": "",
+            "tool_state": "{\"name\": \"n\", \"parameter_type\": \"integer\"}",
+            "position": {
+                "top": 0,
+                "left": 0
+            },
+            "input_connections": {},
+            "inputs": [
+                {
+                    "name": "n",
+                    "description": ""
+                }
+            ],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {}
+        },
+        "1": {
+            "id": 1,
+            "name": "gx_int",
+            "type": "tool",
+            "label": "empty",
+            "annotation": "",
+            "tool_state": "{\"__page__\": 0}",
+            "tool_id": "gx_int",
+            "position": {
+                "top": 10,
+                "left": 10
+            },
+            "input_connections": {
+                "parameter": [
+                    {
+                        "id": 0,
+                        "output_name": "output"
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "in": {
+                "parameter": {
+                    "value_from": ""
+                }
+            }
+        },
+        "2": {
+            "id": 2,
+            "name": "gx_int",
+            "type": "tool",
+            "label": "blank",
+            "annotation": "",
+            "tool_state": "{\"__page__\": 0}",
+            "tool_id": "gx_int",
+            "position": {
+                "top": 20,
+                "left": 20
+            },
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [
+                {
+                    "label": "echoed",
+                    "output_name": "output"
+                }
+            ],
+            "post_job_actions": {},
+            "in": {
+                "parameter": {
+                    "default": 4,
+                    "value_from": "  "
+                }
+            }
+        }
+    }
+}
