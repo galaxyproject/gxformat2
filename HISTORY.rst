@@ -6,7 +6,7 @@ History
 .. to_doc
 
 ---------------------
-0.30.0.dev0
+0.30.0 (2026-11-23)
 ---------------------
 * Reject step cycles in `validate_draft` (thanks to `@jmchilton`_). `Pull Request 294`_
 * Check frame `contains_steps`/`contains_comments` labels in lint and conversion (thanks to `@jmchilton`_). `Pull Request 293`_
