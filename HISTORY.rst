@@ -6,6 +6,12 @@ History
 .. to_doc
 
 ---------------------
+0.31.0.dev0
+---------------------
+
+    
+
+---------------------
 0.30.0 (2026-11-23)
 ---------------------
 * Reject step cycles in `validate_draft` (thanks to `@jmchilton`_). `Pull Request 294`_
