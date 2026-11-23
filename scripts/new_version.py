@@ -16,7 +16,7 @@ def main(argv):
     version = argv[2]
     if not DEV_RELEASE:
         old_version = Version(version)
-        new_version = f"{old_version.major}.{old_version.minor + 1}.0"
+        new_version = f"{old_version.major}.{old_version.minor}.{old_version.micro + 1}"
         new_dev_version = 0
     else:
         dev_version = re.compile(r"dev([\d]+)").search(version).group(1)
@@ -66,8 +66,7 @@ def main(argv):
 
 
 def shell(cmds, **kwds):
-    p = subprocess.Popen(cmds, **kwds)
-    return p.wait()
+    subprocess.run(cmds, check=True, **kwds)
 
 
 if __name__ == "__main__":
