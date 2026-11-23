@@ -132,7 +132,7 @@ for step in nf2.steps:
     step.doc         # str | None (joined if originally a list)
     step.position    # StepPosition | None
     step.run         # NormalizedFormat2 | str | dict | None
-    step.in_         # list[WorkflowStepInput] — always a list
+    step.in_         # list[WorkflowStepInput] — always a list (id, source, default, valueFrom)
     step.out         # list[WorkflowStepOutput] — always a list
     step.connected_paths  # frozenset[str] — input ids with a source connection
 
@@ -294,6 +294,14 @@ input — {py:func}`~gxformat2.normalized.to_format2` expects native input,
   `is_subworkflow_step`, `is_pause_step`, `is_pick_value_step`,
   and `connected_paths` (frozenset of input ids with a source)
   are also available
+- Step input `valueFrom` (CWL `WorkflowStepInput.valueFrom`) is kept on
+  its `WorkflowStepInput`, next to `source` and `default`, and converts
+  to the native step's `in: {name: {value_from: ...}}` (with `default`
+  when there is one), connections staying in `input_connections`. Only
+  the full form of an `in` entry can carry it; the `name: source`
+  shorthand cannot. Lint only checks that it is a non-empty string;
+  Galaxy applies further checks when it saves the workflow (tool and
+  subworkflow steps only, parameter inputs only)
 - `unique_tools` property returns `frozenset[ToolReference]` of all
   `(tool_id, tool_version)` pairs, recursing into inline subworkflows
   (unresolved `@import`/URL refs are skipped; use expanded models for full coverage)
@@ -439,7 +447,7 @@ from gxformat2.schema.gxformat2 import (
     WorkflowStepType,        # Enum: tool, subworkflow, pause, pick_value
     WorkflowInputParameter,  # Input definition
     WorkflowOutputParameter, # Output definition
-    WorkflowStepInput,       # Step input (source, default)
+    WorkflowStepInput,       # Step input (source, default, valueFrom)
     WorkflowStepOutput,      # Step output (id)
     CreatorPerson,           # Creator with name, identifier, ...
     CreatorOrganization,     # Organization creator
