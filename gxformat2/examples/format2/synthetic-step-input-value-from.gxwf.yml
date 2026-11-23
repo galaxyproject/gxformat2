@@ -1,0 +1,50 @@
+class: GalaxyWorkflow
+doc: |
+  valueFrom on step inputs, as CWL WorkflowStepInput.valueFrom: on a connected
+  input, on an input with a default, on an input with neither, and on a
+  subworkflow step's input.
+inputs:
+  n: int
+outputs:
+  connected:
+    outputSource: on_connection/output
+  defaulted:
+    outputSource: on_default/output
+  subworkflow:
+    outputSource: subworkflow/inner_echoed
+steps:
+  on_connection:
+    tool_id: gx_int
+    in:
+      parameter:
+        source: n
+        valueFrom: $(self + 1)
+    when: $(inputs.parameter == 5)
+  on_default:
+    tool_id: gx_int
+    in:
+      parameter:
+        default: 4
+        valueFrom: $(self * 2)
+  on_nothing:
+    tool_id: gx_int
+    in:
+      parameter:
+        valueFrom: $(7)
+  subworkflow:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        inner_int: int
+      outputs:
+        inner_echoed:
+          outputSource: echo/output
+      steps:
+        echo:
+          tool_id: gx_int
+          in:
+            parameter: inner_int
+    in:
+      inner_int:
+        source: n
+        valueFrom: $(self + 1)

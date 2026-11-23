@@ -656,6 +656,22 @@ $graph:
       jsonldPredicate:
         _id: "sld:default"
         noLinkCheck: true
+    - name: valueFrom
+      type: string?
+      jsonldPredicate: "cwl:valueFrom"
+      doc: |
+        An expression that computes this input's value, as CWL
+        `WorkflowStepInput.valueFrom`.  It is evaluated after the value is
+        taken from `source` or `default`, with `self` set to that value (null
+        if there is neither) and `inputs` set to the step's input object
+        before any `valueFrom` is evaluated, so one input's `valueFrom` does
+        not see another's result.  Its result replaces the input's value, and
+        the step's `when` is evaluated on the values after `valueFrom`.
+
+        Galaxy applies further checks when it saves the workflow: it accepts
+        `valueFrom` only on tool and subworkflow steps, and only on parameter
+        inputs, not on data or collection inputs or on parameters inside a
+        conditional, repeat or section.
 
 - type: record
   name: Report

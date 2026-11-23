@@ -14700,6 +14700,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
         source: Any | None = None,
         label: Any | None = None,
         default: Any | None = None,
+        valueFrom: Any | None = None,
         extension_fields: MutableMapping[str, Any] | None = None,
         loadingOptions: LoadingOptions | None = None,
     ) -> None:
@@ -14715,6 +14716,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
         self.source = source
         self.label = label
         self.default = default
+        self.valueFrom = valueFrom
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, WorkflowStepInput):
@@ -14723,11 +14725,12 @@ class WorkflowStepInput(Identified, Sink, Labeled):
                 and self.source == other.source
                 and self.label == other.label
                 and self.default == other.default
+                and self.valueFrom == other.valueFrom
             )
         return False
 
     def __hash__(self) -> int:
-        return hash((self.id, self.source, self.label, self.default))
+        return hash((self.id, self.source, self.label, self.default, self.valueFrom))
 
     @classmethod
     def fromDoc(
@@ -14940,6 +14943,53 @@ class WorkflowStepInput(Identified, Sink, Labeled):
                                 "is not valid because:",
                             )
                         )
+        valueFrom = None
+        if "valueFrom" in _doc:
+            try:
+                valueFrom = _load_field(
+                    _doc.get("valueFrom"),
+                    union_of_None_type_or_strtype,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("valueFrom")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `valueFrom`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("valueFrom")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `valueFrom` field is not valid because:",
+                                SourceLine(_doc, "valueFrom", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `valueFrom` field is not valid because:",
+                                SourceLine(_doc, "valueFrom", str),
+                                [e],
+                                detailed_message=f"the `valueFrom` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
         extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
@@ -14955,7 +15005,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `{}`, expected one of: `id`, `source`, `label`, `default`".format(
+                            "invalid field `{}`, expected one of: `id`, `source`, `label`, `default`, `valueFrom`".format(
                                 k
                             ),
                             SourceLine(_doc, k, str),
@@ -14969,6 +15019,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
             source=source,
             label=label,
             default=default,
+            valueFrom=valueFrom,
             extension_fields=extension_fields,
             loadingOptions=loadingOptions,
         )
@@ -15000,6 +15051,10 @@ class WorkflowStepInput(Identified, Sink, Labeled):
             r["default"] = save(
                 self.default, top=False, base_url=self.id, relative_uris=relative_uris
             )
+        if self.valueFrom is not None:
+            r["valueFrom"] = save(
+                self.valueFrom, top=False, base_url=self.id, relative_uris=relative_uris
+            )
 
         # top refers to the directory level
         if top:
@@ -15009,7 +15064,9 @@ class WorkflowStepInput(Identified, Sink, Labeled):
                 r["$schemas"] = self.loadingOptions.schemas
         return r
 
-    attrs: ClassVar[Collection[str]] = frozenset(["id", "source", "label", "default"])
+    attrs: ClassVar[Collection[str]] = frozenset(
+        ["id", "source", "label", "default", "valueFrom"]
+    )
 
 
 class Report(Saveable):

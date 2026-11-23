@@ -357,7 +357,12 @@ def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
         id=step.id or 0,
         name=step.name,
         type_=step.type_ or NativeStepType.tool,
-        in_=step.in_,
+        # Plain dicts with the keys as written (extra keys included), as before ``in`` was typed.
+        in_=(
+            {name: entry.model_dump(by_alias=True, exclude_unset=True) for name, entry in step.in_.items()}
+            if step.in_ is not None
+            else None
+        ),
         label=step.label,
         annotation=step.annotation,
         when=step.when,
