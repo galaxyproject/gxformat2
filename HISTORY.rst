@@ -8,6 +8,15 @@ History
 ---------------------
 0.30.0.dev0
 ---------------------
+* Reject step cycles in `validate_draft` (thanks to `@jmchilton`_). `Pull Request 294`_
+* Check frame `contains_steps`/`contains_comments` labels in lint and conversion (thanks to `@jmchilton`_). `Pull Request 293`_
+* Restrict pytest to `tests/`; ship lint/schema-rule YAMLs (thanks to `@jmchilton`_). `Pull Request 299`_
+* Add `gxwf-diff`: structural diff of two Format2 workflows (thanks to `@jmchilton`_). `Pull Request 296`_
+* Bump actions/setup-java from 6.1.0 to 6.2.0 in the actions group (thanks to `@dependabot[bot]`_). `Pull Request 302`_
+* Lint ORCID and ROR creator identifiers, with a new info lint level (thanks to `@nsoranzo`_). `Pull Request 300`_
+* Require tox-gh-actions >= 3.5.1 and unpin tox in the Python CI (thanks to `@nsoranzo`_). `Pull Request 303`_
+* Range-check frame `contains_steps`/`contains_comments` indices (thanks to `@jmchilton`_). `Pull Request 298`_
+* Add workflow-level is_based_on (schema.org isBasedOn) (thanks to `@mvdbeek`_). `Pull Request 301`_
 
     
 
@@ -515,6 +524,15 @@ History
   based on planemo testing.
 
 .. github_links
+.. _Pull Request 293: https://github.com/galaxyproject/gxformat2/pull/293
+.. _Pull Request 294: https://github.com/galaxyproject/gxformat2/pull/294
+.. _Pull Request 296: https://github.com/galaxyproject/gxformat2/pull/296
+.. _Pull Request 298: https://github.com/galaxyproject/gxformat2/pull/298
+.. _Pull Request 299: https://github.com/galaxyproject/gxformat2/pull/299
+.. _Pull Request 300: https://github.com/galaxyproject/gxformat2/pull/300
+.. _Pull Request 301: https://github.com/galaxyproject/gxformat2/pull/301
+.. _Pull Request 302: https://github.com/galaxyproject/gxformat2/pull/302
+.. _Pull Request 303: https://github.com/galaxyproject/gxformat2/pull/303
 .. _Pull Request 165: https://github.com/galaxyproject/gxformat2/pull/165
 .. _Pull Request 289: https://github.com/galaxyproject/gxformat2/pull/289
 .. _Pull Request 291: https://github.com/galaxyproject/gxformat2/pull/291
