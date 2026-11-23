@@ -14,9 +14,10 @@ import pytest
 from gxformat2.converter import python_to_workflow
 from gxformat2.examples import load
 from gxformat2.export import from_galaxy_native
-from gxformat2.lint import lint_format2
+from gxformat2.lint import lint_format2, lint_format2_path
 from gxformat2.linting import LintContext
 from gxformat2.normalized import ensure_format2, normalized_format2, NormalizedFormat2
+from gxformat2.yaml import ordered_dump
 
 FORMAT2_LOOP_FIXTURES = ["synthetic-loop-single-variable.gxwf.yml", "synthetic-loop-cases.gxwf.yml"]
 
@@ -175,3 +176,55 @@ def test_native_input_step_with_loop_is_refused():
 
     with pytest.raises(ValueError, match="a workflow input has a loop"):
         from_galaxy_native(native)
+
+
+PICK_VALUES = "first_non_null, the_only_non_null, all_non_null"
+PICK_VALUE_SOMETIMES = f"Step multi_source: loop input 'i1': pickValue is 'sometimes'; it must be one of {PICK_VALUES}"
+
+
+def _with_loop_cases(edit) -> dict[str, Any]:
+    workflow = load("synthetic-loop-cases.gxwf.yml")
+    edit(workflow["steps"])
+    return workflow
+
+
+@pytest.mark.parametrize(
+    "edit,message",
+    [
+        (
+            lambda steps: steps["multi_source"]["loop"]["i1"].update(pickValue="sometimes"),
+            PICK_VALUE_SOMETIMES,
+        ),
+        (
+            lambda steps: steps["multi_source"]["loop"]["i1"].update(linkMerge="nested"),
+            "Step multi_source: loop input 'i1': linkMerge is 'nested'; it must be one of merge_nested, merge_flattened",
+        ),
+        (
+            lambda steps: steps["all_iterations"].update(outputMethod="every"),
+            "Step all_iterations: outputMethod is 'every'; it must be one of last_iteration, all_iterations",
+        ),
+        (
+            lambda steps: steps["nested"]["run"]["steps"]["inner"].update(
+                loop=[{"id": "i1", "outputSource": ["o1", "o1"], "pickValue": "first"}]
+            ),
+            f"Step nested/inner: loop input 'i1': pickValue is 'first'; it must be one of {PICK_VALUES}",
+        ),
+    ],
+    ids=["pickValue", "linkMerge", "outputMethod", "nested_list_form"],
+)
+def test_bad_loop_enum_value_names_step_input_and_field(edit, message):
+    with pytest.raises(ValueError) as exc_info:
+        python_to_workflow(_with_loop_cases(edit))
+
+    assert str(exc_info.value) == message
+
+
+def test_lint_reports_bad_loop_enum_value_by_name(tmp_path):
+    workflow = _with_loop_cases(lambda steps: steps["multi_source"]["loop"]["i1"].update(pickValue="sometimes"))
+    path = tmp_path / "bad-pick-value.gxwf.yml"
+    path.write_text(ordered_dump(workflow))
+    lint_context = LintContext()
+
+    lint_format2_path(lint_context, str(path))
+
+    assert lint_context.error_messages == [f"Failed to parse workflow: {PICK_VALUE_SOMETIMES}"]

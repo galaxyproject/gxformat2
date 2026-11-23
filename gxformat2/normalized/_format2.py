@@ -12,6 +12,7 @@ import copy
 import json
 import os
 from collections.abc import Iterable
+from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, TypeAlias
@@ -27,9 +28,11 @@ from gxformat2.schema.gxformat2 import (
     FrameComment,
     FreehandComment,
     GalaxyWorkflow,
+    LinkMergeMethod,
     LoopInput,
     LoopOutputMethod,
     MarkdownComment,
+    PickValueMethod,
     Report,
     StepPosition,
     TextComment,
@@ -392,6 +395,7 @@ def normalized_format2(
         elif "$graph" in workflow and "class" not in workflow:
             workflow = _resolve_graph(workflow)
         assert isinstance(workflow, dict)
+        _check_loop_enum_values(workflow)
         if strict_structure:
             StrictGalaxyWorkflow.model_validate(workflow)
         # Migrate legacy 'name' to 'label'
@@ -566,6 +570,47 @@ def _pre_normalize_input_types(workflow: dict[str, Any]) -> dict[str, Any]:
     else:
         return workflow
     return {**workflow, "inputs": new_inputs}
+
+
+_LOOP_RULE_ENUMS: dict[str, type[Enum]] = {"linkMerge": LinkMergeMethod, "pickValue": PickValueMethod}
+
+
+def _check_loop_enum_values(workflow: dict[str, Any], step_prefix: str = "") -> None:
+    """Name the step, loop input and field of a loop enum value outside its symbols.
+
+    Validating ``steps`` against its list-or-map union reports such a value under an
+    error for each union branch, none of which names the field plainly.
+    """
+    for key, step in _raw_items(workflow.get("steps"), "label"):
+        if not isinstance(step, dict):
+            continue
+        step_name = f"{step_prefix}{key}"
+        _check_enum_value(step.get("outputMethod"), LoopOutputMethod, f"Step {step_name}: outputMethod")
+        for input_id, rule in _raw_items(step.get("loop"), "id"):
+            if isinstance(rule, dict):
+                for field, enum in _LOOP_RULE_ENUMS.items():
+                    _check_enum_value(rule.get(field), enum, f"Step {step_name}: loop input '{input_id}': {field}")
+        run = step.get("run")
+        if isinstance(run, dict):
+            _check_loop_enum_values(run, f"{step_name}/")
+
+
+def _raw_items(container: Any, key_field: str) -> list[tuple[Any, Any]]:
+    """Pair the entries of a raw id map, or of a list keyed by ``key_field`` (else position), with their keys."""
+    if isinstance(container, dict):
+        return list(container.items())
+    if isinstance(container, list):
+        return [
+            ((item.get(key_field) or item.get("id") or index) if isinstance(item, dict) else index, item)
+            for index, item in enumerate(container)
+        ]
+    return []
+
+
+def _check_enum_value(value: Any, enum: type[Enum], where: str) -> None:
+    allowed = [member.value for member in enum]
+    if value is not None and value not in allowed:
+        raise ValueError(f"{where} is {value!r}; it must be one of {', '.join(allowed)}")
 
 
 def _pre_clean_steps(workflow: dict[str, Any]) -> dict[str, Any]:
