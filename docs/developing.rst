@@ -71,6 +71,46 @@ Fork maintainers can override the defaults::
 
     make check-release UPSTREAM=myfork UPSTREAM_REPO=me/gxformat2
 
+Choosing the version
+--------------------
+
+gxformat2 is still ``0.x``, so the minor number does the job a major number
+would do under semantic versioning. Galaxy and Planemo pin or bound
+gxformat2, so the version tells them whether an upgrade can break them.
+
+* **Patch** (``0.Y.Z`` → ``0.Y.Z+1``) is the default. Use it for bug fixes,
+  documentation, CI and dependency updates, and backward-compatible
+  additions: new optional schema fields, new lint warnings or infos, new
+  functions, commands or options whose defaults keep the old behaviour.
+* **Minor** (``0.Y.Z`` → ``0.Y+1.0``) when a downstream consumer may have to
+  change code or data to upgrade:
+
+  * a public module, function, class, constant, CLI option or declarative
+    operation is removed or renamed, or its signature or return shape
+    changes incompatibly;
+  * the schema or strict validation rejects workflows it used to accept;
+  * conversion, normalization or export output changes for existing
+    workflows, other than fixing a bug;
+  * a supported Python version is dropped or a dependency's minimum is
+    raised past what Galaxy pins.
+
+  One such change makes the whole release minor.
+* **Major** (``1.0.0``) is not a per-release decision. It marks declaring the
+  format and API stable, which the maintainers decide separately.
+
+Bugs fixed by a behaviour change still count as patch, but name the change in
+``HISTORY.rst`` so downstream projects can find it.
+
+Whoever merges a minor-level change bumps ``__version__`` on ``main`` to the
+next minor ``.dev0`` (e.g. ``0.30.1.dev0`` → ``0.31.0.dev0``) in the same PR
+or straight after, so the dev version on ``main`` always names the release it
+will become. After each release ``make release`` starts the next **patch**
+``.dev0``. Before cutting a release, read the unreleased PRs against the
+list above and confirm the ``.devN`` version. If it is wrong, fix
+``__version__`` and the ``.devN`` header in ``HISTORY.rst`` in a commit
+before ``make check-release``. When in doubt, ask the other maintainers
+rather than defaulting either way.
+
 Cutting the release
 -------------------
 
@@ -81,14 +121,15 @@ Cutting the release
    Review the diff to ``HISTORY.rst``, adjust as needed, and commit it
    (``make check-release`` in the next step requires a clean working tree).
 
-2. Confirm the target version in ``gxformat2/__init__.py`` (``__version__``
-   is the ``.devN`` variant of the release you intend to cut).
+2. Confirm the target version in ``gxformat2/__init__.py`` against
+   `Choosing the version`_ (``__version__`` is the ``.devN`` variant of the
+   release you intend to cut). Fix it in a commit if it is wrong.
 
 3. ``make check-release``.
 
 4. ``make release`` — this runs ``commit-version``, ``new-version``, and
    ``push-release``, which commits the version bump, tags the release,
-   bumps ``__version__`` to the next ``.dev0``, and pushes ``main`` plus
+   bumps ``__version__`` to the next patch ``.dev0``, and pushes ``main`` plus
    the tag to ``UPSTREAM``. The pushed tag triggers the PyPI publish
    workflow on GitHub.
 
