@@ -9,9 +9,7 @@ subclass so existing code that treats ``info_messages`` / ``warn_messages`` /
 from __future__ import annotations
 
 import enum
-from typing import ClassVar
-
-from typing_extensions import Self
+from typing import ClassVar, Self
 
 
 class LintLevel(enum.IntEnum):
