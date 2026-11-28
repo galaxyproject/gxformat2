@@ -1,0 +1,138 @@
+# Step input valueFrom (CWL WorkflowStepInput.valueFrom) <-> native in[name].value_from.
+
+# --- Schema validation ---
+
+test_step_input_value_from_valid_format2:
+  fixture: synthetic-step-input-value-from.gxwf.yml
+  operation: validate_format2
+
+test_step_input_value_from_valid_format2_strict:
+  fixture: synthetic-step-input-value-from.gxwf.yml
+  operation: validate_format2_strict
+
+test_step_input_value_from_valid_native:
+  fixture: converted-step-input-value-from.ga
+  operation: validate_native
+
+test_step_input_value_from_valid_native_strict:
+  fixture: converted-step-input-value-from.ga
+  operation: validate_native_strict
+
+# Native ``in`` entries are typed: the lax model keeps an unknown key, strict refuses it.
+test_step_input_value_from_misspelt_valid_native:
+  fixture: converted-step-input-value-from-misspelt.ga
+  operation: validate_native
+
+test_step_input_value_from_misspelt_rejected_native_strict:
+  fixture: converted-step-input-value-from-misspelt.ga
+  operation: validate_native_strict
+  expect_error: true
+
+test_step_input_value_from_not_string_rejected_native:
+  fixture: converted-step-input-value-from-not-string.ga
+  operation: validate_native
+  expect_error: true
+
+test_step_input_value_from_not_string_rejected_to_format2:
+  fixture: converted-step-input-value-from-not-string.ga
+  operation: to_format2
+  expect_error: true
+
+# --- Normalization ---
+
+test_step_input_value_from_normalized:
+  fixture: synthetic-step-input-value-from.gxwf.yml
+  operation: normalized_format2
+  assertions:
+    - path: [steps, {label: on_connection}, in_, 0, source]
+      value: n
+    - path: [steps, {label: on_connection}, in_, 0, valueFrom]
+      value: "$(self + 1)"
+    - path: [steps, {label: on_default}, in_, 0, default]
+      value: 4
+    - path: [steps, {label: on_nothing}, in_, 0, valueFrom]
+      value: "$(7)"
+
+# --- Format2 -> native ---
+
+test_step_input_value_from_to_native:
+  fixture: synthetic-step-input-value-from.gxwf.yml
+  operation: to_native
+  assertions:
+    - path: [steps, "1", in_, parameter]
+      value: {value_from: "$(self + 1)"}
+    - path: [steps, "1", input_connections, parameter, 0, id]
+      value: 0
+    - path: [steps, "2", in_, parameter]
+      value: {default: 4, value_from: "$(self * 2)"}
+    - path: [steps, "3", in_, parameter]
+      value: {value_from: "$(7)"}
+    - path: [steps, "4", in_, inner_int]
+      value: {value_from: "$(self + 1)"}
+    - path: [steps, "4", input_connections, inner_int, 0, input_subworkflow_step_id]
+      value: 0
+
+# --- native -> Format2 ---
+
+test_step_input_value_from_to_format2:
+  fixture: converted-step-input-value-from.ga
+  operation: to_format2
+  assertions:
+    - path: [steps, {label: on_connection}, in_, 0, source]
+      value: n
+    - path: [steps, {label: on_connection}, in_, 0, valueFrom]
+      value: "$(self + 1)"
+    - path: [steps, {label: on_default}, in_, 0, default]
+      value: 4
+    - path: [steps, {label: on_default}, in_, 0, valueFrom]
+      value: "$(self * 2)"
+    - path: [steps, {label: on_nothing}, in_, 0, valueFrom]
+      value: "$(7)"
+    - path: [steps, {label: subworkflow}, in_, 0, valueFrom]
+      value: "$(self + 1)"
+
+# --- Lint ---
+
+test_lint_step_input_value_from_clean_format2:
+  fixture: synthetic-step-input-value-from.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_step_input_value_from_clean_native:
+  fixture: converted-step-input-value-from.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 0
+    - path: [warn_count]
+      value: 0
+
+test_lint_step_input_value_from_empty_format2:
+  fixture: synthetic-lint-step-input-value-from.gxwf.yml
+  operation: lint_format2
+  assertions:
+    - path: [error_count]
+      value: 2
+    - path: [errors, 0]
+      value: "Step empty: input 'parameter': valueFrom must be a non-empty expression string."
+    - path: [errors, 0, linter]
+      value: StepInputValueFromInvalid
+    - path: [errors, 1]
+      value: "Step blank: input 'parameter': valueFrom must be a non-empty expression string."
+
+test_lint_step_input_value_from_empty_native:
+  fixture: converted-lint-step-input-value-from.ga
+  operation: lint_native
+  assertions:
+    - path: [error_count]
+      value: 2
+    - path: [errors, 0]
+      value: "Step empty: input 'parameter': value_from must be a non-empty expression string."
+    - path: [errors, 0, json_pointer]
+      value: "/steps/1/in/parameter"
+    - path: [errors, 1, linter]
+      value: StepInputValueFromInvalid

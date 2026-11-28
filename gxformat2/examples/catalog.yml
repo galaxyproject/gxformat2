@@ -1510,3 +1510,61 @@
   format: format2
   tests:
     - tests/test_interop_tests.py
+
+- file: format2/synthetic-step-input-value-from.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_schema.py
+    - tests/test_step_input_value_from.py
+
+- file: native/converted-step-input-value-from-misspelt.ga
+  origin: converted
+  format: native
+  description: >
+    native/converted-step-input-value-from.ga with the on_connection entry's
+    ``value_from`` misspelt ``valueFrom`` by hand.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/converted-step-input-value-from-not-string.ga
+  origin: converted
+  format: native
+  description: >
+    native/converted-step-input-value-from.ga with the on_default entry's
+    ``value_from`` set to the number 5 by hand.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_step_input_value_from.py
+
+- file: native/converted-step-input-value-from.ga
+  origin: converted
+  format: native
+  description: >
+    format2/synthetic-step-input-value-from.gxwf.yml converted by gxwf-to-native,
+    unedited. Its ``in`` entries have the shape Galaxy exports:
+    ``{"default": ..., "value_from": ...}``, either key alone, next to
+    ``input_connections``.
+  tests:
+    - tests/test_interop_tests.py
+    - tests/test_step_input_value_from.py
+
+- file: format2/synthetic-lint-step-input-value-from.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py
+
+- file: native/converted-lint-step-input-value-from.ga
+  origin: converted
+  format: native
+  description: format2/synthetic-lint-step-input-value-from.gxwf.yml converted by gxwf-to-native, unedited.
+  tests:
+    - tests/test_interop_tests.py
+
+- file: format2/synthetic-diff-step-input-value-from-changed.gxwf.yml
+  origin: synthetic
+  format: format2
+  tests:
+    - tests/test_interop_tests.py

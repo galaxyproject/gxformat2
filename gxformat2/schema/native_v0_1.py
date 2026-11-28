@@ -11388,6 +11388,214 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
     )
 
 
+class NativeStepInputSetting(Saveable):
+    """
+    A step input's entry in the step's ``in`` map. Connections to the input are in ``input_connections``, not here.
+
+    """
+
+    def __init__(
+        self,
+        default: Any | None = None,
+        value_from: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
+    ) -> None:
+        if extension_fields:
+            self.extension_fields = extension_fields
+        else:
+            self.extension_fields = CommentedMap()
+        if loadingOptions:
+            self.loadingOptions = loadingOptions
+        else:
+            self.loadingOptions = LoadingOptions()
+        self.default = default
+        self.value_from = value_from
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, NativeStepInputSetting):
+            return bool(
+                self.default == other.default and self.value_from == other.value_from
+            )
+        return False
+
+    def __hash__(self) -> int:
+        return hash((self.default, self.value_from))
+
+    @classmethod
+    def fromDoc(
+        cls,
+        doc: Any,
+        baseuri: str,
+        loadingOptions: LoadingOptions,
+        docRoot: str | None = None,
+    ) -> Self:
+        _doc = copy.copy(doc)
+
+        if hasattr(doc, "lc"):
+            _doc.lc.data = doc.lc.data
+            _doc.lc.filename = doc.lc.filename
+        _errors__ = []
+        default = None
+        if "default" in _doc:
+            try:
+                default = _load_field(
+                    _doc.get("default"),
+                    union_of_None_type_or_Any_type,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("default")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `default`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("default")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `default` field is not valid because:",
+                                SourceLine(_doc, "default", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `default` field is not valid because:",
+                                SourceLine(_doc, "default", str),
+                                [e],
+                                detailed_message=f"the `default` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        value_from = None
+        if "value_from" in _doc:
+            try:
+                value_from = _load_field(
+                    _doc.get("value_from"),
+                    union_of_None_type_or_strtype,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("value_from")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `value_from`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("value_from")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `value_from` field is not valid because:",
+                                SourceLine(_doc, "value_from", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `value_from` field is not valid because:",
+                                SourceLine(_doc, "value_from", str),
+                                [e],
+                                detailed_message=f"the `value_from` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        extension_fields: MutableMapping[str, Any] = {}
+        for k in _doc.keys():
+            if k not in cls.attrs:
+                if not k:
+                    _errors__.append(
+                        ValidationException("mapping with implicit null key")
+                    )
+                elif ":" in k:
+                    ex = _expand_url(
+                        k, "", loadingOptions, scoped_id=False, vocab_term=False
+                    )
+                    extension_fields[ex] = _doc[k]
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "invalid field `{}`, expected one of: `default`, `value_from`".format(
+                                k
+                            ),
+                            SourceLine(_doc, k, str),
+                        )
+                    )
+
+        if _errors__:
+            raise ValidationException("", None, _errors__, "*")
+        _constructed = cls(
+            default=default,
+            value_from=value_from,
+            extension_fields=extension_fields,
+            loadingOptions=loadingOptions,
+        )
+        return _constructed
+
+    def save(
+        self, top: bool = False, base_url: str = "", relative_uris: bool = True
+    ) -> dict[str, Any]:
+        r: dict[str, Any] = {}
+
+        if relative_uris:
+            for ef in self.extension_fields:
+                r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+        else:
+            for ef in self.extension_fields:
+                r[ef] = self.extension_fields[ef]
+        if self.default is not None:
+            r["default"] = save(
+                self.default, top=False, base_url=base_url, relative_uris=relative_uris
+            )
+        if self.value_from is not None:
+            r["value_from"] = save(
+                self.value_from,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris,
+            )
+
+        # top refers to the directory level
+        if top:
+            if self.loadingOptions.namespaces:
+                r["$namespaces"] = self.loadingOptions.namespaces
+            if self.loadingOptions.schemas:
+                r["$schemas"] = self.loadingOptions.schemas
+        return r
+
+    attrs: ClassVar[Collection[str]] = frozenset(["default", "value_from"])
+
+
 class NativeReport(Saveable):
     """
     Workflow invocation report template.
@@ -13273,6 +13481,7 @@ _vocab.update({
     "NativeSourceMetadata": "https://galaxyproject.org/gxformat2/native_v0_1#NativeSourceMetadata",
     "NativeStep": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStep",
     "NativeStepInput": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepInput",
+    "NativeStepInputSetting": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepInputSetting",
     "NativeStepOutput": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepOutput",
     "NativeStepType": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType",
     "NativeTextComment": "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextComment",
@@ -13339,6 +13548,7 @@ _rvocab.update({
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeSourceMetadata": "NativeSourceMetadata",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStep": "NativeStep",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepInput": "NativeStepInput",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepInputSetting": "NativeStepInputSetting",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepOutput": "NativeStepOutput",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType": "NativeStepType",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeTextComment": "NativeTextComment",
@@ -13494,6 +13704,7 @@ NativeFrameCommentLoader: Final = _RecordLoader(NativeFrameComment, None, None)
 NativeFreehandCommentLoader: Final = _RecordLoader(NativeFreehandComment, None, None)
 NativeCommentLoader: Final = _UnionLoader((), "NativeCommentLoader")
 NativeStepLoader: Final = _RecordLoader(NativeStep, None, None)
+NativeStepInputSettingLoader: Final = _RecordLoader(NativeStepInputSetting, None, None)
 NativeReportLoader: Final = _RecordLoader(NativeReport, None, None)
 NativeCreatorLoader: Final = _UnionLoader((), "NativeCreatorLoader")
 NativeBasedOnWorkLoader: Final = _UnionLoader((), "NativeBasedOnWorkLoader")

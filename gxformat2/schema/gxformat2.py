@@ -527,6 +527,7 @@ class WorkflowStepInput(Identified, Sink, Labeled):
     model_config = ConfigDict(populate_by_name=True, extra="allow")
 
     default: None | Any = Field(default=None, description="The default value for this parameter to use if either there is no `source` field, or the value produced by the `source` is `null`.  The default must be applied prior to scattering or evaluating `va...")
+    valueFrom: None | str = Field(default=None, description="An expression that computes this input's value, as CWL `WorkflowStepInput.valueFrom`.  It is evaluated after the value is taken from `source` or `default`, with `self` set to that value (null if th...")
 
 class Report(BaseModel):
     """Definition of an invocation report for this workflow. Currently the only

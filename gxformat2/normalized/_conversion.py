@@ -788,14 +788,17 @@ def _build_format2_step_inputs(
     step: NormalizedNativeStep,
     label_map: dict[str, str],
 ) -> list[WorkflowStepInput]:
-    """Convert native input_connections to Format2 step inputs."""
+    """Convert native input_connections and ``in`` entries to Format2 step inputs."""
     in_list: list[WorkflowStepInput] = []
-    # Preserve existing 'in' defaults
+    # Preserve existing 'in' defaults and value_from expressions
     defaults: dict[str, Any] = {}
+    value_froms: dict[str, Any] = {}
     if step.in_:
         for key, value in step.in_.items():
             if isinstance(value, dict) and "default" in value:
                 defaults[key] = value["default"]
+            if isinstance(value, dict) and value.get("value_from") is not None:
+                value_froms[key] = value["value_from"]
 
     for input_name, input_defs in step.input_connections.items():
         if not isinstance(input_defs, list):
@@ -819,12 +822,14 @@ def _build_format2_step_inputs(
                 id=actual_name,
                 source=source_val,
                 default=default,
+                valueFrom=value_froms.pop(actual_name, None),
             )
         )
 
-    # Add remaining defaults without connections
-    for key, default in defaults.items():
-        in_list.append(WorkflowStepInput(id=key, default=default))
+    # Add remaining defaults and value_from expressions without connections, in ``in`` order
+    for key in step.in_ or {}:
+        if key in defaults or key in value_froms:
+            in_list.append(WorkflowStepInput(id=key, default=defaults.get(key), valueFrom=value_froms.get(key)))
 
     return in_list
 
@@ -1507,6 +1512,7 @@ def _build_pause_step(
         inputs=[NativeStepInput(name=name, description="")],
         position=position,
         uuid=step.uuid,
+        in_=_extract_step_in_defaults(step.in_, value_from_only=True),
     )
 
 
@@ -1541,6 +1547,7 @@ def _build_pick_value_step(
         inputs=[NativeStepInput(name=name, description="")],
         position=position,
         uuid=step.uuid,
+        in_=_extract_step_in_defaults(step.in_, value_from_only=True),
     )
 
 
@@ -1564,25 +1571,37 @@ def _extract_connections(step: NormalizedWorkflowStep) -> dict[str, list]:
     return connect
 
 
-def _extract_step_in_defaults(step_in_: list[WorkflowStepInput]) -> dict[str, Any] | None:
-    """Collect ``in: {param: {default: ...}}`` entries for native ``step["in"]``.
+def _extract_step_in_defaults(
+    step_in_: list[WorkflowStepInput], value_from_only: bool = False
+) -> dict[str, Any] | None:
+    """Collect ``in: {param: {default: ..., value_from: ...}}`` entries for native ``step["in"]``.
 
     Galaxy reads ``step_dict["in"][name]["default"]`` to seed
-    ``WorkflowStepInput.default_value`` (see
-    ``galaxy.managers.workflows`` ``__module_from_dict``). Format2 surfaces
-    these as ``WorkflowStepInput.default`` on the normalized step; keep them
-    on the native side so tool-state defaults and File-class defaults are
-    not lost.
+    ``WorkflowStepInput.default_value`` and ``["value_from"]`` for
+    ``WorkflowStepInput.value_from`` (see ``galaxy.managers.workflows``
+    ``__module_from_dict``). Format2 surfaces these as
+    ``WorkflowStepInput.default`` and ``valueFrom`` on the normalized step;
+    keep them on the native side so tool-state defaults, File-class defaults
+    and expressions are not lost. ``value_from_only`` keeps only the entries
+    with a ``valueFrom`` (with their default), for step types whose defaults
+    conversion has never carried but whose ``valueFrom`` Galaxy must see to
+    refuse.
     """
-    in_defaults: dict[str, Any] = {}
+    in_entries: dict[str, Any] = {}
     for step_input in step_in_:
         input_id = step_input.id
         if input_id is None:
             continue
-        if step_input.default is None:
+        entry: dict[str, Any] = {}
+        if step_input.default is not None:
+            entry["default"] = step_input.default
+        if step_input.valueFrom is not None:
+            entry["value_from"] = step_input.valueFrom
+        elif value_from_only:
             continue
-        in_defaults[input_id] = {"default": step_input.default}
-    return in_defaults or None
+        if entry:
+            in_entries[input_id] = entry
+    return in_entries or None
 
 
 def _build_input_connections(

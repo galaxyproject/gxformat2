@@ -1,0 +1,20 @@
+class: GalaxyWorkflow
+doc: Step input valueFrom expressions that are empty or blank; lint reports each.
+inputs:
+  n: int
+outputs:
+  echoed:
+    outputSource: blank/output
+steps:
+  empty:
+    tool_id: gx_int
+    in:
+      parameter:
+        source: n
+        valueFrom: ""
+  blank:
+    tool_id: gx_int
+    in:
+      parameter:
+        default: 4
+        valueFrom: "  "

@@ -422,7 +422,16 @@ unencoded tool state is used. Connected parameters are represented as
     post_job_actions: dict[str, NativePostJobAction] | None = Field(default=None, description="Post-job actions applied to outputs after tool execution. Keys are compound strings of the form ``{ActionType}{OutputName}``. Values are NativePostJobAction objects.")
     subworkflow: NativeGalaxyWorkflow | None = Field(default=None, description="Embedded subworkflow definition. A complete native workflow document (with ``a_galaxy_workflow``, ``format-version``, ``steps``, etc.) nested inside this step.")
     tool_representation: dict[str, Any] | None = Field(default=None, description="Embedded tool definition for user-defined (dynamic) tools. Present when the step uses a ``GalaxyUserTool`` instead of a registered tool. Contains the full tool definition including ``class: GalaxyU...")
-    in_: dict[str, Any] | None = Field(default=None, alias="in", description="Default values for step inputs. Keys are parameter names, values are objects with a ``default`` key.")
+    in_: dict[str, NativeStepInputSetting] | None = Field(default=None, alias="in", description="Default values and expressions for step inputs. Keys are parameter names, values are NativeStepInputSetting objects with a ``default``, a ``value_from`` or both.")
+
+class NativeStepInputSetting(BaseModel):
+    """A step input's entry in the step's ``in`` map. Connections to the input
+are in ``input_connections``, not here."""
+
+    model_config = ConfigDict(populate_by_name=True, extra="allow")
+
+    default: None | Any = Field(default=None, description="Value used for the input when it has no connection, or its connection gives null.")
+    value_from: None | str = Field(default=None, description="Expression that computes the input's value, the Format 2 ``valueFrom``: ``self`` is the value from the connection or ``default``, ``inputs`` the step's input object before any ``value_from``.")
 
 class NativeReport(BaseModel):
     """Workflow invocation report template."""
@@ -519,6 +528,7 @@ NativeMarkdownComment.model_rebuild()
 NativeFrameComment.model_rebuild()
 NativeFreehandComment.model_rebuild()
 NativeStep.model_rebuild()
+NativeStepInputSetting.model_rebuild()
 NativeReport.model_rebuild()
 NativeSourceMetadata.model_rebuild()
 NativeGalaxyWorkflow.model_rebuild()

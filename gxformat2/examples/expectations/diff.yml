@@ -9,7 +9,8 @@
 #            upstream[node], downstream[step], workflow_outputs[id], connections[edge] }
 #   id is the step's raw id as written, or null.
 # change:  { label, fields{field: {before, after}}, state{path: {kind, before, after}},
-#            in_defaults{port: {before, after}}, out_actions{port: {before, after}},
+#            in_defaults{port: {before, after}}, in_value_froms{port: {before, after}},
+#            out_actions{port: {before, after}},
 #            connections_in/connections_out/upstream/downstream: {added[], removed[]},
 #            plan_fields_before{}, plan_fields_after{} }
 # Object key order in the result is not part of the contract.
@@ -749,3 +750,23 @@ test_diff_relabeled_list_step_prefixes_nested_levels_with_after_key:
       value: ["new/deep/deep_reads -> new/deep/y/input1"]
     - path: [inputs, changed, $length]
       value: 0
+
+test_diff_changed_step_input_value_from:
+  fixture: synthetic-step-input-value-from.gxwf.yml
+  fixture_after: synthetic-diff-step-input-value-from-changed.gxwf.yml
+  operation: diff_workflows
+  assertions:
+    - path: [has_changes]
+      value: true
+    - path: [steps, changed, $length]
+      value: 2
+    - path: [steps, changed, on_default, in_value_froms, parameter, before]
+      value: "$(self * 2)"
+    - path: [steps, changed, on_default, in_value_froms, parameter, after]
+      value: "$(self * 3)"
+    - path: [steps, changed, on_default, in_defaults, $length]
+      value: 0
+    - path: [steps, changed, on_nothing, in_value_froms, parameter, before]
+      value: "$(7)"
+    - path: [steps, changed, on_nothing, in_value_froms, parameter, after]
+      value: null

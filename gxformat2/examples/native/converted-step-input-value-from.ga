@@ -1,0 +1,218 @@
+{
+    "name": "Workflow",
+    "a_galaxy_workflow": "true",
+    "format-version": "0.1",
+    "annotation": "valueFrom on step inputs, as CWL WorkflowStepInput.valueFrom: on a connected\ninput, on an input with a default, on an input with neither, and on a\nsubworkflow step's input.\n",
+    "tags": [],
+    "uuid": "989ef002-d515-4860-a0cd-5dc974a96f3b",
+    "comments": [],
+    "steps": {
+        "0": {
+            "id": 0,
+            "name": "n",
+            "type": "parameter_input",
+            "label": "n",
+            "annotation": "",
+            "tool_state": "{\"name\": \"n\", \"parameter_type\": \"integer\"}",
+            "position": {
+                "top": 0,
+                "left": 0
+            },
+            "input_connections": {},
+            "inputs": [
+                {
+                    "name": "n",
+                    "description": ""
+                }
+            ],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {}
+        },
+        "1": {
+            "id": 1,
+            "name": "gx_int",
+            "type": "tool",
+            "label": "on_connection",
+            "annotation": "",
+            "when": "$(inputs.parameter == 5)",
+            "tool_state": "{\"__page__\": 0}",
+            "tool_id": "gx_int",
+            "position": {
+                "top": 10,
+                "left": 10
+            },
+            "input_connections": {
+                "parameter": [
+                    {
+                        "id": 0,
+                        "output_name": "output"
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [
+                {
+                    "label": "connected",
+                    "output_name": "output"
+                }
+            ],
+            "post_job_actions": {},
+            "in": {
+                "parameter": {
+                    "value_from": "$(self + 1)"
+                }
+            }
+        },
+        "2": {
+            "id": 2,
+            "name": "gx_int",
+            "type": "tool",
+            "label": "on_default",
+            "annotation": "",
+            "tool_state": "{\"__page__\": 0}",
+            "tool_id": "gx_int",
+            "position": {
+                "top": 20,
+                "left": 20
+            },
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [
+                {
+                    "label": "defaulted",
+                    "output_name": "output"
+                }
+            ],
+            "post_job_actions": {},
+            "in": {
+                "parameter": {
+                    "default": 4,
+                    "value_from": "$(self * 2)"
+                }
+            }
+        },
+        "3": {
+            "id": 3,
+            "name": "gx_int",
+            "type": "tool",
+            "label": "on_nothing",
+            "annotation": "",
+            "tool_state": "{\"__page__\": 0}",
+            "tool_id": "gx_int",
+            "position": {
+                "top": 30,
+                "left": 30
+            },
+            "input_connections": {},
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [],
+            "post_job_actions": {},
+            "in": {
+                "parameter": {
+                    "value_from": "$(7)"
+                }
+            }
+        },
+        "4": {
+            "id": 4,
+            "type": "subworkflow",
+            "label": "subworkflow",
+            "annotation": "",
+            "tool_state": "{}",
+            "position": {
+                "top": 40,
+                "left": 40
+            },
+            "input_connections": {
+                "inner_int": [
+                    {
+                        "id": 0,
+                        "output_name": "output",
+                        "input_subworkflow_step_id": 0
+                    }
+                ]
+            },
+            "inputs": [],
+            "outputs": [],
+            "workflow_outputs": [
+                {
+                    "label": "subworkflow",
+                    "output_name": "inner_echoed"
+                }
+            ],
+            "post_job_actions": {},
+            "subworkflow": {
+                "name": "Workflow",
+                "a_galaxy_workflow": "true",
+                "format-version": "0.1",
+                "annotation": "",
+                "tags": [],
+                "uuid": "cdd8e7d9-86fe-43f8-98a9-f38c4c4aebdb",
+                "comments": [],
+                "steps": {
+                    "0": {
+                        "id": 0,
+                        "name": "inner_int",
+                        "type": "parameter_input",
+                        "label": "inner_int",
+                        "annotation": "",
+                        "tool_state": "{\"name\": \"inner_int\", \"parameter_type\": \"integer\"}",
+                        "position": {
+                            "top": 0,
+                            "left": 0
+                        },
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "name": "inner_int",
+                                "description": ""
+                            }
+                        ],
+                        "outputs": [],
+                        "workflow_outputs": [],
+                        "post_job_actions": {}
+                    },
+                    "1": {
+                        "id": 1,
+                        "name": "gx_int",
+                        "type": "tool",
+                        "label": "echo",
+                        "annotation": "",
+                        "tool_state": "{\"__page__\": 0}",
+                        "tool_id": "gx_int",
+                        "position": {
+                            "top": 10,
+                            "left": 10
+                        },
+                        "input_connections": {
+                            "parameter": [
+                                {
+                                    "id": 0,
+                                    "output_name": "output"
+                                }
+                            ]
+                        },
+                        "inputs": [],
+                        "outputs": [],
+                        "workflow_outputs": [
+                            {
+                                "label": "inner_echoed",
+                                "output_name": "output"
+                            }
+                        ],
+                        "post_job_actions": {}
+                    }
+                }
+            },
+            "in": {
+                "inner_int": {
+                    "value_from": "$(self + 1)"
+                }
+            }
+        }
+    }
+}

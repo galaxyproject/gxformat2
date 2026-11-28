@@ -78,3 +78,11 @@ class CreatorIdentifierTypeMismatch(Linter):
     severity = "warning"
     applies_to = ("format2", "native")
     profile = "best-practices"
+
+
+class StepInputValueFromInvalid(Linter):
+    """A step input ``valueFrom`` must not be empty or blank."""
+
+    severity = "error"
+    applies_to = ("format2", "native")
+    profile = "structural"

@@ -588,13 +588,40 @@ $graph:
         are typically null.
     - name: in
       type: Any?
-      pydantic:type: "dict[str, Any] | None"
+      pydantic:type: "dict[str, NativeStepInputSetting] | None"
       jsonldPredicate:
         _id: "gxnative:NativeStep/in"
         noLinkCheck: true
       doc: |
-        Default values for step inputs. Keys are parameter names, values
-        are objects with a ``default`` key.
+        Default values and expressions for step inputs. Keys are parameter
+        names, values are NativeStepInputSetting objects with a ``default``,
+        a ``value_from`` or both.
+
+- name: NativeStepInputSetting
+  type: record
+  docParent: "#NativeStep"
+  doc: |
+    A step input's entry in the step's ``in`` map. Connections to the input
+    are in ``input_connections``, not here.
+  fields:
+    - name: default
+      type: Any?
+      # Step-agnostic terms, so that other records with these field names
+      # (the loop branch's NativeLoopInput) can share them.
+      jsonldPredicate:
+        _id: "gxnative:default"
+        noLinkCheck: true
+      doc: |
+        Value used for the input when it has no connection, or its
+        connection gives null.
+    - name: value_from
+      type: string?
+      jsonldPredicate: "gxnative:value_from"
+      doc: |
+        Expression that computes the input's value, the Format 2
+        ``valueFrom``: ``self`` is the value from the connection or
+        ``default``, ``inputs`` the step's input object before any
+        ``value_from``.
 
 - name: NativeReport
   type: record

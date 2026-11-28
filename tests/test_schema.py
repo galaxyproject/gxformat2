@@ -10,6 +10,7 @@ import tempfile
 import pytest
 from schema_salad.exceptions import SchemaSaladException
 
+from gxformat2.examples import load_contents
 from gxformat2.schema.v19_09 import load_document
 from gxformat2.yaml import ordered_dump, ordered_load
 
@@ -190,3 +191,13 @@ class TestCommentsSchema:
             },
         ]
         _load_format2_dict(wf)
+
+
+class TestStepInputValueFromSchema:
+
+    def test_value_from_validates(self):
+        doc = _load_format2(load_contents("synthetic-step-input-value-from.gxwf.yml"))
+        steps = {step.id.rsplit("#", 1)[1]: step for step in doc.steps}
+        (on_default,) = steps["on_default"].in_
+        assert on_default.default == 4
+        assert on_default.valueFrom == "$(self * 2)"
