@@ -12,6 +12,7 @@ import copy
 import json
 import os
 from collections.abc import Iterable
+from enum import Enum
 from functools import cached_property
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, TypeAlias
@@ -27,7 +28,11 @@ from gxformat2.schema.gxformat2 import (
     FrameComment,
     FreehandComment,
     GalaxyWorkflow,
+    LinkMergeMethod,
+    LoopInput,
+    LoopOutputMethod,
     MarkdownComment,
+    PickValueMethod,
     Report,
     StepPosition,
     TextComment,
@@ -185,6 +190,10 @@ class NormalizedWorkflowStep(_DictMixin, BaseModel):
         default_factory=list, alias="in", description="Always a list, shorthands expanded."
     )
     out: list[WorkflowStepOutput] = Field(default_factory=list, description="Always a list, shorthands expanded.")
+    loop: list[LoopInput] | None = Field(
+        default=None, description="A list (empty for ``loop: {}``), shorthands expanded; ``None`` without a loop."
+    )
+    outputMethod: LoopOutputMethod | None = Field(default=None)
     post_job_actions: dict[str, NativePostJobAction] | None = Field(
         default=None,
         description="Explicit post-job actions keyed by ``{ActionType}{OutputName}`` compound strings.",
@@ -386,6 +395,7 @@ def normalized_format2(
         elif "$graph" in workflow and "class" not in workflow:
             workflow = _resolve_graph(workflow)
         assert isinstance(workflow, dict)
+        _check_loop_enum_values(workflow)
         if strict_structure:
             StrictGalaxyWorkflow.model_validate(workflow)
         # Migrate legacy 'name' to 'label'
@@ -562,6 +572,47 @@ def _pre_normalize_input_types(workflow: dict[str, Any]) -> dict[str, Any]:
     return {**workflow, "inputs": new_inputs}
 
 
+_LOOP_RULE_ENUMS: dict[str, type[Enum]] = {"linkMerge": LinkMergeMethod, "pickValue": PickValueMethod}
+
+
+def _check_loop_enum_values(workflow: dict[str, Any], step_prefix: str = "") -> None:
+    """Name the step, loop input and field of a loop enum value outside its symbols.
+
+    Validating ``steps`` against its list-or-map union reports such a value under an
+    error for each union branch, none of which names the field plainly.
+    """
+    for key, step in _raw_items(workflow.get("steps"), "label"):
+        if not isinstance(step, dict):
+            continue
+        step_name = f"{step_prefix}{key}"
+        _check_enum_value(step.get("outputMethod"), LoopOutputMethod, f"Step {step_name}: outputMethod")
+        for input_id, rule in _raw_items(step.get("loop"), "id"):
+            if isinstance(rule, dict):
+                for field, enum in _LOOP_RULE_ENUMS.items():
+                    _check_enum_value(rule.get(field), enum, f"Step {step_name}: loop input '{input_id}': {field}")
+        run = step.get("run")
+        if isinstance(run, dict):
+            _check_loop_enum_values(run, f"{step_name}/")
+
+
+def _raw_items(container: Any, key_field: str) -> list[tuple[Any, Any]]:
+    """Pair the entries of a raw id map, or of a list keyed by ``key_field`` (else position), with their keys."""
+    if isinstance(container, dict):
+        return list(container.items())
+    if isinstance(container, list):
+        return [
+            ((item.get(key_field) or item.get("id") or index) if isinstance(item, dict) else index, item)
+            for index, item in enumerate(container)
+        ]
+    return []
+
+
+def _check_enum_value(value: Any, enum: type[Enum], where: str) -> None:
+    allowed = [member.value for member in enum]
+    if value is not None and value not in allowed:
+        raise ValueError(f"{where} is {value!r}; it must be one of {', '.join(allowed)}")
+
+
 def _pre_clean_steps(workflow: dict[str, Any]) -> dict[str, Any]:
     """Resolve ``$link`` entries in step state dicts before model validation.
 
@@ -701,6 +752,8 @@ def _normalize_step(step: WorkflowStep, strict_structure: bool = False) -> Norma
         errors=step.errors,
         uuid=step.uuid,
         out=out_list,
+        loop=_normalize_loop(step.loop, step.label or step.id or "0"),
+        outputMethod=step.outputMethod,
         post_job_actions=_normalize_post_job_actions(step.post_job_actions),
         run=run,
     )
@@ -793,6 +846,47 @@ def _normalize_step_inputs(
             result.append(WorkflowStepInput.model_validate(value))
         else:
             result.append(WorkflowStepInput(id=key))
+    return result
+
+
+def _normalize_loop(
+    loop: list[LoopInput] | dict[str, LoopInput | str | list[str]] | None,
+    step_name: str,
+) -> list[LoopInput] | None:
+    if loop is None:
+        return None
+    if isinstance(loop, list):
+        rules = [rule if isinstance(rule, LoopInput) else LoopInput.model_validate(rule) for rule in loop]
+    else:
+        rules = _expand_loop_map(loop)
+    # Without an id a rule feeds no input, and a second rule for one input would replace
+    # the first: either way Galaxy would run a different loop than the one written.
+    seen: set[str] = set()
+    for index, rule in enumerate(rules):
+        if not rule.id:
+            raise ValueError(f"Step {step_name}: loop entry {index} has no id naming the input it feeds")
+        if rule.id in seen:
+            raise ValueError(f"Step {step_name}: loop input '{rule.id}' has more than one rule")
+        seen.add(rule.id)
+    return rules
+
+
+def _expand_loop_map(loop: dict[str, LoopInput | str | list[str]]) -> list[LoopInput]:
+    result = []
+    for key, value in loop.items():
+        if isinstance(value, (str, list)):
+            # Shorthand (mapPredicate: outputSource): input_id: output_label, or a list of labels.
+            result.append(LoopInput(id=key, outputSource=value))
+        elif isinstance(value, LoopInput):
+            if value.id is None:
+                value = value.model_copy(update={"id": key})
+            result.append(value)
+        elif isinstance(value, dict):
+            if "id" not in value:
+                value = {**value, "id": key}
+            result.append(LoopInput.model_validate(value))
+        else:
+            result.append(LoopInput(id=key))
     return result
 
 

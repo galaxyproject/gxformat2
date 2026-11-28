@@ -621,7 +621,48 @@ $graph:
         `true`.  If `false` the step is skipped.  A skipped step
         produces a `null` on each output.
 
+        On a step with a `loop`, `when` is required and is evaluated before
+        every iteration, including the first, on the inputs of the iteration
+        about to run: the loop stops as soon as it evaluates to `false`.  If it
+        is `false` before the first iteration the step is skipped.
+
         Expression should be an ecma5.1 expression.
+    - name: loop
+      type: LoopInput[]?
+      pydantic:type: "list[LoopInput] | dict[str, LoopInput | str | list[str]] | None"
+      jsonldPredicate:
+        _id: "gxformat2:loop"
+        mapSubject: id
+        mapPredicate: outputSource
+      doc: |
+        Run the subworkflow of this step repeatedly, as the `loop` of a
+        `LoopWorkflowStep` in CWL v1.3 (a draft at the time of writing).  Only
+        a step that runs a subworkflow may have a `loop`, and it must also
+        have a `when`.
+
+        The first iteration takes the step inputs given in `in`.  Each entry
+        of `loop` names a step input (its `id`) and says where that input
+        takes its value from in the next iteration; every other input keeps
+        the value it had in the first iteration.  The shorthand
+        `input_id: output_label` is the same as
+        `input_id: {outputSource: output_label}`.
+
+        Galaxy's support for loops is in beta and must be enabled on the
+        Galaxy server.  Galaxy does not support a loop on a tool step, the
+        `pickValue` method `all_non_null`, the `linkMerge` method
+        `merge_flattened`, nor a list `outputSource` without `pickValue`.
+        Galaxy applies further checks of its own when it saves the
+        workflow.
+    - name: outputMethod
+      type: LoopOutputMethod?
+      jsonldPredicate:
+        _id: "gxformat2:outputMethod"
+        _type: "@vocab"
+      doc: |
+        What the outputs of a step with a `loop` are: those of the last
+        iteration (`last_iteration`, used when not specified) or a list of
+        each output over all iterations (`all_iterations`).  Only valid on a
+        step with a `loop`.
 
 - name: Sink
   type: record
@@ -656,6 +697,97 @@ $graph:
       jsonldPredicate:
         _id: "sld:default"
         noLinkCheck: true
+
+- name: LoopOutputMethod
+  type: enum
+  docParent: "#WorkflowStep"
+  symbols:
+    - last_iteration
+    - all_iterations
+  doc:
+    - "The outputs of a step with a ``loop``, as CWL v1.3 ``LoopOutputMethod``."
+    - "last_iteration: each output is that output of the last iteration that ran. If no iteration ran, the outputs are those of a skipped step."
+    - "all_iterations: each output is a list of that output in every iteration, in iteration order; the list is empty if no iteration ran. In Galaxy, a list collection whose element identifiers are the iteration numbers."
+
+- name: PickValueMethod
+  type: enum
+  docParent: "#LoopInput"
+  symbols:
+    - first_non_null
+    - the_only_non_null
+    - all_non_null
+  doc:
+    - "How one value is picked from the values of several sources, as CWL v1.3 ``PickValueMethod``."
+    - "first_non_null: the first value that is not null; fails if every value is null."
+    - "the_only_non_null: the only value that is not null; fails if every value is null or more than one is not."
+    - "all_non_null: the list of the values that are not null. Not supported by Galaxy."
+
+- name: LinkMergeMethod
+  type: enum
+  docParent: "#LoopInput"
+  symbols:
+    - merge_nested
+    - merge_flattened
+  doc:
+    - "How the values of several sources are merged into a list, as CWL v1.3 ``LinkMergeMethod``."
+    - "merge_nested: a list with one element per source, the default."
+    - "merge_flattened: the values of the sources concatenated into one list. Not supported by Galaxy."
+
+- type: record
+  name: LoopInput
+  extends: [cwl:Identified]
+  docParent: "#WorkflowStep"
+  doc: |
+    Where one input of a step with a `loop` takes its value from in the next
+    iteration, as CWL v1.3 `LoopInput`.  The `id` is the id of the step input
+    (in `in`), which is the label of a subworkflow input.
+
+    The value is computed after each iteration, in this order: the value of
+    `outputSource` (null without one); with a list `outputSource`, the value
+    `pickValue` picks; `default` if that value is null or the output was
+    skipped; then `valueFrom`.  At least one of `outputSource`, `default` and
+    `valueFrom` is required.
+  fields:
+    - name: outputSource
+      type:
+        - string?
+        - string[]?
+      # One JSON-LD term per field name: reuse the implicit predicate of
+      # WorkflowOutputParameter.outputSource, so that term is unchanged.
+      jsonldPredicate: "https://galaxyproject.org/gxformat2/v19_09#WorkflowOutputParameter/outputSource"
+      doc: |
+        The label of the subworkflow output whose value of the iteration that
+        just ran this input takes, or a list of two or more labels with a
+        `pickValue`.  Labels name outputs of the subworkflow this step runs,
+        not steps of the enclosing workflow.
+    - name: linkMerge
+      type: LinkMergeMethod?
+      jsonldPredicate: "cwl:linkMerge"
+      doc: |
+        How the values of a list `outputSource` are merged before `pickValue`
+        picks one; only `merge_nested` (the default) is supported by Galaxy.
+    - name: pickValue
+      type: PickValueMethod?
+      jsonldPredicate: "cwl:pickValue"
+      doc: |
+        How one value is picked from the values of a list `outputSource`,
+        which needs `first_non_null` or `the_only_non_null` in Galaxy.
+    - name: default
+      type: ["null", Any]
+      doc: |
+        The value used if there is no `outputSource`, or if its value is null
+        or the output was skipped.  Applied before `valueFrom`.  Galaxy accepts
+        a default only for a parameter input of the subworkflow.
+      jsonldPredicate:
+        _id: "sld:default"
+        noLinkCheck: true
+    - name: valueFrom
+      type: string?
+      jsonldPredicate: "cwl:valueFrom"
+      doc: |
+        An expression that computes the value for the next iteration.  `self`
+        is the value computed so far and `inputs` the inputs of the iteration
+        that just ran.
 
 - type: record
   name: Report

@@ -134,6 +134,8 @@ for step in nf2.steps:
     step.run         # NormalizedFormat2 | str | dict | None
     step.in_         # list[WorkflowStepInput] — always a list
     step.out         # list[WorkflowStepOutput] — always a list
+    step.loop        # list[LoopInput] | None — workflow loop, shorthands expanded
+    step.outputMethod  # LoopOutputMethod | None — last_iteration or all_iterations
     step.connected_paths  # frozenset[str] — input ids with a source connection
 
 # Workflow-level tool inventory (recurses into inline subworkflows)
@@ -294,6 +296,18 @@ input — {py:func}`~gxformat2.normalized.to_format2` expects native input,
   `is_subworkflow_step`, `is_pause_step`, `is_pick_value_step`,
   and `connected_paths` (frozenset of input ids with a source)
   are also available
+- Step `loop` always a list of `LoopInput` when present (`None`
+  without a loop): the `input_id: output_label` and
+  `input_id: [label, ...]` shorthands are expanded to
+  `LoopInput(id=input_id, outputSource=...)`. A loop entry without an
+  id, or two entries for one input, raise `ValueError`. Export to
+  Format2 leaves out `outputMethod: last_iteration`, the default, so a
+  round trip loses only an explicit default: a native loop converted
+  to Format2 and back loses `output_method: last_iteration`, and a
+  Format2 step converted to native and back loses
+  `outputMethod: last_iteration`. Both mean the same loop.
+  Lint checks the shape of a loop; Galaxy applies further checks of
+  its own when it saves the workflow
 - `unique_tools` property returns `frozenset[ToolReference]` of all
   `(tool_id, tool_version)` pairs, recursing into inline subworkflows
   (unresolved `@import`/URL refs are skipped; use expanded models for full coverage)
@@ -441,6 +455,8 @@ from gxformat2.schema.gxformat2 import (
     WorkflowOutputParameter, # Output definition
     WorkflowStepInput,       # Step input (source, default)
     WorkflowStepOutput,      # Step output (id)
+    LoopInput,               # Workflow loop rule (outputSource, pickValue, default, valueFrom)
+    LoopOutputMethod,        # Enum: last_iteration, all_iterations
     CreatorPerson,           # Creator with name, identifier, ...
     CreatorOrganization,     # Organization creator
     BasedOnWork,             # Upstream work (is_based_on entry)
@@ -451,6 +467,7 @@ from gxformat2.schema.native import (
     NativeStepType,          # Enum: data_input, data_collection_input, ...
     NativeInputConnection,   # Step input connection (id, output_name)
     NativePostJobAction,     # Post-job action definition
+    NativeLoop,              # Step loop (inputs keyed by subworkflow input, output_method)
 )
 ```
 

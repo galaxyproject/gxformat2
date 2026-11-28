@@ -76,3 +76,12 @@ SchemaStrictExtraField:
   tests:
     positive: [synthetic-basic.gxwf.yml, real-unicycler-assembly.ga]
     negative: [synthetic-extra-field.gxwf.yml, synthetic-extra-field-output.gxwf.yml, synthetic-extra-field.ga]
+
+LoopOutputMethodInvalid:
+  severity: error
+  applies_to: [format2, native]
+  scope: both
+  description: "Format2 `outputMethod` and native `loop.output_method` must be `last_iteration` or `all_iterations`."
+  tests:
+    positive: [synthetic-loop-single-variable.gxwf.yml, converted-loop-cases.ga]
+    negative: [synthetic-loop-bad-output-method.gxwf.yml, converted-loop-bad-output-method.ga]

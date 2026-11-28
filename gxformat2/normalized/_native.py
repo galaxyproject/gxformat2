@@ -25,6 +25,7 @@ from gxformat2.schema.native import (
     NativeFreehandComment,
     NativeGalaxyWorkflow,
     NativeInputConnection,
+    NativeLoop,
     NativeMarkdownComment,
     NativePostJobAction,
     NativeReport,
@@ -107,6 +108,7 @@ class NormalizedNativeStep(_DictMixin, BaseModel):
     subworkflow: NormalizedNativeWorkflow | None = Field(default=None)
     tool_representation: dict[str, Any] | None = Field(default=None)
     in_: dict[str, Any] | None = Field(default=None, alias="in")
+    loop: NativeLoop | None = Field(default=None)
 
     @property
     def is_tool_step(self) -> bool:
@@ -378,4 +380,5 @@ def _normalize_step(step: NativeStep) -> NormalizedNativeStep:
         post_job_actions=step.post_job_actions or {},
         subworkflow=subworkflow,
         tool_representation=step.tool_representation,
+        loop=step.loop,
     )

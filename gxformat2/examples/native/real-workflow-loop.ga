@@ -1,0 +1,299 @@
+{
+    "a_galaxy_workflow": "true",
+    "annotation": "",
+    "comments": [],
+    "format-version": "0.1",
+    "name": "Loop export fixture",
+    "report": {
+        "markdown": "\n# Workflow Execution Report\n\n## Workflow Inputs\n```galaxy\ninvocation_inputs()\n```\n\n## Workflow Outputs\n```galaxy\ninvocation_outputs()\n```\n\n## Workflow\n```galaxy\nworkflow_display()\n```\n"
+    },
+    "steps": {
+        "0": {
+            "annotation": "",
+            "content_id": null,
+            "errors": null,
+            "id": 0,
+            "input_connections": {},
+            "inputs": [
+                {
+                    "description": "",
+                    "name": "start"
+                }
+            ],
+            "label": "start",
+            "name": "Input parameter",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 0
+            },
+            "tool_id": null,
+            "tool_state": "{\"multiple\": false, \"validators\": [], \"parameter_type\": \"integer\", \"optional\": false}",
+            "tool_version": null,
+            "type": "parameter_input",
+            "uuid": "6a008eb1-5846-4d2a-a5bd-184f67f9d689",
+            "when": null,
+            "workflow_outputs": []
+        },
+        "1": {
+            "annotation": "",
+            "content_id": null,
+            "errors": null,
+            "id": 1,
+            "input_connections": {},
+            "inputs": [
+                {
+                    "description": "",
+                    "name": "data"
+                }
+            ],
+            "label": "data",
+            "name": "Input dataset",
+            "outputs": [],
+            "position": {
+                "left": 0,
+                "top": 200
+            },
+            "tool_id": null,
+            "tool_state": "{\"optional\": false, \"tag\": null}",
+            "tool_version": null,
+            "type": "data_input",
+            "uuid": "8368c2b8-3fae-4dd8-a013-e2a564423e19",
+            "when": null,
+            "workflow_outputs": []
+        },
+        "2": {
+            "annotation": "Loop export fixture for gxformat2, saved in the workflow editor",
+            "id": 2,
+            "input_connections": {
+                "i1": {
+                    "id": 0,
+                    "input_subworkflow_step_id": 0,
+                    "output_name": "output"
+                },
+                "r2": {
+                    "id": 1,
+                    "input_subworkflow_step_id": 2,
+                    "output_name": "output"
+                },
+                "reads": {
+                    "id": 1,
+                    "input_subworkflow_step_id": 1,
+                    "output_name": "output"
+                }
+            },
+            "inputs": [
+                {
+                    "description": "Loop export fixture for gxformat2, saved in the workflow editor",
+                    "name": "loop"
+                }
+            ],
+            "label": "loop",
+            "loop": {
+                "inputs": {
+                    "i1": {
+                        "default": 1,
+                        "value_from": "$(self + 1)"
+                    },
+                    "r2": {
+                        "output_source": [
+                            "o1",
+                            "o2"
+                        ],
+                        "pick_value": "first_non_null"
+                    },
+                    "reads": {
+                        "output_source": "o1"
+                    }
+                },
+                "output_method": "all_iterations"
+            },
+            "name": "Loop body with two data inputs",
+            "outputs": [],
+            "position": {
+                "left": 350,
+                "top": 50
+            },
+            "subworkflow": {
+                "a_galaxy_workflow": "true",
+                "annotation": "",
+                "comments": [],
+                "format-version": "0.1",
+                "name": "Loop body with two data inputs",
+                "steps": {
+                    "0": {
+                        "annotation": "",
+                        "content_id": null,
+                        "errors": null,
+                        "id": 0,
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "description": "",
+                                "name": "i1"
+                            }
+                        ],
+                        "label": "i1",
+                        "name": "Input parameter",
+                        "outputs": [],
+                        "position": {
+                            "left": 0,
+                            "top": 0
+                        },
+                        "tool_id": null,
+                        "tool_state": "{\"validators\": [], \"parameter_type\": \"integer\", \"optional\": false}",
+                        "tool_version": null,
+                        "type": "parameter_input",
+                        "uuid": "b98bd029-e9c4-45ea-a5ff-10497122385f",
+                        "when": null,
+                        "workflow_outputs": []
+                    },
+                    "1": {
+                        "annotation": "",
+                        "content_id": null,
+                        "errors": null,
+                        "id": 1,
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "description": "",
+                                "name": "reads"
+                            }
+                        ],
+                        "label": "reads",
+                        "name": "Input dataset",
+                        "outputs": [],
+                        "position": {
+                            "left": 0,
+                            "top": 200
+                        },
+                        "tool_id": null,
+                        "tool_state": "{\"optional\": false, \"tag\": null}",
+                        "tool_version": null,
+                        "type": "data_input",
+                        "uuid": "5095c4d6-821f-43b1-90cd-b3b198123327",
+                        "when": null,
+                        "workflow_outputs": []
+                    },
+                    "2": {
+                        "annotation": "",
+                        "content_id": null,
+                        "errors": null,
+                        "id": 2,
+                        "input_connections": {},
+                        "inputs": [
+                            {
+                                "description": "",
+                                "name": "r2"
+                            }
+                        ],
+                        "label": "r2",
+                        "name": "Input dataset",
+                        "outputs": [],
+                        "position": {
+                            "left": 0,
+                            "top": 400
+                        },
+                        "tool_id": null,
+                        "tool_state": "{\"optional\": false, \"tag\": null}",
+                        "tool_version": null,
+                        "type": "data_input",
+                        "uuid": "d7777cab-fb47-43a0-8f72-3bb1cfed1c2f",
+                        "when": null,
+                        "workflow_outputs": []
+                    },
+                    "3": {
+                        "annotation": "",
+                        "content_id": "cat1",
+                        "errors": null,
+                        "id": 3,
+                        "input_connections": {
+                            "input1": {
+                                "id": 1,
+                                "output_name": "output"
+                            }
+                        },
+                        "inputs": [],
+                        "label": "o1",
+                        "name": "Concatenate multiple datasets or collections",
+                        "outputs": [
+                            {
+                                "name": "out_file1",
+                                "type": "input"
+                            }
+                        ],
+                        "position": {
+                            "left": 300,
+                            "top": 0
+                        },
+                        "post_job_actions": {},
+                        "tool_id": "cat1",
+                        "tool_state": "{\"input1\": {\"__class__\": \"ConnectedValue\"}, \"queries\": [], \"__page__\": 0, \"__rerun_remap_job_id__\": null}",
+                        "tool_uuid": null,
+                        "tool_version": "1.0.0",
+                        "type": "tool",
+                        "uuid": "d5889ddb-ca8d-4bdc-8a82-665e47abd195",
+                        "when": null,
+                        "workflow_outputs": [
+                            {
+                                "label": "o1",
+                                "output_name": "out_file1",
+                                "uuid": "d1c98965-2a36-4b60-a579-c28193011d0f"
+                            }
+                        ]
+                    },
+                    "4": {
+                        "annotation": "",
+                        "content_id": "cat1",
+                        "errors": null,
+                        "id": 4,
+                        "input_connections": {
+                            "input1": {
+                                "id": 1,
+                                "output_name": "output"
+                            }
+                        },
+                        "inputs": [],
+                        "label": "o2",
+                        "name": "Concatenate multiple datasets or collections",
+                        "outputs": [
+                            {
+                                "name": "out_file1",
+                                "type": "input"
+                            }
+                        ],
+                        "position": {
+                            "left": 300,
+                            "top": 200
+                        },
+                        "post_job_actions": {},
+                        "tool_id": "cat1",
+                        "tool_state": "{\"input1\": {\"__class__\": \"ConnectedValue\"}, \"queries\": [], \"__page__\": 0, \"__rerun_remap_job_id__\": null}",
+                        "tool_uuid": null,
+                        "tool_version": "1.0.0",
+                        "type": "tool",
+                        "uuid": "5e1da879-2595-4c1e-8303-313cb23703be",
+                        "when": null,
+                        "workflow_outputs": [
+                            {
+                                "label": "o2",
+                                "output_name": "out_file1",
+                                "uuid": "5f61214e-7200-4c5a-8961-0e750cb204f2"
+                            }
+                        ]
+                    }
+                },
+                "tags": [],
+                "uuid": "64a80666-e05e-405e-a3e2-10bd89fe4a21"
+            },
+            "tool_id": null,
+            "type": "subworkflow",
+            "uuid": "5bbc90f9-bb48-4a1b-b161-f21ce679b6b5",
+            "when": "$(inputs.i1 < 3)",
+            "workflow_outputs": []
+        }
+    },
+    "tags": [],
+    "uuid": "8582890d-93d7-4214-bd1d-e08168750db0",
+    "version": 3
+}

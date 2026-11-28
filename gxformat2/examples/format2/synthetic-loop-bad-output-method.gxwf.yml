@@ -1,0 +1,27 @@
+class: GalaxyWorkflow
+doc: An outputMethod outside the CWL v1.3 LoopOutputMethod symbols.
+inputs:
+  start: int
+outputs:
+  count:
+    outputSource: count/o1
+steps:
+  count:
+    run:
+      class: GalaxyWorkflow
+      inputs:
+        i1: int
+      outputs:
+        o1:
+          outputSource: add_one/output
+      steps:
+        add_one:
+          tool_id: add_one
+          in:
+            input: i1
+    in:
+      i1: start
+    when: $(inputs.i1 < 10)
+    loop:
+      i1: o1
+    outputMethod: every_iteration

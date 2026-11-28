@@ -9961,6 +9961,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
         subworkflow: Any | None = None,
         tool_representation: Any | None = None,
         in_: Any | None = None,
+        loop: Any | None = None,
         extension_fields: MutableMapping[str, Any] | None = None,
         loadingOptions: LoadingOptions | None = None,
     ) -> None:
@@ -9995,6 +9996,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
         self.subworkflow = subworkflow
         self.tool_representation = tool_representation
         self.in_ = in_
+        self.loop = loop
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, NativeStep):
@@ -10022,6 +10024,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
                 and self.subworkflow == other.subworkflow
                 and self.tool_representation == other.tool_representation
                 and self.in_ == other.in_
+                and self.loop == other.loop
             )
         return False
 
@@ -10051,6 +10054,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
                 self.subworkflow,
                 self.tool_representation,
                 self.in_,
+                self.loop,
             )
         )
 
@@ -11158,6 +11162,53 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
                                 "is not valid because:",
                             )
                         )
+        loop = None
+        if "loop" in _doc:
+            try:
+                loop = _load_field(
+                    _doc.get("loop"),
+                    union_of_None_type_or_NativeLoopLoader,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("loop")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `loop`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("loop")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `loop` field is not valid because:",
+                                SourceLine(_doc, "loop", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `loop` field is not valid because:",
+                                SourceLine(_doc, "loop", str),
+                                [e],
+                                detailed_message=f"the `loop` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
         extension_fields: MutableMapping[str, Any] = {}
         for k in _doc.keys():
             if k not in cls.attrs:
@@ -11173,7 +11224,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
                 else:
                     _errors__.append(
                         ValidationException(
-                            "invalid field `{}`, expected one of: `errors`, `position`, `uuid`, `tool_id`, `tool_shed_repository`, `tool_version`, `id`, `type`, `name`, `label`, `annotation`, `when`, `content_id`, `tool_state`, `tool_uuid`, `input_connections`, `inputs`, `outputs`, `workflow_outputs`, `post_job_actions`, `subworkflow`, `tool_representation`, `in`".format(
+                            "invalid field `{}`, expected one of: `errors`, `position`, `uuid`, `tool_id`, `tool_shed_repository`, `tool_version`, `id`, `type`, `name`, `label`, `annotation`, `when`, `content_id`, `tool_state`, `tool_uuid`, `input_connections`, `inputs`, `outputs`, `workflow_outputs`, `post_job_actions`, `subworkflow`, `tool_representation`, `in`, `loop`".format(
                                 k
                             ),
                             SourceLine(_doc, k, str),
@@ -11206,6 +11257,7 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
             subworkflow=subworkflow,
             tool_representation=tool_representation,
             in_=in_,
+            loop=loop,
             extension_fields=extension_fields,
             loadingOptions=loadingOptions,
         )
@@ -11350,6 +11402,10 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
             r["in"] = save(
                 self.in_, top=False, base_url=self.name, relative_uris=relative_uris
             )
+        if self.loop is not None:
+            r["loop"] = save(
+                self.loop, top=False, base_url=self.name, relative_uris=relative_uris
+            )
 
         # top refers to the directory level
         if top:
@@ -11384,8 +11440,612 @@ class NativeStep(HasStepErrors, HasStepPosition, HasUUID, ReferencesTool):
             "subworkflow",
             "tool_representation",
             "in",
+            "loop",
         ]
     )
+
+
+class NativeLoopInput(Saveable):
+    """
+    How one input of a loop step gets its value for the next iteration: the value of ``output_source`` (null without one), picked by ``pick_value`` for a list of outputs, then ``default`` if that value is null or skipped, then ``value_from``. At least one of ``output_source``, ``default`` and ``value_from`` is required.
+
+    """
+
+    def __init__(
+        self,
+        output_source: Any | None = None,
+        link_merge: Any | None = None,
+        pick_value: Any | None = None,
+        default: Any | None = None,
+        value_from: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
+    ) -> None:
+        if extension_fields:
+            self.extension_fields = extension_fields
+        else:
+            self.extension_fields = CommentedMap()
+        if loadingOptions:
+            self.loadingOptions = loadingOptions
+        else:
+            self.loadingOptions = LoadingOptions()
+        self.output_source = output_source
+        self.link_merge = link_merge
+        self.pick_value = pick_value
+        self.default = default
+        self.value_from = value_from
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, NativeLoopInput):
+            return bool(
+                self.output_source == other.output_source
+                and self.link_merge == other.link_merge
+                and self.pick_value == other.pick_value
+                and self.default == other.default
+                and self.value_from == other.value_from
+            )
+        return False
+
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.output_source,
+                self.link_merge,
+                self.pick_value,
+                self.default,
+                self.value_from,
+            )
+        )
+
+    @classmethod
+    def fromDoc(
+        cls,
+        doc: Any,
+        baseuri: str,
+        loadingOptions: LoadingOptions,
+        docRoot: str | None = None,
+    ) -> Self:
+        _doc = copy.copy(doc)
+
+        if hasattr(doc, "lc"):
+            _doc.lc.data = doc.lc.data
+            _doc.lc.filename = doc.lc.filename
+        _errors__ = []
+        output_source = None
+        if "output_source" in _doc:
+            try:
+                output_source = _load_field(
+                    _doc.get("output_source"),
+                    union_of_None_type_or_strtype_or_array_of_strtype,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("output_source")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `output_source`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("output_source")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `output_source` field is not valid because:",
+                                SourceLine(_doc, "output_source", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `output_source` field is not valid because:",
+                                SourceLine(_doc, "output_source", str),
+                                [e],
+                                detailed_message=f"the `output_source` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        link_merge = None
+        if "link_merge" in _doc:
+            try:
+                link_merge = _load_field(
+                    _doc.get("link_merge"),
+                    union_of_None_type_or_NativeLoopLinkMergeLoader,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("link_merge")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `link_merge`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("link_merge")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `link_merge` field is not valid because:",
+                                SourceLine(_doc, "link_merge", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `link_merge` field is not valid because:",
+                                SourceLine(_doc, "link_merge", str),
+                                [e],
+                                detailed_message=f"the `link_merge` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        pick_value = None
+        if "pick_value" in _doc:
+            try:
+                pick_value = _load_field(
+                    _doc.get("pick_value"),
+                    union_of_None_type_or_NativeLoopPickValueLoader,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("pick_value")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `pick_value`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("pick_value")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `pick_value` field is not valid because:",
+                                SourceLine(_doc, "pick_value", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `pick_value` field is not valid because:",
+                                SourceLine(_doc, "pick_value", str),
+                                [e],
+                                detailed_message=f"the `pick_value` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        default = None
+        if "default" in _doc:
+            try:
+                default = _load_field(
+                    _doc.get("default"),
+                    union_of_None_type_or_Any_type,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("default")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `default`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("default")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `default` field is not valid because:",
+                                SourceLine(_doc, "default", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `default` field is not valid because:",
+                                SourceLine(_doc, "default", str),
+                                [e],
+                                detailed_message=f"the `default` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        value_from = None
+        if "value_from" in _doc:
+            try:
+                value_from = _load_field(
+                    _doc.get("value_from"),
+                    union_of_None_type_or_strtype,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("value_from")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `value_from`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("value_from")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `value_from` field is not valid because:",
+                                SourceLine(_doc, "value_from", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `value_from` field is not valid because:",
+                                SourceLine(_doc, "value_from", str),
+                                [e],
+                                detailed_message=f"the `value_from` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        extension_fields: MutableMapping[str, Any] = {}
+        for k in _doc.keys():
+            if k not in cls.attrs:
+                if not k:
+                    _errors__.append(
+                        ValidationException("mapping with implicit null key")
+                    )
+                elif ":" in k:
+                    ex = _expand_url(
+                        k, "", loadingOptions, scoped_id=False, vocab_term=False
+                    )
+                    extension_fields[ex] = _doc[k]
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "invalid field `{}`, expected one of: `output_source`, `link_merge`, `pick_value`, `default`, `value_from`".format(
+                                k
+                            ),
+                            SourceLine(_doc, k, str),
+                        )
+                    )
+
+        if _errors__:
+            raise ValidationException("", None, _errors__, "*")
+        _constructed = cls(
+            output_source=output_source,
+            link_merge=link_merge,
+            pick_value=pick_value,
+            default=default,
+            value_from=value_from,
+            extension_fields=extension_fields,
+            loadingOptions=loadingOptions,
+        )
+        return _constructed
+
+    def save(
+        self, top: bool = False, base_url: str = "", relative_uris: bool = True
+    ) -> dict[str, Any]:
+        r: dict[str, Any] = {}
+
+        if relative_uris:
+            for ef in self.extension_fields:
+                r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+        else:
+            for ef in self.extension_fields:
+                r[ef] = self.extension_fields[ef]
+        if self.output_source is not None:
+            r["output_source"] = save(
+                self.output_source,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris,
+            )
+        if self.link_merge is not None:
+            r["link_merge"] = save(
+                self.link_merge,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris,
+            )
+        if self.pick_value is not None:
+            r["pick_value"] = save(
+                self.pick_value,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris,
+            )
+        if self.default is not None:
+            r["default"] = save(
+                self.default, top=False, base_url=base_url, relative_uris=relative_uris
+            )
+        if self.value_from is not None:
+            r["value_from"] = save(
+                self.value_from,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris,
+            )
+
+        # top refers to the directory level
+        if top:
+            if self.loadingOptions.namespaces:
+                r["$namespaces"] = self.loadingOptions.namespaces
+            if self.loadingOptions.schemas:
+                r["$schemas"] = self.loadingOptions.schemas
+        return r
+
+    attrs: ClassVar[Collection[str]] = frozenset(
+        ["output_source", "link_merge", "pick_value", "default", "value_from"]
+    )
+
+
+class NativeLoop(Saveable):
+    """
+    The loop of a subworkflow step. Each entry of ``inputs`` is keyed by a subworkflow input label; inputs without an entry keep the value they had in the first iteration.
+
+    """
+
+    def __init__(
+        self,
+        inputs: Any,
+        output_method: Any | None = None,
+        extension_fields: MutableMapping[str, Any] | None = None,
+        loadingOptions: LoadingOptions | None = None,
+    ) -> None:
+        if extension_fields:
+            self.extension_fields = extension_fields
+        else:
+            self.extension_fields = CommentedMap()
+        if loadingOptions:
+            self.loadingOptions = loadingOptions
+        else:
+            self.loadingOptions = LoadingOptions()
+        self.inputs = inputs
+        self.output_method = output_method
+
+    def __eq__(self, other: Any) -> bool:
+        if isinstance(other, NativeLoop):
+            return bool(
+                self.inputs == other.inputs
+                and self.output_method == other.output_method
+            )
+        return False
+
+    def __hash__(self) -> int:
+        return hash((self.inputs, self.output_method))
+
+    @classmethod
+    def fromDoc(
+        cls,
+        doc: Any,
+        baseuri: str,
+        loadingOptions: LoadingOptions,
+        docRoot: str | None = None,
+    ) -> Self:
+        _doc = copy.copy(doc)
+
+        if hasattr(doc, "lc"):
+            _doc.lc.data = doc.lc.data
+            _doc.lc.filename = doc.lc.filename
+        _errors__ = []
+        try:
+            if _doc.get("inputs") is None:
+                raise ValidationException("missing required field `inputs`", None, [])
+
+            inputs = _load_field(
+                _doc.get("inputs"),
+                Any_type,
+                baseuri,
+                loadingOptions,
+                lc=_doc.get("inputs")
+            )
+
+        except ValidationException as e:
+            error_message, to_print, verb_tensage = parse_errors(str(e))
+
+            if str(e) == "missing required field `inputs`":
+                _errors__.append(
+                    ValidationException(
+                        str(e),
+                        None
+                    )
+                )
+            else:
+                val = _doc.get("inputs")
+                if error_message != str(e):
+                    val_type = convert_typing(extract_type(type(val)))
+                    _errors__.append(
+                        ValidationException(
+                            "the `inputs` field is not valid because:",
+                            SourceLine(_doc, "inputs", str),
+                            [ValidationException(f"Value is a {val_type}, "
+                                                 f"but valid {to_print} for this field "
+                                                 f"{verb_tensage} {error_message}",
+                                                 detailed_message=f"Value `{val}` is a {val_type}, "
+                                                 f"but valid {to_print} for this field "
+                                                 f"{verb_tensage} {error_message}")],
+                        )
+                    )
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "the `inputs` field is not valid because:",
+                            SourceLine(_doc, "inputs", str),
+                            [e],
+                            detailed_message=f"the `inputs` field with value `{val}` "
+                            "is not valid because:",
+                        )
+                    )
+        output_method = None
+        if "output_method" in _doc:
+            try:
+                output_method = _load_field(
+                    _doc.get("output_method"),
+                    union_of_None_type_or_NativeLoopOutputMethodLoader,
+                    baseuri,
+                    loadingOptions,
+                    lc=_doc.get("output_method")
+                )
+
+            except ValidationException as e:
+                error_message, to_print, verb_tensage = parse_errors(str(e))
+
+                if str(e) == "missing required field `output_method`":
+                    _errors__.append(
+                        ValidationException(
+                            str(e),
+                            None
+                        )
+                    )
+                else:
+                    val = _doc.get("output_method")
+                    if error_message != str(e):
+                        val_type = convert_typing(extract_type(type(val)))
+                        _errors__.append(
+                            ValidationException(
+                                "the `output_method` field is not valid because:",
+                                SourceLine(_doc, "output_method", str),
+                                [ValidationException(f"Value is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}",
+                                                     detailed_message=f"Value `{val}` is a {val_type}, "
+                                                     f"but valid {to_print} for this field "
+                                                     f"{verb_tensage} {error_message}")],
+                            )
+                        )
+                    else:
+                        _errors__.append(
+                            ValidationException(
+                                "the `output_method` field is not valid because:",
+                                SourceLine(_doc, "output_method", str),
+                                [e],
+                                detailed_message=f"the `output_method` field with value `{val}` "
+                                "is not valid because:",
+                            )
+                        )
+        extension_fields: MutableMapping[str, Any] = {}
+        for k in _doc.keys():
+            if k not in cls.attrs:
+                if not k:
+                    _errors__.append(
+                        ValidationException("mapping with implicit null key")
+                    )
+                elif ":" in k:
+                    ex = _expand_url(
+                        k, "", loadingOptions, scoped_id=False, vocab_term=False
+                    )
+                    extension_fields[ex] = _doc[k]
+                else:
+                    _errors__.append(
+                        ValidationException(
+                            "invalid field `{}`, expected one of: `inputs`, `output_method`".format(
+                                k
+                            ),
+                            SourceLine(_doc, k, str),
+                        )
+                    )
+
+        if _errors__:
+            raise ValidationException("", None, _errors__, "*")
+        _constructed = cls(
+            inputs=inputs,
+            output_method=output_method,
+            extension_fields=extension_fields,
+            loadingOptions=loadingOptions,
+        )
+        return _constructed
+
+    def save(
+        self, top: bool = False, base_url: str = "", relative_uris: bool = True
+    ) -> dict[str, Any]:
+        r: dict[str, Any] = {}
+
+        if relative_uris:
+            for ef in self.extension_fields:
+                r[prefix_url(ef, self.loadingOptions.vocab)] = self.extension_fields[ef]
+        else:
+            for ef in self.extension_fields:
+                r[ef] = self.extension_fields[ef]
+        if self.inputs is not None:
+            r["inputs"] = save(
+                self.inputs, top=False, base_url=base_url, relative_uris=relative_uris
+            )
+        if self.output_method is not None:
+            r["output_method"] = save(
+                self.output_method,
+                top=False,
+                base_url=base_url,
+                relative_uris=relative_uris,
+            )
+
+        # top refers to the directory level
+        if top:
+            if self.loadingOptions.namespaces:
+                r["$namespaces"] = self.loadingOptions.namespaces
+            if self.loadingOptions.schemas:
+                r["$schemas"] = self.loadingOptions.schemas
+        return r
+
+    attrs: ClassVar[Collection[str]] = frozenset(["inputs", "output_method"])
 
 
 class NativeReport(Saveable):
@@ -13266,6 +13926,11 @@ _vocab.update({
     "NativeFreehandCommentData": "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandCommentData",
     "NativeGalaxyWorkflow": "https://galaxyproject.org/gxformat2/native_v0_1#NativeGalaxyWorkflow",
     "NativeInputConnection": "https://galaxyproject.org/gxformat2/native_v0_1#NativeInputConnection",
+    "NativeLoop": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoop",
+    "NativeLoopInput": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopInput",
+    "NativeLoopLinkMerge": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopLinkMerge",
+    "NativeLoopOutputMethod": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopOutputMethod",
+    "NativeLoopPickValue": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopPickValue",
     "NativeMarkdownComment": "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownComment",
     "NativeMarkdownCommentData": "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownCommentData",
     "NativePostJobAction": "https://galaxyproject.org/gxformat2/native_v0_1#NativePostJobAction",
@@ -13290,15 +13955,21 @@ _vocab.update({
     "ToolShedRepository": "https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository",
     "WorkflowTextOption": "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextOption",
     "WorkflowTextValidator": "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextValidator",
+    "all_iterations": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopOutputMethod/all_iterations",
+    "all_non_null": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopPickValue/all_non_null",
     "array": "https://w3id.org/cwl/salad#array",
     "boolean": "http://www.w3.org/2001/XMLSchema#boolean",
     "data_collection_input": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/data_collection_input",
     "data_input": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/data_input",
     "double": "http://www.w3.org/2001/XMLSchema#double",
     "enum": "https://w3id.org/cwl/salad#enum",
+    "first_non_null": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopPickValue/first_non_null",
     "float": "http://www.w3.org/2001/XMLSchema#float",
     "int": "http://www.w3.org/2001/XMLSchema#int",
+    "last_iteration": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopOutputMethod/last_iteration",
     "long": "http://www.w3.org/2001/XMLSchema#long",
+    "merge_flattened": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopLinkMerge/merge_flattened",
+    "merge_nested": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopLinkMerge/merge_nested",
     "null": "https://w3id.org/cwl/salad#null",
     "parameter_input": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/parameter_input",
     "pause": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/pause",
@@ -13306,6 +13977,7 @@ _vocab.update({
     "record": "https://w3id.org/cwl/salad#record",
     "string": "http://www.w3.org/2001/XMLSchema#string",
     "subworkflow": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/subworkflow",
+    "the_only_non_null": "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopPickValue/the_only_non_null",
     "tool": "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/tool",
 })
 _rvocab.update({
@@ -13332,6 +14004,11 @@ _rvocab.update({
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeFreehandCommentData": "NativeFreehandCommentData",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeGalaxyWorkflow": "NativeGalaxyWorkflow",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeInputConnection": "NativeInputConnection",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoop": "NativeLoop",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopInput": "NativeLoopInput",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopLinkMerge": "NativeLoopLinkMerge",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopOutputMethod": "NativeLoopOutputMethod",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopPickValue": "NativeLoopPickValue",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownComment": "NativeMarkdownComment",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeMarkdownCommentData": "NativeMarkdownCommentData",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativePostJobAction": "NativePostJobAction",
@@ -13356,15 +14033,21 @@ _rvocab.update({
     "https://galaxyproject.org/gxformat2/gxformat2common#ToolShedRepository": "ToolShedRepository",
     "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextOption": "WorkflowTextOption",
     "https://galaxyproject.org/gxformat2/gxformat2common#WorkflowTextValidator": "WorkflowTextValidator",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopOutputMethod/all_iterations": "all_iterations",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopPickValue/all_non_null": "all_non_null",
     "https://w3id.org/cwl/salad#array": "array",
     "http://www.w3.org/2001/XMLSchema#boolean": "boolean",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/data_collection_input": "data_collection_input",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/data_input": "data_input",
     "http://www.w3.org/2001/XMLSchema#double": "double",
     "https://w3id.org/cwl/salad#enum": "enum",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopPickValue/first_non_null": "first_non_null",
     "http://www.w3.org/2001/XMLSchema#float": "float",
     "http://www.w3.org/2001/XMLSchema#int": "int",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopOutputMethod/last_iteration": "last_iteration",
     "http://www.w3.org/2001/XMLSchema#long": "long",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopLinkMerge/merge_flattened": "merge_flattened",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopLinkMerge/merge_nested": "merge_nested",
     "https://w3id.org/cwl/salad#null": "null",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/parameter_input": "parameter_input",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/pause": "pause",
@@ -13372,6 +14055,7 @@ _rvocab.update({
     "https://w3id.org/cwl/salad#record": "record",
     "http://www.w3.org/2001/XMLSchema#string": "string",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/subworkflow": "subworkflow",
+    "https://galaxyproject.org/gxformat2/native_v0_1#NativeLoopPickValue/the_only_non_null": "the_only_non_null",
     "https://galaxyproject.org/gxformat2/native_v0_1#NativeStepType/tool": "tool",
 })
 
@@ -13494,6 +14178,53 @@ NativeFrameCommentLoader: Final = _RecordLoader(NativeFrameComment, None, None)
 NativeFreehandCommentLoader: Final = _RecordLoader(NativeFreehandComment, None, None)
 NativeCommentLoader: Final = _UnionLoader((), "NativeCommentLoader")
 NativeStepLoader: Final = _RecordLoader(NativeStep, None, None)
+NativeLoopOutputMethodLoader: Final = _EnumLoader(
+    (
+        "last_iteration",
+        "all_iterations",
+    ),
+    "NativeLoopOutputMethod",
+)
+"""
+The outputs of a loop step.
+
+last_iteration: the outputs of the last iteration that ran.
+
+all_iterations: each output as a list collection over all iterations, in iteration order.
+"""
+NativeLoopPickValueLoader: Final = _EnumLoader(
+    (
+        "first_non_null",
+        "the_only_non_null",
+        "all_non_null",
+    ),
+    "NativeLoopPickValue",
+)
+"""
+How one value is picked from the values of a list ``output_source``.
+
+first_non_null: the first value that is not null.
+
+the_only_non_null: the only value that is not null.
+
+all_non_null: the list of the values that are not null. Galaxy refuses it when saving a workflow.
+"""
+NativeLoopLinkMergeLoader: Final = _EnumLoader(
+    (
+        "merge_nested",
+        "merge_flattened",
+    ),
+    "NativeLoopLinkMerge",
+)
+"""
+How the values of a list ``output_source`` are merged.
+
+merge_nested: a list with one element per output, the default.
+
+merge_flattened: the values concatenated into one list. Galaxy refuses it when saving a workflow.
+"""
+NativeLoopInputLoader: Final = _RecordLoader(NativeLoopInput, None, None)
+NativeLoopLoader: Final = _RecordLoader(NativeLoop, None, None)
 NativeReportLoader: Final = _RecordLoader(NativeReport, None, None)
 NativeCreatorLoader: Final = _UnionLoader((), "NativeCreatorLoader")
 NativeBasedOnWorkLoader: Final = _UnionLoader((), "NativeBasedOnWorkLoader")
@@ -13764,6 +14495,30 @@ union_of_None_type_or_array_of_NativeWorkflowOutputLoader: Final = _UnionLoader(
     (
         None_type,
         array_of_NativeWorkflowOutputLoader,
+    )
+)
+union_of_None_type_or_NativeLoopLoader: Final = _UnionLoader(
+    (
+        None_type,
+        NativeLoopLoader,
+    )
+)
+union_of_None_type_or_NativeLoopLinkMergeLoader: Final = _UnionLoader(
+    (
+        None_type,
+        NativeLoopLinkMergeLoader,
+    )
+)
+union_of_None_type_or_NativeLoopPickValueLoader: Final = _UnionLoader(
+    (
+        None_type,
+        NativeLoopPickValueLoader,
+    )
+)
+union_of_None_type_or_NativeLoopOutputMethodLoader: Final = _UnionLoader(
+    (
+        None_type,
+        NativeLoopOutputMethodLoader,
     )
 )
 NativeGalaxyWorkflow_classLoader: Final = _EnumLoader(
